@@ -1,7 +1,7 @@
 # Generic rules
 CC = clang
 CXX = clang++
-CXXFLAGS += -Wall
+CXXFLAGS += -Wall -O3 -march=native -mtune=native
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
 CFLAGS = $(CXXFLAGS)
@@ -19,7 +19,8 @@ RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
-!ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+!ld_library = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+!ld = |> $(CXX) -o %o %f $(LDFLAGS) |>
 
 # CasADi related rules
 TOOLS = $(TUP_CWD)/tools/
@@ -32,7 +33,7 @@ export OROCOS_TARGET
 CPPFLAGS_OROCOS = $(CPPFLAGS)
 LDFLAGS_OROCOS = $(LDFLAGS)
 CXXFLAGS_OROCOS = $(CXXFLAGS)
-CXXFLAGS_OROCOS += -fno-strict-aliasing
+CXXFLAGS_OROCOS += -fno-strict-aliasing -Wno-return-type-c-linkage
 CFLAGS_OROCOS = $(CFLAGS)
 #CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
 CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)

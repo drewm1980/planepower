@@ -1,4 +1,4 @@
 *.swp
 *.o
-spi_status
 *.dtbo
+test_spi

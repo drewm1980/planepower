@@ -18,6 +18,8 @@ dofile("setup_carousel_1_reporters.lua")
 
 masterTimer:start()
 
+p=encoder:getPort("data")
+
 --set_voltage(4)
 --os.execute("sleep 5")
 --set_voltage(0)

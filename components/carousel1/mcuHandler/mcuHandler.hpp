@@ -12,6 +12,8 @@
 
 #include "types/McuHandlerDataType.hpp"
 
+#define NONREALTIME_DEBUGGING 1
+
 /// Define the time-stamp type
 typedef uint64_t TIME_TYPE;
 
@@ -56,7 +58,7 @@ protected:
 	McuHandlerDataType data;
 	/// The data from the IMU.
 	RTT::OutputPort< McuHandlerDataType > portMcuData;
-	/// Port with control signals [ua1, ua2, ue]. Must be: -1..1
+	/// Port with control signals [ua1, ua2, ue]. Units are in radians
 	RTT::InputPort< std::vector< double > > portControls;	
 	/// Holder for the control action to be send
 	std::vector< double > controls;
@@ -74,6 +76,14 @@ protected:
 	double Ts;
 	/// RT mode indicator
 	bool rtMode;
+
+#ifdef NONREALTIME_DEBUGGING
+	// Commands for setting the references.
+	// Note:  These are intended to be used manually for debugging purposes!
+	// For actual control, you should use the provided input port!
+	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+#endif
 
 private:
 

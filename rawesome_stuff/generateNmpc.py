@@ -53,6 +53,8 @@ if __name__=='__main__':
 
 '''
             )
+
+    fw.write("// This file was created from the file: " + os.path.realpath(__file__) + "\n")
     
     fw.write("#define mpc_sampling_time " + repr( Ts ) + "\n");
     fw.write("\n\n")

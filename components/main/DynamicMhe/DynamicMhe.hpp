@@ -24,11 +24,6 @@
 #define NYN		ACADO_NYN	// # measurements, last node
 #define N 		ACADO_N		// # estimation intervals
 
-// # delay samples for the cameras; maybe to define this as a property?
-#define NDELAY 4
-// # markers
-#define NUM_MARKERS 12
-
 typedef uint64_t TIME_TYPE;
 
 // Here we import custom data type definitions
@@ -62,6 +57,8 @@ public:
 	virtual void cleanupHook( );
 	/// Error hook.
 	virtual void errorHook( );
+	/// Exception hook.
+	virtual void exceptionHook();
 
 protected:
 	//
@@ -115,8 +112,8 @@ private:
 	bool prepareDebugData( void );
 
 	double mheWeights[ NY ];
-	double ledData[ NUM_MARKERS ];
-	double ledWeights[ NUM_MARKERS ];
+	double ledData[ mhe_num_markers ];
+	double ledWeights[ mhe_num_markers ];
 
 	unsigned runCnt;
 	double execY[ NY ], execYN[ NYN ];

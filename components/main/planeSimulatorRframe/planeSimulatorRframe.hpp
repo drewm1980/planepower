@@ -89,7 +89,7 @@ namespace OCL
 	double					rk4Wrapper_output_IMU[NIMU];
 	double*					rk4Wrapper_output[2];
 
-	RTT::os::TimeService::ticks     time_begin;
+	//RTT::os::TimeService::ticks     time_begin;
 
     public:
         planeSimulatorRframe(std::string name);

@@ -5,6 +5,8 @@ import numpy as np
 import os
 
 def makeModel(conf,propertiesDir='../properties'):
+    print 'This file is old. It does not use the NED convention you should use carouselModel in offline_mhe_stuff instead.'
+    input("Press Enter if you wish to continue...")
     dae = rawe.models.carousel(conf)
     (xDotSol, zSol) = dae.solveForXDotAndZ()
     ddp = C.vertcat([xDotSol['dx'],xDotSol['dy'],xDotSol['dz']])
