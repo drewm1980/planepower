@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import serial
-from rm024 import *
+from rm024 import test_device_alive
 
 ser = serial.Serial(
 		port='/dev/ttyO2',

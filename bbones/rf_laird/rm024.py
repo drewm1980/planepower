@@ -9,7 +9,7 @@ from rm024_atcommands import *
 def send_at_command_raw(device,command,arguments=''):
 	call = command['call']
 	callSize = command['callSize']
-	response = command['response']
+	expectedResponse = command['response']
 	respSize = command['respSize']
 	argSize = command['argSize']
 	dataSize = command['dataSize']
@@ -19,9 +19,9 @@ def send_at_command_raw(device,command,arguments=''):
 	response_and_data = device.read(respSize + dataSize)
 	if len(response_and_data) != respSize + dataSize:
 		error("Response of wrong size!")
-	respose = response_and_data[0:respSize]
+	response = response_and_data[0:respSize]
 	data = response_and_data[respSize:]
-	if response != device['response']:
+	if response != expectedResponse:
 		error("Response did not match expected response!")
 	return data
 
