@@ -643,14 +643,14 @@ EEPROM_BYTE_READ['call'] = "\xCC\xC0"
 EEPROM_BYTE_READ['respSize'] = 1
 EEPROM_BYTE_READ['response'] = "\xCC"
 EEPROM_BYTE_READ['argSize'] = 2
-EEPROM_BYTE_READ['dataSize'] = 2
+EEPROM_BYTE_READ['dataSize'] = 3
 
 EEPROM_BYTE_WRITE['callSize'] = 2
 EEPROM_BYTE_WRITE['call'] = "\xCC\xC1"
-EEPROM_BYTE_WRITE['respSize'] = 2
+EEPROM_BYTE_WRITE['respSize'] = 0
 EEPROM_BYTE_WRITE['response'] = ""
 EEPROM_BYTE_WRITE['argSize'] = 2
-EEPROM_BYTE_WRITE['dataSize'] = 1
+EEPROM_BYTE_WRITE['dataSize'] = 3
 
 EEPROM_PRODUCT_ID['callSize'] = 2
 EEPROM_PRODUCT_ID['call'] = "\x00\x17"
