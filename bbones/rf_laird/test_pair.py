@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Send "Hello World!" over two locally connected serial modems
+# Set two connected devices, one to server, one to client, check status
 
 import serial
 from rm024 import *
@@ -23,16 +23,12 @@ ser2 = serial.Serial(
 		)
 ser2.open()
 
-msg = "Hello World!"
-
-ser1.write(msg)
-ser1.flushOutput()
-response = ser2.read(len(msg))
-if response == msg:
-	print "Successfully sent Hello World wirelessly!!!!"
-else:
-	print "Recieved string doesn't match sent string!"
-	print "Return value was:" + str(response)
+#send_at_command(ser1,SET_TO_SERVER)
+#send_at_command(ser2,SET_TO_CLIENT)
+#send_at_command(ser1,EEPROM_SET_SERVER)
+#send_at_command(ser2,EEPROM_SET_CLIENT)
+set_to_server_on_fly(ser1)
+set_to_client_on_fly(ser2)
 
 ser1.close()
 ser2.close()

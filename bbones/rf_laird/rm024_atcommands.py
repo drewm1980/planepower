@@ -244,84 +244,84 @@ STATUS_REQUEST['call'] = "\xCC\x00\x00"
 STATUS_REQUEST['respSize'] = 1
 STATUS_REQUEST['response'] = "\xCC"
 STATUS_REQUEST['argSize'] = 0
-STATUS_REQUEST['dataSize'] = 2,
+STATUS_REQUEST['dataSize'] = 2
 
 CHECK_STATUS_REG['callSize'] = 3
 CHECK_STATUS_REG['call'] = "\xCC\x00\x01"
 CHECK_STATUS_REG['respSize'] = 1
 CHECK_STATUS_REG['response'] = "\xCC"
 CHECK_STATUS_REG['argSize'] = 0
-CHECK_STATUS_REG['dataSize'] = 4,
+CHECK_STATUS_REG['dataSize'] = 4
 
 CHECK_FIRMWARE_STATUS['callSize'] = 3
 CHECK_FIRMWARE_STATUS['call'] = "\xCC\x00\x02"
 CHECK_FIRMWARE_STATUS['respSize'] = 2
 CHECK_FIRMWARE_STATUS['response'] = "\xCC\x02"
 CHECK_FIRMWARE_STATUS['argSize'] = 0
-CHECK_FIRMWARE_STATUS['dataSize'] = 2,
+CHECK_FIRMWARE_STATUS['dataSize'] = 2
 
 BIN_ANALYZER['callSize'] = 2
 BIN_ANALYZER['call'] = "\xCC\x8F"
 BIN_ANALYZER['respSize'] = 1
 BIN_ANALYZER['response'] = "\xCC"
 BIN_ANALYZER['argSize'] = 2
-BIN_ANALYZER['dataSize'] = 1,
+BIN_ANALYZER['dataSize'] = 1
 
 READ_TEMPERATURE['callSize'] = 2
 READ_TEMPERATURE['call'] = "\xCC\xA4"
 READ_TEMPERATURE['respSize'] = 1
 READ_TEMPERATURE['response'] = "\xCC"
 READ_TEMPERATURE['argSize'] = 0
-READ_TEMPERATURE['dataSize'] = 1,
+READ_TEMPERATURE['dataSize'] = 1
 
 CHANGE_CHANNEL['callSize'] = 2
 CHANGE_CHANNEL['call'] = "\xCC\x02"
 CHANGE_CHANNEL['respSize'] = 1
 CHANGE_CHANNEL['response'] = "\xCC"
 CHANGE_CHANNEL['argSize'] = 1
-CHANGE_CHANNEL['dataSize'] = 1,
+CHANGE_CHANNEL['dataSize'] = 1
 
 SET_SERVER_CLIENT['callSize'] = 2
 SET_SERVER_CLIENT['call'] = "\xCC\x03"
 SET_SERVER_CLIENT['respSize'] = 1
 SET_SERVER_CLIENT['response'] = "\xCC"
 SET_SERVER_CLIENT['argSize'] = 1
-SET_SERVER_CLIENT['dataSize'] = 2,
+SET_SERVER_CLIENT['dataSize'] = 2
 
 SET_TO_CLIENT['callSize'] = 3
 SET_TO_CLIENT['call'] = "\xCC\x03\x03"
 SET_TO_CLIENT['respSize'] = 1
 SET_TO_CLIENT['response'] = "\xCC"
 SET_TO_CLIENT['argSize'] = 0
-SET_TO_CLIENT['dataSize'] = 2,
+SET_TO_CLIENT['dataSize'] = 2
 
 SET_TO_SERVER['callSize'] = 3
 SET_TO_SERVER['call'] = "\xCC\x03\x02"
 SET_TO_SERVER['respSize'] = 1
 SET_TO_SERVER['response'] = "\xCC"
 SET_TO_SERVER['argSize'] = 0
-SET_TO_SERVER['dataSize'] = 2,
+SET_TO_SERVER['dataSize'] = 2
 
 SET_BROADCAST_MODE['callSize'] = 2
 SET_BROADCAST_MODE['call'] = "\xCC\x08"
 SET_BROADCAST_MODE['respSize'] = 1
 SET_BROADCAST_MODE['response'] = "\xCC"
 SET_BROADCAST_MODE['argSize'] = 1
-SET_BROADCAST_MODE['dataSize'] = 1,
+SET_BROADCAST_MODE['dataSize'] = 1
 
 READ_IRAM['callSize'] = 2
 READ_IRAM['call'] = "\xCC\x0A"
 READ_IRAM['respSize'] = 1
 READ_IRAM['response'] = "\xCC"
 READ_IRAM['argSize'] = 1
-READ_IRAM['dataSize'] = 1,
+READ_IRAM['dataSize'] = 1
 
 WRITE_IRAM['callSize'] = 2
 WRITE_IRAM['call'] = "\xCC\x0B"
 WRITE_IRAM['respSize'] = 1
 WRITE_IRAM['response'] = "\xCC"
 WRITE_IRAM['argSize'] = 2
-WRITE_IRAM['dataSize'] = 2,
+WRITE_IRAM['dataSize'] = 2
 
 IRAM_RANGE_REFRESH['callSize'] = 1
 IRAM_RANGE_REFRESH['call'] = "\x3D"
@@ -426,126 +426,126 @@ WRITE_DEST_ADDR['call'] = "\xCC\x10"
 WRITE_DEST_ADDR['respSize'] = 1
 WRITE_DEST_ADDR['response'] = "\xCC"
 WRITE_DEST_ADDR['argSize'] = 3
-WRITE_DEST_ADDR['dataSize'] = 3,
+WRITE_DEST_ADDR['dataSize'] = 3
 
 READ_DEST_ADDR['callSize'] = 2
 READ_DEST_ADDR['call'] = "\xCC\x11"
 READ_DEST_ADDR['respSize'] = 1
 READ_DEST_ADDR['response'] = "\xCC"
 READ_DEST_ADDR['argSize'] = 0
-READ_DEST_ADDR['dataSize'] = 3,
+READ_DEST_ADDR['dataSize'] = 3
 
 AUTO_DEST_CHANNEL['callSize'] = 2
 AUTO_DEST_CHANNEL['call'] = "\xCC\x15"
 AUTO_DEST_CHANNEL['respSize'] = 1
 AUTO_DEST_CHANNEL['response'] = "\xCC"
 AUTO_DEST_CHANNEL['argSize'] = 1
-AUTO_DEST_CHANNEL['dataSize'] = 1,
+AUTO_DEST_CHANNEL['dataSize'] = 1
 
 AUTO_CHANNEL['callSize'] = 3
 AUTO_CHANNEL['call'] = "\xCC\x15\x22"
 AUTO_CHANNEL['respSize'] = 1
 AUTO_CHANNEL['response'] = "\xCC"
 AUTO_CHANNEL['argSize'] = 1
-AUTO_CHANNEL['dataSize'] = 1,
+AUTO_CHANNEL['dataSize'] = 1
 
 AUTO_DESTINATION['callSize'] = 3
 AUTO_DESTINATION['call'] = "\xCC\x15\x11"
 AUTO_DESTINATION['respSize'] = 1
 AUTO_DESTINATION['response'] = "\xCC"
 AUTO_DESTINATION['argSize'] = 1
-AUTO_DESTINATION['dataSize'] = 1,
+AUTO_DESTINATION['dataSize'] = 1
 
 READ_API_CONTROL['callSize'] = 2
 READ_API_CONTROL['call'] = "\xCC\x16"
 READ_API_CONTROL['respSize'] = 1
 READ_API_CONTROL['response'] = "\xCC"
 READ_API_CONTROL['argSize'] = 0
-READ_API_CONTROL['dataSize'] = 1,
+READ_API_CONTROL['dataSize'] = 1
 
 WRITE_API_CONTROL['callSize'] = 2
 WRITE_API_CONTROL['call'] = "\xCC\x17"
 WRITE_API_CONTROL['respSize'] = 1
 WRITE_API_CONTROL['response'] = "\xCC"
 WRITE_API_CONTROL['argSize'] = 1
-WRITE_API_CONTROL['dataSize'] = 1,
+WRITE_API_CONTROL['dataSize'] = 1
 
 API_SEND_DATA_COMPLETE['callSize'] = 1
 API_SEND_DATA_COMPLETE['call'] = "\x04"
 API_SEND_DATA_COMPLETE['respSize'] = 1
 API_SEND_DATA_COMPLETE['response'] = "\xCC"
 API_SEND_DATA_COMPLETE['argSize'] = 1
-API_SEND_DATA_COMPLETE['dataSize'] = 1,
+API_SEND_DATA_COMPLETE['dataSize'] = 1
 
 API_TRANSMIT['callSize'] = 1
 API_TRANSMIT['call'] = "\x02"
 API_TRANSMIT['respSize'] = 1
 API_TRANSMIT['response'] = "\xCC"
 API_TRANSMIT['argSize'] = 1
-API_TRANSMIT['dataSize'] = 1,
+API_TRANSMIT['dataSize'] = 1
 
 API_RECIEVE['callSize'] = 1
 API_RECIEVE['call'] = "\x01"
 API_RECIEVE['respSize'] = 1
 API_RECIEVE['response'] = "\xCC"
 API_RECIEVE['argSize'] = 1
-API_RECIEVE['dataSize'] = 1,
+API_RECIEVE['dataSize'] = 1
 
 READ_ADC['callSize'] = 2
 READ_ADC['call'] = "\xCC\x21"
 READ_ADC['respSize'] = 1
 READ_ADC['response'] = "\xCC"
 READ_ADC['argSize'] = 1
-READ_ADC['dataSize'] = 2,
+READ_ADC['dataSize'] = 2
 
 GET_LAST_RSSI['callSize'] = 2
 GET_LAST_RSSI['call'] = "\xCC\x22"
 GET_LAST_RSSI['respSize'] = 1
 GET_LAST_RSSI['response'] = "\xCC"
 GET_LAST_RSSI['argSize'] = 0
-GET_LAST_RSSI['dataSize'] = 1,
+GET_LAST_RSSI['dataSize'] = 1
 
 READ_DIGITAL_INPUT['callSize'] = 2
 READ_DIGITAL_INPUT['call'] = "\xCC\x20"
 READ_DIGITAL_INPUT['respSize'] = 1
 READ_DIGITAL_INPUT['response'] = "\xCC"
 READ_DIGITAL_INPUT['argSize'] = 0
-READ_DIGITAL_INPUT['dataSize'] = 1,
+READ_DIGITAL_INPUT['dataSize'] = 1
 
 WRITE_DIGITAL_OUT['callSize'] = 2
 WRITE_DIGITAL_OUT['call'] = "\xCC\x23"
 WRITE_DIGITAL_OUT['respSize'] = 1
 WRITE_DIGITAL_OUT['response'] = "\xCC"
 WRITE_DIGITAL_OUT['argSize'] = 1
-WRITE_DIGITAL_OUT['dataSize'] = 1,
+WRITE_DIGITAL_OUT['dataSize'] = 1
 
 DIGITAL_IO_0['callSize'] = 1
 DIGITAL_IO_0['call'] = "\x02"
 DIGITAL_IO_0['respSize'] = 1
 DIGITAL_IO_0['response'] = "\xCC"
 DIGITAL_IO_0['argSize'] = 1
-DIGITAL_IO_0['dataSize'] = 1,
+DIGITAL_IO_0['dataSize'] = 1
 
 DIGITAL_IO_1['callSize'] = 1
 DIGITAL_IO_1['call'] = "\x01"
 DIGITAL_IO_1['respSize'] = 1
 DIGITAL_IO_1['response'] = "\xCC"
 DIGITAL_IO_1['argSize'] = 1
-DIGITAL_IO_1['dataSize'] = 1,
+DIGITAL_IO_1['dataSize'] = 1
 
 WRITE_PWM['callSize'] = 2
 WRITE_PWM['call'] = "\xCC\x24"
 WRITE_PWM['respSize'] = 1
 WRITE_PWM['response'] = "\xCC"
 WRITE_PWM['argSize'] = 1
-WRITE_PWM['dataSize'] = 1,
+WRITE_PWM['dataSize'] = 1
 
 SET_POWER_CONTROL['callSize'] = 2
 SET_POWER_CONTROL['call'] = "\xCC\x25"
 SET_POWER_CONTROL['respSize'] = 1
 SET_POWER_CONTROL['response'] = "\xCC"
 SET_POWER_CONTROL['argSize'] = 1
-SET_POWER_CONTROL['dataSize'] = 1,
+SET_POWER_CONTROL['dataSize'] = 1
 
 SET_POWER_FULL['callSize'] = 3
 SET_POWER_FULL['call'] = "\xCC\x25\x00"
@@ -580,7 +580,7 @@ ANTENNA_SELECT['call'] = "\xCC\x26"
 ANTENNA_SELECT['respSize'] = 2
 ANTENNA_SELECT['response'] = "\xCC\x26"
 ANTENNA_SELECT['argSize'] = 1
-ANTENNA_SELECT['dataSize'] = 1,
+ANTENNA_SELECT['dataSize'] = 1
 
 INTEGRATED_ANTENNA['callSize'] = 3
 INTEGRATED_ANTENNA['call'] = "\xCC\x26\x00"
@@ -615,49 +615,49 @@ READ_FLASH['call'] = "\xCC\xC9"
 READ_FLASH['respSize'] = 2
 READ_FLASH['response'] = "\xCC\xC9"
 READ_FLASH['argSize'] = 4
-READ_FLASH['dataSize'] = 5,
+READ_FLASH['dataSize'] = 5
 
 WRITE_FLASH['callSize'] = 2
 WRITE_FLASH['call'] = "\xCC\xC4"
 WRITE_FLASH['respSize'] = 3
 WRITE_FLASH['response'] = "\xCC\xC4\x00"
 WRITE_FLASH['argSize'] = 4
-WRITE_FLASH['dataSize'] = 2,
+WRITE_FLASH['dataSize'] = 2
 
 SET_VENDOR_ID['callSize'] = 3
 SET_VENDOR_ID['call'] = "\xCC\xF2\x06"
 SET_VENDOR_ID['respSize'] = 3
 SET_VENDOR_ID['response'] = "\xCC\xF2\x06"
 SET_VENDOR_ID['argSize'] = 2
-SET_VENDOR_ID['dataSize'] = 2,
+SET_VENDOR_ID['dataSize'] = 2
 
 CHECK_VENDOR_ID['callSize'] = 5
 CHECK_VENDOR_ID['call'] = "\xCC\xF2\x06\xFF\xFF"
 CHECK_VENDOR_ID['respSize'] = 3
 CHECK_VENDOR_ID['response'] = "\xCC\xF2\x06"
 CHECK_VENDOR_ID['argSize'] = 0
-CHECK_VENDOR_ID['dataSize'] = 2,
+CHECK_VENDOR_ID['dataSize'] = 2
 
 EEPROM_BYTE_READ['callSize'] = 2
 EEPROM_BYTE_READ['call'] = "\xCC\xC0"
 EEPROM_BYTE_READ['respSize'] = 1
 EEPROM_BYTE_READ['response'] = "\xCC"
 EEPROM_BYTE_READ['argSize'] = 2
-EEPROM_BYTE_READ['dataSize'] = 2,
+EEPROM_BYTE_READ['dataSize'] = 2
 
 EEPROM_BYTE_WRITE['callSize'] = 2
 EEPROM_BYTE_WRITE['call'] = "\xCC\xC1"
 EEPROM_BYTE_WRITE['respSize'] = 2
 EEPROM_BYTE_WRITE['response'] = ""
 EEPROM_BYTE_WRITE['argSize'] = 2
-EEPROM_BYTE_WRITE['dataSize'] = 1,
+EEPROM_BYTE_WRITE['dataSize'] = 1
 
 EEPROM_PRODUCT_ID['callSize'] = 2
 EEPROM_PRODUCT_ID['call'] = "\x00\x17"
 EEPROM_PRODUCT_ID['respSize'] = 0
 EEPROM_PRODUCT_ID['response'] = ""
 EEPROM_PRODUCT_ID['argSize'] = 35
-EEPROM_PRODUCT_ID['dataSize'] = 35,
+EEPROM_PRODUCT_ID['dataSize'] = 35
 
 EEPROM_RANGE_REFRESH['callSize'] = 2
 EEPROM_RANGE_REFRESH['call'] = "\x3D\x01"
