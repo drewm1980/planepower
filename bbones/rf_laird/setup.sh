@@ -13,19 +13,19 @@
 
 # Add our chosen UART port
 UART_NO=2
-FIRMWARE_STRING=`ls -1 /lib/firmware/*UART$UART_NO*.dts | xargs -I{} basename {} .dts`
-#echo $FIRMWARE_STRING > /sys/devices/bone_capemgr.*/slots
-echo "Found firmware string $FIRMWARE_STRING"
+UART_FIRMWARE_STRING=`ls -1 /lib/firmware/*UART$UART_NO*.dts | xargs -I{} basename {} .dts`
+#echo $UART_FIRMWARE_STRING > /sys/devices/bone_capemgr.*/slots
+echo "Found firmware string $UART_FIRMWARE_STRING"
 
-HDMI_FIRMWARE_STRING=Bone-Black-HDMI-00A0
+HDMI_FIRMWARE_STRING=cape-boneblack-hdmi-00A0
 
-mkdir /mnt/boot
+mkdir -p /mnt/boot
 mount /dev/mmcblk0p1 /mnt/boot
 STR0="optargs=quiet drm.debug=7"
-STR1="capemgr.disanable_partno=\"$HDMI_FIRMWARE_STRING\""
-STR2="capemgr.enable_partno=\"$FIRMWARE_STRING\""
-#cat /mnt/boot/uEnv.txt
+STR1="capemgr.disable_partno=\"$HDMI_FIRMWARE_STRING\""
+STR2="capemgr.enable_partno=\"$UART_FIRMWARE_STRING\""
 echo "$STR0 $STR1 $STR2" > /mnt/boot/uEnv.txt
+cat /mnt/boot/uEnv.txt
 echo "You need to reboot for this to take effect"
 
 # cat /sys/kernel/debug/pinctrl/44e10800.pinmux/pingroups | grep group
