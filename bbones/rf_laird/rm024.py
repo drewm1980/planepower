@@ -138,12 +138,12 @@ def set_autoconfig(device,enable):
 # Determine if the hop indicator pin is currently enabled.
 # Returns True if the indicator pin is enabled.
 def get_hop_frame_indicator(device):
-	return ~eeprom_getbit(device, EEPROM_DISABLE_HOP_FRAME)
+	return not eeprom_getbit(device, EEPROM_DISABLE_HOP_FRAME)
 
 # Turn on and off the hop frame indicator pin.
 # enable is a python boolean
 # Requires reset to take effect.
 def set_hop_frame_indicator(device,enable):
-	eeprom_setbit(device, EEPROM_DISABLE_HOP_FRAME, ~bool(enable))
+	eeprom_setbit(device, EEPROM_DISABLE_HOP_FRAME, not bool(enable))
 	
 
