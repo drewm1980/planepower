@@ -18,13 +18,14 @@
 int main(int argc, const char *argv[])
 {
 	// Change status gpio pins to inputs
+	// ... should be done in device tree overlay...
 	gpio_export(AZIMUTH_STATUS_PIN);
 	gpio_export(ELEVATION_STATUS_PIN);
 	gpio_set_dir(AZIMUTH_STATUS_PIN, INPUT_PIN);
 	gpio_set_dir(ELEVATION_STATUS_PIN, INPUT_PIN);
 
 	// The raw values from the sensors.
-	unsigned long foo;
+	volatile unsigned long foo;
 
 	while(1)
 	{
