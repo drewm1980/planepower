@@ -32,7 +32,9 @@ imu_bytes = 6*4
 line_angle_bytes = 2*2
 servo_bytes = 7*2
 msg_bytes = imu_bytes + line_angle_bytes + servo_bytes
-msg_bytes = 16
+msg_bytes = 16 # 32 not working for some reason...
+set_rf_packet_size_on_fly(ser1,msg_bytes)
+set_rf_packet_size_on_fly(ser2,msg_bytes)
 
 print "Packet size for test: " + str(msg_bytes) + " bytes"
 

@@ -70,7 +70,7 @@ def get_last_rssi(device):
 
 # Merge a command with a subcommand.
 # Used mostly for writing to EEPROM and IRAM addresses.
-# WARNING! SOME SUBCOMMANDS HAVE A BITMASK APPENDED TO THEIR command
+# WARNING! SOME SUBCOMMANDS HAVE A BITMASK APPENDED TO THEIR command that require special casing.
 def merge_commands(command,subcommand):
 	c = {}
 	c['call'] = command['call'] + subcommand['call']
