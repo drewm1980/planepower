@@ -5,26 +5,16 @@
 
 # cat /sys/devices/bone_capemgr.8/slots
 
-# Kick out HDMI
-#HDMI_SLOTNO=`grep HDMI /sys/devices/bone_capemgr.8/slots | cut -b2`
-#echo "-$HDMI_SLOTNO" > /sys/devices/bone_capemgr.8/slots
-
-# The above seems to cause a segfault with current version of the stock Angstrom kernel. adafruit warned this might happen
-
 # Add our chosen UART port
+# You need to use the strings from "part-number" from instide the .dts files in /lib/firmware
 UART_NO=2
-UART_FIRMWARE_STRING=`ls -1 /lib/firmware/*UART$UART_NO*.dts | xargs -I{} basename {} .dts`
-#echo $UART_FIRMWARE_STRING > /sys/devices/bone_capemgr.*/slots
-echo "Found firmware string $UART_FIRMWARE_STRING"
-
-HDMI_FIRMWARE_STRING=cape-boneblack-hdmi-00A0
+ENABLE_UART_STRING="capemgr.enable_partno=BB-UART$UART_NO"
+DISABLE_HDMI_STRING="capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN"
 
 mkdir -p /mnt/boot
 mount /dev/mmcblk0p1 /mnt/boot
 STR0="optargs=quiet drm.debug=7"
-STR1="capemgr.disable_partno=\"$HDMI_FIRMWARE_STRING\""
-STR2="capemgr.enable_partno=\"$UART_FIRMWARE_STRING\""
-echo "$STR0 $STR1 $STR2" > /mnt/boot/uEnv.txt
+echo "$STR0 $DISABLE_HDMI_STRING $ENABLE_UART_STRING" > /mnt/boot/uEnv.txt
 cat /mnt/boot/uEnv.txt
 echo "You need to reboot for this to take effect"
 
