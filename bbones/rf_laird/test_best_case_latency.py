@@ -13,9 +13,9 @@ import numpy
 import realtime
 
 #timeout = .015 # s
-timeout = .1 # s
+timeout = 1 # s
 ser1 = serial.Serial(
-		port='/dev/ttyO2',
+		port='/dev/ttyO1',
 		baudrate=115200,
 		parity=serial.PARITY_NONE,
 		stopbits=serial.STOPBITS_ONE,
@@ -44,7 +44,7 @@ line_angle_bytes = 2*2
 servo_bytes = 7*2
 packet_size = imu_bytes + line_angle_bytes + servo_bytes
 
-packet_size = 16
+packet_size = 17
 
 set_rf_packet_size_on_fly(ser1,packet_size)
 set_rf_packet_size_on_fly(ser2,packet_size)
@@ -97,6 +97,10 @@ while i<trials:
 	response = reciever.read(len(msg))
 	if not (msg == response):
 		print "Error in packet transmission!"
+		print "Packet size: " + str(len(msg))
+		print "Sent " + str(len(msg)) + " bytes:\t\t" + msg
+		print "Recieved " + str(len(response)) + " bytes:\t" + response
+		
 		dropped += 1
 		continue
 	recieved += 1
