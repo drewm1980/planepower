@@ -67,7 +67,10 @@ while i<trials:
 	reciever.flushInput()
 	msg=randomword(msg_bytes)
 
+	t0 = time()
 	sleep(sleeptimes[i]*.001)
+	t00 = time()
+	sleeptimes[i] = (t00-t0) * 1000.0
 
 	t1 = time()
 	sender.write(msg)

@@ -97,32 +97,53 @@ def set_rf_packet_size_eeprom(device, size):
 	command = merge_commands(EEPROM_BYTE_WRITE,EEPROM_RF_PACKET_SIZE)
 	data = send_at_command(device,command,chr(size))
 
-# Determine if autoconfiguration is currently enabled
-def get_autoconfig(device):
-	command = merge_commands(EEPROM_BYTE_READ,EEPROM_AUTO_CONFIG)
+# Get the current value in a bitfield register in EEPROM
+def eeprom_getbit(device,subcommand):
+	command = merge_commands(EEPROM_BYTE_READ,subcommand)
 	command['callSize'] -= 1
 	bitmask = command['call'][-1:]
 	command['call'] = command['call'][:-1]
 	start,length,currentbyte = send_at_command(device,command)
 	return bool(ord(currentbyte) & ord(bitmask))
 
-# Turn off autoconfiguration of rf packet size.
-# enable is a python boolean.
-def set_autoconfig(device,enable):
-	command = merge_commands(EEPROM_BYTE_READ,EEPROM_AUTO_CONFIG)
+# Sets or resets a bit in EEPROM
+# command is an AT subcommand
+def eeprom_setbit(device,subcommand,value):
+	command = merge_commands(EEPROM_BYTE_READ,subcommand)
 	command['callSize'] -= 1
 	bitmask = command['call'][-1:]
 	command['call'] = command['call'][:-1]
 	start,length,currentbyte = send_at_command(device,command)
 
-	command = merge_commands(EEPROM_BYTE_WRITE,EEPROM_AUTO_CONFIG)
+	command = merge_commands(EEPROM_BYTE_WRITE,subcommand)
 	command['callSize'] -= 1
 	bitmask = command['call'][-1:]
 	command['call'] = command['call'][:-1]
-	if enable:
+	if value:
 		newbyte = chr(ord(currentbyte) | ord(bitmask))
 	else:
 		newbyte = chr(ord(currentbyte) & ~ ord(bitmask))
 	data = send_at_command(device,command,newbyte)
+
+# Determine if autoconfiguration is currently enabled
+def get_autoconfig(device):
+	return eeprom_getbit(device,EEPROM_AUTO_CONFIG)
+
+# Turn off autoconfiguration of rf packet size.
+# enable is a python boolean.
+# Requires reset to take effect.
+def set_autoconfig(device,enable):
+	eeprom_setbit(device, EEPROM_AUTO_CONFIG, boou(enable))
+
+# Determine if the hop indicator pin is currently enabled.
+# Returns True if the indicator pin is enabled.
+def get_hop_frame_indicator(device):
+	return ~eeprom_getbit(device, EEPROM_DISABLE_HOP_FRAME)
+
+# Turn on and off the hop frame indicator pin.
+# enable is a python boolean
+# Requires reset to take effect.
+def set_hop_frame_indicator(device,enable):
+	eeprom_setbit(device, EEPROM_DISABLE_HOP_FRAME, ~bool(enable))
 	
 
