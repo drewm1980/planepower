@@ -1,3 +1,4 @@
 TTY
 *.swp
 *.pyo
+*.pickle

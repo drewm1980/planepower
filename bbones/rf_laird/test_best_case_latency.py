@@ -45,18 +45,21 @@ bestCase = 999999999
 worstCase = -1
 
 def random_sleep():
-	sleep(random.uniform(0,.013)) # up to 13 ms, i.e. the beacon frequency
+	t = random.uniform(0,.015)
+	sleep(t) # up to 13 ms, i.e. the beacon frequency
+	return t
 
 # The choice of sender doesn't seem to make a difference:
 #sender,reciever=ser1,ser2
 sender,reciever=ser2,ser1
 
-trials = 128
+trials = 256
 latencies = numpy.ones(trials)*numpy.nan
+sleeptimes = numpy.ones(trials)*numpy.nan
 for i in xrange(trials):
 	reciever.flushInput()
 	msg=randomword(msg_bytes)
-	random_sleep()
+	sleeptimes[i] = random_sleep() * 1000.
 	t1 = time()
 	sender.write(msg)
 	sender.flushOutput()
@@ -78,4 +81,8 @@ print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Median: 
 
 ser1.close()
 ser2.close()
+
+import pickle
+foo = sleeptimes,latencies
+pickle.dump(foo,open('latencies.pickle','wb'))
 
