@@ -10,12 +10,14 @@ import string
 from time import time, sleep
 import numpy
 
+timeout = .015 # s
 ser1 = serial.Serial(
 		port='/dev/ttyO2',
 		baudrate=115200,
 		parity=serial.PARITY_NONE,
 		stopbits=serial.STOPBITS_ONE,
-		bytesize=serial.EIGHTBITS
+		bytesize=serial.EIGHTBITS,
+		timeout=timeout
 		)
 ser1.open()
 ser2 = serial.Serial(
@@ -23,7 +25,8 @@ ser2 = serial.Serial(
 		baudrate=115200,
 		parity=serial.PARITY_NONE,
 		stopbits=serial.STOPBITS_ONE,
-		bytesize=serial.EIGHTBITS
+		bytesize=serial.EIGHTBITS,
+		timeout=timeout
 		)
 ser2.open()
 
@@ -44,26 +47,37 @@ def randomword(length):
 bestCase = 999999999
 worstCase = -1
 
-def random_sleep():
-	t = random.uniform(0,.015)
-	sleep(t) # up to 13 ms, i.e. the beacon frequency
-	return t
+sleeptimes = numpy.linspace(0,15,16)
+sleeptimes = numpy.linspace(4.0,6.0,16)
+sleeptimes = numpy.linspace(6.0,7.0,10)
+sleeptimes = numpy.linspace(6,6.5,4)
+sleeptimes = numpy.repeat(sleeptimes,64)
 
 # The choice of sender doesn't seem to make a difference:
 #sender,reciever=ser1,ser2
 sender,reciever=ser2,ser1
 
-trials = 256
+trials = len(sleeptimes)
+print "Will do " + str(trials) + " trials"
 latencies = numpy.ones(trials)*numpy.nan
-sleeptimes = numpy.ones(trials)*numpy.nan
-for i in xrange(trials):
+i = 0
+recieved = 0
+dropped = 0
+while i<trials:
 	reciever.flushInput()
 	msg=randomword(msg_bytes)
-	sleeptimes[i] = random_sleep() * 1000.
+
+	sleep(sleeptimes[i]*.001)
+
 	t1 = time()
 	sender.write(msg)
 	sender.flushOutput()
 	response = reciever.read(len(msg))
+	if not (msg == response):
+		print "Error in packet transmission!"
+		dropped += 1
+		continue
+	recieved += 1
 	t2 = time()
 	latency = (t2-t1)*1000 # ms
 	latencies[i] = latency
@@ -76,8 +90,11 @@ for i in xrange(trials):
 	if updated:
 		print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Last: " + str(latency) + " Worst: " + str(worstCase)
 		updated = 0
+	i += 1
 
 print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Median: " + str(numpy.median(latencies)) + " Worst: " + str(worstCase)
+
+print "Recieved: " + str(recieved) + " Dropped: " + str(dropped)
 
 ser1.close()
 ser2.close()
