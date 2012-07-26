@@ -3,9 +3,11 @@
 *.swp
 bin
 lib
+build
 .tb_history
 Makefile
-
+octave-core
+mainpage.dox
 
 *.uxf
 *.tex

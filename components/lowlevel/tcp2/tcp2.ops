@@ -1,0 +1,30 @@
+#Import libraries
+import("tcp2")
+
+#Create components
+loadComponent("tcpClient","Tcp2")
+
+#Load properties
+loadService("tcpClient","marshalling")
+tcpClient.marshalling.loadProperties("../../../properties/tcp.cpf")
+
+#Set activities
+setActivity("tcpClient",0.002,HighestPriority,ORO_SCHED_RT)
+
+tcpClient.configure()
+tcpClient.start()
+
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+
+connectPeers("reporter","tcpClient")
+
+#reporter.reportPort("tcpClient","data")
+reporter.reportPort("tcpClient","data1")
+ 
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "data.dat"
+ 
+reporter.configure()
+#reporter.start()
