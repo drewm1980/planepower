@@ -1,0 +1,14 @@
+.svn
+*.log
+*.swp
+bin
+lib
+.tb_history
+Makefile
+
+
+*.uxf
+*.tex
+*.pdf
+bugs
+types
