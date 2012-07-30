@@ -1,0 +1,20 @@
+<package>
+  <description brief="segFaulter">
+
+	  segFaulter.
+	  Try to produce a seg Fault when the component is run.
+	  For testing code that catches segFaults (in an attempt
+	  to prevent the plane from crashing during segFault)
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/segFaulter</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>

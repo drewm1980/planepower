@@ -1,0 +1,13 @@
+<package>
+  <description brief="reinsertCameras">
+
+     reinsertCameras
+
+  </description>
+  <author>planepower</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/reinsertCameras</url>
+
+
+</package>

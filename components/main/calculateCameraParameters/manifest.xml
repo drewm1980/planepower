@@ -1,0 +1,30 @@
+<package>
+  <description brief="calculateCameraParameters">
+
+	  calculateCameraParameters.  
+	  "sheet" = printed checkerboard
+	  Takes in pose from sheet to camera and sheet to world,
+	  and computes camera -> world pose by averaging over different
+	  poses.
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/calculateCameraParameters</url>
+
+<depend package="rtt" />
+<depend package="rtt_ros_integration"/>
+<depend package="rtt_ros_integration_std_msgs"/>
+<depend package="rtt_ros_param"/>
+<depend package="ocl" />
+<depend package="bfl" />
+<depend package="kdl" />
+<depend package="opencv2"/>
+<depend package="visionToolkit"/>
+<depend package="roscpp"/>
+<depend package="geometry_msgs"/>
+<depend package="std_srvs"/>
+<depend package="sensor_msgs"/>
+<depend package="camera_calibration_parsers"/>
+</package>

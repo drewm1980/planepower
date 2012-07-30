@@ -1,0 +1,15 @@
+#Import libraries
+import("LEDTrackerSimulator")
+ 
+#Create components
+loadComponent("LEDTrackerSimulator","OCL::LEDTrackerSimulator")
+ 
+#Load properties
+loadService("LEDTrackerSimulator","marshalling")
+LEDTrackerSimulator.marshalling.loadProperties("../../../properties/LEDTrackerSimulator/LEDTrackerSimulator.cpf")
+ 
+#Set activities
+setActivity("LEDTrackerSimulator",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+LEDTrackerSimulator.configure()
+LEDTrackerSimulator.start()

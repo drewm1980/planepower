@@ -1,0 +1,24 @@
+<package>
+  <description brief="cameraTrigger">
+
+	This component commands the ebox/soem to 
+	pulse the external trigger pins on the cameras.
+
+	It pulses in it's updateHook(), and the two intended uses are:
+	* Triggered by orocos 
+		(set period via the setActivity call in .ops script)
+	* Triggered by another component
+		(send a message to the event port "clock" with a timestamp)
+
+  </description>
+  <author>Andrew Wagner</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cameraTrigger</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>

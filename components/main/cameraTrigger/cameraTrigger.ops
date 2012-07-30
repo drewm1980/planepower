@@ -1,0 +1,24 @@
+#Import libraries
+import("cameraTrigger")
+import("soem_master")
+import("soem_ebox")
+ 
+#Create components
+loadComponent("cameraTrigger","OCL::CameraTrigger")
+loadComponent("soemMaster","soem_master::SoemMasterComponent") 
+ 
+#Load properties
+#loadService("cameraTrigger","marshalling")
+#cameraTrigger.marshalling.loadProperties("../../../properties/cameraTrigger/cameraTrigger.cpf")
+soemMaster.ifname = "eth1"
+ 
+#Set activities
+setActivity("cameraTrigger",0.1,HighestPriority,ORO_SCHED_RT)
+setActivity("soemMaster",0.01,HighestPriority,ORO_SCHED_RT)
+
+connectPeers("cameraTrigger","soemMaster")
+ 
+soemMaster.configure()
+soemMaster.start() 
+cameraTrigger.configure()
+cameraTrigger.start()

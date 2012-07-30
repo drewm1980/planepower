@@ -1,0 +1,15 @@
+#Import libraries
+import("safeStopper")
+ 
+#Create components
+loadComponent("safeStopper","OCL::safeStopper")
+ 
+#Load properties
+loadService("safeStopper","marshalling")
+safeStopper.marshalling.loadProperties("../../../properties/safeStopper/safeStopper.cpf")
+ 
+#Set activities
+setActivity("safeStopper",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+safeStopper.configure()
+safeStopper.start()

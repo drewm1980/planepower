@@ -1,0 +1,43 @@
+#Import libraries
+import("mcuHandler")
+import("masterTimer")
+
+#Create components
+loadComponent("mcuHandler","McuHandler")
+loadComponent("masterTimer","OCL::MasterTimer")
+
+#Load properties
+loadService("mcuHandler","marshalling")
+mcuHandler.marshalling.loadProperties("../../../properties/tcp.cpf")
+mcuHandler.useExternalTrigger = true
+loadService("masterTimer","marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+
+#Set activities
+setActivity("mcuHandler",0,HighestPriority,ORO_SCHED_RT)
+var double base_hz = masterTimer.imu_target_hz;
+setActivity("masterTimer",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+
+#Connect ports
+var ConnPolicy cp
+connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
+
+
+mcuHandler.configure()
+mcuHandler.start()
+masterTimer.configure()
+masterTimer.start()
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+
+connectPeers("reporter","mcuHandler")
+
+reporter.reportPort("mcuHandler","imuTimeStamp")
+reporter.reportPort("mcuHandler","imuData")
+ 
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "data.dat"
+ 
+reporter.configure()
+#reporter.start()

@@ -1,5 +1,19 @@
 
 
 aviOutputStreamer
-cameraCapture
 checkCameraCalibration
+EPOS
+epos_server
+libEPOS
+loadVideo
+newmat
+orocosEPOS2
+soem
+visionToolkit
+writeImage
+captureCamera
+eboxTest
+epos2
+loadImage
+orocosEPOS
+tcp2
