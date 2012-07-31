@@ -1,0 +1,18 @@
+<package>
+  <description brief="cameraSimulator">
+
+	  cameraSimulator.  Simulate the behavior of the camera subsystem,
+	  including delays and noise.
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cameraSimulator</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>

@@ -1,0 +1,18 @@
+<package>
+  <description brief="winchControl">
+
+     winchControl
+
+  </description>
+  <author>Kurt</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/winchControl</url>
+
+<depend package="rtt_rosnode" />
+<depend package="rtt_std_msgs" />
+<depend package="rtt_rosnode" />
+<depend package="rtt" />
+<depend package="ocl" />
+<depend package="epos2" />
+</package>

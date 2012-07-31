@@ -1,0 +1,20 @@
+<package>
+  <description brief="planeSimulator">
+
+     The planeSimulator component
+     Model: controls are the tether and carousel acceleration + control surface time derivative
+
+  </description>
+  <author>planepower</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/planeSimulator</url>
+
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+
+</package>

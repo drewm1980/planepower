@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="boardWidth" type="double"><description>number of internal corners in width</description><value>6</value></simple>
+  <simple name="boardHeight" type="double"><description>number of internal corners in heigth</description><value>8</value></simple>
+  <simple name="squareSize" type="double"><description>size of square of the chessboard pattern</description><value>0.0300</value></simple>
+  <simple name="detectorSearchRadius" type="double"><description>radius for checkboard detector</description><value>5</value></simple>
+  <simple name="imageDirectory" type="string"><description>directory containing images for calibration</description><value>imagesLeft</value></simple>
+</properties>

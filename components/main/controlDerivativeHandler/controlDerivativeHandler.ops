@@ -1,0 +1,15 @@
+#Import libraries
+import("controlDerivativeHandler")
+ 
+#Create components
+loadComponent("controlDerivativeHandler","OCL::controlDerivativeHandler")
+ 
+#Load properties
+loadService("controlDerivativeHandler","marshalling")
+controlDerivativeHandler.marshalling.loadProperties("../../../properties/controlDerivativeHandler/controlDerivativeHandler.cpf")
+ 
+#Set activities
+setActivity("controlDerivativeHandler",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+controlDerivativeHandler.configure()
+controlDerivativeHandler.start()

@@ -1,0 +1,21 @@
+#Import libraries
+import("calculateCameraParamters")
+
+#Create components
+loadComponent("calculateCameraParamters1","OCL::CalculateCameraParameters")
+loadComponent("calculateCameraParamters2","OCL::CalculateCameraParameters")
+
+#Load properties
+loadService("calculateCameraParamters1","marshalling")
+calculateCameraParamters1.marshalling.loadProperties("cpf/calculateCameraParamtersLeft.cpf")
+loadService("calculateCameraParamters2","marshalling")
+calculateCameraParamters2.marshalling.loadProperties("cpf/calculateCameraParamtersRight.cpf")
+
+#Set activities
+setActivity("calculateCameraParamters1",0,HighestPriority,ORO_SCHED_RT)
+setActivity("calculateCameraParamters2",0,HighestPriority,ORO_SCHED_RT)
+
+calculateCameraParamters1.configure()
+calculateCameraParamters1.start()
+calculateCameraParamters2.configure()
+calculateCameraParamters2.start()

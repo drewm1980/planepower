@@ -1,0 +1,31 @@
+#Import libraries
+import("planeSimulatorRframe")
+import("lqrController")
+ 
+#Create components
+loadComponent("sim","OCL::planeSimulatorRframe")
+loadComponent("lqrController","OCL::LqrController")
+ 
+#Set activities
+setActivity("sim",0.0005,HighestPriority,ORO_SCHED_RT)
+setActivity("lqrController",0.05,HighestPriority,ORO_SCHED_RT)
+
+var ConnPolicy cp
+
+connectPeers("lqrController","sim")
+connect("sim.stateOutputPort","lqrController.stateInputPort",cp)
+connect("sim.controlInputPort","lqrController.controlOutputPort",cp)
+
+sim.configure()
+sim.start()
+lqrController.configure()
+lqrController.start()
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter","sim")
+reporter.reportPort("sim","stateOutputPort")
+reporter.ReportFile = "state.dat"
+reporter.NullSample = "nan" 
+reporter.configure()
+#reporter.start()

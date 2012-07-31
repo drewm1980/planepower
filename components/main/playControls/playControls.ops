@@ -1,0 +1,12 @@
+#Import libraries
+import("playControls")
+ 
+#Create components
+loadComponent("playControls","OCL::PlayControls")
+ 
+ 
+#Set activities
+setActivity("playControls",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+playControls.configure()
+playControls.start()

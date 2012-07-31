@@ -1,0 +1,23 @@
+<package>
+  <description brief="measurementsPlayback">
+
+	  measurementsPlayback.  
+	  Play back a stream of measurements recorded by measurementsRecorder.
+
+	  Useful for testing MHE state estimators and (open loop) controllers
+	  on "real" data from the carousel, without having to actually rotate
+	  the carousel.
+	  
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/measurementsPlayback</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>

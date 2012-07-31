@@ -1,0 +1,15 @@
+#Import libraries
+import("measurementsPlayback")
+ 
+#Create components
+loadComponent("measurementsPlayback","OCL::measurementsPlayback")
+ 
+#Load properties
+loadService("measurementsPlayback","marshalling")
+measurementsPlayback.marshalling.loadProperties("../../../properties/measurementsPlayback/measurementsPlayback.cpf")
+ 
+#Set activities
+setActivity("measurementsPlayback",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+measurementsPlayback.configure()
+measurementsPlayback.start()

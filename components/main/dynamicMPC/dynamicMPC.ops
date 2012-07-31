@@ -1,0 +1,24 @@
+import("dynamicMPC")
+
+loadComponent("LoggingService", "OCL::logging::LoggingService")
+setActivity("LoggingService", 0.5, 0, 0)
+
+LoggingService.configure()
+LoggingService.start()
+
+# Set up the MPC component
+loadComponent("dynamicMPC", "DynamicMPC")
+
+dynamicMPC.propFileNameWeightsQ = "../../../properties/mpc_properties/CG_Q.txt"
+dynamicMPC.propFileNameWeightsR = "../../../properties/mpc_properties/CG_R.txt"
+dynamicMPC.propFileNameWeightsQF = "../../../properties/mpc_properties/CG_Qf.txt"
+dynamicMPC.propRefDefaultFileName = "../../../properties/mpc_properties/H2Xref.dat"
+
+# Set up non-periodic activity
+setActivity("dynamicMPC", 0.0, HighestPriority, ORO_SCHED_RT)
+
+# Configuring components
+dynamicMPC.configure()
+
+# Starting components
+dynamicMPC.start()

@@ -1,0 +1,17 @@
+<package>
+  <description brief="controlDerivativeHandler">
+
+     controlDerivativeHandler
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/controlDerivativeHandler</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>

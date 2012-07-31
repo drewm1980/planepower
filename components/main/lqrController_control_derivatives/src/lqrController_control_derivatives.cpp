@@ -1,0 +1,150 @@
+#include "lqrController_control_derivatives.hpp"
+#include <ocl/Component.hpp>
+
+ORO_CREATE_COMPONENT( OCL::LqrController_control_derivatives )
+
+using namespace std;
+using namespace RTT;
+using namespace Orocos;
+using namespace BFL;
+
+namespace OCL
+{
+     LqrController_control_derivatives::LqrController_control_derivatives(std::string name) : TaskContext(name)
+	 {
+		ports()->addPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
+					 ",dx,dy,dz"
+					 ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
+					 ",w1,w2,w3"
+					 ",delta,ddelta,ur,up"); // We ONLY use the first 18 and lost 2 states from this.
+
+		ports()->addPort( "controlOutputPort",_controlOutputPort ).doc("ua1,ua2,ue");
+		ports()->addPort( "errorOutputPort",_errorOutputPort ).doc("Same size as X and Xref");
+		ports()->addPort( "Xref",_Xref ).doc("The Xref that is currently being used");
+		ports()->addPort( "Uref",_Uref ).doc("The Uref that is currently being used");
+		ports()->addPort( "K",_K ).doc("Gain Matrix that is currently being applied");
+
+		ports()->addEventPort( "mhePortReady",_mhePortReady ).doc("For checking if the MHE port is ready");
+
+		provides()->addOperation("loadGains",&LqrController_control_derivatives::loadGains,this).doc("Reload LQR gains and refernces.");
+		addProperty("dt",dt).doc("time step");
+		dt = 0.1;
+
+		X.resize(NSTATES,0.0);
+		Xref.resize(NSTATES,0.0);
+		U.resize(NOUTPUTS,0.0); // three, to match our output size.
+		dU.resize(NOUTPUTS,0.0); // three, to match our output size.
+		Uref.resize(NOUTPUTS,0.0); // only two, to match the file we read in!
+		U_scaled.resize(NOUTPUTS,0.0);
+		E.resize(NSTATES,0.0);
+		K.resize(2*KSTATES,0.0);
+	 }
+
+	 void LqrController_control_derivatives::loadVectorFromDat(const char* filename, vector<double> &V)
+	 {
+		 ifstream inFile;
+		 inFile.open(filename, ios::in);
+		 if(!inFile)
+		 {
+			 cout <<  "(lqrController_control_derivatives): Unable to read in vector from " << filename << endl;
+		 } else {
+			 for(unsigned int i=0; i<V.size(); i++)
+			 {
+				 inFile >> V[i];
+			 }
+		 }
+		 inFile.close();
+	 };
+
+	 void LqrController_control_derivatives::loadGains()
+	 {
+		 loadVectorFromDat(XREF_FILENAME,Xref);
+		 loadVectorFromDat(UREF_FILENAME,Uref);
+		 loadVectorFromDat(K_FILENAME,K);
+		 stop();
+	 }
+
+    LqrController_control_derivatives::~LqrController_control_derivatives()
+    {
+    }
+
+    bool  LqrController_control_derivatives::configureHook()
+    {
+		loadGains();
+		_controlOutputPort.write(U);
+        
+        return true;
+     }
+
+    bool  LqrController_control_derivatives::startHook()
+    {
+        return true;
+    }
+			
+    void  LqrController_control_derivatives::updateHook()
+    {
+		// Write the gains and references we're using
+		// for online debugging, especially if they're changed during flight.
+		_Xref.write(Xref);
+		_Uref.write(Uref);
+		_K.write(K);   
+
+		//checking is if MHE is ready
+		_mhePortReady.read(mhePortReady);
+		if (mhePortReady == true)
+		{
+			_stateInputPort.read(X);
+			X[20] = U[0];
+			X[21] = U[2];
+			for(unsigned int i=0; i<X.size(); i++)	
+			{
+				E[i]=X[i]-Xref[i];
+			}
+
+			// Compute U = -E*K + Uref
+			dU[0]=0;
+			dU[1]=0;
+			dU[2]=0;
+			for(unsigned int i=0; i<KSTATES-2; i++)	
+			{
+				dU[0] += -E[i]*K[i];
+				dU[2] += -E[i]*K[i+KSTATES];
+			}
+			for(unsigned int i=0; i<2; i++)	// Also for control values
+			{
+				dU[0] += -E[KSTATES+i]*K[KSTATES-2+i];
+				dU[2] += -E[KSTATES+i]*K[KSTATES-2+i+KSTATES];
+			}
+			dU[0] += Uref[0];
+			dU[2] += Uref[1];
+			 // Now we have control derivative. Compute now the actual control action via first order euler
+			U[0] = X[20] + dt*dU[0];
+			U[1] = U[0]; // We aren't doing differential ailerons, so need to duplicate other aileron value.
+			U[2] = X[21] + dt*dU[2];
+			//U[0] += dt*dU[0];
+			//U[1] = U[0]; // We aren't doing differential ailerons, so need to duplicate other aileron value.
+			//U[2] += dt*dU[2];
+
+			U_scaled[0] = U[0]*SCALE_UR;
+			U_scaled[1] = U[1]*SCALE_UR;
+			U_scaled[2] = U[2]*SCALE_UP;
+
+			_errorOutputPort.write(E);
+			_controlOutputPort.write(U_scaled); // Stuff should trigger on this
+		}
+    }
+
+    void  LqrController_control_derivatives::stopHook()
+    {
+		U[0] = 0.0;
+		U[1] = 0.0;
+		U[2] = 0.0;
+		_controlOutputPort.write(U);
+    }
+
+    void  LqrController_control_derivatives::cleanUpHook()
+    {
+    }
+
+}//namespace
+
