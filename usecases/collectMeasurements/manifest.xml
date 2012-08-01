@@ -1,0 +1,12 @@
+<package>
+  <description brief="collectMeasurements">
+
+     collectMeasurements
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/calibrationProcedure</url>
+
+</package>

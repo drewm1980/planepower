@@ -1,0 +1,100 @@
+#Import libraries
+
+
+import("tcp2")
+import("soem_master")
+import("soem_ebox")
+import("voltageController")
+import("LEDTracker")
+import("cameraTrigger")
+import("encoder")
+ 
+#Create components
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+loadComponent("voltageController","OCL::VoltageController")
+loadComponent("tcpClient","Tcp2")
+
+loadComponent("LEDTracker","OCL::LEDTracker")
+loadComponent("encoder","OCL::Encoder")
+#cameraTrigger
+loadComponent("cameraTrigger","OCL::CameraTrigger")
+ 
+#Load properties
+
+soemMaster.ifname = "eth1"
+encoder.encoderPort = 0;
+loadService("tcpClient","marshalling")
+tcpClient.marshalling.loadProperties("../../properties/tcp.cpf")
+
+
+ 
+#Set activities
+
+setActivity("soemMaster",0.00125,HighestPriority,ORO_SCHED_RT)
+setActivity("voltageController",0.00125,HighestPriority,ORO_SCHED_RT)
+setActivity("LEDTracker",0.00,HighestPriority,ORO_SCHED_RT)
+setActivity("encoder",0.00125,HighestPriority,ORO_SCHED_RT)
+setActivity("tcpClient",0.00125,HighestPriority,ORO_SCHED_RT)
+# We can get ~almost 15 Hz with the external trigger...
+#setActivity("cameraTrigger",1.0,HighestPriority,ORO_SCHED_RT)
+setActivity("cameraTrigger",0.06,HighestPriority,ORO_SCHED_RT)
+
+#Connect peers
+connectPeers("voltageController","soemMaster")
+connectPeers("encoder","soemMaster")
+
+LEDTracker.useExternalTrigger=true;
+LEDTracker.configure()
+LEDTracker.start() 
+
+soemMaster.configure()
+soemMaster.start() 
+
+voltageController.configure()
+voltageController.start()
+
+encoder.configure()
+encoder.start()
+
+tcpClient.configure()
+tcpClient.start()
+
+
+
+
+connectPeers("cameraTrigger","soemMaster")
+cameraTrigger.configure()
+cameraTrigger.start()
+
+var ConnPolicy cp
+
+
+
+
+
+
+
+
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+ 
+connect("encoder.delta","tcpClient.delta",cp)
+connect("encoder.omega","tcpClient.ddelta",cp)
+connectPeers("reporter","tcpClient")
+connectPeers("reporter","encoder")
+connectPeers("reporter","LEDTracker")
+
+reporter.reportPort("tcpClient","IMUData_vector")
+reporter.reportPort("LEDTracker","markerPositions")
+#reporter.reportPort("encoder","delta")
+#reporter.reportPort("encoder","omega")
+
+ 
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "data_a.dat"
+
+reporter.NullSample = "nan" 
+ 
+reporter.configure()
+#reporter.start()

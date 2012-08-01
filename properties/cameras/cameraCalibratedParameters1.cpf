@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="measurements_file" type="string"><description>text file containing the pose measurements of the calibration sheet</description><value>poseSheet.txt</value></simple>
+  <simple name="rotFile" type="string"><description>CV Mat xml file containing the camera extrinsics rotation</description><value>rightImagesrot.xml</value></simple>
+  <simple name="transFile" type="string"><description>CV Mat xml file containing the camera extrinsics translations</description><value>rightImagestrans.xml</value></simple>
+  <simple name="projectionMatrixFile" type="string"><description>CV Mat xml file containing the camera projection matrix</description><value>rightImagesK_cv.xml</value></simple>
+  <simple name="X" type="double"><description>X Value</description><value>-0.4955024924321795865012064</value></simple>
+  <simple name="Y" type="double"><description>Y Value</description><value>-1.513766326109631688012769</value></simple>
+  <simple name="Z" type="double"><description>Z Value</description><value>-0.02069673403967600688879713</value></simple>
+  <simple name="Roll" type="double"><description>First rotate around X with R(oll) in radians</description><value>-1.009792440877724573056184</value></simple>
+  <simple name="Pitch" type="double"><description>Next rotate around old Y with P(itch) in radians</description><value>-1.539996795266836082660689</value></simple>
+  <simple name="Yaw" type="double"><description>Next rotate around old Z with Y(aw) in radians</description><value>-1.447108936181347171867628</value></simple>
+  <simple name="P11" type="double"><description>1th element of vector</description><value>1771.698228225014190684306</value></simple>
+  <simple name="P12" type="double"><description>2th element of vector</description><value>0</value></simple>
+  <simple name="P13" type="double"><description>3th element of vector</description><value>799.5</value></simple>
+  <simple name="P21" type="double"><description>1th element of vector</description><value>0</value></simple>
+  <simple name="P22" type="double"><description>2th element of vector</description><value>1716.129015585061097226571</value></simple>
+  <simple name="P23" type="double"><description>3th element of vector</description><value>599.5</value></simple>
+  <simple name="P31" type="double"><description>1th element of vector</description><value>0</value></simple>
+  <simple name="P32" type="double"><description>2th element of vector</description><value>0</value></simple>
+  <simple name="P33" type="double"><description>3th element of vector</description><value>1</value></simple>
+</properties>

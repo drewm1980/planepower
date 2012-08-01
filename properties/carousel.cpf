@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="carousel_height" type="double"><description>The covariance of the acceleration measurements</description><value>0.0315</value></simple>
+  <simple name="carousel_arm_length" type="double"><description>The covariance of the rotation measurements</description><value>0.0063</value></simple>
+  <simple name="tether_length" type="double"><description>The covariance of the camera measurements</description><value>1.0</value></simple>
+</properties>

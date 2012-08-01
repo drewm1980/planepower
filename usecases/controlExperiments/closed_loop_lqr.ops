@@ -1,0 +1,109 @@
+#Import libraries
+import("soem_master")
+import("soem_ebox")
+import("encoder")
+import("voltageController")
+ 
+#Create components
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+loadComponent("encoder","OCL::Encoder")
+loadComponent("voltageController","OCL::VoltageController")
+ 
+#Load properties
+soemMaster.ifname = "eth1"
+encoder.encoderPort = 0;
+ 
+#Set activities
+setActivity("soemMaster",0.010,HighestPriority,ORO_SCHED_RT)
+setActivity("encoder",0.000125,HighestPriority,ORO_SCHED_RT)
+setActivity("voltageController",0.010,HighestPriority,ORO_SCHED_RT)
+
+#Connect peers
+connectPeers("encoder","soemMaster")
+connectPeers("voltageController","soemMaster")
+
+#Connect ports
+var ConnPolicy cp
+ 
+soemMaster.configure()
+soemMaster.start()
+encoder.configure()
+encoder.start()
+voltageController.configure()
+voltageController.start()
+
+#Ledtracker
+import("LEDTracker")
+loadComponent("LEDTracker","OCL::LEDTracker")
+LEDTracker.configure()
+#LEDTracker.start()
+
+#tcp client
+import("tcp2")
+loadComponent("tcpClient","Tcp2")
+loadService("tcpClient","marshalling")
+tcpClient.marshalling.loadProperties("../../properties/tcp.cpf")
+setActivity("tcpClient",0.00125,HighestPriority,ORO_SCHED_RT)
+tcpClient.configure()
+tcpClient.start()
+
+
+#estimator
+
+import("kalmanFilter")
+
+loadComponent("estimator","OCL::KalmanFilter")
+setActivity("estimator",0,HighestPriority,ORO_SCHED_RT)
+
+
+connect("estimator.delta","encoder.delta",cp)
+connect("estimator.ddelta","encoder.omega",cp)
+connect("estimator.imuData","tcpClient.IMUData_vector",cp)
+connect("estimator.controlInputport","tcpClient.controlOutputPort",cp)
+connect("estimator.markerPositions","LEDTracker.markerPositions",cp)
+
+estimator.configure()
+#estimator.start()
+
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+
+loadComponent("reporter1","OCL::FileReporting")
+setActivity("reporter1",0.0,HighestPriority,ORO_SCHED_RT)
+ 
+connectPeers("reporter","estimator")
+connectPeers("reporter","LEDTracker")
+connectPeers("reporter1","estimator")
+connectPeers("reporter1","LEDTracker")
+
+#reporter.reportPort("encoder","delta")
+#reporter.reportPort("encoder","omega")
+#reporter.reportPort("estimator","CamData")
+#reporter.reportPort("estimator","data")
+#reporter.reportPort("estimator","state")
+reporter.reportPort("estimator","stateOutput")
+reporter1.reportPort("LEDTracker","markerPositions")
+
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "data.dat"
+reporter1.ReportFile = "data1.dat"
+ 
+reporter.configure()
+#reporter.start()
+reporter.NullSample = "nan" 
+reporter1.NullSample = "nan" 
+reporter1.configure
+
+import("lqrController")
+loadComponent("lqrController","OCL::LqrController")
+setActivity("lqrController",0.05,HighestPriority,ORO_SCHED_RT)
+
+connectPeers("lqrController","estimator")
+connectPeers("lqrController","tcpClient")
+connect("lqrController.stateInputPort","estimator.stateOutput",cp)
+connect("lqrController.controlOutputPort","tcpClient.controlInputPort",cp)
+lqrController.configure()
+
+
+

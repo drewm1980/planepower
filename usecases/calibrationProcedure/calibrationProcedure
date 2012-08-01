@@ -1,0 +1,26 @@
+#!/bin/sh
+$MYOROCOSCOMPONENTS/usecases/common.sh
+echo "this will delete all previous images okay?"
+echo "Do you wish to proceed <y or n> ? \c"
+read WISH
+echo
+
+if [ $WISH = "n" ] ; then
+echo "you chose no, good bye"
+exit
+fi
+
+if [ ! $WISH = "y" ] ; then
+echo "invalid option - exiting"
+exit
+fi 
+
+#cleanup our previous mess
+rm -rf leftImages
+rm -rf rightImages
+
+#let's get some images
+#rosrun ocl-1.10 deployer-corba-gnulinux -s getImages.xml -- -ORBInitRef NameService=corbaloc::10.33.174.161/NameService
+#rosrun ocl-1.10 deployer-gnulinux -s getImages.xml --path="$MYOROCOSCOMPONENTS"
+rosrun ocl deployer-gnulinux -linfo -s writeImage.ops
+echo "getImages Completed"

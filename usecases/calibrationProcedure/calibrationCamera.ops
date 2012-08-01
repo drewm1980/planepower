@@ -1,0 +1,21 @@
+#Import libraries
+import("calibrationCamera")
+
+#Create components
+loadComponent("cameraCalibrator1","OCL::Calibrator")
+loadComponent("cameraCalibrator2","OCL::Calibrator")
+
+#Load properties
+loadService("cameraCalibrator1","marshalling")
+cameraCalibrator1.marshalling.loadProperties("cpf/cameraCalibratorLeft.cpf")
+loadService("cameraCalibrator2","marshalling")
+cameraCalibrator2.marshalling.loadProperties("cpf/cameraCalibratorRight.cpf")
+
+#Set activities
+setActivity("cameraCalibrator1",0,HighestPriority,ORO_SCHED_RT)
+setActivity("cameraCalibrator2",0,HighestPriority,ORO_SCHED_RT)
+
+cameraCalibrator1.configure()
+cameraCalibrator1.start()
+cameraCalibrator2.configure()
+cameraCalibrator2.start()

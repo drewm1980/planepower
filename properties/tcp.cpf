@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+
+  <simple name="HostName" type="string">
+	<description>Name of host to connect to, either FQDN or IPv4 address</description>
+	<!-- localhost ONLY -->
+	<value>192.168.1.123</value>
+  </simple>
+
+  <simple name="HostPort" type="short">
+	<description>Port of host to connect to (1024-65535 inclusive)</description>
+	<value>8003</value>
+  </simple>
+
+  <simple name="ConnectionTimeout" type="short">
+	<description>Timeout in seconds, when waiting for connection</description>
+	<value>5</value>
+  </simple>
+
+  <simple name="ReadTimeout" type="short">
+	<description>Timeout in seconds, when waiting for read</description>
+	<value>5</value>
+  </simple>
+
+</properties>
+

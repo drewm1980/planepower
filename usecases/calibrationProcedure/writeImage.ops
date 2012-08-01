@@ -1,0 +1,35 @@
+#Import libraries
+import("captureCamera")
+import("writeImage")
+
+#Create components
+loadComponent("camera1","OCL::CaptureCamera")
+loadComponent("Cam_1_Write","OCL::WriteImage")
+loadComponent("camera2","OCL::CaptureCamera")
+loadComponent("Cam_2_Write","OCL::WriteImage")
+
+#Load properties
+loadService("camera1","marshalling")
+camera1.marshalling.loadProperties("../../properties/cameras/cam1.cpf")
+loadService("camera2","marshalling")
+camera2.marshalling.loadProperties("../../properties/cameras/cam2.cpf")
+
+#Set activities
+setActivity("camera1",0.0666,HighestPriority,ORO_SCHED_RT)
+setActivity("Cam_1_Write",0,HighestPriority,ORO_SCHED_RT)
+setActivity("camera2",0.0666,HighestPriority,ORO_SCHED_RT)
+setActivity("Cam_2_Write",0,HighestPriority,ORO_SCHED_RT)
+
+camera1.configure()
+camera1.start()
+camera2.configure()
+camera2.start()
+
+var ConnPolicy cp
+connect("Cam_1_Write.GrayImage","camera1.RgbImage",cp)
+connect("Cam_2_Write.GrayImage","camera2.RgbImage",cp)
+
+Cam_1_Write.configure()
+Cam_1_Write.start()
+Cam_2_Write.configure()
+Cam_2_Write.start()

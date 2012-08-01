@@ -1,0 +1,22 @@
+#make  new directories and move the new images into it
+#mkdir -p leftImages
+#mv Cam_1* leftImages
+#mkdir -p rightImages
+#mv Cam_2* rightImages
+#echo "Images Moved"
+
+#scp acm@10.33.174.161:/home/acm/packages/robotics-application/motionControl/iTaSC/demos/cartesian_constraints/report.txt .
+#sed '1d' report.txt > poseSheet.txt
+
+rm leftImagesrot.xml
+rm leftImagestrans.xml
+rm rightImagesrot.xml
+rm rightImagestrans.xml
+
+#calibrate the camera
+rosrun ocl deployer-gnulinux -linfo -s calibrationCamera.ops
+echo "calibrationCameras Completed"
+
+rosrun ocl deployer-gnulinux -s calculateCameraParameters.ops
+
+echo "calibrationCameras Completed"

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+  <simple name="deviceNumber" type="int"><description>deviceNumber as in /dev/comediX</description><value>1</value></simple>
+  <simple name="period" type="double"><description>period as in robustEncoder.xml</description><value>0.01</value></simple>
+  <simple name="nopulses" type="double"><description>number of pulses per revolution of the encoder</description><value>1024</value></simple>
+  <simple name="gearratio" type="double"><description>gearratio between the encoder and the driven shart</description><value>32.8</value></simple>
+</properties>
+
