@@ -1,3 +1,4 @@
 [submodule "components/lowlevel/soem"]
 	path = components/lowlevel/soem
 	url = http://git.mech.kuleuven.be/robotics/soem.git
+        ignore = dirty
