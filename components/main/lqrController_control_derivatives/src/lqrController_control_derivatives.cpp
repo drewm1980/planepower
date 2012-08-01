@@ -18,6 +18,7 @@ namespace OCL
 					 ",w1,w2,w3"
 					 ",delta,ddelta,ur,up"); // We ONLY use the first 18 and lost 2 states from this.
 
+		ports()->addPort( "controlInputPort",_controlInputPort ).doc("ua1,ua2,ue");
 		ports()->addPort( "controlOutputPort",_controlOutputPort ).doc("ua1,ua2,ue");
 		ports()->addPort( "errorOutputPort",_errorOutputPort ).doc("Same size as X and Xref");
 		ports()->addPort( "Xref",_Xref ).doc("The Xref that is currently being used");
@@ -37,30 +38,15 @@ namespace OCL
 		Uref.resize(NOUTPUTS,0.0); // only two, to match the file we read in!
 		U_scaled.resize(NOUTPUTS,0.0);
 		E.resize(NSTATES,0.0);
-		K.resize(2*KSTATES,0.0);
+		K.resize(2);
+		K[0].resize(KSTATES,0.0);
+		K[1].resize(KSTATES,0.0);
 	 }
-
-	 void LqrController_control_derivatives::loadVectorFromDat(const char* filename, vector<double> &V)
-	 {
-		 ifstream inFile;
-		 inFile.open(filename, ios::in);
-		 if(!inFile)
-		 {
-			 cout <<  "(lqrController_control_derivatives): Unable to read in vector from " << filename << endl;
-		 } else {
-			 for(unsigned int i=0; i<V.size(); i++)
-			 {
-				 inFile >> V[i];
-			 }
-		 }
-		 inFile.close();
-	 };
 
 	 void LqrController_control_derivatives::loadGains()
 	 {
 		 loadVectorFromDat(XREF_FILENAME,Xref);
-		 loadVectorFromDat(UREF_FILENAME,Uref);
-		 loadVectorFromDat(K_FILENAME,K);
+		 loadMatrixFromDat(K_FILENAME,K);
 		 stop();
 	 }
 
@@ -94,6 +80,11 @@ namespace OCL
 		if (mhePortReady == true)
 		{
 			_stateInputPort.read(X);
+			// Use the control that we applied at previous sampling time, and not the one that was estimated by the MHE.
+			_controlInputPort.read(U_scaled);
+			U[0] = U_scaled[0]/SCALE_UR;
+			U[1] = U[1]/SCALE_UR;
+			U[2] = U[2]/SCALE_UP;
 			X[20] = U[0];
 			X[21] = U[2];
 			for(unsigned int i=0; i<X.size(); i++)	
@@ -107,23 +98,18 @@ namespace OCL
 			dU[2]=0;
 			for(unsigned int i=0; i<KSTATES-2; i++)	
 			{
-				dU[0] += -E[i]*K[i];
-				dU[2] += -E[i]*K[i+KSTATES];
+				dU[0] += -E[i]*K[0][i];
+				dU[2] += -E[i]*K[1][i];
 			}
 			for(unsigned int i=0; i<2; i++)	// Also for control values
 			{
-				dU[0] += -E[KSTATES+i]*K[KSTATES-2+i];
-				dU[2] += -E[KSTATES+i]*K[KSTATES-2+i+KSTATES];
+				dU[0] += -E[KSTATES+i]*K[0][KSTATES-2+i];
+				dU[2] += -E[KSTATES+i]*K[1][KSTATES-2+i+KSTATES];
 			}
-			dU[0] += Uref[0];
-			dU[2] += Uref[1];
 			 // Now we have control derivative. Compute now the actual control action via first order euler
 			U[0] = X[20] + dt*dU[0];
 			U[1] = U[0]; // We aren't doing differential ailerons, so need to duplicate other aileron value.
 			U[2] = X[21] + dt*dU[2];
-			//U[0] += dt*dU[0];
-			//U[1] = U[0]; // We aren't doing differential ailerons, so need to duplicate other aileron value.
-			//U[2] += dt*dU[2];
 
 			U_scaled[0] = U[0]*SCALE_UR;
 			U_scaled[1] = U[1]*SCALE_UR;
@@ -145,6 +131,50 @@ namespace OCL
     void  LqrController_control_derivatives::cleanUpHook()
     {
     }
+
+	 void LqrController_control_derivatives::loadVectorFromDat(const char* filename, vector<double> &V)
+	 {
+		 ifstream inFile;
+		 inFile.open(filename, ios::in);
+		 if(!inFile)
+		 {
+			 cout <<  "(lqrController_control_derivatives): Unable to read in vector from " << filename << endl;
+		 } else {
+			 for(unsigned int i=0; i<V.size(); i++)
+			 {
+				 inFile >> V[i];
+			 }
+		 }
+		 inFile.close();
+	 };
+
+	void LqrController_control_derivatives::loadMatrixFromDat(const char* filename, vector<vector<double> > &V)
+	{
+		ifstream controlFile( filename );
+		string line;
+		if ( controlFile.is_open() )
+		{
+			while( getline(controlFile, line) )
+			{
+				istringstream linestream( line );
+				vector< double > linedata;
+				double number;
+
+				while( linestream >> number )
+				{
+					linedata.push_back( number );
+				}
+
+				V.push_back( linedata );
+			}
+
+			controlFile.close();
+		}
+		else
+		{
+			cout << "File " << filename << " could not be opened" << endl;
+		}
+	};
 
 }//namespace
 
