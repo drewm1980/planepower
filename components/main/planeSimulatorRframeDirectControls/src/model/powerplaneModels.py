@@ -464,7 +464,7 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     ddyIMU = ddx*e12 + ddy*e22 + ddz*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + dddelta*e22*rA + dddelta*e22*x - dddelta*e12*y - ddelta*ddelta*e12*rA;
     ddzIMU = ddx*e13 + ddy*e23 + ddz*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + dddelta*e23*rA + dddelta*e23*x - dddelta*e13*y - ddelta*ddelta*e13*rA;
     
-    RIMU = np.loadtxt('IMU/RIMU.txt');
+    RIMU = np.loadtxt('IMU/RIMU.dat');
         
     
     aE = SXMatrix([ddxIMU,ddyIMU,ddzIMU]); 
