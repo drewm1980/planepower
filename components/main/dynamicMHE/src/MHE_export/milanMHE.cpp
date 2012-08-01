@@ -851,7 +851,7 @@ int main(int argc, char * const argv[])
 
 
 	Matrix pos_marker_body1_dat = readFromFile(
-			"pos_marker_body1.dat");
+			"CameraCalibration/markers/pos_marker_body1.dat");
 	Matrix pos_marker_body1(4,1);
 	pos_marker_body1(0,0) = pos_marker_body1_dat(0,0);
 	pos_marker_body1(1,0) = pos_marker_body1_dat(1,0);
@@ -859,7 +859,7 @@ int main(int argc, char * const argv[])
 	pos_marker_body1(3,0) = 1.0;
 
 	Matrix pos_marker_body2_dat = readFromFile(
-			"pos_marker_body2.dat");
+			"CameraCalibration/markers/pos_marker_body2.dat");
 	Matrix pos_marker_body2(4,1);
 	pos_marker_body2(0,0) = pos_marker_body2_dat(0,0);
 	pos_marker_body2(1,0) = pos_marker_body2_dat(1,0);
@@ -867,7 +867,7 @@ int main(int argc, char * const argv[])
 	pos_marker_body2(3,0) = 1.0;
 
 	Matrix pos_marker_body3_dat = readFromFile(
-			"pos_marker_body3.dat");
+			"CameraCalibration/markers/pos_marker_body3.dat");
 	Matrix pos_marker_body3(4,1);
 	pos_marker_body3(0,0) = pos_marker_body3_dat(0,0);
 	pos_marker_body3(1,0) = pos_marker_body3_dat(1,0);
