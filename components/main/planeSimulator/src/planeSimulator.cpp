@@ -1,6 +1,6 @@
 #include "planeSimulator.hpp"
 #include <ocl/Component.hpp>
-#include "model/rk4.c"
+#include "model/casadi_functions.cpp"
 
 ORO_CREATE_COMPONENT( OCL::planeSimulator)
 
@@ -113,7 +113,7 @@ namespace OCL
 	_controlInputPort.read(U);
 	copy( U.begin(), U.end(), full_array[1]);\
 	// Apply the control through the model
-	if( evaluate(full_array,X1_big_array) ){printf("Something went wrong: evaulate did not complete succesfully \n");}
+	if( rk4(full_array,X1_big_array) ){printf("Something went wrong: evaulate did not complete succesfully \n");}
 	// Assign the output to array X
 	full_array[0] = X1_big_array[0];
 	// Copy array X to vector X
