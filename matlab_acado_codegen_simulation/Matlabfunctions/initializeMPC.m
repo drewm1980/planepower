@@ -56,6 +56,9 @@ MPC.R1 = MPC.R(2:3,2:3);
 
 % Compute the LQR
 [K,S,e] = lqr(MPC.A,MPC.B,MPC.Q1,MPC.R1);
+[A,B] = c2d(MPC.A,MPC.B,MPC.Ts);
+[K,S,e] = dlqr(A,B,MPC.Q1,MPC.R1);
+
 
 % Add to the terminal cost matrix the missing lines / columns
 MPC.S = [ S(1:18,1:18), zeros(18,2),  S(1:18,19:20);

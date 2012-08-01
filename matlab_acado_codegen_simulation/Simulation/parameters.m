@@ -19,7 +19,7 @@
 
 
 
-		 AQ      =  PI*dc*dc/4.0;
+		 AQ      =  pi*dc*dc/4.0;
 
 
 		%CAROUSEL ARM LENGTH

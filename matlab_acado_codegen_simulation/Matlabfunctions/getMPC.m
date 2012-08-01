@@ -121,6 +121,9 @@ function [MPC,Sim] = getMPC(MPC,Sim)
     MPC.B = MPC.B([1:18,21:22],2:3);
     
     [K,S,e] = lqr(MPC.A,MPC.B,MPC.Q1,MPC.R1);
+    [A,B] = c2d(MPC.A,MPC.B,MPC.Ts);
+    [K,S,e] = dlqr(A,B,MPC.Q1,MPC.R1);
+
     MPC.S = [ S(1:18,1:18), zeros(18,2),  S(1:18,19:20);
                zeros(2,18), 1e-4*eye(2),     zeros(2,2);
              S(19:20,1:18),  zeros(2,2), S(19:20,19:20);];

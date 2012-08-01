@@ -4,12 +4,12 @@ clc
 
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 
-recompileMHE = 0;
-recompileMPC = 0;
+recompileMHE = 1;
+recompileMPC = 1;
 
 % MPC settings
-MPC.Tc = 0.5; % horizon in seconds
-MPC.Ncvp = 5; % number of cvp
+MPC.Tc = 1; % horizon in seconds
+MPC.Ncvp = 10; % number of cvp
 MPC.Ts  = MPC.Tc/MPC.Ncvp; % sampling time
 MPC.Nref = MPC.Ncvp+1; % 500;% % number of elements in the reference file
 % Multiplying factor for the terminal cost
@@ -83,9 +83,22 @@ MHE = initializeMHE(MHE,Sim);
 
 %% Generate the code
 
+%{
+	Call the makefile which will build:
+		- NMPC
+		- MHE
+		_ eq/equilibrium
+		- eq_MHE/equilibrium
+
+	NOTE: This guy internalyl calles CMake
+%}
+!make
 
 if recompileMHE
     % MHE compilation is not yet fully automatic...
+	
+	display(['!./MHE ',num2str(Sim.W0),'     ',num2str(MHE.Ncvp),'     ',num2str(MHE.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
+    eval(['!./MHE ',num2str(Sim.W0),'     ',num2str(MHE.Ncvp),'     ',num2str(MHE.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     
     cd code_export_MHE/
     make_mex
@@ -94,7 +107,7 @@ end
 
 if recompileMPC
     % Compile the ACADO NMPC code
-    !make NMPC
+%     !make NMPC
     
     % Export the code
     display(['!./NMPC ',num2str(Sim.W0),'     ',num2str(MPC.Ncvp),'     ',num2str(MPC.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);

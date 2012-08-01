@@ -111,6 +111,8 @@ int main( int argc, char * const argv[] )
 	mpc.set( GENERATE_TEST_FILE,          YES            );
 	mpc.set( GENERATE_SIMULINK_INTERFACE, YES );
 	mpc.set( GENERATE_MAKE_FILE,          NO            );
+	
+	mpc.set( CG_USE_C99,    YES              );
 
 	mpc.exportCode( "code_export_MPC" );
 	mpc.printDimensionsQP();

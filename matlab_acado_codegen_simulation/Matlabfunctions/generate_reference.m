@@ -52,7 +52,7 @@ end
 
 delta = 0;
 cd eq
-!make equilibrium
+% !make equilibrium
 eval(['!./equilibrium ',num2str(z),'     ',num2str(r),'     ',num2str(delta),'     ',num2str(ddelta)]);
 cd ..
 
