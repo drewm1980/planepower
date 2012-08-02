@@ -69,6 +69,11 @@ loadService("mcuHandler","marshalling")
 mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.useExternalTrigger = true
 
+# MHE
+dynamicMHE.propNumSQPIterations = 3
+loadService("dynamicMHE", "marshalling")
+dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
+
 # SOEM
 soemMaster.ifname = "eth1"
 
@@ -172,7 +177,8 @@ connect("dynamicMHE.portStateEstimate","lqrController.stateInputPort",cp)
 connect("dynamicMHE.portReady","lqrController.mhePortReady",cp)
 
 # FEEDBACK!!!!!
-#connect("lqrController.controlOutputPort",	"mcuHandler.controlInputPort",cp)
+connect("lqrController.controlInputport","mcuHandler.controlOutputPort",cp)
+connect("lqrController.controlOutputPort","mcuHandler.controlInputPort",cp)
 
 ################################################################################
 #
