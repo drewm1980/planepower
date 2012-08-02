@@ -1,0 +1,21 @@
+[user]
+        name = New Username
+        email = new.username@esat.kuleuven.be
+[color]
+        diff = auto
+        status = auto
+        branch = auto
+[alias]
+	st = status
+	sta = status
+	stat = status
+	ci = commit
+	co = checkout
+
+[branch "master"]
+	remote = origin
+    merge = master
+[mergetool]
+	keepBackup = false
+[blame]
+	date = relative
