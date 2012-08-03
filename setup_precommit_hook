@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# HIGHWIND pre-commit hook to help protect git repo from mistakes
+
+# Link self as the pre-commit hook unless we're being called
+# AS the pre-commit hook
+if [ `ps -p $PPID -o comm=` != git ]
+then
+	echo "Setting up pre-commit hook..."
+	(
+	cd .git/hooks
+	ln -s ../../setup_precommit_hook pre-commit
+	)
+	echo "done!"
+	exit 0
+fi
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# If you want to allow non-ascii filenames set this variable to true.
+allownonascii=$(git config hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+foundbigfile=
+
+for x in `git ls-files --cached`
+do
+	sze=`du -k $x | cut -f1` # Size of the file in K
+	if [ $sze -gt 100 ] 
+	then
+		echo "$x is `du -h $x | cut -f1`!"
+	fi
+	foundbigfile=1
+done
+if [ $foundbigfile ]
+then
+	echo
+	echo "OUUUUUIE!!!!"
+	echo "Please LARGE files to planepower repo NOT to commit!"
+	echo "(Commit aborted)"
+	echo "You can force the commit with \"git commit --no-verify\""
+	exit 1
+fi
+exit 0
