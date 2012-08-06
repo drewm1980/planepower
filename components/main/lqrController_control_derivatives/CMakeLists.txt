@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 -ggdb")
 #rosbuild_gensrv()
 
 SET(aPath ${PROJECT_SOURCE_DIR}/../../../matlab_acado_codegen_simulation/)
-ADD_DEFINITIONS( -DSTUPID_LONG_PATH=${aPath})
+ADD_DEFINITIONS( -DSTUPID_LONG_PATH="\\"${aPath}\\"")
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)

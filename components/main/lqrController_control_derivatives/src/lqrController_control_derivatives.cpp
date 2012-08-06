@@ -20,6 +20,7 @@ namespace OCL
 
 		ports()->addPort( "controlInputPort",_controlInputPort ).doc("ua1,ua2,ue");
 		ports()->addPort( "controlOutputPort",_controlOutputPort ).doc("ua1,ua2,ue");
+		ports()->addPort( "controlRatesOutputPort",_controlRatesOutputPort).doc("dur1,dur2,dup");
 		ports()->addPort( "errorOutputPort",_errorOutputPort ).doc("Same size as X and Xref");
 		ports()->addPort( "Xref",_Xref ).doc("The Xref that is currently being used");
 		ports()->addPort( "Uref",_Uref ).doc("The Uref that is currently being used");
@@ -41,6 +42,7 @@ namespace OCL
 		K.resize(2);
 		K[0].resize(KSTATES,0.0);
 		K[1].resize(KSTATES,0.0);
+		controlRatesOutput.resize(3,0.0);
 	 }
 
 	 void LqrController_control_derivatives::loadGains()
@@ -114,9 +116,13 @@ namespace OCL
 			U_scaled[0] = U[0]*SCALE_UR;
 			U_scaled[1] = U[1]*SCALE_UR;
 			U_scaled[2] = U[2]*SCALE_UP;
+			dU_scaled[0] = dU[0]*SCALE_UR;
+			dU_scaled[1] = dU[0]*SCALE_UR;
+			dU_scaled[2] = dU[2]*SCALE_UP;
 
 			_errorOutputPort.write(E);
 			_controlOutputPort.write(U_scaled); // Stuff should trigger on this
+			_controlRatesOutputPort.write(dU_scaled);
 		}
     }
 
