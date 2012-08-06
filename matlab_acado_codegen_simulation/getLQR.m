@@ -1,4 +1,4 @@
-clear all
+%clear all
 % close all
 clc
 
@@ -31,7 +31,8 @@ Sim.intoptions.MaxStep = 1/10;
 Sim.intoptions.Events = 'off';
 
 % Simulation settings
-Sim.Tf = 8;                 % simulation final time
+Sim.Tf = 8;         
+% simulation final time
 Sim.decoupleMPC_MHE = 0;    % Set different from 0 to have MPC and MHE running in parallel, but independently, i.e.: MPC gets perfect state estimates
 
 % Wind parameters
@@ -44,6 +45,7 @@ Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 
 % Initial condition
 MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
+%MPC.Ref.z = -0.08 ;         % reference trajectory height (relative to the arm)
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
 MPC.Ref.RPM = 60;           % carousel rotational velocity
@@ -70,5 +72,6 @@ display('------------------------------------------------------------------')
 % Initialize (first MPC, then MHE)
 [MPC,Sim] = initializeMPC(MPC,Sim);
 
-dlmwrite('K.dat',MPC.K,'delimiter','\t');
-dlmwrite('Xref.dat',MPC.Xref(1,:)','delimiter','\t');
+dlmwrite('K1.dat',MPC.K,'delimiter','\t');
+dlmwrite('Xref1.dat',MPC.Xref(1,:)','delimiter','\t');
+S2 = MPC.S;
