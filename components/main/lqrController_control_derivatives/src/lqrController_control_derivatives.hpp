@@ -66,6 +66,7 @@ namespace OCL
 		void				loadVectorFromDat(const char *filename, vector<double> &V);
 		void				loadMatrixFromDat(const char *filename, vector<vector<double> > &V);
 		double				dt;
+		void				changeRef(int ref);
 
     public:
         LqrController_control_derivatives(std::string name);
