@@ -3,6 +3,8 @@ code_export_MPC
 MHE
 NMPC
 
-K.dat
-Xref.dat
+*.dat
+*.dat
 Makefile
+EQ_init.txt
+EQ_params.txt
