@@ -29,7 +29,8 @@ namespace OCL
 		ports()->addEventPort( "mhePortReady",_mhePortReady ).doc("For checking if the MHE port is ready");
 
 		provides()->addOperation("loadGains",&LqrController_control_derivatives::loadGains,this).doc("Reload LQR gains and refernces.");
-		provides()->addOperation("changeRef",&LqrController_control_derivatives::changeRef,this).doc("Reload LQR gains and refernces.");
+		provides()->addOperation("changeRef",&LqrController_control_derivatives::changeRef,this).doc("Change the reference and gain matrix");
+		provides()->addOperation("startSlope",&LqrController_control_derivatives::startSlope,this).doc("Start the slope, which is read from file");
 		addProperty("dt",dt).doc("time step");
 		dt = 0.1;
 
@@ -42,6 +43,9 @@ namespace OCL
 		dU_scaled.resize(NOUTPUTS,0.0);
 		E.resize(NSTATES,0.0);
 		controlRatesOutput.resize(3,0.0);
+		K_slope_temp.resize(2);
+
+		sloping = false;
 	 }
 
 	 void LqrController_control_derivatives::loadGains()
@@ -70,16 +74,33 @@ namespace OCL
 			
 	void  LqrController_control_derivatives::updateHook()
 	{
-		// Write the gains and references we're using
-		// for online debugging, especially if they're changed during flight.
-		_Xref.write(Xref);
-		_Uref.write(Uref);
-		_K.write(K);   
 
 		//checking is if MHE is ready
 		_mhePortReady.read(mhePortReady);
 		if (mhePortReady == true)
 		{
+			// Get the correct reference (when we're sloping)
+			if(sloping){
+				if(i_slope < N_slope){
+					Xref = Xref_slope[i_slope];
+					K_slope_temp[0] = K_slope[i_slope*2];
+					K_slope_temp[1] = K_slope[i_slope*2+1];
+					K = K_slope_temp;
+					i_slope++;
+				}
+				else{
+					sloping = false;
+				}
+
+			}
+
+			_Xref.write(Xref);
+			_Uref.write(Uref);
+			_K.write(K);
+			// Write the gains and references we're using
+			// for online debugging, especially if they're changed during flight.
+
+
 			_stateInputPort.read(X);
 			// Use the control that we applied at previous sampling time, and not the one that was estimated by the MHE.
 			_controlInputPort.read(U_scaled);
@@ -193,6 +214,18 @@ namespace OCL
 		loadMatrixFromDat(oss_K.str().c_str(),K_new);
 		K = K_new;
 		Xref = Xref_new;
+	}
+
+	void LqrController_control_derivatives::startSlope(){
+		vector<vector<double> > Xref_slope_new;
+		vector<vector<double> > K_slope_new;
+		loadMatrixFromDat(K_SLOPE_FILENAME,K_slope_new);
+		loadMatrixFromDat(XREF_SLOPE_FILENAME,Xref_slope_new);
+		Xref_slope = Xref_slope_new;
+		K_slope = K_slope_new;
+		sloping = true;
+		i_slope = 0;
+		N_slope = Xref_slope_new.size();
 	}
 
 }//namespace
