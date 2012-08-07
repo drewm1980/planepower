@@ -64,7 +64,16 @@ ENDIF( NOT CMAKE_BUILD_TYPE )
 #
 ################################################################################
 
+#
+# ACADO specific, has to be here
+#
 ADD_DEFINITIONS( -DACADO_CMAKE_BUILD )
+
+#
+# Specefic for NMPC codegen, see file model_constants.hpp
+# For use in MATLAB comment this one!!!
+#
+# ADD_DEFINITIONS( -DCODEGEN_FOR_OROCOS )
 
 #
 # C compiler, C99 support
@@ -81,7 +90,7 @@ INCLUDE_DIRECTORIES(
     .
     ${ACADO_INCLUDE_DIRS}
     ${MHE_EXPORT_INCLUDE_DIRS}
-)
+)	
 
 ################################################################################
 #

@@ -16,27 +16,27 @@
 #include <math.h>
 
 
-#define QPOASES_NVMAX      10
-#define QPOASES_NCMAX      60
-#define QPOASES_NWSRMAX    210
+#define QPOASES_NVMAX      52
+#define QPOASES_NCMAX      110
+#define QPOASES_NWSRMAX    486
 #define QPOASES_PRINTLEVEL PL_NONE
 #define QPOASES_EPS        2.221e-16
 
 typedef double real_t;
 
 typedef struct Params_t {
-real_t H[100];
-real_t A[600];
-real_t g[10];
-real_t lb[10];
-real_t ub[10];
-real_t lbA[60];
-real_t ubA[60];
+real_t H[2704];
+real_t A[5720];
+real_t g[52];
+real_t lb[52];
+real_t ub[52];
+real_t lbA[110];
+real_t ubA[110];
 } Params;
 
 typedef struct Vars_t {
-real_t x[10];
-real_t y[70];
+real_t x[52];
+real_t y[162];
 } Vars;
 
 extern Params params;

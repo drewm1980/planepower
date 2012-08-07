@@ -21,7 +21,7 @@ long solve( void )
 {
   int nWSR = QPOASES_NWSRMAX;
 
-  QProblem qp( 10,60 );
+  QProblem qp( 52,110 );
   returnValue retVal = qp.init( params.H,params.g,params.A,params.lb,params.ub,params.lbA,params.ubA, nWSR,vars.y );
 
   qp.getPrimalSolution( vars.x );

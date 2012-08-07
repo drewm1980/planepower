@@ -22,3 +22,7 @@ casadi_functions.cpp
 *.pdf
 bugs
 types
+
+.cproject
+.project
+.pydevproject

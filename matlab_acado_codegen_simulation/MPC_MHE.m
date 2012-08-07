@@ -118,6 +118,10 @@ if recompileMPC
     make_mex
     cd ..
 end	
+
+% So, if you use code generation for OROCOS, stop here
+% return;
+
 %% %%%%%%%%%%%%%%%%%%%%%%% SIMULATION LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 display('------------------------------------------------------------------')

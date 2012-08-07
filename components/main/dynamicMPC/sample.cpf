@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "cpf.dtd">
+<properties>
+	<simple name="mk" type="double">
+		<value>0.626</value>
+	</simple>
+	<simple name="g" type="double">
+		<value>9.81</value>
+	</simple>
+	<simple name="rho" type="double">
+		<value>1.23</value>
+	</simple>
+	<simple name="rhoc" type="double">
+		<value>1450.0</value>
+	</simple>
+	<simple name="dc" type="double">
+		<value>1e-3</value>
+	</simple>
+	<simple name="AQ" type="double">
+		<value>7.853981633974483e-07</value>
+	</simple>
+	<simple name="rA" type="double">
+		<value>1.085</value>
+	</simple>
+	<simple name="zT" type="double">
+		<value>-0.02</value>
+	</simple>
+	<simple name="I1" type="double">
+		<value>0.0163</value>
+	</simple>
+	<simple name="I31" type="double">
+		<value>0.0006</value>
+	</simple>
+	<simple name="I2" type="double">
+		<value>0.0078</value>
+	</simple>
+	<simple name="I3" type="double">
+		<value>0.0229</value>
+	</simple>
+	<simple name="LT" type="double">
+		<value>0.4</value>
+	</simple>
+	<simple name="RD" type="double">
+		<value>1e-2</value>
+	</simple>
+	<simple name="PD" type="double">
+		<value>0.0</value>
+	</simple>
+	<simple name="YD" type="double">
+		<value>0.0</value>
+	</simple>
+	<simple name="CLA" type="double">
+		<value>5.064</value>
+	</simple>
+	<simple name="CLe" type="double">
+		<value>-1.924</value>
+	</simple>
+	<simple name="CL0" type="double">
+		<value>0.239</value>
+	</simple>
+	<simple name="CDA" type="double">
+		<value>-0.195</value>
+	</simple>
+	<simple name="CDA2" type="double">
+		<value>4.268</value>
+	</simple>
+	<simple name="CDB2" type="double">
+		<value>5.0</value>
+	</simple>
+	<simple name="CD0" type="double">
+		<value>0.026</value>
+	</simple>
+	<simple name="CRB" type="double">
+		<value>-0.062</value>
+	</simple>
+	<simple name="CRAB" type="double">
+		<value>-0.271</value>
+	</simple>
+	<simple name="CRr" type="double">
+		<value>-5.637e-1</value>
+	</simple>
+	<simple name="CPA" type="double">
+		<value>0.293</value>
+	</simple>
+	<simple name="CPe" type="double">
+		<value>-4.9766e-1</value>
+	</simple>
+	<simple name="CP0" type="double">
+		<value>0.03</value>
+	</simple>
+	<simple name="CYB" type="double">
+		<value>0.05</value>
+	</simple>
+	<simple name="CYAB" type="double">
+		<value>0.229</value>
+	</simple>
+	<simple name="SPAN" type="double">
+		<value>0.96</value>
+	</simple>
+	<simple name="CHORD" type="double">
+		<value>0.1</value>
+	</simple>
+</properties>
