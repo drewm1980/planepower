@@ -28,7 +28,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-#rosbuild_add_library(measurementsRecoder src/measurementsRecoder.cpp)
+#rosbuild_add_library(measurementsRecorder src/measurementsRecorder.cpp)
 #ADD_DEFINITIONS(-DOCL_DLL_EXPORT)
  
  
@@ -40,8 +40,8 @@ find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
  
 #common commands for building c++ executables and libraries
-orocos_component(${PROJECT_NAME} src/measurementsRecoder.cpp)
-rosbuild_add_library(measurementsRecoder src/measurementsRecoder.cpp)
+orocos_component(${PROJECT_NAME} src/measurementsRecorder.cpp)
+rosbuild_add_library(measurementsRecorder src/measurementsRecorder.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)

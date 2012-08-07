@@ -1,4 +1,4 @@
 #!/bin/sh
 $MYOROCOSCOMPONENTS/usecases/common.sh
 
-rosrun ocl deployer-gnulinux -lerror -s dynamicMHESimulation.ops
+rosrun ocl deployer-gnulinux -lerror -s dynamicMHE.ops
