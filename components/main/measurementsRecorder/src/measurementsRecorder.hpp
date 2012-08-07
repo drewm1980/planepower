@@ -28,7 +28,7 @@ using namespace KDL;
 
 namespace OCL
 {
-	class MeasurementsRecoder
+	class MeasurementsRecorder
 		: public TaskContext
 	{
 	protected:
@@ -63,8 +63,8 @@ namespace OCL
 		FlowStatus statusMeasurementsCtrl;
 
 	public:
-		MeasurementsRecoder(std::string name);
-		~MeasurementsRecoder();
+		MeasurementsRecorder(std::string name);
+		~MeasurementsRecorder();
 		bool		configureHook();
 		bool		startHook();
 		void		updateHook();

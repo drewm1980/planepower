@@ -1,15 +1,15 @@
 #Import libraries
-import("measurementsRecoder")
+import("measurementsRecorder")
  
 #Create components
-loadComponent("measurementsRecoder","OCL::measurementsRecoder")
+loadComponent("measurementsRecorder","OCL::measurementsRecorder")
  
 #Load properties
-loadService("measurementsRecoder","marshalling")
-measurementsRecoder.marshalling.loadProperties("../../../properties/measurementsRecoder/measurementsRecoder.cpf")
+loadService("measurementsRecorder","marshalling")
+measurementsRecorder.marshalling.loadProperties("../../../properties/measurementsRecorder/measurementsRecorder.cpf")
  
 #Set activities
-setActivity("measurementsRecoder",0.01,HighestPriority,ORO_SCHED_RT)
+setActivity("measurementsRecorder",0.01,HighestPriority,ORO_SCHED_RT)
  
-measurementsRecoder.configure()
-measurementsRecoder.start()
+measurementsRecorder.configure()
+measurementsRecorder.start()

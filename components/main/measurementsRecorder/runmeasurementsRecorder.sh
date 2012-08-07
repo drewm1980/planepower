@@ -1,3 +1,3 @@
 #!/bin/sh
 #$MYOROCOSCOMPONENTS/usecases/common.sh
-  rosrun ocl deployer-gnulinux -linfo -s measurementsRecoder.ops
+  rosrun ocl deployer-gnulinux -linfo -s measurementsRecorder.ops
