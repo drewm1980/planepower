@@ -26,6 +26,8 @@ using namespace KDL;
 
 #define K_FILENAME STUPID_LONG_PATH "K.dat"
 #define XREF_FILENAME STUPID_LONG_PATH "Xref.dat"
+#define K_SLOPE_FILENAME STUPID_LONG_PATH "Kslope.dat"
+#define XREF_SLOPE_FILENAME STUPID_LONG_PATH "Xrefslope.dat"
 
 #define NSTATES 22 // state from MHE = [x;y;z;dx;dy;dz;e11;e12;e13;e21;e22;e23;e31;e32;e33;w1;w2;w3;delta;ddelta;ur,up]  
 				   // For sanity...    [1;2;3;4;5 ;6 ;7 ;8   ;9  ;10 ; 11;12 ;13; 14 ;15 ;16;17;18;19   ;20    ;21,22]  
@@ -67,6 +69,15 @@ namespace OCL
 		void				loadMatrixFromDat(const char *filename, vector<vector<double> > &V);
 		double				dt;
 		void				changeRef(int ref);
+
+
+		void startSlope();
+		vector<vector<double> > Xref_slope;
+		vector<vector<double> > K_slope;
+		bool sloping;
+		unsigned int i_slope;
+		unsigned int N_slope;
+		vector<vector<double> > K_slope_temp;
 
     public:
         LqrController_control_derivatives(std::string name);
