@@ -13,8 +13,10 @@ import("encoderLatch")
 loadComponent("EncoderLatch","OCL::EncoderLatch")
 
 # Simulator
-import("planeSimulatorRframe")
-loadComponent("sim","OCL::planeSimulatorRframe")
+#import("planeSimulatorRframe")
+import("planeSimulatorRframeDirectControls")
+#loadComponent("sim","OCL::planeSimulatorRframe")
+loadComponent("sim","OCL::planeSimulatorRframeDirectControls")
 setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
 
 # LEDTrackerSimulator
@@ -61,20 +63,41 @@ var double base_hz = masterTimer.imu_target_hz
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "dynamicMHE_dynamicMPC_simulation.dat"
+reporter.WriteHeader = false
+reporter.ReportFile = "mhe_mpc_closed_loop.dat"
 #reporter.NullSample = "nan"
+
+# MHE
+dynamicMHE.propNumSQPIterations = 3
+loadService("dynamicMHE", "marshalling")
+dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
+
+# MPC
+dynamicMPC.propNumSQPIterations = 5
 
 dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/CG_Q.txt"
 dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/CG_R.txt"
+
+#dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/CG_Q2.txt"
+#dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/CG_R2.txt"
+
+# It is not used, for now, but the files has to be provided
 dynamicMPC.propFileNameWeightsQF = "../../properties/mpc_properties/CG_Qf.txt"
-dynamicMPC.propRefDefaultFileName = "../../properties/mpc_properties/H2Xref.dat"
 
-# MHE
-dynamicMHE.propDragScaling = 0.5
-dynamicMHE.propNumSQPIterations = 3
+#dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/H2Q.dat"
+#dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/H2R.dat"
 
-# MPC
-dynamicMPC.propNumSQPIterations = 1
+# Mario's default reference; WORKS
+dynamicMPC.propRefDefaultFileName = "../../properties/mpc_properties/eq_z-01.txt"
+
+# Hammad's default reference; WORKS
+#dynamicMPC.propRefDefaultFileName = "../../properties/mpc_properties/H2Xref.dat"
+
+# Mario's references; WORK
+dynamicMPC.propReferencesFileName = "../../properties/mpc_properties/eq_z00-01-02.txt"
+
+# Hammad's new reference; WORKS
+#dynamicMPC.propReferencesFileName = "../../properties/mpc_properties/H_ref_4cm.dat"
 
 ################################################################################
 #
@@ -144,18 +167,35 @@ connect("LEDTrackerSimulator.markerPositionsAndCovarianceIn","cameraSimulator.ma
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","sim.imuData",cp)
 
-connect("dynamicMHE.portMeasurementsMarkers",	"LEDTrackerSimulator.markerPositionsAndCovariance",cp)
-connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose",cp)
-connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov",cp)
-connect("dynamicMHE.portMeasurementsEncoder","EncoderLatch.deltaOmega",cp)
-connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort",cp)
+#
+# Connection between sensors and the MHE
+#
+connect("dynamicMHE.portMeasurementsMarkers",	"LEDTrackerSimulator.markerPositionsAndCovariance", cp)
+connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose", cp)
+connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov", cp)
+connect("dynamicMHE.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
 
-#connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMHE",cp)
-connect("dynamicMHE.portStateEstimate","dynamicMPC.portFeedback",cp)
-connect("dynamicMHE.portReady","dynamicMPC.portFeedbackReady",cp)
+#
+# Connection between MHE and MPC
+#
+connect("dynamicMHE.portReady",			"dynamicMPC.portFeedbackReady", cp)
+connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 
-# FEEDBACK!!!
-#connect("dynamicMPC.portControlsForMHE","sim.controlInputPort",cp)
+# 1. Use this guy for open loop control testing
+connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
+# OR
+# 2. Use this guy to feed MHE with MPC DATA
+#connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
+
+# TODO
+# connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
+
+#
+# Connection between NMPC and "real" world
+#
+# TODO Put "control interpolator" component in between
+#connect("dynamicMPC.portControlRates", "sim.controlInputPort", cp)
+#connect("dynamicMPC.portControlsForMeasurement", "sim.controlInputPort", cp)
 
 ################################################################################
 #
@@ -175,23 +215,27 @@ connectPeers("reporter","sim")
 #reporter.reportPort("LEDTrackerSimulator","triggerTimeStampOut")
 #reporter.reportPort("LEDTrackerSimulator","markerPositionsAndCovariance")
 #reporter.reportPort("imuBuffer","imuMeanCov")
-#reporter.reportPort("sim","stateOutputPort")
 
 #reporter.reportPort("dynamicMHE","portReady")
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portDataSizeValid")
-#reporter.reportPort("dynamicMHE","portQPSolverStatus")
-#reporter.reportPort("dynamicMHE","portKKTTolerance")
+reporter.reportPort("dynamicMHE","portQPSolverStatus")
+reporter.reportPort("dynamicMHE","portKKTTolerance")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
-#reporter.reportPort("dynamicMHE","portStateEstimate")
+reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
 #reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
 
-reporter.reportPort("dynamicMPC","portDataSizeValid")
+#reporter.reportPort("dynamicMPC","portDataSizeValid")
 reporter.reportPort("dynamicMPC","portQPSolverStatus")
-reporter.reportPort("dynamicMPC","portControlsForMHE")
-#reporter.reportPort("dynamicMPC","portControls")
+reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portControlsForMHE")
+reporter.reportPort("dynamicMPC","portControls")
+reporter.reportPort("dynamicMPC","portControlRates")
+reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+
+reporter.reportPort("sim","stateOutputPort")
 
 ################################################################################
 #
