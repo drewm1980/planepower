@@ -690,7 +690,7 @@ int main( int argc, char * const argv[] ){
 	nlp.subjectTo( dur == 0 );
 	nlp.subjectTo( dup == 0 );
     
-// 	nlp.subjectTo( up == 0 );
+ 	nlp.subjectTo( up == 0 );
 	
 	nlp.subjectTo( w2 >= 0 );
 	

@@ -5,10 +5,10 @@ clc
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 
 z_start = -0.1189362777884522; % Starting height of the ramp
-z_end = -0.1; % End height of the ramp
+z_end = -0.04; % End height of the ramp
 
 Ts = 0.1; % Sampling time
-Tc = 5; % Time of ramp
+Tc = 10; % Time of ramp
 
 delta_z = (z_end-z_start)/(Tc/Ts);
 MPC.is_init = 0;
@@ -87,3 +87,10 @@ sol_K(:,:,i+1) = MPC.K;
 sol_X(:,i+1) = MPC.Xref(1,:);
 MPC.is_init = 1;
 end
+sol_K_matrix = [];
+for i=1:size(sol_K,3)
+    sol_K_matrix = [sol_K_matrix; sol_K(:,:,i)];
+end
+
+dlmwrite('Xrefslope.dat',sol_X','delimiter','\t');
+dlmwrite('Kslope.dat',sol_K_matrix,'delimiter','\t');
