@@ -1,8 +1,20 @@
-%clear all
-% close all
+clear all
+close all
 clc
 
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
+
+z_start = -0.1189362777884522; % Starting height of the ramp
+z_end = -0.04; % End height of the ramp
+
+Ts = 0.1; % Sampling time
+Tc = 10; % Time of ramp
+
+delta_z = (z_end-z_start)/(Tc/Ts);
+MPC.is_init = 0;
+
+for i=0:(Tc/Ts)
+
 
 % MPC settings
 MPC.Tc = 1; % horizon in seconds
@@ -11,7 +23,6 @@ MPC.Ts  = MPC.Tc/MPC.Ncvp; % sampling time
 MPC.Nref = MPC.Ncvp+1; % 500;% % number of elements in the reference file
 % Multiplying factor for the terminal cost
 MPC.Sfac = 1; % factor multiplying the terminal cost
-MPC.is_init = 0;
 
 % MHE settings
 MHE.Tc = 1;
@@ -44,9 +55,7 @@ Sim.Noise.is = 1;           % set to 0 to kill the noise
 Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 
 % Initial condition
-%MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
-%MPC.Ref.z = -0.08 ;         % reference trajectory height (relative to the arm)
-MPC.Ref.z = -0.04;
+MPC.Ref.z = z_start + i*delta_z ;         % reference trajectory height (relative to the arm)
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
 MPC.Ref.RPM = 60;           % carousel rotational velocity
@@ -73,6 +82,15 @@ display('------------------------------------------------------------------')
 % Initialize (first MPC, then MHE)
 [MPC,Sim] = initializeMPC(MPC,Sim);
 
-dlmwrite('K3.dat',MPC.K,'delimiter','\t');
-dlmwrite('Xref3.dat',MPC.Xref(1,:)','delimiter','\t');
-S2 = MPC.S;
+sol_S(:,:,i+1) = MPC.S;
+sol_K(:,:,i+1) = MPC.K;
+sol_X(:,i+1) = MPC.Xref(1,:);
+MPC.is_init = 1;
+end
+sol_K_matrix = [];
+for i=1:size(sol_K,3)
+    sol_K_matrix = [sol_K_matrix; sol_K(:,:,i)];
+end
+
+dlmwrite('Xrefslope.dat',sol_X','delimiter','\t');
+dlmwrite('Kslope.dat',sol_K_matrix,'delimiter','\t');

@@ -4,7 +4,8 @@
 
 #define MAX_VALUE_MOTOR_REF 32767
 #define MAX_VALUE_AILERON_REF MAX_VALUE_MOTOR_REF
-#define MAX_VALUE_ELEVATOR_REF 10000
+#define MAX_VALUE_ELEVATOR_REF 20000
+//#define MAX_VALUE_ELEVATOR_REF MAX_VALUE_MOTOR_REF
 #define CONTROL_SCALE( Value ) \
 	(double) Value*1000.0
 // Conversion from integer to radians per second
