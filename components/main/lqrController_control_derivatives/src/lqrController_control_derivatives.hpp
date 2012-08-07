@@ -24,7 +24,6 @@ using namespace KDL;
 #define SCALE_UR	1.25e6	// Scaling of ur_1, ur_2
 #define SCALE_UP	2e5		// Scaling of u_p
 
-#define STUPID_LONG_PATH "/home/planepower/Work/SVN/PLANEPOWER/TRUNK/orocos/matlab_acado_codegen_simulation/"
 #define K_FILENAME STUPID_LONG_PATH "K.dat"
 #define XREF_FILENAME STUPID_LONG_PATH "Xref.dat"
 
@@ -50,6 +49,7 @@ namespace OCL
         OutputPort<vector<vector<double> > >	_K;   
 		InputPort<bool>				_mhePortReady;
 		bool					mhePortReady;
+	OutputPort<vector<double> >		_controlRatesOutputPort;
 
     private:
 		void					simpleFunction(void);
@@ -59,11 +59,14 @@ namespace OCL
 		vector<double>			U; //The controls of the system
 		vector<double>			dU; //The control derivatives of the system
 		vector<double>			U_scaled;
+		vector<double>			dU_scaled;
 		vector<double>			Uref; //The controls of the system
 		vector<vector<double> >		K; // The gain matrix, row-major storage
+		vector<double>			controlRatesOutput;
 		void				loadVectorFromDat(const char *filename, vector<double> &V);
 		void				loadMatrixFromDat(const char *filename, vector<vector<double> > &V);
 		double				dt;
+		void				changeRef(int ref);
 
     public:
         LqrController_control_derivatives(std::string name);

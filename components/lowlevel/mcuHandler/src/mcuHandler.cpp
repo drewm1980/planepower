@@ -3,6 +3,8 @@
 #include <rtt/marsh/Marshalling.hpp>
 
 #define MAX_VALUE_MOTOR_REF 32767
+#define MAX_VALUE_AILERON_REF MAX_VALUE_MOTOR_REF
+#define MAX_VALUE_ELEVATOR_REF 10000
 #define CONTROL_SCALE( Value ) \
 	(double) Value*1000.0
 // Conversion from integer to radians per second
@@ -119,12 +121,12 @@ using namespace Orocos;
 
 	int McuHandler::SendMotorReferences( int m1_ref, int m2_ref, int m3_ref )
 	{
-		if(m1_ref>MAX_VALUE_MOTOR_REF){m1_ref = MAX_VALUE_MOTOR_REF;}
-		if(m2_ref>MAX_VALUE_MOTOR_REF){m2_ref = MAX_VALUE_MOTOR_REF;}
-		if(m3_ref>MAX_VALUE_MOTOR_REF){m3_ref = MAX_VALUE_MOTOR_REF;}
-		if(m1_ref<-MAX_VALUE_MOTOR_REF){m1_ref = -MAX_VALUE_MOTOR_REF;}
-		if(m2_ref<-MAX_VALUE_MOTOR_REF){m2_ref = -MAX_VALUE_MOTOR_REF;}
-		if(m3_ref<-MAX_VALUE_MOTOR_REF){m3_ref = -MAX_VALUE_MOTOR_REF;}
+		if(m1_ref>MAX_VALUE_AILERON_REF){m1_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+		if(m2_ref>MAX_VALUE_AILERON_REF){m2_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+		if(m3_ref>MAX_VALUE_ELEVATOR_REF){m3_ref = MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
+		if(m1_ref<-MAX_VALUE_AILERON_REF){m1_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+		if(m2_ref<-MAX_VALUE_AILERON_REF){m2_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+		if(m3_ref<-MAX_VALUE_ELEVATOR_REF){m3_ref = -MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
 
 		//
 		// Prepare the request message

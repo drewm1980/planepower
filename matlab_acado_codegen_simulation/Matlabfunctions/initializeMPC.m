@@ -41,14 +41,14 @@ MPC.A = MPC.A([1:18,21:22],[1:18,21:22]);
 MPC.B = MPC.B([1:18,21:22],2:3);
 
 % Define the weights for the LQR (they will be used also by the NMPC)
-We = 1;
-Ww = 0.1;
+We = 100;
+Ww = 1;
 % Control weights
-MPC.R = 1e-2*diag([1e-4, 100, 100]);
+MPC.R = 1e2*1e-2*diag([1e-4, 100, 100]);
 % State weights
-MPC.Q = 1e-2*diag([100,  100,  100, 25, 25, 25,    ...
+MPC.Q = 1e-2*diag([100,  100,  100, 1, 1, 1,    ...
                 We,  We,  We,  We,  We,  We,  We,  We,  We, ...
-                Ww,  Ww,  Ww, 1e-4, 1e-4, 25, 25]);
+                Ww,  Ww,  Ww, 1e-4, 1e-4, 1, 1]);
 
 % Weights without the carousel rotational dynamics
 MPC.Q1 = MPC.Q([1:18,21:22],[1:18,21:22]);
@@ -58,7 +58,6 @@ MPC.R1 = MPC.R(2:3,2:3);
 [K,S,e] = lqr(MPC.A,MPC.B,MPC.Q1,MPC.R1);
 [A,B] = c2d(MPC.A,MPC.B,MPC.Ts);
 [K,S,e] = dlqr(A,B,MPC.Q1,MPC.R1);
-
 
 % Add to the terminal cost matrix the missing lines / columns
 MPC.S = [ S(1:18,1:18), zeros(18,2),  S(1:18,19:20);

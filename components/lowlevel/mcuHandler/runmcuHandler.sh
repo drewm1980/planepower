@@ -1,4 +1,4 @@
 #!/bin/sh
 #$MYOROCOSCOMPONENTS/usecases/common.sh
 
-rosrun ocl deployer-gnulinux -linfo -s mcuHandler.ops
+rosrun ocl deployer-gnulinux -lerror -s mcuHandler.ops

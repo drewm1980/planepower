@@ -15,8 +15,10 @@ Create new user on planepower-pc (or wherever)
 >> cp planepower/.gitconfig_sample ~/.gitconfig
 >> gedit ~/.gitconfig
 
+7. Run setup_precommit_hook
+
 # Read the rules, love the rules, live by the rules:
-7. read ~/planepower/readme_rules.txt
+8. read ~/planepower/readme_rules.txt
 
 
 
