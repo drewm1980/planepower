@@ -11,8 +11,14 @@ generateCodeForOrocos = 0;
 
 
 % MPC settings
-MPC.Tc = 1; % horizon in seconds
-MPC.Ncvp = 10; % number of cvp
+% NMPC Sim.W0 MPC.Ncvp MPC.Tc 1 MPC.Ref.r
+
+mpc_settings
+Sim.W0 = W0;         % Wind known by the controller
+MPC.Ncvp = Ncvp; % number of cvp
+MPC.Tc = Tc; % horizon in seconds
+MPC.Ref.r = r;            % tether length
+
 MPC.Ts  = MPC.Tc/MPC.Ncvp; % sampling time
 MPC.Nref = MPC.Ncvp+1; % 500;% % number of elements in the reference file
 % Multiplying factor for the terminal cost
@@ -41,7 +47,6 @@ Sim.Tf = 8;                 % simulation final time
 Sim.decoupleMPC_MHE = 0;    % Set different from 0 to have MPC and MHE running in parallel, but independently, i.e.: MPC gets perfect state estimates
 
 % Wind parameters
-Sim.W0 = 0;         % Wind known by the controller
 Sim.DeltaW = 0;     % Windgusts or unknown wind
 
 % Sensor noise
@@ -50,7 +55,6 @@ Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 
 % Initial condition
 MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
-MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
 MPC.Ref.RPM = 60;           % carousel rotational velocity
 MPC.Ref.ddelta = 2*pi*MPC.Ref.RPM/60.;
@@ -116,6 +120,7 @@ if recompileMPC
     
     % Export the code
     display(['!./NMPC ',num2str(Sim.W0),'     ',num2str(MPC.Ncvp),'     ',num2str(MPC.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
+	% NMPC Sim.W0 MPC.Ncvp MPC.Tc 1 MPC.Ref.r
     eval(['!./NMPC ',num2str(Sim.W0),'     ',num2str(MPC.Ncvp),'     ',num2str(MPC.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     
     % Compile to generate the mex
