@@ -8,14 +8,15 @@
  *
  */
 
-#ifndef ACADOIF
-#define ACADOIF
 
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
+#ifndef ACADOIF
+#define ACADOIF
 
 #include "qpoases/solver.hpp"
 
@@ -31,7 +32,7 @@
 /* Number of controls */
 #define ACADO_NU  3
 /* Number of parameters */
-#define ACADO_NP  33
+#define ACADO_NP  35
 
 
 /* GLOBAL VARIABLES:                */
@@ -39,7 +40,7 @@
 typedef struct ACADOvariables_ {
 real_t x[242];
 real_t u[30];
-real_t p[33];
+real_t p[35];
 real_t xRef[220];
 real_t uRef[30];
 real_t QQ[484];
@@ -55,7 +56,7 @@ typedef struct ACADOworkspace_ {
 real_t rk_dim22_temp[23];
 real_t acado_aux[9761];
 real_t rk_ttt;
-real_t rk_xxx[58];
+real_t rk_xxx[60];
 real_t rk_kkk[22];
 real_t rk_sol[22];
 real_t rk_A[484];
@@ -66,7 +67,7 @@ int rk_num;
 real_t rk_diffsPrev[550];
 real_t rk_diffsNew[550];
 real_t QQF[484];
-real_t state[608];
+real_t state[610];
 real_t residuum[220];
 real_t g0[22];
 real_t g1[30];
@@ -141,7 +142,9 @@ void printHeader(  );
 extern ACADOworkspace acadoWorkspace;
 extern ACADOvariables acadoVariables;
 /* ------------------------------------- */
-#endif
+
+
+#endif // ACADOIF
 
 /* END OF FILE. */
 
