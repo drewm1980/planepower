@@ -70,10 +70,9 @@ ENDIF( NOT CMAKE_BUILD_TYPE )
 ADD_DEFINITIONS( -DACADO_CMAKE_BUILD )
 
 #
-# Specefic for NMPC codegen, see file model_constants.hpp
-# For use in MATLAB comment this one!!!
+# If you need to export code for OROCOS, uncomment this line.
 #
-# ADD_DEFINITIONS( -DCODEGEN_FOR_OROCOS )
+# ADD_DEFINITIONS( -DCODEGEN_FOR_OROCOS=1 )
 
 #
 # C compiler, C99 support

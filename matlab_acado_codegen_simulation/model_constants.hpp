@@ -3,7 +3,8 @@
 
 // Plane + Carousel model constants used by MHE and NMPC
 
-#ifndef CODEGEN_FOR_OROCOS
+#if ( CODEGEN_FOR_OROCOS == 0 )
+#warning "Model parameters will be hardcoded"
 
 //  PARAMETERS OF THE KITE :
 //  -----------------------------
@@ -89,7 +90,11 @@ double CYAB = 0.229;
 double SPAN = 0.96;
 double CHORD = 0.1;
 
-#else
+double CL_scaling = 0.2;
+double CD_scaling = 0.5;
+
+#elif ( CODEGEN_FOR_OROCOS == 1 )
+#warning "Model parameters will be exposed as user parameters"
 
 //  PARAMETERS OF THE KITE :
 //  -----------------------------
@@ -174,6 +179,12 @@ Parameter CYAB;// = 0.229;
 
 Parameter SPAN;// = 0.96;
 Parameter CHORD;// = 0.1;
+
+Parameter CL_scaling;
+Parameter CD_scaling;
+
+#else
+#error "This option is not supported"
 
 #endif // CODEGEN_FOR_OROCOS
 

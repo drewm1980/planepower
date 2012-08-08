@@ -171,14 +171,14 @@
 
 	// LIFT :
 	// ---------------------------------------------------------------
-    CL = 0.2*CL;
+    CL = CL_scaling * CL;
 	FL[0] =  rho*CL*eLe[0]*VKite/2.0;
 	FL[1] =  rho*CL*eLe[1]*VKite/2.0;
 	FL[2] =  rho*CL*eLe[2]*VKite/2.0;
 
 	// DRAG :
 	// ---------------------------------------------------------------
-    CD = 0.5*CD;
+    CD = CD_scaling * CD;
 	FD[0] = -rho*VKite*CD*we[0]/2.0;
 	FD[1] = -rho*VKite*CD*we[1]/2.0; 
 	FD[2] = -rho*VKite*CD*we[2]/2.0; 

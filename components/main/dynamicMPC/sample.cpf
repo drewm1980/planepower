@@ -100,4 +100,10 @@
 	<simple name="CHORD" type="double">
 		<value>0.1</value>
 	</simple>
+	<simple name="CL_scaling" type="double">
+		<value>0.2</value>
+	</simple>
+	<simple name="CD_scaling" type="double">
+		<value>0.5</value>
+	</simple>
 </properties>
