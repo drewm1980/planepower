@@ -14,9 +14,9 @@ loadComponent("EncoderLatch","OCL::EncoderLatch")
 
 # Simulator
 #import("planeSimulatorRframe")
-import("planeSimulatorRframeDirectControls")
+import("planeSimulatorRframe")
 #loadComponent("sim","OCL::planeSimulatorRframe")
-loadComponent("sim","OCL::planeSimulatorRframeDirectControls")
+loadComponent("sim","OCL::planeSimulatorRframe")
 setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
 
 # LEDTrackerSimulator
@@ -64,7 +64,7 @@ var double base_hz = masterTimer.imu_target_hz
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
 reporter.WriteHeader = false
-reporter.ReportFile = "mhe_mpc_closed_loop_simulation.dat"
+reporter.ReportFile = "mhe_mpc_derivatives_closed_loop.dat"
 #reporter.NullSample = "nan"
 
 # MHE
@@ -194,7 +194,7 @@ connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 # Connection between NMPC and "real" world
 #
 # TODO Put "control interpolator" component in between
-#connect("dynamicMPC.portControlRates", "sim.controlInputPort", cp)
+connect("dynamicMPC.portControlRates", "sim.controlInputPort", cp)
 #connect("dynamicMPC.portControlsForMeasurement", "sim.controlInputPort", cp)
 
 ################################################################################
@@ -219,8 +219,8 @@ connectPeers("reporter","sim")
 #reporter.reportPort("dynamicMHE","portReady")
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portDataSizeValid")
-reporter.reportPort("dynamicMHE","portQPSolverStatus")
-reporter.reportPort("dynamicMHE","portKKTTolerance")
+#reporter.reportPort("dynamicMHE","portQPSolverStatus")
+#reporter.reportPort("dynamicMHE","portKKTTolerance")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
 reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
@@ -228,12 +228,12 @@ reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
 
 #reporter.reportPort("dynamicMPC","portDataSizeValid")
-reporter.reportPort("dynamicMPC","portQPSolverStatus")
-reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+#reporter.reportPort("dynamicMPC","portKKTTolerance")
 #reporter.reportPort("dynamicMPC","portControlsForMHE")
-reporter.reportPort("dynamicMPC","portControls")
-reporter.reportPort("dynamicMPC","portControlRates")
-reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMPC","portControls")
+#reporter.reportPort("dynamicMPC","portControlRates")
+#reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
 
 reporter.reportPort("sim","stateOutputPort")
 

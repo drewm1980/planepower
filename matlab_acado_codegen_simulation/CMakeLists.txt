@@ -64,7 +64,15 @@ ENDIF( NOT CMAKE_BUILD_TYPE )
 #
 ################################################################################
 
+#
+# ACADO specific, has to be here
+#
 ADD_DEFINITIONS( -DACADO_CMAKE_BUILD )
+
+#
+# If you need to export code for OROCOS, uncomment this line.
+#
+# ADD_DEFINITIONS( -DCODEGEN_FOR_OROCOS=1 )
 
 #
 # C compiler, C99 support
@@ -81,7 +89,7 @@ INCLUDE_DIRECTORIES(
     .
     ${ACADO_INCLUDE_DIRS}
     ${MHE_EXPORT_INCLUDE_DIRS}
-)
+)	
 
 ################################################################################
 #

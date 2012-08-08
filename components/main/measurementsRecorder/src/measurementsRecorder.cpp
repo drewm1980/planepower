@@ -1,7 +1,7 @@
-#include "measurementsRecoder.hpp"
+#include "measurementsRecorder.hpp"
 #include <ocl/Component.hpp>
 
-ORO_CREATE_COMPONENT( OCL::MeasurementsRecoder)
+ORO_CREATE_COMPONENT( OCL::MeasurementsRecorder)
 
 using namespace std;
 using namespace RTT;
@@ -10,10 +10,10 @@ using namespace BFL;
 
 namespace OCL
 {
-	MeasurementsRecoder::MeasurementsRecoder(std::string name) : TaskContext(name) { }
-	MeasurementsRecoder::~MeasurementsRecoder() { } 
+	MeasurementsRecorder::MeasurementsRecorder(std::string name) : TaskContext(name) { }
+	MeasurementsRecorder::~MeasurementsRecorder() { } 
 
-	bool  MeasurementsRecoder::configureHook()
+	bool  MeasurementsRecorder::configureHook()
 	{
 		sampleSet = (Sample*) calloc(BUFFER_IN_SAMPLES,sizeof(Sample)); 
 		if(sampleSet==NULL)
@@ -24,11 +24,11 @@ namespace OCL
 		return true;
 	}
 
-	bool  MeasurementsRecoder::startHook() { 
+	bool  MeasurementsRecorder::startHook() { 
 		samplesRecorded=0;
 		return true; 
 	}
-	void  MeasurementsRecoder::updateHook()
+	void  MeasurementsRecorder::updateHook()
 	{
 		// Read our ports into stl vectors the traditional way.
 		statusMeasurementsMarkers = portMeasurementsMarkers.read( measurementsMarkers );
@@ -54,7 +54,7 @@ namespace OCL
 		}
 	}
 
-	void  MeasurementsRecoder::stopHook()
+	void  MeasurementsRecorder::stopHook()
 	{
 		cout << "(measurementsRecorder) Stopping recording!" << endl;
 		cout << "(measurementsRecorder) Dumping to file..." << endl;
@@ -66,7 +66,7 @@ namespace OCL
 		cout << "(measurementsRecorder) Done Dumping to file!" << endl;
 	}
 
-	void  MeasurementsRecoder::cleanUpHook() {
+	void  MeasurementsRecorder::cleanUpHook() {
 		free(sampleSet);
 	} 
 }//namespace

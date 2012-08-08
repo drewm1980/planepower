@@ -11,9 +11,6 @@
 
 #include <rtt/os/TimeService.hpp>
 
-//#include <ocl/LoggingService.hpp>
-//#include <ocl/Category.hpp>
-
 //
 // Used namespaces
 //
@@ -26,33 +23,17 @@ using namespace std;
 // Define some common stuff
 //
 
-#define NX		22		// number of differential states
-#define NU		2		// number of controls of the MPC
-#define N 		5		// number of control intervals
-
-#define N_OUT	3		// dimension of the output vector of this component
-
 #define SCALE_UR	1.25e6	// Scaling of ur_1, ur_2
 #define SCALE_UP	2e5		// Scaling of u_p
-
-//#define SCALE_UR	10000	// Scaling of ur_1, ur_2
-//#define SCALE_UP	32767		// Scaling of u_p
-
-#define REF_Z_MIN		-1.0
-#define REF_Z_MAX		1.0
-#define REF_UR_MIN		-3.2767
-#define REF_UR_MAX		3.2767
-
-#define REF_USER_SIZE	2	// Size of the user ref. vector
 
 //
 // Initialization
 //
 // 1: Initialize with single shootin'
 // 2: Put the same data to all nodes
-#define INIT_VER	2
+#define INIT_VER	1
 
-#define DEEP_DEBUG	0 // Dumping MHE data on ports and so...
+#define DEEP_DEBUG	0 // Dumping MPC data on ports and so...
 
 class DynamicMPC
 	: public TaskContext
@@ -79,18 +60,19 @@ public:
 
 	void mpcPreparationPhase( );
 
-//	bool setReference(double refZ, double refUr);
-
-	bool setReference(unsigned index);
-
 private:
 
 	bool readDataFromFile(const char* fileName, vector< vector< double > >& data, unsigned numRows = 0, unsigned numCols = 0);
 
 	void printMatrix(string name, vector< vector< double > > data);
 
+	bool prepareInputData( void );
+
 	/// Indicator whether the MPC is ready for outputting the data
 	bool initialized;
+
+	bool firstRefArrived;
+	bool firstWeightPArrived;
 
 	//
 	// Input ports and their associated variables
@@ -100,12 +82,20 @@ private:
 	InputPort< bool > portFeedbackReady;
 	bool feedbackReady;
 
-
 	/// Port state estimate
 	InputPort< vector< double > > portFeedback;
 	vector< double > feedback;
+	FlowStatus statusPortFeedback;
 
-	double feedbackForMPC[ NX ];
+	/// Port for references
+	InputPort< vector< double > > portReferences;
+	vector< double > references;
+	FlowStatus statusPortReferences;
+
+	/// Terminal cost weighting matrix
+	InputPort< vector< double > > portWeightingMatrixP;
+	vector< double > weightingMatrixP;
+	FlowStatus statusPortWeightingMatrixP;
 
 	//
 	// Output ports and their associated variables
@@ -171,21 +161,6 @@ private:
 	string fileNameWeightsQ;
 	string fileNameWeightsR;
 	string fileNameWeightsQF;
-
-	//
-	// Reference handling
-	//
-	DataObjectLockFree< vector<double> > refDO;
-	vector< double > refIN;
-	vector< double > refRT;
-
-	vector< vector< double > > refDefault;
-
-	vector< vector< double > > references;
-
-	unsigned refCounter;
-	unsigned numReferences;
-	bool refChanged;
 
 	//
 	// TODO Logging

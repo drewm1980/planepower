@@ -8,9 +8,6 @@
  *
  */
 
-#ifndef ACADOIF
-#define ACADOIF
-
 
 #include <stdio.h>
 #include <math.h>
@@ -18,19 +15,37 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#ifndef ACADOIF
+#define ACADOIF
+
 #include "qpoases/solver.hpp"
+
+
+/* COMMON DEFINITIONS:              */
+/* -------------------------------- */
+
+
+/* Number of control intervals */
+#define ACADO_N   10
+/* Number of states */
+#define ACADO_NX  22
+/* Number of controls */
+#define ACADO_NU  3
+/* Number of parameters */
+#define ACADO_NP  35
 
 
 /* GLOBAL VARIABLES:                */
 /* -------------------------------- */
 typedef struct ACADOvariables_ {
-real_t x[132];
-real_t u[10];
-real_t xRef[110];
-real_t uRef[10];
-real_t Q[484];
-real_t R[4];
-real_t QF[484];
+real_t x[242];
+real_t u[30];
+real_t p[35];
+real_t xRef[220];
+real_t uRef[30];
+real_t QQ[484];
+real_t RR[9];
+real_t QT[484];
 
 } ACADOvariables;
 
@@ -39,38 +54,40 @@ real_t QF[484];
 /* -------------------------------- */
 typedef struct ACADOworkspace_ {
 real_t rk_dim22_temp[23];
-real_t acado_aux[9399];
+real_t acado_aux[9761];
 real_t rk_ttt;
-real_t rk_xxx[24];
+real_t rk_xxx[60];
 real_t rk_kkk[22];
 real_t rk_sol[22];
 real_t rk_A[484];
 real_t rk_b[22];
 real_t rk_rhsTemp[22];
-real_t rk_diffsTemp[528];
+real_t rk_diffsTemp[550];
 int rk_num;
-real_t rk_diffsPrev[528];
-real_t rk_diffsNew[528];
+real_t rk_diffsPrev[550];
+real_t rk_diffsNew[550];
 real_t QQF[484];
-real_t state[552];
-real_t residuum[110];
-real_t g1[10];
-real_t H01[220];
-real_t H11[100];
-real_t lbA[60];
-real_t ubA[60];
-real_t d[110];
+real_t state[610];
+real_t residuum[220];
+real_t g0[22];
+real_t g1[30];
+real_t H00[484];
+real_t H01[660];
+real_t H11[900];
+real_t lbA[110];
+real_t ubA[110];
+real_t d[220];
 real_t deltaX0[22];
-real_t C[2420];
-real_t QC[2420];
+real_t C[4840];
+real_t QC[4840];
 real_t Gx[484];
-real_t E[1100];
-real_t QE[1100];
-real_t Gu[44];
-real_t Dx[110];
-real_t QDx[110];
-real_t Du[10];
-real_t RDu[10];
+real_t E[6600];
+real_t QE[6600];
+real_t Gu[66];
+real_t Dx[220];
+real_t QDx[220];
+real_t Du[30];
+real_t RDu[30];
 
 } ACADOworkspace;
 
@@ -86,10 +103,10 @@ void condense1( int index, real_t* yy );
 void condense2(  );
 void expand(  );
 void setupQP(  );
-void multiplyQC1( real_t* Q, real_t* C1, real_t* QC1 );
-void multiplyQE1( real_t* Q, real_t* E1, real_t* QE1 );
-void multiplyQDX1( real_t* Q, real_t* Dx1, real_t* QDx1 );
-void multiplyRDU1( real_t* R, real_t* Du1, real_t* RDu1 );
+void multiplyQC1( real_t* QQ, real_t* C1, real_t* QC1 );
+void multiplyQE1( real_t* QQ, real_t* E1, real_t* QE1 );
+void multiplyQDX1( real_t* QQ, real_t* Dx1, real_t* QDx1 );
+void multiplyRDU1( real_t* RR, real_t* Du1, real_t* RDu1 );
 void multiplyQC2( real_t* QQF, real_t* C1, real_t* QC1 );
 void multiplyQE2( real_t* QQF, real_t* E1, real_t* QE1 );
 void multiplyQDX2( real_t* QQF, real_t* Dx1, real_t* QDx1 );
@@ -98,6 +115,8 @@ void multiplyE( real_t* Gx, real_t* E1, real_t* E1_new );
 void multiplyG1( real_t* E, real_t* QDx, real_t* g1 );
 void multiplyCD1( real_t* Gx, real_t* d1, real_t* d1_new );
 void multiplyEU1( real_t* Gu, real_t* u1, real_t* d1_new );
+void multiplyG0( real_t* C, real_t* QDx, real_t* g0 );
+void multiplyH00( real_t* C, real_t* QC, real_t* H00 );
 void multiplyH01( real_t* C, real_t* QE, real_t* H01 );
 void multiplyH11( real_t* E, real_t* QE, real_t* H11 );
 real_t getObjectiveValue(  );
@@ -124,7 +143,8 @@ extern ACADOworkspace acadoWorkspace;
 extern ACADOvariables acadoVariables;
 /* ------------------------------------- */
 
-#endif
+
+#endif // ACADOIF
 
 /* END OF FILE. */
 
