@@ -179,6 +179,7 @@ connect("dynamicMHE.portReady","lqrController.mhePortReady",cp)
 # FEEDBACK!!!!!
 connect("lqrController.controlInputPort","mcuHandler.controlOutputPort",cp)
 connect("lqrController.controlOutputPort","mcuHandler.controlInputPort",cp)
+connect("dynamicMHE.portRateInput", "lqrController.controlRatesOutputPort", cp)
 
 ################################################################################
 #
@@ -214,15 +215,11 @@ connectPeers("reporter","lqrController")
 #reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
 #reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
-reporter.reportPort("dynamicMHE","portStateEstimate")
 
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
 #reporter.reportPort("dynamicMHE","portFullControlVector")
 
-reporter.reportPort("lqrController","Xref")
-reporter.reportPort("lqrController","controlOutputPort")
-reporter.reportPort("lqrController","controlRatesOutputPort")
 
 #connectPeers("reporter1","poseFromMarkers")
 #connectPeers("reporter1","encoder")
@@ -230,6 +227,16 @@ reporter.reportPort("lqrController","controlRatesOutputPort")
 #reporter1.reportPort("poseFromMarkers","pose")
 #reporter1.reportPort("encoder","deltaOmega")
 #reporter1.reportPort("dynamicMHE","portOneStepPrediction")
+
+
+
+#reporter.reportPort("dynamicMHE","portStateEstimate")
+#reporter.reportPort("lqrController","Xref")
+#reporter.reportPort("lqrController","controlOutputPort")
+#reporter.reportPort("lqrController","controlRatesOutputPort")
+
+
+reporter.reportPort("dynamicMHE","portStateAndControl")
 
 ################################################################################
 #
