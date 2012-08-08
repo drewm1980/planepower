@@ -114,7 +114,7 @@ int main( int argc, char * const argv[] )
 	
 	mpc.set( CG_USE_C99,    YES              );
 
-	mpc.exportCode( "code_export_MPC" );
+	mpc.exportCode( "code_export_nmpc" );
 	mpc.printDimensionsQP();
 
     return 0;

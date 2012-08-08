@@ -561,12 +561,14 @@ int main( int argc, char * const argv[] )
 	mhe.set( CG_USE_C99,    YES              );
 	
 	mhe.set(PRINTLEVEL, HIGH);
-	
-// 	mhe.set( CG_USE_VARIABLE_WEIGHTING_MATRIX, YES);
 
+#if ( CODEGEN_FOR_OROCOS == 1 )
+
+	mhe.set( CG_USE_VARIABLE_WEIGHTING_MATRIX, YES);
+
+#endif
 	
-	
-	mhe.exportCode( "code_export_MHE" );
+	mhe.exportCode( "code_export_mhe" );
 	mhe.printDimensionsQP();
 
     return 0;

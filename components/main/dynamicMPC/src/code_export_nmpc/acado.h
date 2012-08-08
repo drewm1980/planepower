@@ -15,9 +15,15 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#ifndef ACADOIF
-#define ACADOIF
+#ifndef ACADO_H
+#define ACADO_H
 
+#if !defined(__MATLAB__) && !defined(__ACADOIF__)
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#endif
 #include "qpoases/solver.hpp"
 
 
@@ -142,9 +148,13 @@ void printHeader(  );
 extern ACADOworkspace acadoWorkspace;
 extern ACADOvariables acadoVariables;
 /* ------------------------------------- */
+#if !defined(__MATLAB__) && !defined(__ACADOIF__)
+#ifdef __cplusplus
 
-
-#endif // ACADOIF
+} // extern "C"
+#endif
+#endif
+#endif
 
 /* END OF FILE. */
 
