@@ -191,10 +191,16 @@ private:
 	OutputPort< vector< double > > portOneStepPrediction;
 	vector< double > oneStepPrediction;
 
+	// Ports for reporting everything on the same port
+
 	OutputPort<vector<double> > portStateAndControl;
 	vector<double> StateAndControl;
-	InputPort<vector<double> > portRateInput;
-	vector<double> RateInput;
+
+	vector<double> statePredicted;
+
+	// Inputport for the reference of the controller. For reporting purposes only.
+	InputPort<vector<double> > portStateReference;
+	vector<double> StateReference; 
 
 	//
 	// Properties

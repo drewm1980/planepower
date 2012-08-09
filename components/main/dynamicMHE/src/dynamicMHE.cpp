@@ -99,11 +99,10 @@ DynamicMHE::DynamicMHE(const std::string& name)
 			.doc("One step prediction of the MHE, after the shifting");
 
 	this->addPort("portStateAndControl", portStateAndControl)
-			.doc("Port with states and controls");
+			.doc("Port with states and controls, measurements, ... ");
 
-	this->addPort("portRateInput", portRateInput)
-			.doc("RateInput");
-
+	this->addPort("portStateReference",portStateReference)
+			.doc("Port with reference of controller");
 			
 	//
 	// Initialize and output the relevant output ports
@@ -134,9 +133,12 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	portOneStepPrediction.setDataSample( oneStepPrediction );
 	portOneStepPrediction.write( oneStepPrediction );
 
-	StateAndControl.resize(NX+2*NU+NY_MARK+NY_IMU,0.0);
+	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE,0.0);
 	portStateAndControl.setDataSample( StateAndControl );
 	portStateAndControl.write( StateAndControl );
+
+	statePredicted.resize(NX,0.0);
+	StateReference.resize(NX,0.0);
 
 	//
 	// Size of input ports
@@ -254,7 +256,7 @@ bool DynamicMHE::configureHook( )
 
 bool DynamicMHE::startHook( )
 {
-	unsigned i, j;
+	unsigned i;
 	
 	//
 	// Misc.
@@ -370,6 +372,10 @@ void DynamicMHE::mhePreparationPhase( )
 
 		// Integrate
 		integrate( acadoWorkspace.state );
+
+		for(i=0; i< NX; i++){
+			statePredicted[i] = acadoWorkspace.state[i];
+		}
 
 		// Shift the states and controls
 		shiftStates( acadoWorkspace.state );
@@ -596,42 +602,77 @@ void DynamicMHE::mheFeedbackPhase( )
 
 		numOfActiveSetChanges = logNWSR;
 		portNumOfActiveSetChanges.write( numOfActiveSetChanges );
+
+		if(sqpIterationsCounter==0){
+			for(i = 0; i < NX; i++){
+				StateAndControl[i] = stateEstimate[i];
+			}
+		}
+		if(sqpIterationsCounter==1){
+			for(i = 0; i<NX; i++){
+				StateAndControl[NX+i] = stateEstimate[i];
+			}
+		}
+		if(sqpIterationsCounter==2){
+			for(i = 0; i<  NX; i++){
+				StateAndControl[2*NX+i] = stateEstimate[i];
+			}
+		}
+		if(sqpIterationsCounter==0){ // This is the predicted state. This was computed at the previous time step, so by doing it now, it is integrated to the current time.
+			for(i = 0; i < NX; i++){
+				StateAndControl[3*NX+i] = statePredicted[i];
+			}
+		}
+		if(sqpIterationsCounter == 0){
+			if(portStateReference.read(StateReference) == NoData){
+				StateReference.resize(NX,0.0);
+			}
+			for(i = 0; i < NX; i++){
+				StateAndControl[4*NX+i] = StateReference[i];
+			}
+		}
+		if(sqpIterationsCounter == 2){
+			for(i = 0; i < NU; i++){
+				if(measurementsCtrl.size() == NU){
+					StateAndControl[5*NX+i] = measurementsCtrl[i];
+				}
+				else{
+					StateAndControl[5*NX+i] = 0.0;
+				}
+			}
+		}
+		if(sqpIterationsCounter == 2){
+			for(i = 0; i < NU; i++){
+				if(measurementsCtrl.size() == NU){
+					StateAndControl[5*NX+NU+i] = measurementsCtrlRates[i];
+				}
+				else{
+					StateAndControl[5*NX+NU+i] = 0.0;
+				}
+			}
+		}
+		if(sqpIterationsCounter == 0){
+			for(i = 0; i < NY_MARK; i++){
+				StateAndControl[5*NX+2*NU+i] = measurementsMarkers[i];
+			}
+		}
+		if(sqpIterationsCounter == 0){
+			for(i = 0; i < NY_IMU; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+i] = measurementsIMU[i];
+			}
+		}
+		if(sqpIterationsCounter == 0){
+			for(i = 0; i < NY_POSE; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+i] = measurementsPose[i];
+			}
+		}
+		if(sqpIterationsCounter==2){
+			portStateAndControl.write(StateAndControl);
+		}
 	}
 	
 	// The user component should always read _first_ whether the MHE is ready
 	portReady.write( ready );
-
-	if(ready){
-		for(int iter = 0; iter<NX; iter++){
-			StateAndControl[iter] = stateEstimate[iter];
-		}
-		for(int iter = 0; iter<NU; iter++){
-			if(measurementsCtrl.size() == NU){
-				StateAndControl[NX+iter] = measurementsCtrl[iter];
-			}
-			else{
-				StateAndControl[NX+iter] = 0.0;
-			}
-		}
-		if(portRateInput.read(RateInput) == NoData){
-			RateInput.resize(3,0.0);
-		}
-		for(int iter = 0; iter<NU; iter++){
-			if(RateInput.size() == NU){
-				StateAndControl[NX+NU+iter] = RateInput[iter];
-			}
-			else{
-				StateAndControl[NX+NU+iter] = 0.0;
-			}
-		}
-		for(int iter = 0; iter<NY_MARK; iter++){
-			StateAndControl[NX+2*NU] = measurementsMarkers[iter];
-		}
-		for(int iter = 0; iter<NY_IMU; iter++){
-			StateAndControl[NX+2*NU+NY_MARK+iter] = measurementsIMU[iter];
-		}
-		portStateAndControl.write(StateAndControl);
-	}
 
 	// Write the info about data sizes
 	portDataSizeValid.write( dataSizeValid );
