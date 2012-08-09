@@ -191,6 +191,11 @@ private:
 	OutputPort< vector< double > > portOneStepPrediction;
 	vector< double > oneStepPrediction;
 
+	OutputPort<vector<double> > portStateAndControl;
+	vector<double> StateAndControl;
+	InputPort<vector<double> > portRateInput;
+	vector<double> RateInput;
+
 	//
 	// Properties
 	//

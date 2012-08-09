@@ -162,13 +162,13 @@ connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 #connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
 
 # TODO
-# connect("dynamicMHE.portMeasurementsCtrlRates", "lqr.controlRatesOutputPort", cp)
+ connect("dynamicMHE.portMeasurementsCtrlRates", "lqr.controlRatesOutputPort", cp)
 
 #
 # Connection between LQR and "real" world
 #
 # TODO Put "control interpolator" component in between
-connect("lqr.controlRatesOutputPort", "sim.controlInputPort", cp)
+connect("lqr.RateInput", "sim.controlInputPort", cp)
 
 ################################################################################
 #
