@@ -122,12 +122,12 @@ using namespace Orocos;
 
 	int McuHandler::SendMotorReferences( int m1_ref, int m2_ref, int m3_ref )
 	{
-		if(m1_ref>MAX_VALUE_AILERON_REF){m1_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-		if(m2_ref>MAX_VALUE_AILERON_REF){m2_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-		if(m3_ref>MAX_VALUE_ELEVATOR_REF){m3_ref = MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
-		if(m1_ref<-MAX_VALUE_AILERON_REF){m1_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-		if(m2_ref<-MAX_VALUE_AILERON_REF){m2_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-		if(m3_ref<-MAX_VALUE_ELEVATOR_REF){m3_ref = -MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
+//		if(m1_ref>MAX_VALUE_AILERON_REF){m1_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+//		if(m2_ref>MAX_VALUE_AILERON_REF){m2_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+//		if(m3_ref>MAX_VALUE_ELEVATOR_REF){m3_ref = MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
+//		if(m1_ref<-MAX_VALUE_AILERON_REF){m1_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+//		if(m2_ref<-MAX_VALUE_AILERON_REF){m2_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
+//		if(m3_ref<-MAX_VALUE_ELEVATOR_REF){m3_ref = -MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
 
 		//
 		// Prepare the request message
