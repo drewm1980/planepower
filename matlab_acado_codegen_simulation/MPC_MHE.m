@@ -2,7 +2,7 @@ clear all
 % close all
 clc
 
-addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
+addpath('Simulation','Matlabfunctions','code_export_nmpc','code_export_mhe')
 
 recompileMHE = 1;
 recompileMPC = 1;
@@ -13,7 +13,7 @@ generateCodeForOrocos = 0;
 % MPC settings
 % NMPC Sim.W0 MPC.Ncvp MPC.Tc 1 MPC.Ref.r
 
-mpc_settings
+mpc_settings;
 Sim.W0 = W0;         % Wind known by the controller
 MPC.Ncvp = Ncvp; % number of cvp
 MPC.Tc = Tc; % horizon in seconds
@@ -26,8 +26,9 @@ MPC.Sfac = 1; % factor multiplying the terminal cost
 MPC.is_init = 0;
 
 % MHE settings
-MHE.Tc = 1;
-MHE.Ncvp = 10;
+mhe_settings;
+MHE.Tc = Tc;
+MHE.Ncvp = Ncvp;
 MHE.Ts  = MHE.Tc/MHE.Ncvp;
 MHE.Nref = MHE.Ncvp+1;%500;%
 
@@ -108,7 +109,7 @@ if recompileMHE
     eval(['!./MHE ',num2str(Sim.W0),'     ',num2str(MHE.Ncvp),'     ',num2str(MHE.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     
 	if (generateCodeForOrocos == 0)
-		cd code_export_MHE/
+		cd code_export_mhe/
 		make_mex
 		cd ..
 	end;
@@ -125,7 +126,7 @@ if recompileMPC
     
     % Compile to generate the mex
 	if (generateCodeForOrocos == 0)
-		cd code_export_MPC/
+		cd code_export_nmpc/
 		make_mex
 		cd ..
 	end;
