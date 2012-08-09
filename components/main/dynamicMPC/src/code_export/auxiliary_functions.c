@@ -29,7 +29,7 @@ void printStates(  ){
 int run01,run02;
 printf( "acadoVariables.x = \n" );
 for( run01=0; run01<22; ++run01 ){
-  for( run02=0; run02<6; ++run02 )
+  for( run02=0; run02<11; ++run02 )
     printf( "%e \t", acadoVariables.x[run02*22+run01] );
   printf( "\n" );
 }
@@ -38,9 +38,9 @@ for( run01=0; run01<22; ++run01 ){
 void printControls(  ){
 int run01,run02;
 printf( "acadoVariables.u = \n" );
-for( run01=0; run01<2; ++run01 ){
-  for( run02=0; run02<5; ++run02 )
-    printf( "%e \t", acadoVariables.u[run02*2+run01] );
+for( run01=0; run01<3; ++run01 ){
+  for( run02=0; run02<10; ++run02 )
+    printf( "%e \t", acadoVariables.u[run02*3+run01] );
   printf( "\n" );
 }
 }

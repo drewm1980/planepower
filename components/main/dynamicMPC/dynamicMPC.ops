@@ -9,13 +9,15 @@ LoggingService.start()
 # Set up the MPC component
 loadComponent("dynamicMPC", "DynamicMPC")
 
+dynamicMPC.propNumSQPIterations = 1
 dynamicMPC.propFileNameWeightsQ = "../../../properties/mpc_properties/CG_Q.txt"
 dynamicMPC.propFileNameWeightsR = "../../../properties/mpc_properties/CG_R.txt"
-dynamicMPC.propFileNameWeightsQF = "../../../properties/mpc_properties/CG_Qf.txt"
-dynamicMPC.propRefDefaultFileName = "../../../properties/mpc_properties/H2Xref.dat"
 
 # Set up non-periodic activity
 setActivity("dynamicMPC", 0.0, HighestPriority, ORO_SCHED_RT)
+
+loadService("dynamicMPC","marshalling")
+dynamicMPC.marshalling.loadProperties( "sample.cpf" )
 
 # Configuring components
 dynamicMPC.configure()

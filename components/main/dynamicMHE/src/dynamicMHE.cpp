@@ -98,6 +98,12 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	this->addPort("portOneStepPrediction", portOneStepPrediction)
 			.doc("One step prediction of the MHE, after the shifting");
 
+	this->addPort("portStateAndControl", portStateAndControl)
+			.doc("Port with states and controls");
+
+	this->addPort("portRateInput", portRateInput)
+			.doc("RateInput");
+
 			
 	//
 	// Initialize and output the relevant output ports
@@ -127,6 +133,10 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	oneStepPrediction.resize(NX, 0.0);
 	portOneStepPrediction.setDataSample( oneStepPrediction );
 	portOneStepPrediction.write( oneStepPrediction );
+
+	StateAndControl.resize(NX+2*NU+NY_MARK+NY_IMU,0.0);
+	portStateAndControl.setDataSample( StateAndControl );
+	portStateAndControl.write( StateAndControl );
 
 	//
 	// Size of input ports
@@ -591,6 +601,38 @@ void DynamicMHE::mheFeedbackPhase( )
 	// The user component should always read _first_ whether the MHE is ready
 	portReady.write( ready );
 
+	if(ready){
+		for(int iter = 0; iter<NX; iter++){
+			StateAndControl[iter] = stateEstimate[iter];
+		}
+		for(int iter = 0; iter<NU; iter++){
+			if(measurementsCtrl.size() == NU){
+				StateAndControl[NX+iter] = measurementsCtrl[iter];
+			}
+			else{
+				StateAndControl[NX+iter] = 0.0;
+			}
+		}
+		if(portRateInput.read(RateInput) == NoData){
+			RateInput.resize(3,0.0);
+		}
+		for(int iter = 0; iter<NU; iter++){
+			if(RateInput.size() == NU){
+				StateAndControl[NX+NU+iter] = RateInput[iter];
+			}
+			else{
+				StateAndControl[NX+NU+iter] = 0.0;
+			}
+		}
+		for(int iter = 0; iter<NY_MARK; iter++){
+			StateAndControl[NX+2*NU] = measurementsMarkers[iter];
+		}
+		for(int iter = 0; iter<NY_IMU; iter++){
+			StateAndControl[NX+2*NU+NY_MARK+iter] = measurementsIMU[iter];
+		}
+		portStateAndControl.write(StateAndControl);
+	}
+
 	// Write the info about data sizes
 	portDataSizeValid.write( dataSizeValid );
 
@@ -634,11 +676,10 @@ bool DynamicMHE::prepareMeasurements( void )
 	//
 	// Read the measurements of control rates
 	//
-	if (statusMeasurementsCtrlRates == NewData)
+	if (statusMeasurementsCtrlRates != NoData)
 	{
 		if (measurementsCtrlRates.size() != NY_CTRL)
 			return false;
-
 		measurementsCtrlRates[ 0 ] /= SCALE_UR;
 		measurementsCtrlRates[ 1 ] /= SCALE_UR;
 		measurementsCtrlRates[ 2 ] /= SCALE_UP;

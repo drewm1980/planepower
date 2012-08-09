@@ -5,7 +5,14 @@
 #include <vector>
 #include <string>
 
+//#include <boost/math/special_functions/fpclassify.hpp>
+
 #include "dynamicMPC.hpp"
+
+//
+// The worst hack I applied to my code; a big thanx to Andrew.
+// XXX Change this ASAP!!!
+//
 
 namespace MPCHACK
 {
@@ -45,9 +52,20 @@ Params params;
 //
 extern int logNWSR;
 
+/// Array used explicitly by the NMPC
+double feedbackForMPC[ ACADO_NX ];
+
 }; // end MPCHACK
 
 using namespace MPCHACK;
+
+#define NX		ACADO_NX	// number of differential states
+#define NU		ACADO_NU	// number of controls of the MPC
+#define N 		ACADO_N	// number of control intervals
+
+#define N_OUT	3		// dimension of the output vector of this component
+
+//using namespace boost::math;
 
 //
 // Class methods
@@ -68,10 +86,6 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	this->provides()->addOperation("mpcFeedbackPhase", &DynamicMPC::mpcFeedbackPhase, this, OwnThread)
 			.doc( "MPC RTI feedback step." );
 
-	this->provides()->addOperation("setReference", &DynamicMPC::setReference, this, OwnThread)
-			.doc("Function for reference setting.")
-			.arg("index",  "Index of the reference in the file; zero based");
-
 	//
 	// Set the input ports
 	//
@@ -80,6 +94,12 @@ DynamicMPC::DynamicMPC(const std::string& name)
 
 	this->addPort("portFeedback", portFeedback)
 			.doc("Feedback -- state estimate.");
+
+	this->addPort("portReferences", portReferences)
+			.doc("References -- for the whole horizon");
+
+	this->addPort("portWeightingMatrixP", portWeightingMatrixP)
+			.doc("A matrix for the terminal cost");
 
 	//
 	// Set the output ports
@@ -150,14 +170,53 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	numSQPIterations = 1;
 	this->addProperty("propNumSQPIterations", numSQPIterations)
 			.doc("Number of SQP iterations. Default = 1, Max = 10.");
-	this->addProperty("propRefDefaultFileName", refDefaultFileName)
-			.doc("Name of a file which contains the default full state reference. File should contain one row.");
-	this->addProperty("propReferencesFileName", referencesFileName)
-			.doc("Name of a file which contains the (point) references. One reference per row");
 
 	this->addProperty("propFileNameWeightsQ", fileNameWeightsQ);
 	this->addProperty("propFileNameWeightsR", fileNameWeightsR);
-	this->addProperty("propFileNameWeightsQF", fileNameWeightsQF);
+
+	// ACADO properties
+	this->addProperty("mk", acadoVariables.p[ 0 ]);
+	this->addProperty("g", acadoVariables.p[ 1 ]);
+	this->addProperty("rho", acadoVariables.p[ 2 ]);
+	this->addProperty("rhoc", acadoVariables.p[ 3 ]);
+	this->addProperty("dc", acadoVariables.p[ 4 ]);
+	this->addProperty("AQ", acadoVariables.p[ 5 ]);
+	this->addProperty("rA", acadoVariables.p[ 6 ]);
+	this->addProperty("zT", acadoVariables.p[ 7 ]);
+	this->addProperty("I1", acadoVariables.p[ 8 ]);
+	this->addProperty("I31", acadoVariables.p[ 9 ]);
+	this->addProperty("I2", acadoVariables.p[ 10 ]);
+	this->addProperty("I3", acadoVariables.p[ 11 ]);
+	this->addProperty("LT", acadoVariables.p[ 12 ]);
+	this->addProperty("RD", acadoVariables.p[ 13 ]);
+	this->addProperty("PD", acadoVariables.p[ 14 ]);
+	this->addProperty("YD", acadoVariables.p[ 15 ]);
+	this->addProperty("CLA", acadoVariables.p[ 16 ]);
+	this->addProperty("CLe", acadoVariables.p[ 17 ]);
+	this->addProperty("CL0", acadoVariables.p[ 18 ]);
+	this->addProperty("CDA", acadoVariables.p[ 19 ]);
+	this->addProperty("CDA2", acadoVariables.p[ 20 ]);
+	this->addProperty("CDB2", acadoVariables.p[ 21 ]);
+	this->addProperty("CD0", acadoVariables.p[ 22 ]);
+	this->addProperty("CRB", acadoVariables.p[ 23 ]);
+	this->addProperty("CRAB", acadoVariables.p[ 24 ]);
+	this->addProperty("CRr", acadoVariables.p[ 25 ]);
+	this->addProperty("CPA", acadoVariables.p[ 26 ]);
+	this->addProperty("CPe", acadoVariables.p[ 27 ]);
+	this->addProperty("CP0", acadoVariables.p[ 28 ]);
+	this->addProperty("CYB", acadoVariables.p[ 29 ]);
+	this->addProperty("CYAB", acadoVariables.p[ 30 ]);
+	this->addProperty("SPAN", acadoVariables.p[ 31 ]);
+	this->addProperty("CHORD", acadoVariables.p[ 32 ]);
+	this->addProperty("CL_scaling", acadoVariables.p[ 33 ]);
+	this->addProperty("CD_scaling", acadoVariables.p[ 34 ]);
+
+	//
+	// Reset the MPC structures
+	// XXX Maybe this is not the smartest place to put
+	//
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
 	//
 	// Misc
@@ -190,74 +249,20 @@ bool DynamicMPC::configureHook()
 	unsigned i, j;
 
 	if (	portFeedback.connected() == false ||
-			portFeedbackReady.connected() == false )
+			portFeedbackReady.connected() == false ||
+			portReferences.connected() == false ||
+			portWeightingMatrixP.connected() )
 	{
 		log( Error ) << "At least one of the input ports is not connected" << endlog();
 
 		return false;
 	}
-	
-	//
-	// Reset the MPC structures
-	//
-	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
-	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
 	bool status;
 	vector< vector< double > > m;
 
 	//
-	// Read the file with the default references
-	//
-	status = readDataFromFile(refDefaultFileName.c_str(), refDefault, 1, NX);
-	if (status == false)
-	{
-		log( Error ) << "Could not open a file with default reference" << endlog();
-
-		return false;
-	}
-
-	for (i = 0; i < N; ++i)
-		for (j = 0; j < NX; ++j)
-			acadoVariables.xRef[i * NX + j] = refDefault[ 0 ][ j ];
-
-	log( Info ) << "File with default reference successfully loaded" << endlog();
-//	printMatrix("refDefault", refDefault);
-
-
-	status = readDataFromFile(referencesFileName.c_str(), references, 0, NX);
-	if (status == false)
-	{
-		log( Error ) << "Could not open a file with references" << endlog();
-
-		return false;
-	}
-	log( Info ) << "File with (point) references successfully loaded" << endlog();
-//	printMatrix("references", references);
-
-	// Number of reference points
-	numReferences = references.size();
-//	cout << "numReferences: " << numReferences << endl;
-
-	refCounter = 0;
-
-	//
-	// Initialize the real-time data structures for set/get of references
-	//
-//	refIN.resize(REF_USER_SIZE, 0.0);
-//	refRT.resize(REF_USER_SIZE, 0.0);
-//
-//	refIN[ 0 ] = refDefault[ 0 ][ 2 ];
-//	refIN[ 1 ] = refDefault[ 0 ][ 20 ];
-//
-//	refRT[ 0 ] = refDefault[ 0 ][ 2 ];
-//	refRT[ 1 ] = refDefault[ 0 ][ 20 ];
-//
-//	refDO.data_sample( refIN );
-//	refDO.Set( refIN );
-
-	//
-	// Load the weights Q, R, QF
+	// Load the weights Q, R
 	//
 
 	// Q
@@ -271,14 +276,9 @@ bool DynamicMPC::configureHook()
 
 	for (i = 0; i < NX; ++i)
 		for (j = 0; j < NX; ++j)
-			acadoVariables.Q[i * NX + j] = m[ i ][ j ];
+			acadoVariables.QQ[i * NX + j] = m[ i ][ j ];
 
 	log( Info ) << "Q weights successfully loaded" << endlog();
-	
-	// dx, dy, dz
-// 	acadoVariables.Q[ 3 ] *= 10.0;
-// 	acadoVariables.Q[ 4 ] *= 10.0;
-// 	acadoVariables.Q[ 5 ] *= 10.0;
 	
 //	printMatrix("Q", m);
 
@@ -293,32 +293,18 @@ bool DynamicMPC::configureHook()
 
 	for (i = 0; i < NU; ++i)
 		for (j = 0; j < NU; ++j)
-			acadoVariables.R[i * NU + j] = m[ i ][ j ];
+			acadoVariables.RR[i * NU + j] = m[ i ][ j ];
 
 	log( Info ) << "R weights successfully loaded" << endlog();
 //	printMatrix("R", m);
-
-	// QF
-	status = readDataFromFile(fileNameWeightsQF.c_str(), m, NX, NX);
-	if (status == false)
-	{
-		log( Error ) << "Error in reading a file with weights QF" << endlog();
-
-		return false;
-	}
-
-// 	for (i = 0; i < NX; ++i)
-// 		for (j = 0; j < NX; ++j)
-// 			acadoVariables.QF[i * NX + j] = m[ i ][ j ];
-
-	log( Info ) << "QF (terminal) weights successfully loaded" << endlog();
-//	printMatrix("QF", m);
 
 	//
 	// Limit the number of SQP iterations
 	//
 	if (numSQPIterations > 10)
-		numSQPIterations = 10;
+		log( Warning )
+			<< "Number of requested SQP iterations is: "
+			<< numSQPIterations << endlog();
 
 	return true;
 }
@@ -332,18 +318,8 @@ bool DynamicMPC::startHook()
 
 	initialized = false;
 
-	if (numSQPIterations > 10)
-		numSQPIterations = 10;
-
-	refCounter = 0;
-	refChanged = false;
-
-	//
-	// (Re-)set the references
-	//
-	for (i = 0; i < N; ++i)
-		for (j = 0; j < NX; ++j)
-			acadoVariables.xRef[i * NX + j] = refDefault[ 0 ][ j ];
+	firstRefArrived = false;
+	firstWeightPArrived = false;
 
 	return true;
 }
@@ -373,6 +349,9 @@ void DynamicMPC::stopHook( )
 {
 	unsigned i;
 
+	//
+	// Reset all controls -- for safety
+	//
 	for (i = 0; i < N_OUT; ++i)
 	{
 		controls[ i ] = 0.0;
@@ -423,19 +402,22 @@ void DynamicMPC::mpcPreparationPhase()
 		shiftStates( acadoWorkspace.state );
 		shiftControls( 0 );
 	}
-	else if (sqpIterationsCounter == (numSQPIterations - 1))
+	else if (	sqpIterationsCounter == (numSQPIterations - 1) &&
+				firstRefArrived == true &&
+				firstWeightPArrived == true )
 	{
 		//
+		// i.e. here we are still not initialized
 		// Initialize the first node
 		//
 
 		// Initialize with the feedback from the estimator
-//		for (i = 0; i < NX; ++i)
-//			acadoVariables.x[ i ] = feedback[ i ];
-
-		// Initialize with the "default" reference (stable equilibrium)
 		for (i = 0; i < NX; ++i)
-			acadoVariables.x[ i ] = refDefault[ 0 ][ i ];
+			acadoVariables.x[ i ] = feedbackForMPC[ i ];
+
+		// XXX Initialize with the "default" reference (stable equilibrium)
+//		for (i = 0; i < NX; ++i)
+//			acadoVariables.x[ i ] = refDefault[ 0 ][ i ];
 
 		//
 		// Initialize all other nodes
@@ -493,44 +475,11 @@ void DynamicMPC::mpcPreparationPhase()
 void DynamicMPC::mpcFeedbackPhase()
 {
 	unsigned i, j;
+	bool isFinite;
 
 	tickFeedbackPhaseBegin = TimeService::Instance()->getTicks();
 
-	if (sqpIterationsCounter == 0)
-	{
-		//
-		// Read the feedback
-		//
-
-		dataSizeValid = true;
-
-		portFeedback.read( feedback );
-
-		if (feedback.size() != NX)
-		{
-			dataSizeValid = false;
-		}
-
-		if (refChanged == true && refCounter < numReferences)
-		{
-			for (i = 0; i < N; ++i)
-				for (j = 0; j < NX; ++j)
-					acadoVariables.xRef[i * NX + j] = references[ refCounter ][ j ];
-
-			refChanged = false;
-		}
-	}
-
-//	//
-//	// Read the reference and set it, just write the values on the whole horizon
-//	//
-//	refDO.Get( refRT );
-//
-//	for (i = 0; i < N; ++i)
-//	{
-//		acadoVariables.xRef[i * NX + 2 ] = refRT[ 0 ];
-//		acadoVariables.xRef[i * NX + 20] = refRT[ 1 ];
-//	}
+	prepareInputData();
 
 	if (initialized == true && dataSizeValid == true)
 	{
@@ -538,13 +487,37 @@ void DynamicMPC::mpcFeedbackPhase()
 		// Run the controller if we are initialized
 		//
 
-		for(i = 0; i < NX; ++i)
-			feedbackForMPC[ i ] = feedback[ i ];
-
 		// Run the NMPC
 		qpSolverStatus = feedbackStep( feedbackForMPC );
 
-		if (qpSolverStatus == 0)
+		// First check if states && controls are NaN
+		// XXX isfinite is something compiler dependent and should be tested...
+		// XXX If we have NaN we should shutdown everything!!!
+		isFinite = true;
+		for (i = 0; i < NX * (N + 1); ++i)
+		{
+			if (isfinite( static_cast< double >( acadoVariables.x[ i ] ) ) == false)
+			{
+				isFinite = false;
+
+				break;
+			}
+		}
+		if (isFinite == true)
+		{
+			for (i = 0; i < NU * N; ++i)
+			{
+				if (isfinite( static_cast< double >( acadoVariables.u[ i ] ) ) == false)
+				{
+					isFinite = false;
+
+					break;
+				}
+			}
+		}
+
+		// Now check for QP solver status
+		if (qpSolverStatus == 0 && isFinite == true)
 		{
 			// HUH, we are so lucky today
 
@@ -560,14 +533,14 @@ void DynamicMPC::mpcFeedbackPhase()
 				controlsForMeasurement[ 1 ] = SCALE_UR * acadoVariables.x[NX + 20];
 				controlsForMeasurement[ 2 ] = SCALE_UP * acadoVariables.x[NX + 21];
 
-				controlRates[ 0 ] = SCALE_UR * acadoVariables.u[ 0 ];
-				controlRates[ 1 ] = SCALE_UR * acadoVariables.u[ 0 ];
-				controlRates[ 2 ] = SCALE_UP * acadoVariables.u[ 1 ];
+				controlRates[ 0 ] = SCALE_UR * acadoVariables.u[ 1 ];
+				controlRates[ 1 ] = SCALE_UR * acadoVariables.u[ 1 ];
+				controlRates[ 2 ] = SCALE_UP * acadoVariables.u[ 2 ];
 			}
 		}
 		else
 		{
-			// TODO Implement some wisdom for the case NMPC wants to output some rubbish
+			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 
 			for (i = 0; i < N_OUT; ++i)
 			{
@@ -605,21 +578,76 @@ void DynamicMPC::mpcFeedbackPhase()
 	portFeedbackPhaseExecTime.write( timeFdbPhase );
 }
 
-//bool DynamicMPC::setReference(double _refZ, double _refUr)
-//{
-//	if (	_refZ < REF_Z_MIN ||
-//			_refZ > REF_Z_MAX ||
-//			_refUr < REF_UR_MIN ||
-//			_refUr > REF_UR_MAX )
-//		return false;
-//
-//	refIN[ 0 ] = _refZ;
-//	refIN[ 1 ] = _refUr;
-//
-//	refDO.Set( refIN );
-//
-//	return true;
-//}
+bool DynamicMPC::prepareInputData( void )
+{
+	register unsigned i, j;
+
+	if (sqpIterationsCounter == 0)
+	{
+		dataSizeValid = true;
+
+		// Read the feedback
+		statusPortFeedback = portFeedback.read( feedback );
+		if (feedback.size() != NX)
+		{
+			dataSizeValid = false;
+		}
+
+		// Read the references
+		statusPortReferences = portReferences.read( references );
+		if (references.size() != (NX * N + NU * N))
+		{
+			dataSizeValid = false;
+		}
+
+		// Read the weighting matrix P
+		statusPortWeightingMatrixP = portWeightingMatrixP.read( weightingMatrixP );
+		if (weightingMatrixP.size() != (NX * NX))
+		{
+			dataSizeValid = false;
+		}
+
+		//
+		// If all data sizes are correct we can proceed
+		//
+		if (dataSizeValid == true)
+		{
+			// References
+			if (statusPortReferences == NewData)
+			{
+//				copy(references.begin(), references.end(), acadoVariables.xRef);
+
+				for (i = 0; i < N; ++i)
+					for (j = 0; j < NX; ++j)
+						acadoVariables.xRef[i * NX + j] = references[i * (NX + NU) + j];
+				for (i = 0; i < N; ++i)
+					for (j = 0; j < NU; ++j)
+						acadoVariables.uRef[i * NU + j] = references[i * (NX + NU) + NX + j];
+
+				if (initialized == false && firstRefArrived == false)
+				{
+					firstRefArrived = true;
+				}
+			}
+
+			// Terminal weighting matrix
+			if (statusPortWeightingMatrixP == NewData)
+			{
+				copy(weightingMatrixP.begin(), weightingMatrixP.end(), acadoVariables.QT);
+
+				if (initialized == false && firstWeightPArrived == false)
+				{
+					firstWeightPArrived = true;
+				}
+			}
+
+			// Full state feedback
+			copy(feedback.begin(), feedback.end(), feedbackForMPC);
+		}
+	}
+
+	return dataSizeValid;
+}
 
 bool DynamicMPC::readDataFromFile(const char* fileName, vector< vector< double > >& data, unsigned numRows, unsigned numCols)
 {
@@ -672,18 +700,6 @@ void DynamicMPC::printMatrix(string name, vector< vector< double > > data)
 
 		cout << endl;
 	}
-}
-
-bool DynamicMPC::setReference(unsigned index)
-{
-	if (index > numReferences)
-		return false;
-
-	refCounter = index;
-
-	refChanged = true;
-
-	return true;
 }
 
 ORO_CREATE_COMPONENT( DynamicMPC )

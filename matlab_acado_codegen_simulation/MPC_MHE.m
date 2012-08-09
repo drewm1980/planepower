@@ -7,6 +7,9 @@ addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 recompileMHE = 1;
 recompileMPC = 1;
 
+generateCodeForOrocos = 0;
+
+
 % MPC settings
 MPC.Tc = 1; % horizon in seconds
 MPC.Ncvp = 10; % number of cvp
@@ -100,9 +103,11 @@ if recompileMHE
 	display(['!./MHE ',num2str(Sim.W0),'     ',num2str(MHE.Ncvp),'     ',num2str(MHE.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     eval(['!./MHE ',num2str(Sim.W0),'     ',num2str(MHE.Ncvp),'     ',num2str(MHE.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     
-    cd code_export_MHE/
-    make_mex
-    cd ..
+	if (generateCodeForOrocos == 0)
+		cd code_export_MHE/
+		make_mex
+		cd ..
+	end;
 end
 
 if recompileMPC
@@ -114,10 +119,19 @@ if recompileMPC
     eval(['!./NMPC ',num2str(Sim.W0),'     ',num2str(MPC.Ncvp),'     ',num2str(MPC.Tc),'     ',num2str(1),'     ',num2str(MPC.Ref.r)]);
     
     % Compile to generate the mex
-    cd code_export_MPC/
-    make_mex
-    cd ..
+	if (generateCodeForOrocos == 0)
+		cd code_export_MPC/
+		make_mex
+		cd ..
+	end;
 end	
+
+if ( generateCodeForOrocos )
+	disp('Code-generation for OROCOS -- done');
+	
+	return;
+end;
+
 %% %%%%%%%%%%%%%%%%%%%%%%% SIMULATION LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 display('------------------------------------------------------------------')

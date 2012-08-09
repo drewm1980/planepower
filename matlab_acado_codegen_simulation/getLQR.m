@@ -44,9 +44,9 @@ Sim.Noise.is = 1;           % set to 0 to kill the noise
 Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 
 % Initial condition
-%MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
+MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
 %MPC.Ref.z = -0.08 ;         % reference trajectory height (relative to the arm)
-MPC.Ref.z = -0.04;
+%MPC.Ref.z = -0.04;
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
 MPC.Ref.RPM = 60;           % carousel rotational velocity
@@ -73,6 +73,6 @@ display('------------------------------------------------------------------')
 % Initialize (first MPC, then MHE)
 [MPC,Sim] = initializeMPC(MPC,Sim);
 
-dlmwrite('K3.dat',MPC.K,'delimiter','\t');
-dlmwrite('Xref3.dat',MPC.Xref(1,:)','delimiter','\t');
+dlmwrite('K1.dat',MPC.K,'delimiter','\t');
+dlmwrite('Xref1.dat',MPC.Xref(1,:)','delimiter','\t');
 S2 = MPC.S;
