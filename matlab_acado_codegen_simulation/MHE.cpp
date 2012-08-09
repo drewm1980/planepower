@@ -161,7 +161,17 @@ int main( int argc, char * const argv[] )
 // 	Rdelta(0,1) = -sin(-delta - PI/2);
 // 	Rdelta(1,0) =  sin(-delta - PI/2);
 // 	Rdelta(1,1) =  cos(-delta - PI/2);
-// 	
+//
+
+#if (CODEGEN_FOR_OROCOS == 1)
+	Matrix RPC1 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/RPC1.txt" );
+	Matrix RPC2 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/RPC2.txt" );
+	Matrix ProjC1 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/PC1.txt" );
+	Matrix ProjC2 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/PC2.txt" );
+	Matrix pos_marker_body1 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/pos_marker_body1.txt" );
+	Matrix pos_marker_body2 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/pos_marker_body2.txt" );
+	Matrix pos_marker_body3 = readFromFile( "../../../../matlab_acado_codegen_simulation/CameraCalibration/pos_marker_body3.txt" );
+#else
 	Matrix RPC1 = readFromFile( "CameraCalibration/RPC1.txt" );
 	Matrix RPC2 = readFromFile( "CameraCalibration/RPC2.txt" );
 	Matrix ProjC1 = readFromFile( "CameraCalibration/PC1.txt" );
@@ -169,6 +179,7 @@ int main( int argc, char * const argv[] )
 	Matrix pos_marker_body1 = readFromFile( "CameraCalibration/pos_marker_body1.txt" );
 	Matrix pos_marker_body2 = readFromFile( "CameraCalibration/pos_marker_body2.txt" );
 	Matrix pos_marker_body3 = readFromFile( "CameraCalibration/pos_marker_body3.txt" );
+#endif
 	
 // 	pos_marker_body1.print("pos_marker_body1:");
 	
@@ -233,8 +244,12 @@ int main( int argc, char * const argv[] )
 	uvC2M2(0,0) = uvsC2M2(0,0)/uvsC2M2(2,0);	uvC2M2(1,0) = uvsC2M2(1,0)/uvsC2M2(2,0);
 	uvC2M3(0,0) = uvsC2M3(0,0)/uvsC2M3(2,0);	uvC2M3(1,0) = uvsC2M3(1,0)/uvsC2M3(2,0);
 	
-	
+#if (CODEGEN_FOR_OROCOS == 1)
+	Matrix RIMU = readFromFile( "../../../../matlab_acado_codegen_simulation/IMU/RIMU.txt" );
+#else
 	Matrix RIMU = readFromFile( "IMU/RIMU.txt" );
+#endif
+	
 // 	RIMU = eye(3);
 	
 	IntermediateState aE(3,1), aEend(3,1);
@@ -567,6 +582,8 @@ int main( int argc, char * const argv[] )
 	mhe.set( CG_USE_VARIABLE_WEIGHTING_MATRIX, YES);
 
 #endif
+
+	printf("Stigao do ovde");
 	
 	mhe.exportCode( "code_export_mhe" );
 	mhe.printDimensionsQP();

@@ -14,6 +14,8 @@
 //#include <ocl/LoggingService.hpp>
 //#include <ocl/Category.hpp>
 
+#include "acado.h"
+
 //
 // Used namespaces
 //
@@ -26,12 +28,12 @@ using namespace std;
 // Define some common stuff
 //
 
-#define NX		22		// number of differential states
-#define NU		3		// number of control inputs
-#define NP		39		// number of user parameters
-#define NY		24		// number of measurements
-#define NYN		9		// number of measurements, last node
-#define N 		10		// number of estimation intervals
+#define NX		ACADO_NX	// number of differential states
+#define NU		ACADO_NU	// number of control inputs
+#define NP		ACADO_NP	// number of user parameters
+#define NY		ACADO_NY	// number of measurements
+#define NYN		ACADO_NYN	// number of measurements, last node
+#define N 		ACADO_N		// number of estimation intervals
 
 #define NY_POSE	12		// # of measurements from pose component / or markers component; in the later case it is number of markers
 #define NY_MARK NY_POSE

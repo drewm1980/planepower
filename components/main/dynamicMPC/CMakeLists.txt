@@ -1,3 +1,10 @@
+################################################################################
+#
+# CMake script for building the NMPC component
+# Author: Milan Vukov, milan.vukov@esat.kuleuven.be
+#
+################################################################################
+
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 
 #
