@@ -1,0 +1,15 @@
+#Import libraries
+import("controlsPlayback")
+ 
+#Create components
+loadComponent("controlsPlayback","OCL::controlsPlayback")
+ 
+#Load properties
+loadService("controlsPlayback","marshalling")
+controlsPlayback.marshalling.loadProperties("../../../properties/controlsPlayback/controlsPlayback.cpf")
+ 
+#Set activities
+setActivity("controlsPlayback",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+controlsPlayback.configure()
+controlsPlayback.start()
