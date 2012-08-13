@@ -51,6 +51,7 @@ loadComponent("controlsPlayback","OCL::ControlsPlayback")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
+loadComponent("reporter1","OCL::FileReporting")
 
 ################################################################################
 #
@@ -91,7 +92,7 @@ LEDTracker.useExternalTrigger=true;
 #(optionally, overwrite the default report file name)
 reporter.ReportFile = "closed_loop_lqr_data.dat"
 #reporter.NullSample = "nan"
-#reporter1.ReportFile = "pose.dat"
+reporter1.ReportFile = "imu_controlSequence.dat"
 
 # MHE
 dynamicMHE.propNumSQPIterations = 3
@@ -137,6 +138,7 @@ setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 setActivity("controlsPlayback",0,ocpPrio,ORO_SCHED_RT)
 
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
+setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -217,6 +219,8 @@ connectPeers("reporter","dynamicMHE")
 
 reporter.reportPort("dynamicMHE","portStateAndControl")
 
+connectPeers("reporter1","mcuHandler")
+reporter1.reportPort("mcuHandler","imuAndControlPort")
 ################################################################################
 #
 # Configure and start components
