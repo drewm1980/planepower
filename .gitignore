@@ -3,6 +3,7 @@
 *.swp
 *.swo
 *.pyc
+*.ior
 source.dot
 bin
 lib
@@ -11,9 +12,12 @@ build
 .makepp
 octave-core
 mainpage.dox
+
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
+cmake_uninstall.cmake
+
 casadi_functions.cpp
 *~
 
