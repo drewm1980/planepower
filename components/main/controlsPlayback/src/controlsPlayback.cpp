@@ -60,10 +60,14 @@ namespace OCL
 
 	void  ControlsPlayback::stopHook()
 	{
+		controlOutput[0] = controlOutput[1] = controlOutput[2] = 0.0;
+		_controlOutputPort.write(controlOutput);
 	}
 
 	void  ControlsPlayback::cleanUpHook()
 	{
+		controlOutput[0] = controlOutput[1] = controlOutput[2] = 0.0;
+		_controlOutputPort.write(controlOutput);
 	}
 
 	bool ControlsPlayback::startSequence(){
