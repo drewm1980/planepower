@@ -179,7 +179,9 @@ connect("dynamicMHE.portReady","lqrController.mhePortReady",cp)
 # FEEDBACK!!!!!
 connect("lqrController.controlInputPort","mcuHandler.controlOutputPort",cp)
 connect("lqrController.controlOutputPort","mcuHandler.controlInputPort",cp)
-connect("dynamicMHE.portRateInput", "lqrController.controlRatesOutputPort", cp)
+connect("dynamicMHE.portMeasurementsCtrlRates", "lqrController.controlRatesOutputPort", cp)
+
+connect("dynamicMHE.portStateReference","lqrController.Xref",cp)
 
 ################################################################################
 #
@@ -187,13 +189,13 @@ connect("dynamicMHE.portRateInput", "lqrController.controlRatesOutputPort", cp)
 #
 ################################################################################
 
-connectPeers("reporter","mcuHandler")
-connectPeers("reporter","LEDTracker")
-connectPeers("reporter","encoder")
-connectPeers("reporter","poseFromMarkers")
-connectPeers("reporter","imuBuffer")
+#connectPeers("reporter","mcuHandler")
+#connectPeers("reporter","LEDTracker")
+#connectPeers("reporter","encoder")
+#connectPeers("reporter","poseFromMarkers")
+#connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
-connectPeers("reporter","lqrController")
+#connectPeers("reporter","lqrController")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -277,7 +279,7 @@ lqrController.configure()
 #lqrController.start()
  
 reporter.configure()
-reporter.start()
+#reporter.start()
 
 #reporter1.configure()
 #reporter1.start()
