@@ -1,8 +1,8 @@
-%close all
+close all
 
-%!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/closed_loop_lqr_data.dat stateAndControl.dat
-%!cat stateAndControl.dat | grep -v nan >stateAndControlClean.dat
-%!sed -i "1,3d" stateAndControlClean.dat
+!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/closed_loop_lqr_data.dat stateAndControl.dat
+!cat stateAndControl.dat | grep -v nan >stateAndControlClean.dat
+!sed -i "1,3d" stateAndControlClean.dat
 
 data = dlmread('stateAndControlClean.dat'); 
 
@@ -22,6 +22,9 @@ ur_est = data(:,22); up_est = data(:,23);
 ur_applied = data(:,24); up_applied = data(:,26);
 dur_applied = data(:,27); dup_applied = data(:,29);
 markers = data(:,30:41);
+imu = data(:,42:47);
+omega = imu(:,1:3);
+acc = imu(:,4:6);
 
 Xt = data(:,2:23);
 Xt(:,21) = ur_applied;
@@ -34,18 +37,104 @@ P.tu = [t zeros(size(dur_applied)) dur_applied dup_applied];
 
 dx = @(t,x) Model_integ_ACADO(t,x,'',P);
 
-N_predict = 10;
+T_predict = 1; % time to integrate forward
 
-Xt_predict = zeros(size(Xt));
+N_predict = T_predict/dt; % Number of steps to integrate
 
-for i=1:size(Xt_predict,1)-N_predict-1
-%for i=1:73
-    fprintf(strcat(['running simulation ',int2str(i),' of ',int2str(size(Xt_predict,1)),'\n']) )
-    [T,Y] = ode45(dx,[(i-1)*dt (i-1)*dt+N_predict*dt] ,Xt(i,:)');
-    Xt_predict(i,:) = Y(end,:);
+i_predict = 150; %node to integrate from
+fprintf('integrating...\n')
+[T,Y] = ode45(dx,[t(i_predict) t(i_predict)+T_predict] ,Xt(i_predict,:)');
+fprintf('finished\n')
+
+figure
+subplot(311)
+hold on
+stairs(t,Xt(:,1),'b')
+stairs(T,Y(:,1),'r')
+ylabel('x [m]')
+subplot(312)
+hold on
+stairs(t,Xt(:,2),'b')
+stairs(T,Y(:,2),'r')
+ylabel('y [m]')
+subplot(313)
+hold on
+stairs(t,Xt(:,3),'b')
+stairs(T,Y(:,3),'r')
+ylabel('z [m]')
+
+Xt_markers = zeros(size(Xt,1),12);
+
+for i=1:size(Xt,1)
+    uvM = Model_integ_ACADO(0,Xt(i,:)','markers',P);
+    Xt_markers(i,:) = uvM(1:12);
+end
+Y_markers = zeros(size(Y,1),12);
+for i=1:size(Y,1)
+    uvM = Model_integ_ACADO(0,Y(i,:)','markers',P);
+    Y_markers(i,:) = uvM(1:12);
 end
 
 figure
-plot(t(1:73),Xt(1:73,1),'b')
+subplot(611)
 hold on
-plot(t(1:73),Xt_predict(1:73,1),'r')
+stairs(t,Xt_markers(:,1),'b')
+stairs(T,Y_markers(:,1),'r')
+stairs(t,markers(:,1),'g')
+subplot(612)
+hold on
+stairs(t,Xt_markers(:,2),'b')
+stairs(T,Y_markers(:,2),'r')
+stairs(t,markers(:,2),'g')
+subplot(613)
+hold on
+stairs(t,Xt_markers(:,3),'b')
+stairs(T,Y_markers(:,3),'r')
+stairs(t,markers(:,3),'g')
+subplot(614)
+hold on
+stairs(t,Xt_markers(:,4),'b')
+stairs(T,Y_markers(:,4),'r')
+stairs(t,markers(:,4),'g')
+subplot(615)
+hold on
+stairs(t,Xt_markers(:,5),'b')
+stairs(T,Y_markers(:,5),'r')
+stairs(t,markers(:,5),'g')
+subplot(616)
+hold on
+stairs(t,Xt_markers(:,6),'b')
+stairs(T,Y_markers(:,6),'r')
+stairs(t,markers(:,6),'g')
+
+figure
+subplot(611)
+hold on
+stairs(t,Xt_markers(:,7),'b')
+stairs(T,Y_markers(:,7),'r')
+stairs(t,markers(:,7),'g')
+subplot(612)
+hold on
+stairs(t,Xt_markers(:,8),'b')
+stairs(T,Y_markers(:,8),'r')
+stairs(t,markers(:,8),'g')
+subplot(613)
+hold on
+stairs(t,Xt_markers(:,9),'b')
+stairs(T,Y_markers(:,9),'r')
+stairs(t,markers(:,9),'g')
+subplot(614)
+hold on
+stairs(t,Xt_markers(:,10),'b')
+stairs(T,Y_markers(:,10),'r')
+stairs(t,markers(:,10),'g')
+subplot(615)
+hold on
+stairs(t,Xt_markers(:,11),'b')
+stairs(T,Y_markers(:,11),'r')
+stairs(t,markers(:,11),'g')
+subplot(616)
+hold on
+stairs(t,Xt_markers(:,12),'b')
+stairs(T,Y_markers(:,12),'r')
+stairs(t,markers(:,12),'g')

@@ -47,9 +47,10 @@ Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 MPC.Ref.z = -0.1189362777884522 ;         % reference trajectory height (relative to the arm)
 %MPC.Ref.z = -0.08 ;         % reference trajectory height (relative to the arm)
 %MPC.Ref.z = -0.04;
+MPC.Ref.z = -0.37;
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
-MPC.Ref.RPM = 60;           % carousel rotational velocity
+MPC.Ref.RPM = 37;           % carousel rotational velocity
 MPC.Ref.ddelta = 2*pi*MPC.Ref.RPM/60.;
 Sim.r = MPC.Ref.r;          % copy the tether length (just for the ease of use)
 

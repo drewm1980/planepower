@@ -4,7 +4,7 @@ MHE
 NMPC
 
 *.dat
-*.dat
+*.png
 Makefile
 EQ_init.txt
 EQ_params.txt
