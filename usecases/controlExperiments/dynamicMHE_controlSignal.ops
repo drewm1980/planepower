@@ -45,13 +45,13 @@ loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
 import("dynamicMHE")
 loadComponent("dynamicMHE","DynamicMHE")
 
-# LQR
-import("lqrController_control_derivatives")
-loadComponent("lqrController","OCL::LqrController_control_derivatives")
+# ControlsPlayback
+import("controlsPlayback")
+loadComponent("controlsPlayback","OCL::ControlsPlayback")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
-#loadComponent("reporter1","OCL::FileReporting")
+loadComponent("reporter1","OCL::FileReporting")
 
 ################################################################################
 #
@@ -92,7 +92,7 @@ LEDTracker.useExternalTrigger=true;
 #(optionally, overwrite the default report file name)
 reporter.ReportFile = "closed_loop_lqr_data.dat"
 #reporter.NullSample = "nan"
-#reporter1.ReportFile = "pose.dat"
+reporter1.ReportFile = "imu_controlSequence.dat"
 
 # MHE
 dynamicMHE.propNumSQPIterations = 3
@@ -135,10 +135,10 @@ setActivity("poseFromMarkers", 0, LEDTrackerPrio, ORO_SCHED_RT)
 # MHE, with dynamic model
 setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 
-setActivity("lqrController", 0, ocpPrio,ORO_SCHED_RT)
+setActivity("controlsPlayback",0,ocpPrio,ORO_SCHED_RT)
 
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
-#setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
+setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -149,13 +149,13 @@ setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
 connectPeers("voltageController","soemMaster")
 connectPeers("encoder","soemMaster")
 connectPeers("cameraTrigger","soemMaster")
-connectPeers("lqrController","mcuHandler")
-connectPeers("lqrController","dynamicMHE")
 
 var ConnPolicy cp
 
 connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
+
+connect("masterTimer.controlsPlaybackClock","controlsPlayback.triggerTimeStampIn",cp)
 
 connect("encoder.encoderTimeStampIn","masterTimer.cameraClock",cp)
 connect("cameraTrigger.Trigger","masterTimer.cameraClock",cp)
@@ -173,15 +173,9 @@ connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov",cp)
 connect("dynamicMHE.portMeasurementsEncoder",	"encoder.deltaOmega",cp)
 connect("dynamicMHE.portMeasurementsCtrl",	"mcuHandler.controlOutputPort",cp)
 
-connect("dynamicMHE.portStateEstimate","lqrController.stateInputPort",cp)
-connect("dynamicMHE.portReady","lqrController.mhePortReady",cp)
-
 # FEEDBACK!!!!!
-connect("lqrController.controlInputPort","mcuHandler.controlOutputPort",cp)
-connect("lqrController.controlOutputPort","mcuHandler.controlInputPort",cp)
-connect("dynamicMHE.portMeasurementsCtrlRates", "lqrController.controlRatesOutputPort", cp)
+connect("controlsPlayback.controlOutputPort","mcuHandler.controlInputPort",cp)
 
-connect("dynamicMHE.portStateReference","lqrController.Xref",cp)
 
 ################################################################################
 #
@@ -195,7 +189,6 @@ connect("dynamicMHE.portStateReference","lqrController.Xref",cp)
 #connectPeers("reporter","poseFromMarkers")
 #connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
-#connectPeers("reporter","lqrController")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -221,25 +214,13 @@ connectPeers("reporter","dynamicMHE")
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
 #reporter.reportPort("dynamicMHE","portFullControlVector")
-
-
-#connectPeers("reporter1","poseFromMarkers")
-#connectPeers("reporter1","encoder")
-#connectPeers("reporter1","dynamicMHE")
-#reporter1.reportPort("poseFromMarkers","pose")
-#reporter1.reportPort("encoder","deltaOmega")
-#reporter1.reportPort("dynamicMHE","portOneStepPrediction")
-
-
-
 #reporter.reportPort("dynamicMHE","portStateEstimate")
-#reporter.reportPort("lqrController","Xref")
-#reporter.reportPort("lqrController","controlOutputPort")
-#reporter.reportPort("lqrController","controlRatesOutputPort")
 
 
 reporter.reportPort("dynamicMHE","portStateAndControl")
 
+connectPeers("reporter1","mcuHandler")
+reporter1.reportPort("mcuHandler","imuAndControlPort")
 ################################################################################
 #
 # Configure and start components
@@ -273,10 +254,11 @@ imuBuffer.configure()
 imuBuffer.start()
 
 dynamicMHE.configure()
-lqrController.configure()
 
 #dynamicMHE.start()
-#lqrController.start()
+
+controlsPlayback.configure()
+controlsPlayback.start()
  
 reporter.configure()
 #reporter.start()

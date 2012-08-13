@@ -18,10 +18,13 @@ namespace OCL
 		.doc("The target measurement rate of the imu (Hz)");
 	properties()->addProperty( "camera_target_hz",_camera_target_hz )
 		.doc("The target framerate of the camera (Hz)");
+	properties()->addProperty( "controls_playback_target_hz",_controls_playback_target_hz )
+		.doc("The target framerate of the camera (Hz)");
 
 	// Add ports
 	ports()->addPort( "cameraClock",_cameraClock ).doc("The description of the port");
 	ports()->addPort( "imuClock",_imuClock ).doc("The description of the port");
+	ports()->addPort( "controlsPlaybackClock",_controlsPlaybackClock ).doc("The description of the port");
 	addPort("imuCameraRatio" , _imuCameraRatio).doc("The ratio of imu freq. on camera freq.");
 
 	addPort("deltaIn",_deltaIn);
@@ -41,6 +44,7 @@ bool  MasterTimer::configureHook()
 
 	portPointers[0] = &_imuClock;
 	portPointers[1] = &_cameraClock;
+	portPointers[2] = &_controlsPlaybackClock;
 
 	for(int i=0; i<CLOCK_COUNT; i++)
 	{

@@ -1,0 +1,148 @@
+################################################################################
+#
+# Import and load components
+#
+################################################################################
+
+# Master Timer
+import("masterTimer")
+loadComponent("masterTimer","OCL::MasterTimer")
+
+# MCU Handler
+import("mcuHandler")
+loadComponent("mcuHandler","McuHandler")
+
+# SOEM
+import("soem_master")
+import("soem_ebox")
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+
+# Voltage controller
+import("voltageController")
+loadComponent("voltageController","OCL::VoltageController")
+
+# Encoder
+import("encoder")
+loadComponent("encoder","OCL::Encoder")
+
+# ControlsPlayback
+import("controlsPlayback")
+loadComponent("controlsPlayback","OCL::ControlsPlayback")
+
+# OCL reporter
+loadComponent("reporter","OCL::FileReporting")
+
+################################################################################
+#
+# Configure components' properties
+#
+################################################################################
+
+# Master timer
+loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz
+
+# MCU ...
+loadService("mcuHandler","marshalling")
+mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
+mcuHandler.useExternalTrigger = true
+
+# SOEM
+soemMaster.ifname = "eth1"
+
+# Voltage controller
+
+# Encoder
+encoder.encoderPort = 0;
+
+# OCL Reporter (non real-time)
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "imu_controlSequence.dat"
+
+
+################################################################################
+#
+# Set activities and priorities
+#
+################################################################################
+
+var int soemPrio = 99
+var int masterTimerPrio = 98
+var int sensorPrio = 90
+var int ocpPrio = 80
+var int LEDTrackerPrio = 70
+
+setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
+
+setActivity("mcuHandler",0,sensorPrio,ORO_SCHED_RT)
+
+setActivity("soemMaster",0.001, soemPrio,ORO_SCHED_RT)
+
+setActivity("voltageController", 0.1, sensorPrio,ORO_SCHED_RT)
+
+setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("controlsPlayback",0,ocpPrio,ORO_SCHED_RT)
+
+setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
+
+################################################################################
+#
+# Connect components
+#
+################################################################################
+
+connectPeers("voltageController","soemMaster")
+connectPeers("encoder","soemMaster")
+
+var ConnPolicy cp
+
+connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
+
+connect("masterTimer.controlsPlaybackClock","controlsPlayback.triggerTimeStampIn",cp)
+
+connect("encoder.encoderTimeStampIn","masterTimer.cameraClock",cp)
+
+# FEEDBACK!!!!!
+connect("controlsPlayback.controlOutputPort","mcuHandler.controlInputPort",cp)
+
+
+################################################################################
+#
+# Reporter configuration
+#
+################################################################################
+
+connectPeers("reporter","mcuHandler")
+
+
+reporter.reportPort("mcuHandler","imuAndControlPort")
+
+################################################################################
+#
+# Configure and start components
+#
+################################################################################
+
+masterTimer.configure()
+
+mcuHandler.configure()
+mcuHandler.start()
+
+soemMaster.configure()
+soemMaster.start()
+
+voltageController.configure()
+voltageController.start()
+
+encoder.configure()
+encoder.start()
+
+controlsPlayback.configure()
+controlsPlayback.start()
+ 
+reporter.configure()
+#reporter.start()
+
+masterTimer.start()
