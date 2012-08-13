@@ -109,7 +109,8 @@ namespace OCL
 			U[2] = U_scaled[2]/SCALE_UP;
 			X[20] = U[0];
 			X[21] = U[2];
-			Xref[18] = Xref[19] = 0.0;
+			// Uncomment the next line to remove the feedforward
+			Xref[20] = Xref[21] = 0.0;
 			for(unsigned int i=0; i<X.size(); i++)	
 			{
 				E[i]=X[i]-Xref[i];
