@@ -152,8 +152,8 @@ connect("dynamicMHE.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
 # Connection between MHE and LQR
 #
 connect("dynamicMHE.portReady",			"lqr.mhePortReady", cp)
-#connect("dynamicMHE.portStateEstimate",	"lqr.stateInputPort", cp)
-connect("sim.stateOutputPort",	"lqr.stateInputPort", cp)
+connect("dynamicMHE.portStateEstimate",	"lqr.stateInputPort", cp)
+#connect("sim.stateOutputPort",	"lqr.stateInputPort", cp)
 
 # 1. Use this guy for open loop control testing
 connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
@@ -161,14 +161,17 @@ connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 # 2. Use this guy to feed MHE with LQR DATA TODO: add this functionality
 #connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
 
-# TODO
+# Connect for prediction
  connect("dynamicMHE.portMeasurementsCtrlRates", "lqr.controlRatesOutputPort", cp)
+
+# Connect for reporting purpose
+connect("dynamicMHE.portStateReference","lqr.Xref",cp)
 
 #
 # Connection between LQR and "real" world
 #
 # TODO Put "control interpolator" component in between
-connect("lqr.RateInput", "sim.controlInputPort", cp)
+connect("lqr.controlRatesOutputPort", "sim.controlInputPort", cp)
 
 ################################################################################
 #
