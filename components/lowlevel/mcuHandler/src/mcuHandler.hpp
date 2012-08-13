@@ -68,6 +68,9 @@ protected:
 	OutputPort<vector<double> >				_controlOutputPort;	// The time of capture from the IMU
 	OutputPort<TIME_TYPE>					_controlTimeStamp;
 
+	OutputPort<vector<double> >				_imuAndControlPort;
+	vector<double>						imuAndControl;
+
 	/// the number of items sucessfully read
 
 	// *** CONFIGURATION ***

@@ -33,11 +33,14 @@ using namespace Orocos;
 	addPort("controlOutputPort",_controlOutputPort).doc("Control output: motor1, motor2, motor3");
 	addPort("controlTimeStamp",_controlTimeStamp);
 
+	addPort("imuAndControlPort",_imuAndControlPort);
+
 	U.resize(3);
 	U_sent.resize(3,0.0);
 	_controlOutputPort.setDataSample(U_sent);
 	_controlOutputPort.write(U_sent);	
 	imuData.resize(6);
+	imuAndControl.resize(9);
 
 	// Add properties
 
@@ -160,6 +163,10 @@ using namespace Orocos;
 		_imuTrigger.read(imuTimeStamp);
 		_controlOutputPort.write(U_sent);
 		_controlTimeStamp.write(imuTimeStamp);
+
+		imuAndControl[6] = m1_ref;
+		imuAndControl[7] = m2_ref;
+		imuAndControl[8] = m3_ref;
 	
 		return 0;
 	}
@@ -219,6 +226,14 @@ using namespace Orocos;
 		(*data)[3] = g_sIMUSensorDataDouble.XAccl;
 		(*data)[4] = g_sIMUSensorDataDouble.YAccl;
 		(*data)[5] = g_sIMUSensorDataDouble.ZAccl;
+		
+		imuAndControl[0] = g_sIMUSensorDataDouble.XGyro;
+		imuAndControl[1] = g_sIMUSensorDataDouble.YGyro;
+		imuAndControl[2] = g_sIMUSensorDataDouble.ZGyro;
+		imuAndControl[3] = g_sIMUSensorDataDouble.XAccl;
+		imuAndControl[4] = g_sIMUSensorDataDouble.YAccl;
+		imuAndControl[5] = g_sIMUSensorDataDouble.ZAccl;
+		_imuAndControlPort.write(imuAndControl);
 
 				//printf("x acceleration: %f \n", g_sIMUSensorDataDouble.XAccl);
 				//printf("y acceleration: %f \n", g_sIMUSensorDataDouble.YAccl);
