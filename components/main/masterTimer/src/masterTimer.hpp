@@ -37,18 +37,20 @@ namespace OCL
         : public TaskContext
     {
     protected:
-#define CLOCK_COUNT 2
+#define CLOCK_COUNT 3 // Number of clocks other than master
 		union{
 			double target_hz[CLOCK_COUNT];
 			struct {
 				double _imu_target_hz;
 				double _camera_target_hz;
+				double _controls_playback_target_hz;
 			};
 		};
 		int dividers[CLOCK_COUNT];
 
         OutputPort<TIME_TYPE> _imuClock;
         OutputPort<TIME_TYPE> _cameraClock;
+        OutputPort<TIME_TYPE> _controlsPlaybackClock;
         OutputPort<TIME_TYPE> _masterClock;
 	OutputPort<TIME_TYPE> *portPointers[CLOCK_COUNT];
 	OutputPort<int>	_imuCameraRatio;
