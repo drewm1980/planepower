@@ -133,7 +133,7 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	portOneStepPrediction.setDataSample( oneStepPrediction );
 	portOneStepPrediction.write( oneStepPrediction );
 
-	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE,0.0);
+	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC,0.0);
 	portStateAndControl.setDataSample( StateAndControl );
 	portStateAndControl.write( StateAndControl );
 
@@ -664,6 +664,11 @@ void DynamicMHE::mheFeedbackPhase( )
 		if(sqpIterationsCounter == 0){
 			for(i = 0; i < NY_POSE; i++){
 				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+i] = measurementsPose[i];
+			}
+		}
+		if(sqpIterationsCounter == 0){
+			for(i = 0; i < NY_ENC; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+i] = measurementsEncoder[i];
 			}
 		}
 		if(sqpIterationsCounter==2){
