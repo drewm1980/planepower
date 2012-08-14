@@ -1,0 +1,310 @@
+################################################################################
+#
+# Import and load components
+#
+################################################################################
+
+# Master Timer
+import("masterTimer")
+loadComponent("masterTimer","OCL::MasterTimer")
+
+# MCU Handler
+import("mcuHandler")
+loadComponent("mcuHandler","McuHandler")
+
+# IMU buffer
+import("imuBuffer")
+loadComponent("imuBuffer","OCL::ImuBuffer")
+
+# SOEM
+import("soem_master")
+import("soem_ebox")
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+
+# Voltage controller
+import("voltageController")
+loadComponent("voltageController","OCL::VoltageController")
+
+# Encoder
+import("encoder")
+loadComponent("encoder","OCL::Encoder")
+
+# Camera trigger
+import("cameraTrigger")
+loadComponent("cameraTrigger","OCL::CameraTrigger")
+
+# LEDTracker
+import("LEDTracker")
+loadComponent("LEDTracker","OCL::LEDTracker")
+
+# Pose from markers
+import("poseFromMarkers")
+loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
+
+# MHE, with dynamic model
+import("dynamicMHE")
+loadComponent("dynamicMHE","DynamicMHE")
+
+# MPC, with dynamic model
+import("dynamicMPC")
+loadComponent("dynamicMPC","DynamicMPC")
+
+# Trajectory generator
+import("simpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
+
+# OCL reporter
+loadComponent("reporter","OCL::FileReporting")
+#loadComponent("reporter1","OCL::FileReporting")
+
+################################################################################
+#
+# Configure components' properties
+#
+################################################################################
+
+# Master timer
+loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz
+
+# MCU ...
+loadService("mcuHandler","marshalling")
+mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
+mcuHandler.useExternalTrigger = true
+
+# MHE
+dynamicMHE.propNumSQPIterations = 3
+loadService("dynamicMHE", "marshalling")
+dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
+
+# SOEM
+soemMaster.ifname = "eth1"
+
+# Voltage controller
+
+# Encoder
+encoder.encoderPort = 0;
+
+# Camera trigger
+
+# LED tracker
+# LEDTracker hangs until frame arrival, does processing, and re-triggers itself.
+LEDTracker.useExternalTrigger=true;
+
+# MPC
+dynamicMPC.propNumSQPIterations = 5
+
+dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
+dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
+loadService("dynamicMPC", "marshalling")
+dynamicMPC.marshalling.loadProperties("../../properties/mpc_properties/mpc_properties.cpf")
+
+# trajectoryGenerator
+trajectoryGenerator.N = 10
+trajectoryGenerator.NX = 22
+trajectoryGenerator.NU = 3
+
+# OCL Reporter (non real-time)
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "mhe_mpc.dat"
+#reporter.NullSample = "nan"
+#reporter1.ReportFile = "pose.dat"
+
+################################################################################
+#
+# Set activities and priorities
+#
+################################################################################
+
+var int soemPrio = 99
+var int masterTimerPrio = 98
+var int sensorPrio = 90
+var int ocpPrio = 80
+var int LEDTrackerPrio = 70
+# masterTimerPrio = 99
+# sensorPrio = 99
+# ocpPrio = 99
+# LEDTrackerPrio = 99
+
+setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
+
+setActivity("mcuHandler",0,sensorPrio,ORO_SCHED_RT)
+
+setActivity("imuBuffer",0,sensorPrio,ORO_SCHED_RT)
+
+setActivity("soemMaster",0.001, soemPrio,ORO_SCHED_RT)
+
+setActivity("voltageController", 0.1, sensorPrio,ORO_SCHED_RT)
+
+setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("cameraTrigger", 0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("LEDTracker", 0.000, LEDTrackerPrio, ORO_SCHED_RT)
+
+setActivity("poseFromMarkers", 0, LEDTrackerPrio, ORO_SCHED_RT)
+
+# MHE, with dynamic model
+setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
+
+# MPC, with dynamic model
+setActivity("dynamicMPC", 0.0, ocpPrio, ORO_SCHED_RT)
+
+# Trajectory generator
+setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
+#setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
+
+################################################################################
+#
+# Connect components
+#
+################################################################################
+
+connectPeers("voltageController","soemMaster")
+connectPeers("encoder","soemMaster")
+connectPeers("cameraTrigger","soemMaster")
+
+var ConnPolicy cp
+
+connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
+connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
+
+connect("encoder.encoderTimeStampIn","masterTimer.cameraClock",cp)
+connect("cameraTrigger.Trigger","masterTimer.cameraClock",cp)
+
+connect("encoder.delta","LEDTracker.deltaIn",cp)
+
+connect("LEDTracker.markerPositions","poseFromMarkers.markerPositions",cp)
+
+connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
+connect("imuBuffer.imuData","mcuHandler.imuData",cp)
+
+connect("dynamicMHE.portMeasurementsMarkers",	"LEDTracker.markerPositionsAndCovariance",cp)
+connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose",cp)
+connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov",cp)
+connect("dynamicMHE.portMeasurementsEncoder",	"encoder.deltaOmega",cp)
+connect("dynamicMHE.portMeasurementsCtrl",	"mcuHandler.controlOutputPort",cp)
+
+#
+# Connection between MHE and MPC
+#
+
+connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
+connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
+connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
+connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
+connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
+
+# FEEDBACK!!!!!
+# Controls integrated to the second node
+connect("dynamicMPC.portControlsForMeasurement","mcuHandler.controlInputPort",cp)
+connect("dynamicMPC.portControlInput","mcuHandler.controlOutputPort",cp)
+connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
+connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
+
+connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
+
+################################################################################
+#
+# Reporter configuration
+#
+################################################################################
+
+#connectPeers("reporter","mcuHandler")
+#connectPeers("reporter","LEDTracker")
+#connectPeers("reporter","encoder")
+#connectPeers("reporter","poseFromMarkers")
+#connectPeers("reporter","imuBuffer")
+connectPeers("reporter","dynamicMHE")
+
+#reporter.reportPort("poseFromMarkers","pose")
+#reporter.reportPort("mcuHandler","imuTimeStamp")
+#reporter.reportPort("mcuHandler","imuData")
+#reporter.reportPort("LEDTracker","compTime")
+#reporter.reportPort("LEDTracker","triggerTimeStampOut")
+#reporter.reportPort("LEDTracker","markerPositionsAndCovariance")
+#reporter.reportPort("encoder","encoderTimeStampOut")
+#reporter.reportPort("encoder","delta")
+#reporter.reportPort("encoder","omega")
+#reporter.reportPort("encoder","deltaOmega")
+#reporter.reportPort("imuBuffer","imuMeanCov")
+
+#reporter.reportPort("dynamicMHE","portReady")
+#reporter.reportPort("dynamicMHE","portDataSizeValid")
+#reporter.reportPort("dynamicMHE","portQPSolverStatus")
+#reporter.reportPort("dynamicMHE","portKKTTolerance")
+#reporter.reportPort("dynamicMHE","portObjectivevalue")
+#reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+
+#reporter.reportPort("dynamicMHE","portWeightingCoefficients")
+#reporter.reportPort("dynamicMHE","portFullStateVector")
+#reporter.reportPort("dynamicMHE","portFullControlVector")
+
+
+#connectPeers("reporter1","poseFromMarkers")
+#connectPeers("reporter1","encoder")
+#connectPeers("reporter1","dynamicMHE")
+#reporter1.reportPort("poseFromMarkers","pose")
+#reporter1.reportPort("encoder","deltaOmega")
+#reporter1.reportPort("dynamicMHE","portOneStepPrediction")
+
+
+
+#reporter.reportPort("dynamicMHE","portStateEstimate")
+
+
+reporter.reportPort("dynamicMHE","portStateAndControl")
+
+################################################################################
+#
+# Configure and start components
+#
+################################################################################
+
+masterTimer.configure()
+
+mcuHandler.configure()
+mcuHandler.start()
+
+soemMaster.configure()
+soemMaster.start()
+
+voltageController.configure()
+voltageController.start()
+
+encoder.configure()
+encoder.start()
+
+cameraTrigger.configure()
+cameraTrigger.start()
+
+LEDTracker.configure()
+LEDTracker.start()
+
+poseFromMarkers.configure()
+poseFromMarkers.start()
+
+imuBuffer.configure()
+imuBuffer.start()
+
+dynamicMHE.configure()
+dynamicMPC.configure()
+
+#dynamicMHE.start()
+#dynamicMPC.start()
+ 
+trajectoryGenerator.configure()
+#trajectoryGenerator.start()
+
+reporter.configure()
+#reporter.start()
+
+#reporter1.configure()
+#reporter1.start()
+
+masterTimer.start()
