@@ -43,9 +43,9 @@ loadComponent("dynamicMHE","DynamicMHE")
 import("dynamicMPC")
 loadComponent("dynamicMPC","DynamicMPC")
 
-# Manual controller
-#import("manualController")
-#loadComponent("manualController","OCL::ManualController")
+# Trajectory generator
+import("simpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
@@ -75,29 +75,15 @@ dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_prope
 # MPC
 dynamicMPC.propNumSQPIterations = 5
 
-dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/CG_Q.txt"
-dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/CG_R.txt"
+dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
+dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
+loadService("dynamicMPC", "marshalling")
+dynamicMPC.marshalling.loadProperties("../../properties/mpc_properties/mpc_properties.cpf")
 
-#dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/CG_Q2.txt"
-#dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/CG_R2.txt"
-
-# It is not used, for now, but the files has to be provided
-dynamicMPC.propFileNameWeightsQF = "../../properties/mpc_properties/CG_Qf.txt"
-
-#dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/H2Q.dat"
-#dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/H2R.dat"
-
-# Mario's default reference; WORKS
-dynamicMPC.propRefDefaultFileName = "../../properties/mpc_properties/eq_z-01.txt"
-
-# Hammad's default reference; WORKS
-#dynamicMPC.propRefDefaultFileName = "../../properties/mpc_properties/H2Xref.dat"
-
-# Mario's references; WORK
-dynamicMPC.propReferencesFileName = "../../properties/mpc_properties/eq_z00-01-02.txt"
-
-# Hammad's new reference; WORKS
-#dynamicMPC.propReferencesFileName = "../../properties/mpc_properties/H_ref_4cm.dat"
+# trajectoryGenerator
+trajectoryGenerator.N = 10
+trajectoryGenerator.NX = 22
+trajectoryGenerator.NU = 3
 
 ################################################################################
 #
@@ -137,7 +123,7 @@ setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 # MPC, with dynamic model
 setActivity("dynamicMPC", 0.0, ocpPrio, ORO_SCHED_RT)
 
-#setActivity("manualController",0,11,ORO_SCHED_RT)
+setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
 
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
 
@@ -178,7 +164,11 @@ connect("dynamicMHE.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
 #
 # Connection between MHE and MPC
 #
-connect("dynamicMHE.portReady",			"dynamicMPC.portFeedbackReady", cp)
+
+connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
+connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
+connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
+connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
 connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 
 # 1. Use this guy for open loop control testing
@@ -195,7 +185,10 @@ connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 #
 # TODO Put "control interpolator" component in between
 connect("dynamicMPC.portControlRates", "sim.controlInputPort", cp)
+connect("dynamicMPC.portControlInput", "sim.controlOutputPort",cp)
 #connect("dynamicMPC.portControlsForMeasurement", "sim.controlInputPort", cp)
+
+connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
 ################################################################################
 #
@@ -222,7 +215,7 @@ connectPeers("reporter","sim")
 #reporter.reportPort("dynamicMHE","portQPSolverStatus")
 #reporter.reportPort("dynamicMHE","portKKTTolerance")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
-reporter.reportPort("dynamicMHE","portStateEstimate")
+#reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
 #reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
@@ -235,7 +228,8 @@ reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMPC","portControlRates")
 #reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
 
-reporter.reportPort("sim","stateOutputPort")
+#reporter.reportPort("sim","stateOutputPort")
+reporter.reportPort("dynamicMHE","portStateAndControl")
 
 ################################################################################
 #
@@ -277,8 +271,8 @@ dynamicMHE.configure()
 dynamicMPC.configure()
 #dynamicMPC.start()
 
-#manualController.configure()
-#manualController.start()
+trajectoryGenerator.configure()
+#trajectoryGenerator.start()
  
 reporter.configure()
 reporter.start()
