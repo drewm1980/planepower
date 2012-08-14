@@ -11,6 +11,9 @@
 
 #include <rtt/os/TimeService.hpp>
 
+#define REFS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/refs.dat"
+#define WEIGHTS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/weights.dat"
+
 //
 // Used namespaces
 //
@@ -64,6 +67,10 @@ private:
 	
 	OutputPort< vector< double > > portReferences;
 	OutputPort< vector< double > > portWeightsP;
+	OutputPort< bool > portReady;
+
+	OutputPort< vector< double > > portCurrentReference;
+	vector< double > currentReference;
 	
 	InputPort< bool > portTrigger;
 	bool trigger;
