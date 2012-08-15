@@ -97,6 +97,10 @@ private:
 	vector< double > weightingMatrixP;
 	FlowStatus statusPortWeightingMatrixP;
 
+	InputPort< vector< double > > portControlInput;
+	vector< double > controlInput;
+	FlowStatus statusPortControlInput;
+
 	//
 	// Output ports and their associated variables
 	//

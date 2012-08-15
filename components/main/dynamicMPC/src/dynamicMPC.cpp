@@ -62,6 +62,7 @@ using namespace MPCHACK;
 #define NX		ACADO_NX	// number of differential states
 #define NU		ACADO_NU	// number of controls of the MPC
 #define N 		ACADO_N	// number of control intervals
+#define NP 		ACADO_NP	// number of control intervals
 
 #define N_OUT	3		// dimension of the output vector of this component
 
@@ -100,6 +101,9 @@ DynamicMPC::DynamicMPC(const std::string& name)
 
 	this->addPort("portWeightingMatrixP", portWeightingMatrixP)
 			.doc("A matrix for the terminal cost");
+
+	this->addPort("portControlInput", portControlInput)
+			.doc("A port with control inputs that were acutally applied to the system");
 
 	//
 	// Set the output ports
@@ -251,7 +255,7 @@ bool DynamicMPC::configureHook()
 	if (	portFeedback.connected() == false ||
 			portFeedbackReady.connected() == false ||
 			portReferences.connected() == false ||
-			portWeightingMatrixP.connected() )
+			portWeightingMatrixP.connected() == false )
 	{
 		log( Error ) << "At least one of the input ports is not connected" << endlog();
 
@@ -396,6 +400,8 @@ void DynamicMPC::mpcPreparationPhase()
 			acadoWorkspace.state[ i ] = acadoVariables.x[N * NX + i];
 		for (i = 0; i < NU; ++i)
 			acadoWorkspace.state[ indexU + i ] = acadoVariables.u[(N - 1) * NU + i];
+		for (i = 0; i < NP; ++i)
+			acadoWorkspace.state[ indexU + NU + i ] = acadoVariables.p[i];
 
 		integrate( acadoWorkspace.state );
 
@@ -434,11 +440,12 @@ void DynamicMPC::mpcPreparationPhase()
 			// set the states
 			for (j = 0; j < NX; ++j)
 				acadoWorkspace.state[ j ] = acadoVariables.x[i * NX + j];
+			// We can assume they are zero for starters			
+			for (j = 0; j < NU; ++j)
+				acadoWorkspace.state[ indexU + j ] = 0.0;
+			for (j = 0; j < NP; ++j)
+				acadoWorkspace.state[ indexU + NU + j ] = acadoVariables.p[ j ];
 
-			// Set the controls
-			// We can assume they are zero for starters
-//				for (j = 0; j < NU; ++j)
-//					acadoWorkspace.state[ indexU + j ] = acadoVariables.u[i * NU + j];
 
 			integrate( acadoWorkspace.state );
 
@@ -494,7 +501,7 @@ void DynamicMPC::mpcFeedbackPhase()
 		// XXX isfinite is something compiler dependent and should be tested...
 		// XXX If we have NaN we should shutdown everything!!!
 		isFinite = true;
-		for (i = 0; i < NX * (N + 1); ++i)
+/**		for (i = 0; i < NX * (N + 1); ++i)
 		{
 			if (isfinite( static_cast< double >( acadoVariables.x[ i ] ) ) == false)
 			{
@@ -515,6 +522,7 @@ void DynamicMPC::mpcFeedbackPhase()
 				}
 			}
 		}
+**/
 
 		// Now check for QP solver status
 		if (qpSolverStatus == 0 && isFinite == true)
@@ -542,12 +550,8 @@ void DynamicMPC::mpcFeedbackPhase()
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 
-			for (i = 0; i < N_OUT; ++i)
-			{
-				controls[ i ] = 0.0;
-				controlsForMeasurement[ i ] = 0.0;
-				controlRates[ i ] = 0.0;
-			}
+			// Stop the component is case we are not lucky today
+			stop();
 		}
 
 		if (sqpIterationsCounter == (numSQPIterations - 1))
@@ -607,11 +611,22 @@ bool DynamicMPC::prepareInputData( void )
 			dataSizeValid = false;
 		}
 
+		// Read the control input
+		statusPortControlInput = portControlInput.read( controlInput );
+		if (controlInput.size() != NU)
+		{
+			dataSizeValid = false;
+		}
+
 		//
 		// If all data sizes are correct we can proceed
 		//
 		if (dataSizeValid == true)
 		{
+			// Set the feedback for the controls to controlinput. Do this such that we don't use the controls estimated by MHE, since MHE does not do a very good job at estimating them yet.
+			feedback[20] = controlInput[0]/SCALE_UR; // ur
+			feedback[21] = controlInput[2]/SCALE_UP; // up
+
 			// References
 			if (statusPortReferences == NewData)
 			{
