@@ -7,11 +7,13 @@ getIMU_controlSequence; %To load the data
 
 [Txy,F]=tfestimate(ur_scaled,w1-mean(w1),[],[],[],500);
 %%
-for j=1:1
+for j=1:9
     MPC.RD = 1e-2*2^(j-6);
     %MPC.RD = 0.005;
     %MPC.zT = -0.005*(j-1);
     MPC.zT = -0.027;
+    %MPC.I1 = 0.0163*j*5;
+    MPC.I1 = 0.0163;
     getLQR; %To get the linearisation
     A = MPC.A(1:18,1:18);
     B = MPC.A(1:18,19);
@@ -28,6 +30,7 @@ for j=1:1
     wout_RD{j} = wout;
     RD{j} = MPC.RD;
     zT{j} = MPC.zT;
+    I1{j} = MPC.I1;
 end
 %%
 figure
