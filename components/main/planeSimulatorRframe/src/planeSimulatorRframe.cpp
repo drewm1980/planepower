@@ -8,6 +8,7 @@ using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
+extern int rk4( double** x, double** r);
 
 namespace OCL
 {

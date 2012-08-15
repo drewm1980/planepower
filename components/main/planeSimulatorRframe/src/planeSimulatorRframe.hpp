@@ -11,7 +11,6 @@
 #include <rtt/Port.hpp>
 
 #include <ocl/OCL.hpp>
-#include "model/casadi_functions.cpp"
 
 #include <fstream>
 #include <stdint.h>
