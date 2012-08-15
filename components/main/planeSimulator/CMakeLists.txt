@@ -42,8 +42,37 @@ find_package(Orocos-RTT REQUIRED rtt-marshalling ${RTT_HINTS})
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
+ADD_CUSTOM_COMMAND(
+	COMMAND
+		python ${CMAKE_CURRENT_SOURCE_DIR}/src/model/NMPC.py
+	WORKING_DIRECTORY
+		${CMAKE_CURRENT_SOURCE_DIR}/src/model
+	OUTPUT
+		${CMAKE_CURRENT_SOURCE_DIR}/src/model/rk4.c
+	COMMENT
+		"Creating a file: rk4.c"
+)
+
+ADD_CUSTOM_COMMAND(
+	COMMAND
+		sh ${CMAKE_CURRENT_SOURCE_DIR}/../../../tools/rename_casadi_functions
+	WORKING_DIRECTORY
+		${CMAKE_CURRENT_SOURCE_DIR}/src/model
+	OUTPUT
+		${CMAKE_CURRENT_SOURCE_DIR}/src/model/casadi_functions.cpp
+	DEPENDS
+		${CMAKE_CURRENT_SOURCE_DIR}/src/model/rk4.c
+	COMMENT
+		"Creating a file: casadi_functions.cpp"
+)
+
 #common commands for building c++ executables and libraries
-orocos_component(${PROJECT_NAME} src/planeSimulator.cpp)
+orocos_component(
+		${PROJECT_NAME}
+
+		src/planeSimulator.cpp
+		src/model/casadi_functions.cpp
+)
 target_link_libraries( ${PROJECT_NAME} ${OROCOS-RTT_RTT-MARSHALLING_LIBRARY} )
 rosbuild_add_library(planeSimulator src/planeSimulator.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

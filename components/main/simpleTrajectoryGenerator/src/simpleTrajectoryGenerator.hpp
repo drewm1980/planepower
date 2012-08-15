@@ -11,8 +11,8 @@
 
 #include <rtt/os/TimeService.hpp>
 
-#define REFS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/refs.dat"
-#define WEIGHTS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/weights.dat"
+// #define REFS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/refs.dat"
+// #define WEIGHTS_FILENAME "/home/kurt/planepower/matlab_acado_codegen_simulation/weights.dat"
 
 //
 // Used namespaces
@@ -74,105 +74,6 @@ private:
 	
 	InputPort< bool > portTrigger;
 	bool trigger;
-
-// 	bool prepareInputData( void );
-// 
-// 	/// Indicator whether the MPC is ready for outputting the data
-// 	bool initialized;
-// 
-// 	bool firstRefArrived;
-// 	bool firstWeightPArrived;
-// 
-// 	/// Array used explicitly by the NMPC
-// 	double feedbackForMPC[ NX ];
-// 
-// 	//
-// 	// Input ports and their associated variables
-// 	//
-// 
-// 	/// Estimates ready trigger
-// 	InputPort< bool > portFeedbackReady;
-// 	bool feedbackReady;
-// 
-// 	/// Port state estimate
-// 	InputPort< vector< double > > portFeedback;
-// 	vector< double > feedback;
-// 	FlowStatus statusPortFeedback;
-// 
-// 	/// Port for references
-// 	InputPort< vector< double > > portReferences;
-// 	vector< double > references;
-// 	FlowStatus statusPortReferences;
-// 
-// 	/// Terminal cost weighting matrix
-// 	InputPort< vector< double > > portWeightingMatrixP;
-// 	vector< double > weightingMatrixP;
-// 	FlowStatus statusPortWeightingMatrixP;
-// 
-// 	//
-// 	// Output ports and their associated variables
-// 	//
-// 
-// 	/// Controls
-// 	// Signals: [ur1, ur2, up]
-// 	OutputPort< vector< double > > portControls;
-// 	vector< double > controls;
-// 	
-// 	// Controls for measurement by the MHE
-// 	OutputPort< vector< double > > portControlsForMeasurement;
-// 	vector< double > controlsForMeasurement;
-// 
-// 	/// Control rates
-// 	// Signals: [dur1, dur2, dur3]
-// 	OutputPort< vector< double > > portControlRates;
-// 	vector< double > controlRates;
-// 
-// 	/// KKT tolerance
-// 	OutputPort< double > portKKTTolerance;
-// 	double kktTolerance;
-// 
-// 	/// Objective value
-// 	OutputPort< double > portObjectiveValue;
-// 	double objectiveValue;
-// 
-// 	/// Number of active set changes, returned by QP solver
-// 	OutputPort< int > portNumOfActiveSetChanges;
-// 	int numOfActiveSetChanges;
-// 
-// 	/// Execution times
-// 	OutputPort< double > portPreparationPhaseExecTime;
-// 	OutputPort< double > portFeedbackPhaseExecTime;
-// 	OutputPort< double > portExecutionTime;
-// 	RTT::os::TimeService::ticks tickPreparationPhaseBegin;
-// 	RTT::os::TimeService::ticks tickFeedbackPhaseBegin;
-// 	RTT::os::TimeService::ticks tickMPCBegin;
-// 	double timePrepPhase;
-// 	double timeFdbPhase;
-// 	double timeMPC;
-// 
-// 	/// Status of the QP solver
-// 	OutputPort< int > portQPSolverStatus;
-// 	/// Status of the QP solver
-// 	int qpSolverStatus;
-// 
-// 	OutputPort< bool > portDataSizeValid;
-// 	/// Data sizes are valid
-// 	bool dataSizeValid;
-// 
-// 	//
-// 	// Properties
-// 	//
-// 
-// 	/// Number of SQP iterations
-// 	unsigned numSQPIterations;
-// 	unsigned sqpIterationsCounter;
-// 
-// 	// File names for default references and weighting matrices
-// 	string refDefaultFileName;
-// 	string referencesFileName;
-// 	string fileNameWeightsQ;
-// 	string fileNameWeightsR;
-// 	string fileNameWeightsQF;
 
 	//
 	// TODO Logging
