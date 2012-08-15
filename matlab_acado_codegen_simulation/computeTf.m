@@ -17,13 +17,14 @@ ur_scaled_shifted = ur_scaled(1:end-2);
 for j=1:10
     %MPC.RD = 1e-2*2^(j-6);
     MPC.RD = 0.005;
-    MPC.zT = -0.005*(j-1);
-    %MPC.zT = -0.027;
+    %MPC.zT = -0.005*(j-1);
+    MPC.zT = -0.027;
+    MPC.I1 = 0.0163;
     getLQR; %To get the linearisation
     A = MPC.A(1:18,1:18);
     B = MPC.A(1:18,19);
     C = zeros(1,18);
-    C(8) = 1; % Corresponds to w1
+    C(8) = 1; % Corresponds to e12
     D = 0;
     sys = ss(A,B,C,D);
     [mag,phase,wout]=bode(sys);
@@ -64,7 +65,7 @@ line([x;x],ylim.',...
      
   
 %%
-if(0)
+if(1)
 y_POSE_shifted = y_POSE(3:end);
 [Txy,F]=tfestimate(ur_scaled_shifted,y_POSE_shifted-mean(y_POSE_shifted),300,[],[],10);
 
@@ -123,7 +124,19 @@ line([x;x],ylim.',...
 
 figure
 semilogx(F,20*log10(abs(Txy)),'b')
-title('TF of z vs ur, measured by Andrews markers from pose')
+title('TF of ddelta_3 vs ur, measured by Andrews markers from pose')
+legend('Measured tf')
+x=[mean(ddelta_3)/2/pi];
+ylim=get(gca,'ylim');
+line([x;x],ylim.',...
+         'linewidth',2,...
+         'color',[0,1,0]);
+%%
+[Txy,F]=tfestimate(ur_scaled,delta_ENC-mean(delta_ENC),[],[],[],10);
+
+figure
+semilogx(F,20*log10(abs(Txy)),'b')
+title('TF of ddelta_ENC vs ur, measured by encoder')
 legend('Measured tf')
 x=[mean(ddelta_3)/2/pi];
 ylim=get(gca,'ylim');
