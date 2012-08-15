@@ -16,17 +16,17 @@ for i =1:1 %just so that I can make this block small.
     NY_POSE = 12;
     NY_ENC = 2;
     t = data(:,1);
-    X1 = data(:,2:2+NX-1);
-    X2 = data(:,2+NX:2+NX-1+NX);
-    X3 = data(:,2+2*NX:2+NX-1+2*NX);
-    XPred = data(:,2+3*NX:2+NX-1+3*NX);
-    XRef = data(:,2+4*NX:2+NX-1+4*NX);
-    U = data(:,2+5*NX:2+5*NX+NU-1);
-    dU = data(:,2+5*NX+NU:2+5*NX+NU-1+NU);
-    Markers = data(:,2+5*NX+2*NU:2+5*NX+2*NU+NY_MARKERS-1);
-    IMU = data(:,2+5*NX+2*NU+NY_MARKERS:2+5*NX+2*NU+NY_MARKERS+NY_IMU-1);
-    POSE = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE-1);
-   % ENC = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC-1);
+    X1 = data(:,2:2+NX-1); %estimate after first sqp-iteration
+    X2 = data(:,2+NX:2+NX-1+NX); %estimate after second sqp-iteration
+    X3 = data(:,2+2*NX:2+NX-1+2*NX); %estimate after third sqp-iteration
+    XPred = data(:,2+3*NX:2+NX-1+3*NX); %prediction of MHE, used for initialisation
+    XRef = data(:,2+4*NX:2+NX-1+4*NX); % Reference for controller
+    U = data(:,2+5*NX:2+5*NX+NU-1); % aileron and elevator deflection (ur1,ur2,up)
+    dU = data(:,2+5*NX+NU:2+5*NX+NU-1+NU); % derivative of controls (dur1, dur2, dup)
+    Markers = data(:,2+5*NX+2*NU:2+5*NX+2*NU+NY_MARKERS-1); % position of the markers
+    IMU = data(:,2+5*NX+2*NU+NY_MARKERS:2+5*NX+2*NU+NY_MARKERS+NY_IMU-1); % Imu data (omega, acc)
+    POSE = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE-1); % Pose estimate from Andrew's code
+    ENC = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC-1); % Encoder data (delta, ddelta)
 
     x_1 = X1(:,1); y_1 = X1(:,2); z_1 = X1(:,3); 
     dx_1 = X1(:,4); dy_1 = X1(:,5); dz_1 = X1(:,6); 
