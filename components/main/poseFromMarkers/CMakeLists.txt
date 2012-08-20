@@ -38,18 +38,28 @@ find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
-ADD_CUSTOM_TARGET( gen_c_file
+ADD_CUSTOM_COMMAND(
 	COMMAND
-		${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/pose_from_markers.py
+		python ${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/pose_from_markers.py
 	WORKING_DIRECTORY
 		${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/
+	OUTPUT
+		${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/pose_from_markers.c
+	COMMENT
+		"Creating a file: pose_from_markers.c"
 )
 
-ADD_CUSTOM_TARGET( gen_cpp_file
+ADD_CUSTOM_COMMAND(
 	COMMAND
-		rename_casadi_functions
+		sh ${CMAKE_CURRENT_SOURCE_DIR}/../../../tools/rename_casadi_functions
 	WORKING_DIRECTORY
 		${CMAKE_CURRENT_SOURCE_DIR}/src
+	OUTPUT
+		${CMAKE_CURRENT_SOURCE_DIR}/src/casadi_functions.cpp
+	DEPENDS
+		${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/pose_from_markers.c
+	COMMENT
+		"Creating a file: casadi_functions.cpp"
 )
 
 #common commands for building c++ executables and libraries
@@ -59,12 +69,13 @@ orocos_component(
 
 	# Source files
 	src/poseFromMarkers.cpp
-	src/casadi_functions.cpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/src/casadi_functions.cpp
 )
 
-ADD_DEPENDENCIES( gen_cpp_file gen_c_file )
+# ADD_DEPENDENCIES( gen_cpp_file gen_c_file )
 
-ADD_DEPENDENCIES( ${PROJECT_NAME} gen_cpp_file )
+# ADD_DEPENDENCIES( ${PROJECT_NAME} gen_cpp_file )
 
 rosbuild_add_library(
 	# Library names	

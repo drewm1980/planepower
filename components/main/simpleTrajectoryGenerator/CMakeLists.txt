@@ -47,9 +47,6 @@ SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99" )
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=core2" )
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=core2" )
 
-SET(aPath ${PROJECT_SOURCE_DIR}/../../../matlab_acado_codegen_simulation/)
-ADD_DEFINITIONS( -DLOCAL_PATH="\\"${aPath}\")
-
 #
 # Common commands for building c++ executables and libraries
 #
