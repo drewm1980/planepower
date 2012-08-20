@@ -4,15 +4,28 @@ clc
 
 addpath('Simulation','Matlabfunctions','code_export_nmpc','code_export_mhe')
 
+sine_ref = true; % True: ref is sine wave. False; ref is slope
+Ts = 0.1; % Sampling time
+
+
+%slope
 z_start = -0.1189362777884522; % Starting height of the ramp
 z_end = -0.04; % End height of the ramp
-z_start = -0.4; % Starting height of the ramp
-z_end = -0.34; % End height of the ramp
-
-Ts = 0.1; % Sampling time
+%z_start = -0.4; % Starting height of the ramp
+%z_end = -0.34; % End height of the ramp
 Tc = 10; % Time of ramp
-z = [];
-if true %Generate a sine-wave reverence
+delta_z = (z_end-z_start)/(Tc/Ts);
+z=[];
+for i=0:Tc/Ts
+    z = [z z_start+i*delta_z];
+end
+T_steady = 5;%add 5 seconds of constant reference
+z_append_begin = z_start*ones(1,T_steady/Ts);
+z_append_end = z_end*ones(1,T_steady/Ts);
+z = [z_append_begin z z_append_end];
+
+
+if sine_ref %Generate a sine-wave reverence
     z_min = -0.1189362777884522;%minimum of the sine
     z_max = -0.04;%max of the sine
     Tp = 0.9; %Period of the sine
@@ -28,13 +41,11 @@ if true %Generate a sine-wave reverence
     t_append = 0:Ts:T_steady-Ts;
     z_append = z_min*ones(1,T_steady/Ts);
     z = [z_append z z_append];
-    t = 0:Ts:Ts*(numel(z)-1);
 end
 
-delta_z = (z_end-z_start)/(Tc/Ts);
 MPC.is_init = 0;
 
-for i=0:(Tc/Ts)
+for i=1:numel(z)
 
 
 % MPC settings
@@ -76,10 +87,10 @@ Sim.Noise.is = 1;           % set to 0 to kill the noise
 Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 
 % Initial condition
-MPC.Ref.z = z_start + i*delta_z ;         % reference trajectory height (relative to the arm)
+MPC.Ref.z = z(i) ;         % reference trajectory height (relative to the arm)
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
-MPC.Ref.RPM = 37;           % carousel rotational velocity
+MPC.Ref.RPM = 60;           % carousel rotational velocity
 MPC.Ref.ddelta = 2*pi*MPC.Ref.RPM/60.;
 Sim.r = MPC.Ref.r;          % copy the tether length (just for the ease of use)
 
