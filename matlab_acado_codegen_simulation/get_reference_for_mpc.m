@@ -11,19 +11,24 @@ Ts = 0.1; % Sampling time
 %slope
 z_start = -0.1189362777884522; % Starting height of the ramp
 z_end = -0.04; % End height of the ramp
+N_ramp = 5; %Number of ramps (1 ramp means up and down)
 %z_start = -0.4; % Starting height of the ramp
 %z_end = -0.34; % End height of the ramp
 Tc = 10; % Time of ramp
 delta_z = (z_end-z_start)/(Tc/Ts);
-z=[];
+z_half=[]; % half of a slope (going up)
 for i=0:Tc/Ts
-    z = [z z_start+i*delta_z];
+    z_half = [z_half z_start+i*delta_z];
 end
-T_steady = 5;%add 5 seconds of constant reference
+T_steady = 2;%add 5 seconds of constant reference
 z_append_begin = z_start*ones(1,T_steady/Ts);
 z_append_end = z_end*ones(1,T_steady/Ts);
-z = [z_append_begin z z_append_end];
-
+z_half = [z_append_begin z_half z_append_end];
+z_one_ref = [z_half fliplr(z_half)]; % one reference up and down;
+z = [];
+for i=1:N_ramp
+    z = [z z_one_ref];
+end
 
 if sine_ref %Generate a sine-wave reverence
     z_min = -0.1189362777884522;%minimum of the sine
@@ -127,5 +132,7 @@ sol_S_matrix = [];
 for i=1:size(sol_S,3)
     sol_S_matrix = [sol_S_matrix; reshape(sol_S(:,:,i)',1,size(sol_S(:,:,i),1)*size(sol_S(:,:,i),2))];
 end
+sol_X =[sol_X;zeros(3,size(sol_X,2))]; %Add zeros for control references
+sol_X = sol_X';
 dlmwrite('refs.dat',sol_X,'delimiter','\t');
 dlmwrite('weights.dat',sol_S_matrix,'delimiter','\t');
