@@ -114,42 +114,18 @@ display('------------------------------------------------------------------')
 % Initialize (first MPC, then MHE)
 [MPC,Sim] = initializeMPC(MPC,Sim);
 
-sol_S(:,:,i+1) = MPC.S;
-sol_K(:,:,i+1) = MPC.K;
-sol_X(:,i+1) = MPC.Xref(1,:);
+sol_S(:,:,i) = MPC.S;
+sol_K(:,:,i) = MPC.K;
+sol_X(:,i) = MPC.Xref(1,:);
 MPC.is_init = 1;
 end
 sol_K_matrix = [];
 for i=1:size(sol_K,3)
     sol_K_matrix = [sol_K_matrix; sol_K(:,:,i)];
 end
-
 sol_S_matrix = [];
 for i=1:size(sol_S,3)
     sol_S_matrix = [sol_S_matrix; reshape(sol_S(:,:,i)',1,size(sol_S(:,:,i),1)*size(sol_S(:,:,i),2))];
 end
-
-for i=1:30
-    sol_X = [sol_X(:,1) sol_X];
-    sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix];
-end
-
-for i=1:30
-    sol_X = [sol_X sol_X(:,end)];
-    sol_S_matrix = [sol_S_matrix; sol_S_matrix(end,:)];
-end
-
-sol_X =[sol_X;zeros(3,size(sol_X,2))];
-sol_X = sol_X';
-
-sol_X = [sol_X; flipud(sol_X)];
-sol_S_matrix = [sol_S_matrix; flipud(sol_S_matrix)];
-sol_X_1 = sol_X;
-sol_S_matrix_1 = sol_S_matrix;
-for i=1:20
-    sol_X = [sol_X; sol_X_1];
-    sol_S_matrix = [sol_S_matrix; sol_S_matrix_1];
-end
-
 dlmwrite('refs.dat',sol_X,'delimiter','\t');
 dlmwrite('weights.dat',sol_S_matrix,'delimiter','\t');
