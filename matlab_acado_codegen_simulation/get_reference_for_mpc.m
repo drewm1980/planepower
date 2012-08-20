@@ -2,7 +2,7 @@ clear all
 close all
 clc
 
-addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
+addpath('Simulation','Matlabfunctions','code_export_nmpc','code_export_mhe')
 
 z_start = -0.1189362777884522; % Starting height of the ramp
 z_end = -0.04; % End height of the ramp
@@ -11,6 +11,25 @@ z_end = -0.34; % End height of the ramp
 
 Ts = 0.1; % Sampling time
 Tc = 10; % Time of ramp
+z = [];
+if true %Generate a sine-wave reverence
+    z_min = -0.1189362777884522;%minimum of the sine
+    z_max = -0.04;%max of the sine
+    Tp = 0.9; %Period of the sine
+    N = 10; % Number of periods
+    A = (z_max-z_min)/2;%amplitude of the sine
+    M = (z_max+z_min)/2;%level of the sine
+    t = 0:Ts:N*Tp;
+    omega = 2*pi/Tp;
+    t = t-Tp/4;% shift time so that we start in a minimum of the sine (on the steady state)
+    z = M+A*sin(omega*t);%z-profile
+    %Add constant reference at beginning and end:
+    T_steady = 5;%add 5 seconds of constant reference
+    t_append = 0:Ts:T_steady-Ts;
+    z_append = z_min*ones(1,T_steady/Ts);
+    z = [z_append z z_append];
+    t = 0:Ts:Ts*(numel(z)-1);
+end
 
 delta_z = (z_end-z_start)/(Tc/Ts);
 MPC.is_init = 0;
