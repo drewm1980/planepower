@@ -47,7 +47,10 @@ SimpleTrajectoryGenerator::SimpleTrajectoryGenerator(const std::string& name)
 	this->addProperty("NU", NU)
 			.doc("# of controls");
 
-	
+	this->addProperty("referencesFileName", referencesFileName)
+			.doc("Name of a file with references");
+	this->addProperty("weightsPFileName", weightsPFileName)
+			.doc("Name of a file with weihting matrices P");
 }
 
 bool SimpleTrajectoryGenerator::configureHook()
@@ -57,7 +60,7 @@ bool SimpleTrajectoryGenerator::configureHook()
 	unsigned i;
 	
 	// References
-	status = readDataFromFile(REFS_FILENAME, references, 0, NX + NU);
+	status = readDataFromFile(referencesFileName.c_str(), references, 0, NX + NU);
 	if (status == false)
 	{
 			log( Error ) << "Error in reading a file with references" << endlog();
@@ -74,8 +77,7 @@ bool SimpleTrajectoryGenerator::configureHook()
 	}
 	
 	// Weights P
-	// TODO Think how to send those matrices
-	status = readDataFromFile(WEIGHTS_FILENAME, weightsP, 0, NX * NX);
+	status = readDataFromFile(weightsPFileName.c_str(), weightsP, 0, NX * NX);
 	if (status == false)
 	{
 		log( Error ) << "Error in reading a file with weights P" << endlog();
@@ -92,8 +94,6 @@ bool SimpleTrajectoryGenerator::configureHook()
 		return false;
 	}
 	
-	// TODO For starters, assume ther is only one P, output that one.
-	
 	//
 	// Initialize and output the relevant output ports
 	// Initilization with the references from the file
@@ -103,6 +103,7 @@ bool SimpleTrajectoryGenerator::configureHook()
 	
 	refCounter = 0;
 	
+	// Initialize execution references
 	execReferences.resize(N * NX + N * NU, 0.0);
 	
 	for (i = 0, itExecRefs = execReferences.begin(); i < N; ++i)
@@ -111,9 +112,10 @@ bool SimpleTrajectoryGenerator::configureHook()
 	portReferences.setDataSample( execReferences );
 	portReferences.write( execReferences );
 	
+	// Initialize execution P matrices
 	execWeightsP.resize(NX * NX, 0.0);
 	
-	copy(weightsP[ refCounter ].begin(), weightsP[refCounter].end(), execWeightsP.begin());
+	copy(weightsP[ refCounter ].begin(), weightsP[ refCounter ].end(), execWeightsP.begin());
 	
 	portWeightsP.setDataSample( execWeightsP );
 	portWeightsP.write( execWeightsP );
@@ -121,6 +123,7 @@ bool SimpleTrajectoryGenerator::configureHook()
 	portReady.setDataSample( false );
 	portReady.write( false );
 	
+	// Initialize references for logging purposes
 	currentReference.resize(NX, 0.0);
 	portCurrentReference.setDataSample( currentReference );
 	portCurrentReference.write( currentReference );
@@ -156,12 +159,15 @@ void SimpleTrajectoryGenerator::updateHook()
 		copy(references[refCounter].begin(), references[refCounter].begin()+NX,currentReference.begin());
 		portCurrentReference.write( currentReference );
 
-		copy(weightsP[ refCounter + N].begin(), weightsP[refCounter + N].end(), execWeightsP.begin());
+		copy(weightsP[refCounter + N].begin(), weightsP[refCounter + N].end(), execWeightsP.begin());
 		portWeightsP.write( execWeightsP );
 		
 		refCounter++;
 	}
-	else{cout << "finished trajectory" << endl;}
+	
+	// DO NOT USE cout in update hooks!!!
+// 	else{cout << "finished trajectory" << endl;}
+	
 	portReady.write(true);
 }
 
@@ -199,7 +205,8 @@ bool SimpleTrajectoryGenerator::readDataFromFile(const char* fileName, vector< v
 
 			if (linedata.size() != numCols && numCols > 0)
 			{
-				log( Error ) << "numcols is wrong: " << linedata.size() << " vs " << numCols << endl;
+				log( Error ) << "numCols is wrong: " << linedata.size() << " vs " << numCols << endl;
+				
 				file.close();
 
 				return false;
@@ -210,12 +217,14 @@ bool SimpleTrajectoryGenerator::readDataFromFile(const char* fileName, vector< v
 
 		file.close();
 
-		if (data.size() != numRows && numRows > 0){
+		if (data.size() != numRows && numRows > 0)
+		{
 			log( Error ) << "numRows is wrong: " << data.size() << " vs " << numRows << endl;
 			return false;
 		}
 	}
-	else{
+	else
+	{
 		log( Error ) << "Could not open file " << fileName << endl;
 		return false;
 	}

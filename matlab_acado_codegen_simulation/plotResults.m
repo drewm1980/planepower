@@ -1,12 +1,12 @@
 %close all
 
-%!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/closed_loop_lqr_data.dat closed_loop_lqr_data.dat
-%!cat closed_loop_lqr_data.dat | grep -v nan >closed_loop_lqr_dataClean.dat
-%!sed -i "1,3d" closed_loop_lqr_dataClean.dat
+%!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
+%!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
+%!sed -i "1,3d" mhe_mpcClean.dat
 
 plotDouble = 0;
 
-data = dlmread('closed_loop_lqr_dataClean.dat');
+data = dlmread('mhe_mpcClean.dat');
 
 for i =1:1 %just so that I can make this block small.
     NX = 22;
@@ -14,17 +14,19 @@ for i =1:1 %just so that I can make this block small.
     NY_MARKERS = 12;
     NY_IMU = 6;
     NY_POSE = 12;
+    NY_ENC = 2;
     t = data(:,1);
-    X1 = data(:,2:2+NX-1);
-    X2 = data(:,2+NX:2+NX-1+NX);
-    X3 = data(:,2+2*NX:2+NX-1+2*NX);
-    XPred = data(:,2+3*NX:2+NX-1+3*NX);
-    XRef = data(:,2+4*NX:2+NX-1+4*NX);
-    U = data(:,2+5*NX:2+5*NX+NU-1);
-    dU = data(:,2+5*NX+NU:2+5*NX+NU-1+NU);
-    Markers = data(:,2+5*NX+2*NU:2+5*NX+2*NU+NY_MARKERS-1);
-    IMU = data(:,2+5*NX+2*NU+NY_MARKERS:2+5*NX+2*NU+NY_MARKERS+NY_IMU-1);
-    POSE = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE-1);
+    X1 = data(:,2:2+NX-1); %estimate after first sqp-iteration
+    X2 = data(:,2+NX:2+NX-1+NX); %estimate after second sqp-iteration
+    X3 = data(:,2+2*NX:2+NX-1+2*NX); %estimate after third sqp-iteration
+    XPred = data(:,2+3*NX:2+NX-1+3*NX); %prediction of MHE, used for initialisation
+    XRef = data(:,2+4*NX:2+NX-1+4*NX); % Reference for controller
+    U = data(:,2+5*NX:2+5*NX+NU-1); % aileron and elevator deflection (ur1,ur2,up)
+    dU = data(:,2+5*NX+NU:2+5*NX+NU-1+NU); % derivative of controls (dur1, dur2, dup)
+    Markers = data(:,2+5*NX+2*NU:2+5*NX+2*NU+NY_MARKERS-1); % position of the markers
+    IMU = data(:,2+5*NX+2*NU+NY_MARKERS:2+5*NX+2*NU+NY_MARKERS+NY_IMU-1); % Imu data (omega, acc)
+    POSE = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE-1); % Pose estimate from Andrew's code
+    ENC = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC-1); % Encoder data (delta, ddelta)
 
     x_1 = X1(:,1); y_1 = X1(:,2); z_1 = X1(:,3); 
     dx_1 = X1(:,4); dy_1 = X1(:,5); dz_1 = X1(:,6); 
@@ -81,9 +83,11 @@ for i =1:1 %just so that I can make this block small.
     e11_POSE = POSE(:,4); e12_POSE = POSE(:,5); e13_POSE = POSE(:,6); 
     e21_POSE = POSE(:,7); e22_POSE = POSE(:,8); e23_POSE = POSE(:,9); 
     e31_POSE = POSE(:,10); e32_POSE = POSE(:,11); e33_POSE = POSE(:,12); 
+    
+    %delta_ENC = ENC(:,1); ddelta_ENC = ENC(:,2);
 end
 
-plotting = 0;
+plotting = 1;
 
 if plotting
 

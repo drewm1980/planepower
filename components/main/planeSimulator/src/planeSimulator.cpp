@@ -1,6 +1,6 @@
 #include "planeSimulator.hpp"
 #include <ocl/Component.hpp>
-#include "model/casadi_functions.cpp"
+// #include "model/casadi_functions.cpp"
 
 ORO_CREATE_COMPONENT( OCL::planeSimulator)
 
@@ -9,6 +9,7 @@ using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
+extern int rk4( double** x, double** r);
 
 namespace OCL
 {

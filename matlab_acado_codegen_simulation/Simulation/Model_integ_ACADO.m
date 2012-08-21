@@ -2,7 +2,9 @@ function sys = Model_integ_ACADO(t,state,flag,P)
 
 % Load all of the modeling constants from parameters.m	
 parameters 
-
+%RD = P.RD;
+%zT = P.zT;
+%I1 = P.I1;
 x = state(1);
 y = state(2);
 z = state(3);

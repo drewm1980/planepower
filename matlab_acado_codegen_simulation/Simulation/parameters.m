@@ -2,7 +2,7 @@
 % ------------------------
 		%  PARAMETERS OF THE KITE :
 		%  -----------------------------
-		 mk =  0.626;      %  mass of the kite               %  [ kg    ]
+		 mk =  0.646;      %  mass of the kite               %  [ kg    ]
 		%  A =  0.2;      %  effective area                 %  [ m^2   ]
 
 
@@ -28,6 +28,7 @@
          zT = -0.02;
 
 		%INERTIA MATRIX (Kurt's direct measurements)
+		 %I1 = 0.0163;
 		 I1 = 0.0163;
 		 I31 = 0.0006;
 		 I2 = 0.0078;

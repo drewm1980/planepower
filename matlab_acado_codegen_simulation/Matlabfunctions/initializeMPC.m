@@ -33,7 +33,9 @@ P.delta = MPC.stateNext(1,19);
 P.ddelta = MPC.stateNext(1,20);
 P.dddelta = MPC.uNext(1); 
 P.r = MPC.Ref.r;
-
+%P.RD = MPC.RD;
+%P.zT = MPC.zT;
+%P.I1 = MPC.I1;
 [MPC.A,MPC.B,~,~] = jacobianI(MPC.stateNext,P);  % Linearize the system at the equilibrium
 
 % Need to eliminate the part of the matrices relative to the dynamics of the rotation of the carousel
