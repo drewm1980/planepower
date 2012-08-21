@@ -51,9 +51,9 @@ for i=1:size(X_ref,1)
     We = 100;
     Ww = 1;
     % Control weights
-    MPC.R = 1e2*1e-2*diag([1e-4, 100, 100]);
+    MPC.R = 1e-2*diag([1e-4, 100, 100]);
     % State weights
-    MPC.Q = 1e-2*diag([100,  100,  100, 1, 1, 1,    ...
+    MPC.Q = 1e-4*diag([100,  100,  100, 1, 1, 1,    ...
                     We,  We,  We,  We,  We,  We,  We,  We,  We, ...
                     Ww,  Ww,  Ww, 1e-4, 1e-4, 1, 1]);
 
