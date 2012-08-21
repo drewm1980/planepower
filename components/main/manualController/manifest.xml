@@ -1,0 +1,20 @@
+<package>
+  <description brief="manualController">
+
+     manualController
+
+	 Component to make it easier to manually enter control inputs in the deployer.
+	 Operation takes three values and outputs them (vector<double>(3)) on an output port.
+
+  </description>
+  <author>Plane Power</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/manualController</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>
