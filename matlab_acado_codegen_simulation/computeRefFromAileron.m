@@ -74,5 +74,10 @@ end
 
 sol_X = [X_ref zeros(size(X_ref,1),3)];
 
+for i=1:30
+    sol_X = [sol_X(1,:); sol_X; sol_X(end,:)];
+    sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix; sol_S_matrix(end,:)];
+end
+
 dlmwrite('refs.dat',sol_X,'delimiter','\t');
 dlmwrite('weights.dat',sol_S_matrix,'delimiter','\t');
