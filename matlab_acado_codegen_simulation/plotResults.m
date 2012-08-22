@@ -1,12 +1,12 @@
 %close all
 
-%!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
-%!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
-%!sed -i "1,3d" mhe_mpcClean.dat
+!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
+!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
+!sed -i "1,3d" mhe_mpcClean.dat
 
 plotDouble = 0;
 
-data = dlmread('mhe_mpcClean.dat');
+data = dlmread('mhe_mpc_60rpm_stp_good.dat');
 
 for i =1:1 %just so that I can make this block small.
     NX = 22;
@@ -88,6 +88,13 @@ for i =1:1 %just so that I can make this block small.
 end
 
 plotting = 1;
+
+roll_3 = zeros(size(e12_3));
+roll_Ref = zeros(size(e12_3));
+for i=1:numel(roll_3)
+    roll_3(i) = atan2(e12_3(i),e32_3(i));
+    roll_Ref(i) = atan2(e12_Ref(i),e32_Ref(i));
+end
 
 if plotting
 
@@ -216,5 +223,10 @@ hold on
 ylabel('e33')
 stairs(t,e33_1,'b')
 stairs(t,e33_Ref,'k')
+
+figure
+hold on
+stairs(t,roll_3,'b');
+stairs(t,roll_Ref,'k');
 
 end
