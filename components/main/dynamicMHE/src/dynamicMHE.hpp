@@ -200,6 +200,12 @@ private:
 
 	vector<double> statePredicted;
 
+	OutputPort< vector< double > > portFullStateVector;
+	vector< double > fullStateVector;
+	
+	OutputPort< vector< double > > portFullControlVector;
+	vector< double > fullControlVector;
+
 	// Inputport for the reference of the controller. For reporting purposes only.
 	InputPort<vector<double> > portStateReference;
 	vector<double> StateReference; 
@@ -223,12 +229,6 @@ private:
 	// Deep debug stuff
 	//
 #if DEEP_DEBUG
-
-	OutputPort< vector< double > > portFullStateVector;
-	vector< double > fullStateVector;
-	
-	OutputPort< vector< double > > portFullControlVector;
-	vector< double > fullControlVector;
 
 	OutputPort< vector< double > > portWeightingCoefficients;
 	vector< double > weightingCoefficients;

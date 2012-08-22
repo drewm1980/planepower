@@ -1,0 +1,15 @@
+#Import libraries
+import("manualController")
+ 
+#Create components
+loadComponent("manualController","OCL::manualController")
+ 
+#Load properties
+loadService("manualController","marshalling")
+manualController.marshalling.loadProperties("../../../properties/manualController/manualController.cpf")
+ 
+#Set activities
+setActivity("manualController",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+manualController.configure()
+manualController.start()

@@ -226,10 +226,6 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	// Misc
 	//
 
-	//
-	// Deep debug
-	//
-#if DEEP_DEBUG
 
 	this->addPort("portFullStateVector", portFullStateVector)
 			.doc("Full state vector in the MHE.");
@@ -244,7 +240,6 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	portFullControlVector.setDataSample( fullControlVector );
 	portFullControlVector.write( fullControlVector );
 
-#endif
 
 }
 
@@ -572,6 +567,13 @@ void DynamicMPC::mpcFeedbackPhase()
 
 		numOfActiveSetChanges = logNWSR;
 		portNumOfActiveSetChanges.write( numOfActiveSetChanges );
+
+		// Copy the full state vector over the full horizon and write it to a port
+		copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
+		portFullStateVector.write( fullStateVector );
+		// Copy the full control vector over the full horizon and write it to a port
+		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
+		portFullControlVector.write( fullControlVector );
 	}
 
 	// Write the info about data sizes
