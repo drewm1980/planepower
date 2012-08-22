@@ -138,3 +138,4 @@ hold on
 stairs(t,Xt_markers(:,12),'b')
 stairs(T,Y_markers(:,12),'r')
 stairs(t,markers(:,12),'g')
+

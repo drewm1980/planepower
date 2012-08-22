@@ -3,7 +3,7 @@ close all
 clc
 
 %Just some random (but feasible) state to start integrating (37 rpm)
-x0 =  [1.1254; -0.1911; -0.3700; 0; 0; 0; 0.1257; 0.5444; 0.8294; 0.9876; -0.1477; -0.0528; 0.0938; 0.8257; -0.5562; 0.3634; 3.1994; -2.1551; 0; 45/60*2*pi; -0.0119; -0.0535];
+x0 =  [1.1254; -0.1911; -0.3700; 0; 0; 0; 0.1257; 0.5444; 0.8294; 0.9876; -0.1477; -0.0528; 0.0938; 0.8257; -0.5562; 0.3634; 3.1994; -2.1551; 0; 60/60*2*pi; -0.0119; -0.0535];
 addpath('Simulation');
 
 % tether length
@@ -20,24 +20,24 @@ MPC.Ts = 0.1;
 SCALE_UR = 1.25e6;
 SCALE_UP = 2e5;
 
-ur_sequence = [0:500:15000]'/SCALE_UR;
-
+ur_sequence = [0:2000:20000]'/SCALE_UR;
+%ur_sequence_down = flipud([0:1500/5:15000]')/SCALE_UR;
+%ur_sequence = [ur_sequence; ur_sequence_down];
 %Put to 1 if you have to recompute!
-if 0
-dx = @(t,x) Model_integ_ACADO(t,x,'',P);
-X_ref = zeros(numel(ur_sequence),numel(x0));
-for i=1:numel(ur_sequence)
-    x0(21) = ur_sequence(i);
-    x0(22) = 0;
-    [T,Y] = ode45(dx,[0:1/500:50] ,x0);
-    X_ref(i,:) = Y(end,:);
-    i
+if 1
+    dx = @(t,x) Model_integ_ACADO(t,x,'',P);
+    X_ref = zeros(numel(ur_sequence),numel(x0));
+    for i=1:numel(ur_sequence)
+        x0(21) = ur_sequence(i);
+        x0(22) = 0;
+        [T,Y] = ode45(dx,[0:1/500:50] ,x0);
+        X_ref(i,:) = Y(end,:);
+        i
+    end
+    dlmwrite('Xref_ailerons.dat',X_ref,'delimiter',' ');
+else
+    X_ref = dlmread('Xref_ailerons.dat');
 end
-dlmwrite('Xref_ailerons.dat',X_ref,'delimiter',' ');
-end
-
-
-X_ref = dlmread('Xref_ailerons.dat');
 
 sol_S_matrix = [];
 
@@ -78,6 +78,14 @@ for i=1:30
     sol_X = [sol_X(1,:); sol_X; sol_X(end,:)];
     sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix; sol_S_matrix(end,:)];
 end
+
+sol_S_matrix = sol_S_matrix*10;
+
+%sol_X = [sol_X; flipud(sol_X)];
+%sol_S_matrix = [sol_S_matrix; flipud(sol_S_matrix)];
+
+%sol_X = [sol_X; sol_X; sol_X; sol_X; sol_X; sol_X; sol_X; sol_X; sol_X; sol_X];
+%sol_S_matrix = [sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix; sol_S_matrix];
 
 dlmwrite('refs.dat',sol_X,'delimiter','\t');
 dlmwrite('weights.dat',sol_S_matrix,'delimiter','\t');
