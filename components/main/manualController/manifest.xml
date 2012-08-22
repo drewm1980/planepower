@@ -4,7 +4,7 @@
      manualController
 
 	 Component to make it easier to manually enter control inputs in the deployer.
-	 Operation takes three values and outputs them (vector<double>(3)) on an output port.
+	 Operation takes three values and outputs them (vector of doubles (3)) on an output port.
 
   </description>
   <author>Plane Power</author>
@@ -17,4 +17,5 @@
 <depend package="rtt_ros_param" />
 <depend package="rtt" />
 <depend package="ocl" />
+
 </package>
