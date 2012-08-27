@@ -104,24 +104,30 @@ N_predict = T_predict/dt; % Number of steps to integrate
 
 i_predict = 60; %node to integrate from
 fprintf('integrating...\n')
-[T,Y] = ode45(dx,[t(i_predict) t(i_predict)+T_predict] ,X3(i_predict,:)');
+T = [];
+Y = [];
+for i_predict=1:15:numel(t)
+    [T1,Y1] = ode45(dx,[t(i_predict) t(i_predict)+T_predict] ,X3(i_predict,:)');
+    T = [T; T1];
+    Y = [Y; Y1];
+end
 fprintf('finished\n')
 
 figure
 subplot(311)
 hold on
 stairs(t,X3(:,1),'b')
-stairs(T,Y(:,1),'r')
+stairs(T,Y(:,1),'r.')
 ylabel('x [m]')
 subplot(312)
 hold on
 stairs(t,X3(:,2),'b')
-stairs(T,Y(:,2),'r')
+stairs(T,Y(:,2),'r.')
 ylabel('y [m]')
 subplot(313)
 hold on
 stairs(t,X3(:,3),'b')
-stairs(T,Y(:,3),'r')
+stairs(T,Y(:,3),'r.')
 ylabel('z [m]')
 
 X3_markers = zeros(size(X3,1),12);
@@ -139,91 +145,93 @@ end
 figure
 subplot(611)
 hold on
+title('Cam 1 markers: red: predicted, blue: estimated by MHE, green: actual marker positions')
 stairs(t,X3_markers(:,1),'b')
-stairs(T,Y_markers(:,1),'r')
+stairs(T,Y_markers(:,1),'r.')
 stairs(t-0.2,Markers(:,1),'g')
 subplot(612)
 hold on
 stairs(t,X3_markers(:,2),'b')
-stairs(T,Y_markers(:,2),'r')
+stairs(T,Y_markers(:,2),'r.')
 stairs(t-0.2,Markers(:,2),'g')
 subplot(613)
 hold on
 stairs(t,X3_markers(:,3),'b')
-stairs(T,Y_markers(:,3),'r')
+stairs(T,Y_markers(:,3),'r.')
 stairs(t-0.2,Markers(:,3),'g')
 subplot(614)
 hold on
 stairs(t,X3_markers(:,4),'b')
-stairs(T,Y_markers(:,4),'r')
+stairs(T,Y_markers(:,4),'r.')
 stairs(t-0.2,Markers(:,4),'g')
 subplot(615)
 hold on
 stairs(t,X3_markers(:,5),'b')
-stairs(T,Y_markers(:,5),'r')
+stairs(T,Y_markers(:,5),'r.')
 stairs(t-0.2,Markers(:,5),'g')
 subplot(616)
 hold on
 stairs(t,X3_markers(:,6),'b')
-stairs(T,Y_markers(:,6),'r')
+stairs(T,Y_markers(:,6),'r.')
 stairs(t-0.2,Markers(:,6),'g')
 
 figure
 subplot(611)
 hold on
+title('Cam 2 markers: red: predicted, blue: estimated by MHE, green: actual marker positions')
 stairs(t,X3_markers(:,7),'b')
-stairs(T,Y_markers(:,7),'r')
+stairs(T,Y_markers(:,7),'r.')
 stairs(t-0.2,Markers(:,7),'g')
 subplot(612)
 hold on
 stairs(t,X3_markers(:,8),'b')
-stairs(T,Y_markers(:,8),'r')
+stairs(T,Y_markers(:,8),'r.')
 stairs(t-0.2,Markers(:,8),'g')
 subplot(613)
 hold on
 stairs(t,X3_markers(:,9),'b')
-stairs(T,Y_markers(:,9),'r')
+stairs(T,Y_markers(:,9),'r.')
 stairs(t-0.2,Markers(:,9),'g')
 subplot(614)
 hold on
 stairs(t,X3_markers(:,10),'b')
-stairs(T,Y_markers(:,10),'r')
+stairs(T,Y_markers(:,10),'r.')
 stairs(t-0.2,Markers(:,10),'g')
 subplot(615)
 hold on
 stairs(t,X3_markers(:,11),'b')
-stairs(T,Y_markers(:,11),'r')
+stairs(T,Y_markers(:,11),'r.')
 stairs(t-0.2,Markers(:,11),'g')
 subplot(616)
 hold on
 stairs(t,X3_markers(:,12),'b')
-stairs(T,Y_markers(:,12),'r')
+stairs(T,Y_markers(:,12),'r.')
 stairs(t-0.2,Markers(:,12),'g')
 
-figure
-subplot(121)
-hold on
-plot(Markers(:,1),Markers(:,2),'r.')
-plot(Markers(:,3),Markers(:,4),'g.')
-plot(Markers(:,5),Markers(:,6),'b.')
-title('Measured marker positions of Camera 1')
-subplot(122)
-hold on
-plot(X3_markers(:,1),X3_markers(:,2),'r.')
-plot(X3_markers(:,3),X3_markers(:,4),'g.')
-plot(X3_markers(:,5),X3_markers(:,6),'b.')
-title('Estimated marker positions of Camera 2')
-
-figure
-subplot(121)
-hold on
-plot(Markers(:,7),Markers(:,8),'r.')
-plot(Markers(:,9),Markers(:,10),'g.')
-plot(Markers(:,11),Markers(:,12),'b.')
-title('Measured marker positions of Camera 1')
-subplot(122)
-hold on
-plot(X3_markers(:,7),X3_markers(:,8),'r.')
-plot(X3_markers(:,9),X3_markers(:,10),'g.')
-plot(X3_markers(:,11),X3_markers(:,12),'b.')
-title('Estimated marker positions of Camera 2')
+% figure
+% subplot(121)
+% hold on
+% plot(Markers(:,1),Markers(:,2),'r.')
+% plot(Markers(:,3),Markers(:,4),'g.')
+% plot(Markers(:,5),Markers(:,6),'b.')
+% title('Measured marker positions of Camera 1')
+% subplot(122)
+% hold on
+% plot(X3_markers(:,1),X3_markers(:,2),'r.')
+% plot(X3_markers(:,3),X3_markers(:,4),'g.')
+% plot(X3_markers(:,5),X3_markers(:,6),'b.')
+% title('Estimated marker positions of Camera 1')
+% 
+% figure
+% subplot(121)
+% hold on
+% plot(Markers(:,7),Markers(:,8),'r.')
+% plot(Markers(:,9),Markers(:,10),'g.')
+% plot(Markers(:,11),Markers(:,12),'b.')
+% title('Measured marker positions of Camera 2')
+% subplot(122)
+% hold on
+% plot(X3_markers(:,7),X3_markers(:,8),'r.')
+% plot(X3_markers(:,9),X3_markers(:,10),'g.')
+% plot(X3_markers(:,11),X3_markers(:,12),'b.')
+% title('Estimated marker positions of Camera 2')
