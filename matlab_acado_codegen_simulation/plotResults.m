@@ -1,12 +1,14 @@
-%close all
+close all
 
-!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
-!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
-!sed -i "1,3d" mhe_mpcClean.dat
+%!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
+%!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
+%!sed -i "1,3d" mhe_mpcClean.dat
 
 plotDouble = 0;
 
 data = dlmread('mhe_mpc_60rpm_stp_good.dat');
+
+data = data(1:end-2,:);
 
 for i =1:1 %just so that I can make this block small.
     NX = 22;
@@ -100,45 +102,48 @@ if plotting
 
 figure
 subplot(311)
-title('position (x,y,z)')
+title('Position')
 hold on
-ylabel('x_1 [m]')
+ylabel('x [m]')
 stairs(t,x_1,'b')
 stairs(t,x_Ref,'k')
 subplot(312)
 hold on
-ylabel('y_1 [m]')
+ylabel('y [m]')
 stairs(t,y_1,'b')
 stairs(t,y_Ref,'k')
 subplot(313)
 hold on
-ylabel('z_1 [m]')
+ylabel('z [m]')
 stairs(t,z_1,'b')
 stairs(t,z_Ref,'k')
+xlabel('Time [s]')
 
 figure
 subplot(311)
 hold on
-ylabel('dx_1 [m]')
-title('velocity (x,y,z)')
+ylabel('dx [m/s]')
+title('Velocity')
 stairs(t,dx_1,'b')
 stairs(t,dx_Ref,'k')
 subplot(312)
 hold on
-ylabel('dy_1 [m]')
+ylabel('dy [m/s]')
 stairs(t,dy_1,'b')
 stairs(t,dy_Ref,'k')
 subplot(313)
 hold on
-ylabel('dz_1 [m]')
+ylabel('dz [m/s]')
 stairs(t,dz_1,'b')
 stairs(t,dz_Ref,'k')
+xlabel('Time [s]')
 
 
 figure
 subplot(311)
 hold on
 ylabel('omega_x [degree/s]')
+title('Angular velocities')
 stairs(t,w1_1*180/pi,'b')
 stairs(t,w1_Ref*180/pi,'k')
 axis tight
@@ -154,79 +159,94 @@ ylabel('omega_z [degree/s]')
 stairs(t,w3_1*180/pi,'b')
 stairs(t,w3_Ref*180/pi,'k')
 axis tight
+xlabel('Time [s]')
+
+% figure
+% subplot(211)
+% hold on
+% ylabel('ur (red) vs w1 (blue), in degree, but divided by 100')
+% stairs(t,ur/32767,'r')
+% stairs(t,w1_1*180/pi/100,'b')
+% %plot(t,32767,'k')
+% %plot(t,-32767,'k')
+% axis tight
+% subplot(212)
+% hold on
+% ylabel('up (red) vs w2 (blue), in degree, but divided by 10000')
+% stairs(t,up/20000,'r')
+% stairs(t,w2_1*180/pi/10000,'b')
+% %plot(t,20000,'k')
+% %plot(t,-20000,'k')
+% axis tight
+% xlabel('Time [s]')
 
 figure
-subplot(211)
-hold on
-ylabel('ur (red) vs w1 (blue), in degree, but divided by 100')
-stairs(t,ur/32767,'r')
-stairs(t,w1_1*180/pi/100,'b')
-%plot(t,32767,'k')
-%plot(t,-32767,'k')
-axis tight
-subplot(212)
-hold on
-ylabel('up (red) vs w2 (blue), in degree, but divided by 10000')
-stairs(t,up/20000,'r')
-stairs(t,w2_1*180/pi/10000,'b')
-%plot(t,20000,'k')
-%plot(t,-20000,'k')
-axis tight
-
-figure
-subplot(311)
+subplot(331)
 hold on
 ylabel('e11')
 stairs(t,e11_1,'b')
 stairs(t,e11_Ref,'k')
-subplot(312)
+subplot(334)
 hold on
 ylabel('e21')
 stairs(t,e21_1,'b')
 stairs(t,e21_Ref,'k')
-subplot(313)
+subplot(337)
 hold on
 ylabel('e31')
 stairs(t,e31_1,'b')
 stairs(t,e31_Ref,'k')
-
-figure
-subplot(311)
+xlabel('Time [s]')
+subplot(332)
 hold on
 ylabel('e12')
+title('Rotation matrix')
 stairs(t,e12_1,'b')
 stairs(t,e12_Ref,'k')
-subplot(312)
+subplot(335)
 hold on
 ylabel('e22')
 stairs(t,e22_1,'b')
 stairs(t,e22_Ref,'k')
-subplot(313)
+subplot(338)
 hold on
 ylabel('e32')
 stairs(t,e32_1,'b')
 stairs(t,e32_Ref,'k')
-
-figure
-subplot(311)
+xlabel('Time [s]')
+subplot(333)
 hold on
 ylabel('e13')
 stairs(t,e13_1,'b')
 stairs(t,e13_Ref,'k')
-subplot(312)
+subplot(336)
 hold on
 ylabel('e23')
 stairs(t,e23_1,'b')
 stairs(t,e23_Ref,'k')
-subplot(313)
+subplot(339)
 hold on
 ylabel('e33')
 stairs(t,e33_1,'b')
 stairs(t,e33_Ref,'k')
+xlabel('Time [s]')
 
 figure
 hold on
-stairs(t,roll_3,'b');
-stairs(t,roll_Ref,'k');
+stairs(t,roll_3/pi*180,'b');
+stairs(t,roll_Ref/pi*180,'k');
+xlabel('Time [s]')
+ylabel('Roll angle [deg]')
+title('Roll')
+
+figure
+subplot(211)
+stairs(t,ur)
+ylabel('ur')
+title('Control inputs')
+subplot(212)
+stairs(t,up)
+ylabel('up')
+xlabel('Time [s]')
 
 end
