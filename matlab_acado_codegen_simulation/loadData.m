@@ -2,6 +2,8 @@
 %!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
 %!sed -i "1,3d" mhe_mpcClean.dat
 
+%!mv mhe_mpcClean.dat mhe_mpcClean_60rpm_2step.dat
+
 plotDouble = 0;
 
 data = dlmread('mhe_mpcClean_60rpm_2step.dat');
@@ -88,3 +90,6 @@ for i =1:1 %just so that I can make this block small.
     
     %delta_ENC = ENC(:,1); ddelta_ENC = ENC(:,2);
 end
+
+NT = size(X_horizon,1);
+N_MHE_ITER = 3;
