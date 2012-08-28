@@ -21,3 +21,42 @@ for i_predict=5:11:numel(t)
     Y = [Y; Y1];
 end
 fprintf('finished\n')
+
+
+X3_markers = zeros(size(X3,1),12);
+
+for i=1:size(X3,1)
+    uvM = Model_integ_ACADO(0,X3(i,:)','markers',P);
+    X3_markers(i,:) = uvM(1:12);
+end
+Y_markers = zeros(size(Y,1),12);
+for i=1:size(Y,1)
+    uvM = Model_integ_ACADO(0,Y(i,:)','markers',P);
+    Y_markers(i,:) = uvM(1:12);
+end
+
+X3_imu = zeros(size(X3,1),6);
+for i=1:size(X3,1)
+    X3_imu(i,:) = Model_integ_ACADO(t(i),X3(i,:)','IMU',P);
+end
+Y_imu = zeros(size(Y,1),6);
+for i=1:size(Y,1)
+    Y_imu(i,:) = Model_integ_ACADO(0,Y(i,:)','IMU',P);
+end
+
+t_iterates = zeros(3*size(X1,1),1);
+X_iterates = zeros(3*size(X1,1),size(X1,2));
+
+for i=1:numel(t)
+    t_iterates(3*i-2) = t(i);
+    t_iterates(3*i-1) = t(i)+4e-3;
+    t_iterates(3*i) = t(i)+8e-3;
+    X_iterates(3*i-2,:) = X1(i,:);
+    X_iterates(3*i-1,:) = X2(i,:);
+    X_iterates(3*i,:) = X3(i,:);
+end
+
+X_imu_iterates = zeros(size(X_iterates,1),6);
+for i=1:size(X_iterates,1)
+    X_imu_iterates(i,:) = Model_integ_ACADO(t_iterates(i),X_iterates(i,:)','IMU',P);
+end
