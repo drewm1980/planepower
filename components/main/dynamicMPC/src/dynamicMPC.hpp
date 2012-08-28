@@ -176,7 +176,6 @@ private:
 	//
 	// Deep debug stuff
 	//
-#if DEEP_DEBUG
 
 	OutputPort< vector< double > > portFullStateVector;
 	vector< double > fullStateVector;
@@ -184,7 +183,6 @@ private:
 	OutputPort< vector< double > > portFullControlVector;
 	vector< double > fullControlVector;
 
-#endif // DEEP_DEBUG
 };
 
 #endif // DYNAMIC_MPC_HPP

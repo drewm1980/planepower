@@ -101,6 +101,11 @@ DynamicMHE::DynamicMHE(const std::string& name)
 
 	this->addPort("portStateReference",portStateReference)
 			.doc("Port with reference of controller");
+
+	this->addPort("portFullStateVector", portFullStateVector)
+			.doc("Full state vector in the MHE.");
+	
+	this->addPort("portFullControlVector", portFullControlVector);
 			
 	//
 	// Initialize and output the relevant output ports
@@ -137,6 +142,14 @@ DynamicMHE::DynamicMHE(const std::string& name)
 
 	statePredicted.resize(NX,0.0);
 	StateReference.resize(NX,0.0);
+
+	fullStateVector.resize((N + 1) * NX, 0.0);
+	portFullStateVector.setDataSample( fullStateVector );
+	portFullStateVector.write( fullStateVector );
+	
+	fullControlVector.resize(N * NU, 0.0);
+	portFullControlVector.setDataSample( fullControlVector );
+	portFullControlVector.write( fullControlVector );
 
 	//
 	// Size of input ports
@@ -197,19 +210,6 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	// Deep debug
 	//
 #if DEEP_DEBUG
-
-	this->addPort("portFullStateVector", portFullStateVector)
-			.doc("Full state vector in the MHE.");
-
-	fullStateVector.resize((N + 1) * NX, 0.0);
-	portFullStateVector.setDataSample( fullStateVector );
-	portFullStateVector.write( fullStateVector );
-	
-	this->addPort("portFullControlVector", portFullControlVector);
-	
-	fullControlVector.resize(N * NU, 0.0);
-	portFullControlVector.setDataSample( fullControlVector );
-	portFullControlVector.write( fullControlVector );
 
 	this->addPort("portWeightingCoefficients", portWeightingCoefficients);
 
@@ -517,10 +517,6 @@ void DynamicMHE::mhePreparationPhase( )
 
 #if DEEP_DEBUG
 
-//	copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
-//
-//	portFullStateVector.write( fullStateVector );
-
 	for (i = 0; i < N; ++i)
 		for (j = 0; j < NY; ++j)
 			weightingCoefficients[i * NY + j] = acadoVariables.S[i * NY * NY + j * NY + j];
@@ -529,10 +525,6 @@ void DynamicMHE::mhePreparationPhase( )
 		weightingCoefficients[N * NY + i] = acadoVariables.SN[i * NYN + i];
 
 	portWeightingCoefficients.write( weightingCoefficients );
-	
-	copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
-	
-	portFullControlVector.write( fullControlVector );
 
 #endif
 
@@ -667,6 +659,13 @@ void DynamicMHE::mheFeedbackPhase( )
 		if(sqpIterationsCounter==2){
 			portStateAndControl.write(StateAndControl);
 		}
+
+		// Copy the full state vector over the full horizon and write it to a port
+		copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
+		portFullStateVector.write( fullStateVector );
+		// Copy the full control vector over the full horizon and write it to a port
+		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
+		portFullControlVector.write( fullControlVector );
 	}
 	
 	// The user component should always read _first_ whether the MHE is ready
