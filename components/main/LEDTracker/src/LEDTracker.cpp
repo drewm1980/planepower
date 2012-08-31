@@ -133,7 +133,6 @@ void  LEDTracker::updateHook()
 		else{
 		markerPositionsAndCovariance[i] = markerPositions[i];
 		markerPositionsAndCovariance[i+12] = 1.0e-6;//1.0/(sigma_marker*sigma_marker);
-		//markerPositionsAndCovariance[i+12] = marker_scale*1.0/(sigma_marker*sigma_marker);
 		}
 	}
 
