@@ -136,7 +136,7 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	portOneStepPrediction.setDataSample( oneStepPrediction );
 	portOneStepPrediction.write( oneStepPrediction );
 
-	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC,0.0);
+	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+3*(N + 1) * NX,0.0);
 	portStateAndControl.setDataSample( StateAndControl );
 	portStateAndControl.write( StateAndControl );
 
@@ -656,9 +656,6 @@ void DynamicMHE::mheFeedbackPhase( )
 				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+i] = measurementsEncoder[i];
 			}
 		}
-		if(sqpIterationsCounter==2){
-			portStateAndControl.write(StateAndControl);
-		}
 
 		// Copy the full state vector over the full horizon and write it to a port
 		copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
@@ -666,6 +663,26 @@ void DynamicMHE::mheFeedbackPhase( )
 		// Copy the full control vector over the full horizon and write it to a port
 		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
 		portFullControlVector.write( fullControlVector );
+
+		if(sqpIterationsCounter==0){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+i] = fullStateVector[i];
+			}
+		}
+		if(sqpIterationsCounter==1){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+(N + 1)*NX+i] = fullStateVector[i];
+			}
+		}
+		if(sqpIterationsCounter==2){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+2*(N + 1)*NX+i] = fullStateVector[i];
+			}
+		}
+
+		if(sqpIterationsCounter==2){
+			portStateAndControl.write(StateAndControl);
+		}
 	}
 	
 	// The user component should always read _first_ whether the MHE is ready
