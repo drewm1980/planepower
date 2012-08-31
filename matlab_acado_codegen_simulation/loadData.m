@@ -1,15 +1,15 @@
-close all
-
 %!scp kurt@192.168.1.111:/home/kurt/planepower/usecases/controlExperiments/mhe_mpc.dat mhe_mpc.dat
 %!cat mhe_mpc.dat | grep -v nan >mhe_mpcClean.dat
 %!sed -i "1,3d" mhe_mpcClean.dat
 
+%!mv mhe_mpcClean.dat mhe_mpcClean_60rpm_2step.dat
+
 plotDouble = 0;
 
-data = dlmread('mhe_mpc_60rpm_stp_good.dat');
+data = dlmread('mhe_mpcClean_60rpm_2step.dat');
+dt = 0.1;
 
-data = data(1:end-2,:);
-
+%give the data a name
 for i =1:1 %just so that I can make this block small.
     NX = 22;
     NU = 3;
@@ -17,6 +17,7 @@ for i =1:1 %just so that I can make this block small.
     NY_IMU = 6;
     NY_POSE = 12;
     NY_ENC = 2;
+    N = 10;
     t = data(:,1);
     X1 = data(:,2:2+NX-1); %estimate after first sqp-iteration
     X2 = data(:,2+NX:2+NX-1+NX); %estimate after second sqp-iteration
@@ -29,6 +30,7 @@ for i =1:1 %just so that I can make this block small.
     IMU = data(:,2+5*NX+2*NU+NY_MARKERS:2+5*NX+2*NU+NY_MARKERS+NY_IMU-1); % Imu data (omega, acc)
     POSE = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE-1); % Pose estimate from Andrew's code
     ENC = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC-1); % Encoder data (delta, ddelta)
+    X_horizon = data(:,2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC:2+5*NX+2*NU+NY_MARKERS+NY_IMU+NY_POSE+NY_ENC+3*(N+1)*NX-1); % The state vector over the full horizion
 
     x_1 = X1(:,1); y_1 = X1(:,2); z_1 = X1(:,3); 
     dx_1 = X1(:,4); dy_1 = X1(:,5); dz_1 = X1(:,6); 
@@ -89,164 +91,5 @@ for i =1:1 %just so that I can make this block small.
     %delta_ENC = ENC(:,1); ddelta_ENC = ENC(:,2);
 end
 
-plotting = 1;
-
-roll_3 = zeros(size(e12_3));
-roll_Ref = zeros(size(e12_3));
-for i=1:numel(roll_3)
-    roll_3(i) = atan2(e12_3(i),e32_3(i));
-    roll_Ref(i) = atan2(e12_Ref(i),e32_Ref(i));
-end
-
-if plotting
-
-figure
-subplot(311)
-title('Position')
-hold on
-ylabel('x [m]')
-stairs(t,x_1,'b')
-stairs(t,x_Ref,'k')
-subplot(312)
-hold on
-ylabel('y [m]')
-stairs(t,y_1,'b')
-stairs(t,y_Ref,'k')
-subplot(313)
-hold on
-ylabel('z [m]')
-stairs(t,z_1,'b')
-stairs(t,z_Ref,'k')
-xlabel('Time [s]')
-
-figure
-subplot(311)
-hold on
-ylabel('dx [m/s]')
-title('Velocity')
-stairs(t,dx_1,'b')
-stairs(t,dx_Ref,'k')
-subplot(312)
-hold on
-ylabel('dy [m/s]')
-stairs(t,dy_1,'b')
-stairs(t,dy_Ref,'k')
-subplot(313)
-hold on
-ylabel('dz [m/s]')
-stairs(t,dz_1,'b')
-stairs(t,dz_Ref,'k')
-xlabel('Time [s]')
-
-
-figure
-subplot(311)
-hold on
-ylabel('omega_x [degree/s]')
-title('Angular velocities')
-stairs(t,w1_1*180/pi,'b')
-stairs(t,w1_Ref*180/pi,'k')
-axis tight
-subplot(312)
-hold on
-ylabel('omega_y [degree/s]')
-stairs(t,w2_1*180/pi,'b')
-stairs(t,w2_Ref*180/pi,'k')
-axis tight
-subplot(313)
-hold on
-ylabel('omega_z [degree/s]')
-stairs(t,w3_1*180/pi,'b')
-stairs(t,w3_Ref*180/pi,'k')
-axis tight
-xlabel('Time [s]')
-
-% figure
-% subplot(211)
-% hold on
-% ylabel('ur (red) vs w1 (blue), in degree, but divided by 100')
-% stairs(t,ur/32767,'r')
-% stairs(t,w1_1*180/pi/100,'b')
-% %plot(t,32767,'k')
-% %plot(t,-32767,'k')
-% axis tight
-% subplot(212)
-% hold on
-% ylabel('up (red) vs w2 (blue), in degree, but divided by 10000')
-% stairs(t,up/20000,'r')
-% stairs(t,w2_1*180/pi/10000,'b')
-% %plot(t,20000,'k')
-% %plot(t,-20000,'k')
-% axis tight
-% xlabel('Time [s]')
-
-figure
-subplot(331)
-hold on
-ylabel('e11')
-stairs(t,e11_1,'b')
-stairs(t,e11_Ref,'k')
-subplot(334)
-hold on
-ylabel('e21')
-stairs(t,e21_1,'b')
-stairs(t,e21_Ref,'k')
-subplot(337)
-hold on
-ylabel('e31')
-stairs(t,e31_1,'b')
-stairs(t,e31_Ref,'k')
-xlabel('Time [s]')
-subplot(332)
-hold on
-ylabel('e12')
-title('Rotation matrix')
-stairs(t,e12_1,'b')
-stairs(t,e12_Ref,'k')
-subplot(335)
-hold on
-ylabel('e22')
-stairs(t,e22_1,'b')
-stairs(t,e22_Ref,'k')
-subplot(338)
-hold on
-ylabel('e32')
-stairs(t,e32_1,'b')
-stairs(t,e32_Ref,'k')
-xlabel('Time [s]')
-subplot(333)
-hold on
-ylabel('e13')
-stairs(t,e13_1,'b')
-stairs(t,e13_Ref,'k')
-subplot(336)
-hold on
-ylabel('e23')
-stairs(t,e23_1,'b')
-stairs(t,e23_Ref,'k')
-subplot(339)
-hold on
-ylabel('e33')
-stairs(t,e33_1,'b')
-stairs(t,e33_Ref,'k')
-xlabel('Time [s]')
-
-figure
-hold on
-stairs(t,roll_3/pi*180,'b');
-stairs(t,roll_Ref/pi*180,'k');
-xlabel('Time [s]')
-ylabel('Roll angle [deg]')
-title('Roll')
-
-figure
-subplot(211)
-stairs(t,ur)
-ylabel('ur')
-title('Control inputs')
-subplot(212)
-stairs(t,up)
-ylabel('up')
-xlabel('Time [s]')
-
-end
+NT = size(X_horizon,1);
+N_MHE_ITER = 3;
