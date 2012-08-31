@@ -4,8 +4,12 @@
 
 plotDouble = 0;
 
-data = dlmread('mhe_mpcClean_60rpm_2step.dat');
+data = dlmread('mhe_mpc_60rpm_stp_good.dat');
 dt = 0.1;
+if(size(data,2) == 149)
+    data = [data zeros(size(data,1),(N+1)*NX*3)];
+end
+
 
 %give the data a name
 for i =1:1 %just so that I can make this block small.
