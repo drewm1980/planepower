@@ -50,7 +50,21 @@ namespace OCL
 			cout << "The port with ratio of imu on camera is not connected" << endl;
 			return false;
 		}
-		first = true;
+		int imuCameraRatio = 50;
+		_imuCameraRatio.read(imuCameraRatio);
+		halfBuffer.resize(imuCameraRatio/2);
+		fullBuffer.resize(imuCameraRatio);
+		vector<double> zeros;
+		zeros.resize(6);
+		memset(&zeros[0],0,zeros.size()*sizeof(double));
+		for( unsigned int i = 0; i < halfBuffer.size() ; i++ )
+		{
+			halfBuffer[i] = zeros;
+		}
+		for( unsigned int i = 0; i < fullBuffer.size() ; i++ )
+		{
+			fullBuffer[i] = zeros;
+		}
 		return true;
 	 }
 
@@ -66,25 +80,6 @@ namespace OCL
 
 	void ImuBuffer::addMeasurement()
 	{
-		if(first)
-		{
-			int imuCameraRatio = 20;
-			_imuCameraRatio.read(imuCameraRatio);
-			halfBuffer.resize(imuCameraRatio/2);
-			fullBuffer.resize(imuCameraRatio);
-			vector<double> zeros;
-			zeros.resize(6);
-			memset(&zeros[0],0,zeros.size()*sizeof(double));
-			for( unsigned int i = 0; i < halfBuffer.size() ; i++ )
-			{
-				halfBuffer[i] = zeros;
-			}
-			for( unsigned int i = 0; i < fullBuffer.size() ; i++ )
-			{
-				fullBuffer[i] = zeros;
-			}
-			first = false;
-		}
 
 		_imuData.read(imuData);
 

@@ -60,7 +60,6 @@ namespace OCL
 
     private:
 	void					addMeasurement();
-	bool					first;
 
 	vector<vector<double> >			halfBuffer;		// Buffer of data of the last measurements that span half a camera period
 	unsigned int				halfBufferIndex;
