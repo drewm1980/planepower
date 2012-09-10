@@ -16,18 +16,18 @@ fprintf('integrating...\n')
 T = [];
 Y = [];
 for i_predict=5:11:numel(t)
-    [T1,Y1] = ode45(dx,[t(i_predict) t(i_predict)+T_predict] ,X3(i_predict,:)');
+    [T1,Y1] = ode45(dx,[t(i_predict) t(i_predict)+T_predict] ,X1(i_predict,:)');
     T = [T; T1];
     Y = [Y; Y1];
 end
 fprintf('finished\n')
 
 
-X3_markers = zeros(size(X3,1),12);
+X1_markers = zeros(size(X1,1),12);
 
-for i=1:size(X3,1)
-    uvM = Model_integ_ACADO(0,X3(i,:)','markers',P);
-    X3_markers(i,:) = uvM(1:12);
+for i=1:size(X1,1)
+    uvM = Model_integ_ACADO(0,X1(i,:)','markers',P);
+    X1_markers(i,:) = uvM(1:12);
 end
 Y_markers = zeros(size(Y,1),12);
 for i=1:size(Y,1)
@@ -35,9 +35,9 @@ for i=1:size(Y,1)
     Y_markers(i,:) = uvM(1:12);
 end
 
-X3_imu = zeros(size(X3,1),6);
-for i=1:size(X3,1)
-    X3_imu(i,:) = Model_integ_ACADO(t(i),X3(i,:)','IMU',P);
+X1_imu = zeros(size(X1,1),6);
+for i=1:size(X1,1)
+    X1_imu(i,:) = Model_integ_ACADO(t(i),X1(i,:)','IMU',P);
 end
 Y_imu = zeros(size(Y,1),6);
 for i=1:size(Y,1)
