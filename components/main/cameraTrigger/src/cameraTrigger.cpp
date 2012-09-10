@@ -19,6 +19,11 @@ namespace OCL
 		addEventPort("Trigger",_Trigger).doc("Trigger input/timestamp");
 		addPort("TriggerTriggeredTime",_TriggerTriggeredTime).doc("Timestamp when trigger was fired"); 
 		addPort("TriggerResetTime",_TriggerResetTime).doc("Timestamp when trigger was reset"); 
+		tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+		_TriggerTriggeredTime.setDataSample( tempTime );
+		_TriggerTriggeredTime.write( tempTime );
+		_TriggerResetTime.setDataSample( tempTime );
+		_TriggerResetTime.write( tempTime );
 	}
 
 	CameraTrigger::~CameraTrigger()
@@ -51,7 +56,7 @@ namespace OCL
 
 	void  CameraTrigger::updateHook()
 	{
-		TIME_TYPE tempTime = RTT::os::TimeService::Instance()->getTicks();
+		tempTime = RTT::os::TimeService::Instance()->getTicks();
 		_TriggerTriggeredTime.write(tempTime);
 #if TRIGGER_ACTIVE_HIGH
 		pull_trigger_high();
