@@ -22,13 +22,33 @@ namespace OCL
 		.doc("The target framerate of the camera (Hz)");
 
 	// Add ports
-	ports()->addPort( "cameraClock",_cameraClock ).doc("The description of the port");
-	ports()->addPort( "imuClock",_imuClock ).doc("The description of the port");
-	ports()->addPort( "controlsPlaybackClock",_controlsPlaybackClock ).doc("The description of the port");
+	addPort( "cameraClock",_cameraClock ).doc("The description of the port");
+	addPort( "imuClock",_imuClock ).doc("The description of the port");
+	addPort( "controlsPlaybackClock",_controlsPlaybackClock ).doc("The description of the port");
 	addPort("imuCameraRatio" , _imuCameraRatio).doc("The ratio of imu freq. on camera freq.");
 
 	addPort("deltaIn",_deltaIn);
 	addPort("deltaOut",_deltaOut);
+
+	myticks = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+	_imuClock.setDataSample( myticks );
+	_imuClock.write( myticks );
+	_cameraClock.setDataSample( myticks );
+	_cameraClock.write( myticks );
+	_controlsPlaybackClock.setDataSample( myticks );
+	_controlsPlaybackClock.write( myticks );
+	_masterClock.setDataSample( myticks );
+	_masterClock.write( myticks );
+	for(int i=0; i<CLOCK_COUNT; i++)
+	{
+		portPointers[i]->setDataSample(myticks);
+		portPointers[i]->write(myticks);
+	}
+	_imuCameraRatio.setDataSample( 0 );
+	_imuCameraRatio.write( 0 );
+	_deltaOut.setDataSample( 0 );
+	_deltaOut.write( 0 );
 
 	base_clock_index = 0;
 }
@@ -74,7 +94,7 @@ bool  MasterTimer::startHook()
 
 void  MasterTimer::updateHook()
 {
-	TIME_TYPE myticks = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+	myticks = RTT::os::TimeService::Instance()->getTicks(); // Get current time
 
 	for(int i=0; i<CLOCK_COUNT; i++)
 	{
