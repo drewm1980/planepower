@@ -5,7 +5,7 @@
   <simple name="HostName" type="string">
 	<description>Name of host to connect to, either FQDN or IPv4 address</description>
 	<!-- localhost ONLY -->
-	<value>192.168.1.149</value>
+	<value>192.168.1.101</value>
   </simple>
 
   <simple name="HostPort" type="short">

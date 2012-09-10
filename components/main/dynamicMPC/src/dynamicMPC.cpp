@@ -496,7 +496,7 @@ void DynamicMPC::mpcFeedbackPhase()
 		// XXX isfinite is something compiler dependent and should be tested...
 		// XXX If we have NaN we should shutdown everything!!!
 		isFinite = true;
-/**		for (i = 0; i < NX * (N + 1); ++i)
+		for (i = 0; i < NX * (N + 1); ++i)
 		{
 			if (isfinite( static_cast< double >( acadoVariables.x[ i ] ) ) == false)
 			{
@@ -517,7 +517,7 @@ void DynamicMPC::mpcFeedbackPhase()
 				}
 			}
 		}
-**/
+
 
 		// Now check for QP solver status
 		if (qpSolverStatus == 0 && isFinite == true)

@@ -60,6 +60,7 @@ namespace OCL
 			vector<double>		markerPositionsAndCovariance;
 			double			sigma_marker;
 			double			marker_scale;
+			TIME_TYPE		tempTime;
 			
 		public:
 			LEDTracker(std::string name);

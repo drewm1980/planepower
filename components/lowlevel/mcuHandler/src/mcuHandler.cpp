@@ -32,15 +32,25 @@ using namespace Orocos;
 	addPort("imuTimeStamp",_imuTimeStamp).doc("The IMU time stamp");
 	addPort("controlOutputPort",_controlOutputPort).doc("Control output: motor1, motor2, motor3");
 	addPort("controlTimeStamp",_controlTimeStamp);
-
 	addPort("imuAndControlPort",_imuAndControlPort);
 
-	U.resize(3);
+	U.resize(3,0.0);
 	U_sent.resize(3,0.0);
+	imuData.resize(6,0.0);
+	imuAndControl.resize(9,0.0);
+	imuTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+
+	_imuData.setDataSample( imuData );
+	_imuData.write( imuData );
+	_imuTimeStamp.setDataSample( imuTimeStamp );
+	_imuTimeStamp.write( imuTimeStamp );
 	_controlOutputPort.setDataSample(U_sent);
 	_controlOutputPort.write(U_sent);	
-	imuData.resize(6);
-	imuAndControl.resize(9);
+	_controlTimeStamp.setDataSample( imuTimeStamp );
+	_controlTimeStamp.write( imuTimeStamp );
+	_imuAndControlPort.setDataSample( imuAndControl );
+	_imuAndControlPort.write( imuAndControl );
 
 	// Add properties
 

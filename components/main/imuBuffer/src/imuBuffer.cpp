@@ -24,15 +24,18 @@ namespace OCL
 		addEventPort( "imuData",_imuData, boost::bind(&ImuBuffer::addMeasurement,this) ).doc("The IMU data: omegax, omegay, omegaz, ax, ay, az");
 		addPort( "imuMeanCov",_imuMeanCov ).doc("The mean and covariance of last and second to last imu data: mean_last, 1/cov_last, mean_prev, 1/cov_prev");
 		addPort("imuCameraRatio" , _imuCameraRatio).doc("The ratio of imu freq. on camera freq.");
-		imuMeanCov.resize(24);
-		imuMean_last.resize(6);
-		imuMean_prev.resize(6);
-		imucov_last.resize(6);
-		imucov_prev.resize(6);
+		imuMeanCov.resize(24,0.0);
+		imuMean_last.resize(6,0.0);
+		imuMean_prev.resize(6,0.0);
+		imucov_last.resize(6,0.0);
+		imucov_prev.resize(6,0.0);
 		halfBufferIndex = 0;
 		fullBufferIndex = 0;
 		acc_scale = 1.0/(70.0*70.0);
 		angvel_scale = 1.0/(6.0*6.0);
+
+		_imuMeanCov.setDataSample( imuMeanCov );
+		_imuMeanCov.write( imuMeanCov );
 	}
 	
 
@@ -47,7 +50,21 @@ namespace OCL
 			cout << "The port with ratio of imu on camera is not connected" << endl;
 			return false;
 		}
-		first = true;
+		int imuCameraRatio = 50;
+		_imuCameraRatio.read(imuCameraRatio);
+		halfBuffer.resize(imuCameraRatio/2);
+		fullBuffer.resize(imuCameraRatio);
+		vector<double> zeros;
+		zeros.resize(6);
+		memset(&zeros[0],0,zeros.size()*sizeof(double));
+		for( unsigned int i = 0; i < halfBuffer.size() ; i++ )
+		{
+			halfBuffer[i] = zeros;
+		}
+		for( unsigned int i = 0; i < fullBuffer.size() ; i++ )
+		{
+			fullBuffer[i] = zeros;
+		}
 		return true;
 	 }
 
@@ -63,28 +80,6 @@ namespace OCL
 
 	void ImuBuffer::addMeasurement()
 	{
-		if(first)
-		{
-			int imuCameraRatio = 20;
-			_imuCameraRatio.read(imuCameraRatio);
-	//cout << "imuCameraRatio " << imuCameraRatio << endl;
-			halfBuffer.resize(imuCameraRatio/2);
-			fullBuffer.resize(imuCameraRatio);
-			vector<double> zeros;
-			zeros.resize(6);
-			memset(&zeros[0],0,zeros.size()*sizeof(double));
-			for( unsigned int i = 0; i < halfBuffer.size() ; i++ )
-			{
-				halfBuffer[i] = zeros;
-			}
-			for( unsigned int i = 0; i < fullBuffer.size() ; i++ )
-			{
-				fullBuffer[i] = zeros;
-			}
-	//cout << "fullBuffer: " << fullBuffer.size() << endl;
-	//cout << "halfBuffer: " << halfBuffer.size() << endl;
-			first = false;
-		}
 
 		_imuData.read(imuData);
 

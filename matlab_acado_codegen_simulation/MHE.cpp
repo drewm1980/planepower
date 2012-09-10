@@ -510,15 +510,15 @@ int main( int argc, char * const argv[] )
 	//ocp.subjectTo( -10 <= dur <= 10 );
 	
 	// STATE
-	ocp.subjectTo( -1 <= e11 <= 1 );
-	ocp.subjectTo( -1 <= e12 <= 1 );
-	ocp.subjectTo( -1 <= e13 <= 1 );
-	ocp.subjectTo( -1 <= e21 <= 1 );
-	ocp.subjectTo( -1 <= e22 <= 1 );
-	ocp.subjectTo( -1 <= e23 <= 1 );
-	ocp.subjectTo( -1 <= e31 <= 1 );
-	ocp.subjectTo( -1 <= e32 <= 1 );
-	ocp.subjectTo( -1 <= e33 <= 1 );
+//	ocp.subjectTo( -1 <= e11 <= 1 );
+//	ocp.subjectTo( -1 <= e12 <= 1 );
+//	ocp.subjectTo( -1 <= e13 <= 1 );
+//	ocp.subjectTo( -1 <= e21 <= 1 );
+//	ocp.subjectTo( -1 <= e22 <= 1 );
+//	ocp.subjectTo( -1 <= e23 <= 1 );
+//	ocp.subjectTo( -1 <= e31 <= 1 );
+//	ocp.subjectTo( -1 <= e32 <= 1 );
+//	ocp.subjectTo( -1 <= e33 <= 1 );
 
 // 	for ( j=0; j < n_W; j++ ){
 // 		ocp.subjectTo(  W[j] == 0 ); 

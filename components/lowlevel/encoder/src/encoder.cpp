@@ -37,7 +37,20 @@ namespace OCL
 	addPort("encoderTimeStampOut",_encoderTimeStampOut).doc("time stamp of the encoder signal");
 	addPort("computationTime",_computationTime);
 	addPort("deltaOmega",_deltaOmega);
-	deltaOmega.resize(2);
+
+	deltaOmega.resize(2,0.0);
+	encoderTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+	_delta.setDataSample( 0.0 );
+	_delta.write( 0.0 );
+	_omega.setDataSample( 0.0 );
+	_omega.write( 0.0 );
+	_encoderTimeStampOut.setDataSample( encoderTimeStamp );
+	_encoderTimeStampOut.write( encoderTimeStamp );
+	_computationTime.setDataSample( encoderTimeStamp );
+	_computationTime.write( encoderTimeStamp );
+	_deltaOmega.setDataSample( deltaOmega );
+	_deltaOmega.write( deltaOmega );
     }
     
 

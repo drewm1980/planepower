@@ -38,12 +38,29 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name)
 	addPort("deltaIn",_deltaIn);
 	addPort("deltaOut",_deltaOut);
 
-	markerPositions.resize(12);
-	markerPositionsAndCovariance.resize(24);
+	markerPositions.resize(12,0.0);
+	markerPositionsAndCovariance.resize(24,0.0);
 
 	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements");
 	sigma_marker = 10;
 	marker_scale = 1.0/(1000.0*1000.0);
+
+	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+	_markerPositions.setDataSample( markerPositions );
+	_markerPositions.write( markerPositions );
+	_markerPositionsAndCovariance.setDataSample( markerPositionsAndCovariance );
+	_markerPositionsAndCovariance.write( markerPositionsAndCovariance );
+	_triggerTimeStampOut.setDataSample( tempTime );
+	_triggerTimeStampOut.write( tempTime );
+	_compTime.setDataSample( tempTime );
+	_compTime.write( tempTime );
+	_frameArrivalTimeStamp.setDataSample( tempTime );
+	_frameArrivalTimeStamp.write( tempTime );
+	_computationCompleteTimeStamp.setDataSample( tempTime );
+	_computationCompleteTimeStamp.write( tempTime );
+	_deltaOut.setDataSample( 0.0 );
+	_deltaOut.write( 0.0 );
 }
 
 LEDTracker::~LEDTracker()
@@ -80,7 +97,7 @@ void  LEDTracker::updateHook()
 #endif
 
 	// This blocks until computation is complete
-	TIME_TYPE tempTime = RTT::os::TimeService::Instance()->getTicks(); // Refresh timestamp, in case PRINTF took time.
+	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Refresh timestamp, in case PRINTF took time.
 	int trials = 1;
 	for(int foo=0; foo<trials; foo++)
 	{
@@ -133,7 +150,6 @@ void  LEDTracker::updateHook()
 		else{
 		markerPositionsAndCovariance[i] = markerPositions[i];
 		markerPositionsAndCovariance[i+12] = 1.0e-6;//1.0/(sigma_marker*sigma_marker);
-		//markerPositionsAndCovariance[i+12] = marker_scale*1.0/(sigma_marker*sigma_marker);
 		}
 	}
 

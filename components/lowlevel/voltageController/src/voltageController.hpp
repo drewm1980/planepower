@@ -39,19 +39,6 @@ namespace OCL
         : public TaskContext
     {
     protected:
-        /*********
-        PROPERTIES
-        *********/
-        //! Example of a property
-        Property<double>			_prop;
-
-        /*********
-        DATAPORTS
-        *********/
-        //! Input port
-        InputPort<double>			_inPort;
-        //! Output port
-        OutputPort<double>			_outPort;
 
         /*********
         OPERATIONS
