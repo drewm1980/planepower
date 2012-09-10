@@ -40,11 +40,6 @@ namespace OCL
 	_controlsPlaybackClock.write( myticks );
 	_masterClock.setDataSample( myticks );
 	_masterClock.write( myticks );
-	for(int i=0; i<CLOCK_COUNT; i++)
-	{
-		portPointers[i]->setDataSample(myticks);
-		portPointers[i]->write(myticks);
-	}
 	_imuCameraRatio.setDataSample( 0 );
 	_imuCameraRatio.write( 0 );
 	_deltaOut.setDataSample( 0 );
@@ -65,6 +60,11 @@ bool  MasterTimer::configureHook()
 	portPointers[0] = &_imuClock;
 	portPointers[1] = &_cameraClock;
 	portPointers[2] = &_controlsPlaybackClock;
+	for(int i=0; i<CLOCK_COUNT; i++)
+	{
+		portPointers[i]->setDataSample(myticks);
+		portPointers[i]->write(myticks);
+	}
 
 	for(int i=0; i<CLOCK_COUNT; i++)
 	{
