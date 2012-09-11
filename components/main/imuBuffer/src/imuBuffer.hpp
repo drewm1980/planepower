@@ -71,8 +71,8 @@ namespace OCL
 	vector<double>				imuMean_prev;		// The mean of the second to last samples
 	vector<double>				imucov_prev;		// The covariance of the second to last samples
 
-	double acc_scale;
-	double angvel_scale;
+	double sigma_omega;
+	double sigma_acc;
 
     public:
         ImuBuffer(std::string name);
