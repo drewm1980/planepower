@@ -41,7 +41,7 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name)
 	markerPositions.resize(12,0.0);
 	markerPositionsAndCovariance.resize(24,0.0);
 
-	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements");
+	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements. Default: 1e3");
 	sigma_marker = 1e3;
 
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
