@@ -187,6 +187,10 @@ DynamicMHE::DynamicMHE(const std::string& name)
 			.doc("The standard deviation of the measurement of dup. Default = 0.03162");
 	sigma_dup = 0.03162;
 
+	this->addProperty("propScale_Obj", SCALE_OBJ)
+			.doc("Scaling of the objective. Default = 0.01");
+	SCALE_OBJ = 0.01;
+
 	// ACADO properties
 	this->addProperty("mk", acadoVariables.p[ 0 ]);
 	this->addProperty("g", acadoVariables.p[ 1 ]);
