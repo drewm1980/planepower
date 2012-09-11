@@ -34,8 +34,8 @@ namespace OCL
 
 		sigma_omega = 1.0;
 		sigma_acc = 0.1;
-		addProperty("sigma_omega",sigma_omega).doc("The standard deviation of the angular velocity measurements");
-		addProperty("sigma_acc",sigma_acc).doc("The standard deviation of the acceleration measurements");
+		addProperty("sigma_omega",sigma_omega).doc("The standard deviation of the angular velocity measurements. Default: 1.0");
+		addProperty("sigma_acc",sigma_acc).doc("The standard deviation of the acceleration measurements. Default: 0.1");
 
 		_imuMeanCov.setDataSample( imuMeanCov );
 		_imuMeanCov.write( imuMeanCov );
