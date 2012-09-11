@@ -680,7 +680,7 @@ void DynamicMHE::mheFeedbackPhase( )
 			}
 		}
 
-		if(sqpIterationsCounter==2){
+		if(sqpIterationsCounter==0){
 			portStateAndControl.write(StateAndControl);
 		}
 	}
