@@ -163,6 +163,30 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	this->addProperty("propNumSQPIterations", numSQPIterations)
 			.doc("Number of SQP iterations. Default = 1, Max = 10.");
 
+	this->addProperty("propSigma_delta", sigma_delta)
+			.doc("The standard deviation of the measurement of delta. Default = 1e-2");
+	sigma_delta = 1e-2;
+
+	this->addProperty("propSigma_ur", sigma_ur)
+			.doc("The standard deviation of the measurement of ur. Default = 1e-2");
+	sigma_ur = 1e-2;
+
+	this->addProperty("propSigma_up", sigma_up)
+			.doc("The standard deviation of the measurement of up. Default = 1e-2");
+	sigma_up = 1e-2;
+
+	this->addProperty("propSigma_delta", sigma_dddelta)
+			.doc("The standard deviation of the measurement of dddelta. Default = 0.03162");
+	sigma_dddelta = 0.03162;
+
+	this->addProperty("propSigma_dur", sigma_dur)
+			.doc("The standard deviation of the measurement of dur. Default = 0.03162");
+	sigma_dur = 0.03162;
+
+	this->addProperty("propSigma_dup", sigma_dup)
+			.doc("The standard deviation of the measurement of dup. Default = 0.03162");
+	sigma_dup = 0.03162;
+
 	// ACADO properties
 	this->addProperty("mk", acadoVariables.p[ 0 ]);
 	this->addProperty("g", acadoVariables.p[ 1 ]);
@@ -269,21 +293,21 @@ bool DynamicMHE::startHook( )
 	for (i = 0; i < N; ++i)
 	{
 		// delta
-		acadoVariables.S[i * NY * NY + 18 * NY + 18] = SCALE_OBJ * 1e4;
+		acadoVariables.S[i * NY * NY + 18 * NY + 18] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta
 
 		// ur, up
-		acadoVariables.S[i * NY * NY + 19 * NY + 19] = SCALE_OBJ * 1e4;
-		acadoVariables.S[i * NY * NY + 20 * NY + 20] = SCALE_OBJ * 1e4;
+		acadoVariables.S[i * NY * NY + 19 * NY + 19] = SCALE_OBJ * 1.0/sigma_ur/sigma_ur; // ur
+		acadoVariables.S[i * NY * NY + 20 * NY + 20] = SCALE_OBJ * 1.0/sigma_up/sigma_up; // up
 
 		// controls
-		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1e3;
-		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1e3;
-		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1e3;
+		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1.0/sigma_dddelta/sigma_dddelta; // dddelta
+		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
+		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
 	}
 
-	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1e4;
-	acadoVariables.SN[7 * NYN + 7] = SCALE_OBJ * 1e4;
-	acadoVariables.SN[8 * NYN + 8] = SCALE_OBJ * 1e4;
+	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta
+	acadoVariables.SN[7 * NYN + 7] = SCALE_OBJ * 1.0/sigma_ur/sigma_ur; // ur
+	acadoVariables.SN[8 * NYN + 8] = SCALE_OBJ * 1.0/sigma_up/sigma_up; // up
 
 	return true;
 }

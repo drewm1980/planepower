@@ -218,6 +218,13 @@ private:
 	unsigned numSQPIterations;
 	unsigned sqpIterationsCounter;
 
+	double sigma_delta;
+	double sigma_ur;
+	double sigma_up;
+	double sigma_dddelta;
+	double sigma_dur;
+	double sigma_dup;
+
 	//
 	// TODO Logging
 	//
