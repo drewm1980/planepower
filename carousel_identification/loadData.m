@@ -1,15 +1,18 @@
 clear all
 
-% !scp kurt@192.168.1.111:/home/kurt/planepower/usecases/collectMeasurements/imu_arm_max_speed.dat imu_arm_max_speed.dat
-% !cat imu_arm_max_speed.dat | grep -v nan >imu_arm_max_speedClean.dat
-% !sed -i "1,3d" imu_arm_max_speedClean.dat
+% !scp kurt@192.168.1.111:/home/kurt/planepower/usecases/collectMeasurements/imu_arm.dat imu_arm_max_speed_004.dat
+% !cat imu_arm_max_speed_004.dat | grep -v nan >imu_arm_max_speedClean_004.dat
+% !sed -i "1,3d" imu_arm_max_speedClean_004.dat
 % 
 % !scp kurt@192.168.1.111:/home/kurt/planepower/usecases/collectMeasurements/imu_arm_zero_speed.dat imu_arm_zero_speed.dat
- !cat imu_arm_zero_speed.dat | grep -v nan >imu_arm_zero_speedClean.dat
- !sed -i "1,3d" imu_arm_zero_speedClean.dat
+% !cat imu_arm_zero_speed_004.dat | grep -v nan >imu_arm_zero_speedClean_004.dat
+% !sed -i "1,3d" imu_arm_zero_speedClean_004.dat
 
-data_max_speed = dlmread('imu_arm_max_speedClean.dat');
-data_zero_speed = dlmread('imu_arm_zero_speedClean.dat');
+data_max_speed = dlmread('imu_arm_max_speedClean_004.dat');
+data_zero_speed = dlmread('imu_arm_zero_speedClean_004.dat');
+
+data_max_speed = data_max_speed(20:end,:);
+data_zero_speed = data_zero_speed(20:end,:);
 
 t = data_max_speed(:,1);
 imuStamp = data_max_speed(:,2);
@@ -55,6 +58,7 @@ for i=1:numel(imuStamp)
         if imuStamp(i) == encoderStamp(j)
             data_aligned(i,8) = delta(j);
             data_aligned(i,9) = ddelta(j);
+            break;
         end
     end
 end
@@ -117,6 +121,7 @@ for i=1:numel(imuStamp_zero)
         if imuStamp_zero(i) == encoderStamp_zero(j)
             data_aligned_zero(i,8) = delta_zero(j);
             data_aligned_zero(i,9) = ddelta_zero(j);
+            break;
         end
     end
 end
