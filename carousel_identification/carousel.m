@@ -56,7 +56,7 @@ plot(aIMU(3,:))
 %%
 clear all
 syms alpha beta R omega t real
-syms delt(t)
+syms delt(t) real
 
 delta = delt+alpha;
 Rdelta = [cos(delta) -sin(delta) 0;
@@ -64,10 +64,6 @@ Rdelta = [cos(delta) -sin(delta) 0;
           0 0 1];
 
 Xc = Rdelta*[R;0;0];
-
-xc = Xc(1);
-yc = Xc(2);
-zc = Xc(3);
 
 Rbeta = [cos(beta) 0 sin(beta);
          0 1 0;
@@ -97,8 +93,8 @@ wz = omega;
 w = Rbeta*Rdelta*[wx;wy;wz];
 syms g real;
 G = [0;0;g];
-aIMU = Rdelta'*Rbeta'*(a+G);
-wIMU = Rdelta'*Rbeta'*w;
+aIMU = Rdelta.'*Rbeta'*(a+G);
+wIMU = Rdelta.'*Rbeta'*w;
 
 aIMU = simplify(aIMU);
 wIMU = simplify(wIMU);
