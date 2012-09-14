@@ -13,7 +13,7 @@ from kinetics.flatkinematics import skew
 from scipy.linalg.matfuncs import sqrtm
 from scipy.linalg.matfuncs import toreal
 plt.interactive(True)
-if 0:
+if 1:
     alpha = ssym("alpha")
     beta = ssym("beta")
     omega = ssym("omega")
@@ -96,6 +96,12 @@ for i in range(delta_meas.shape[0]):
     h.evaluate()
     aIMU_pred[i,:] = h.output(0).T
     wIMU_pred[i,:] = h.output(1).T
+
+NP.savetxt('wIMU_res.dat',wIMU_res)
+NP.savetxt('aIMU_res.dat',aIMU_res)
+NP.savetxt('aIMU_pred.dat',aIMU_pred)
+NP.savetxt('wIMU_pred.dat',wIMU_pred)
+
 tgrid = NP.linspace(0,0.002*(delta_meas.shape[0]-1),delta_meas.shape[0])
 plt.figure(1)
 plt.clf()
