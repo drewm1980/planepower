@@ -74,7 +74,7 @@ mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.useExternalTrigger = true
 
 # MHE
-dynamicMHE.propNumSQPIterations = 3
+dynamicMHE.propNumSQPIterations = 1
 loadService("dynamicMHE", "marshalling")
 dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
 
@@ -91,9 +91,22 @@ encoder.encoderPort = 0;
 # LED tracker
 # LEDTracker hangs until frame arrival, does processing, and re-triggers itself.
 LEDTracker.useExternalTrigger=true;
+LEDTracker.sigma_marker=1000;
+
+# imuBuffer
+imuBuffer.sigma_omega = 1.0;
+imuBuffer.sigma_acc = 0.1;
+
+# dynamicMHE
+dynamicMHE.sigma_delta = 1e-2;
+dynamicMHE.sigma_ur = 1e-2;
+dynamicMHE.sigma_up = 1e-2;
+dynamicMHE.sigma_dddelta = 0.03162;
+dynamicMHE.sigma_dur = 0.03162;
+dynamicMHE.sigma_dup = 0.03162;
 
 # MPC
-dynamicMPC.propNumSQPIterations = 5
+dynamicMPC.propNumSQPIterations = 1
 
 dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
 dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
