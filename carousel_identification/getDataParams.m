@@ -24,7 +24,7 @@ hold on
 plot(t,omega,'r')
 plot(t,y+mean(omega))
 
-dlmwrite('ddelta_t_004.dat',y,'delimiter',' ','precision',10);
+dlmwrite('ddelta_t_004.dat',ddelta_t,'delimiter',' ','precision',10);
 dlmwrite('g_004.dat',g);
 dlmwrite('ddelta_004.dat',ddelta);
 dlmwrite('delta_004.dat',data_aligned(:,8),'delimiter',' ','precision',10);

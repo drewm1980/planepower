@@ -21,6 +21,9 @@ if 1:
     pIMU = ssym("pIMU")
     yIMU = ssym("yIMU")
     
+    A_dddelta = ssym("A_dddelta") # amplitude of variation of dddelta
+    P_dddelta = ssym("P_dddelta") # phase of variation of dddelta
+    
     g = NP.loadtxt('g.dat')
     
     X = vertcat([alpha,beta,R,rIMU,pIMU,yIMU])
@@ -58,25 +61,26 @@ if 1:
     ddelta_i[0,0] = ddelta_0
     dt = 0.002
     for i in range(1,Nmeas):
-        ddelta_i[i,0] = ddelta_i[i-1,0] + dt*dddelta_i[i/Nmeas_i]
-        delta_i[i,0] = delta_i[i-1,0] + dt*ddelta_i[i-1,0] + dt**2/2*dddelta_i[i/Nmeas_i]
-    h_delta = SXFunction([delta_0,ddelta_0,dddelta_i],[delta_i])
+        ddelta_i[i,0] = ddelta_i[i-1,0] + dt*(dddelta_i[i/Nmeas_i] + A_dddelta*sin(delta_i[i,0]+P_dddelta))
+        delta_i[i,0] = delta_i[i-1,0] + dt*ddelta_i[i-1,0] + dt**2/2*(dddelta_i[i/Nmeas_i] + A_dddelta*sin(delta_i[i,0]+P_dddelta))
+    h_delta = SXFunction([delta_0,ddelta_0,dddelta_i,A_dddelta,P_dddelta],[delta_i])
     h_delta.init()
-    h_ddelta = SXFunction([ddelta_0,dddelta_i],[ddelta_i])
+    h_ddelta = SXFunction([ddelta_0,dddelta_i,A_dddelta,P_dddelta],[ddelta_i])
     h_ddelta.init()
     obj = 0
     for i in range(aIMU_meas.shape[0]):
         obj += mul((aIMU_meas[i,:].T - h.eval([X,delta_i[i,0],ddelta_i[i,0],dddelta_i[i/Nmeas_i,0]])[0]).T,(aIMU_meas[i,:].T - h.eval([X,delta_i[i,0],ddelta_i[i,0],dddelta_i[i/Nmeas_i,0]])[0]))
         obj += mul((wIMU_meas[i,:].T - h.eval([X,delta_i[i,0],ddelta_i[i,0],dddelta_i[i/Nmeas_i,0]])[1]).T,(wIMU_meas[i,:].T - h.eval([X,delta_i[i,0],ddelta_i[i,0],dddelta_i[i/Nmeas_i,0]])[1]))
         obj += (delta_i[i,0]-delta_meas[i])**2
-    Xall = vertcat([X,delta_0,ddelta_0,dddelta_i])
+    Xall = vertcat([X,delta_0,ddelta_0,dddelta_i,A_dddelta,P_dddelta])
     f_obj = SXFunction([Xall],[obj])
     f_obj.setOption('numeric_hessian',True)
     f_obj.init()
     
     nlp_solver = IpoptSolver(f_obj)
+    nlp_solver.setOption("max_iter",10000)
     #nlp_solver.setOption("generate_hessian",True)
-    #nlp_solver.setOption('linear_solver','MA57')
+    nlp_solver.setOption('linear_solver','MA57')
     nlp_solver.init()
     nlp_solver.input(NLP_X_INIT)[0] = 0; # alpha
     nlp_solver.input(NLP_X_INIT)[1] = 0; # beta
