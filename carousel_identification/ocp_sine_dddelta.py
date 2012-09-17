@@ -103,7 +103,7 @@ if 1:
     yIMU = Xsol[5]
     
     res = jacobian(obj,Xall)
-    f = SXFunction([X],[res])  
+    f = SXFunction([Xall],[res])  
     f.setOption("numeric_jacobian",True)
     f.init()
     jac = Jacobian ( f )
