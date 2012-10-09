@@ -53,37 +53,25 @@ plot(aIMU(2,:))
 subplot(313)
 plot(aIMU(3,:))
 
-
-
+%%
+clear all
 syms alpha beta R omega t real
+syms delt(t) real
 
-
-delta = omega*t+alpha;
+delta = delt+alpha;
 Rdelta = [cos(delta) -sin(delta) 0;
           sin(delta) cos(delta) 0;
           0 0 1];
 
 Xc = Rdelta*[R;0;0];
 
-xc = Xc(1);
-yc = Xc(2);
-zc = Xc(3);
-
 Rbeta = [cos(beta) 0 sin(beta);
          0 1 0;
          -sin(beta) 0 cos(beta)];
 
 X = Rbeta*Xc;
-x = X(1);
-y = X(2);
-z = X(3);
 
-
-ax = diff(diff(x,t),t);
-ay = diff(diff(y,t),t);
-az = diff(diff(z,t),t);
-
-a = [ax;ay;az];
+a = diff(diff(X,t),t);
 
 
 syms rIMU pIMU yIMU real;
@@ -96,7 +84,7 @@ Rp = [cos(pIMU) 0 sin(pIMU);
 Rr = [1 0 0;
       0 cos(rIMU) -sin(rIMU);
       0 sin(rIMU) cos(rIMU)];
-
+syms omega real;
 Rimu = Ry*Rp*Rr;
 wx = 0;
 wy = 0;
@@ -105,11 +93,11 @@ wz = omega;
 w = Rbeta*Rdelta*[wx;wy;wz];
 syms g real;
 G = [0;0;g];
-aIMU = Rdelta'*Rbeta'*(a+G);
-wIMU = Rdelta'*Rbeta'*w;
+aIMU = Rdelta.'*Rbeta'*(a+G);
+wIMU = Rdelta.'*Rbeta'*w;
 
-aIMU = [simplify(aIMU(1)); simplify(aIMU(2)); simplify(aIMU(3)) ];
-wIMU = [simplify(wIMU(1)); simplify(wIMU(2)); simplify(wIMU(3)) ];
+aIMU = simplify(aIMU);
+wIMU = simplify(wIMU);
 
 aIMU = Rimu*aIMU;
 wIMU = Rimu*wIMU;

@@ -17,7 +17,7 @@ using namespace BFL;
 // Encoder threshold to detect overflow
 #define ENCODER_TRESHOLD ENCODER_OVERFLOW/10.0
 // Pi
-#define PI 3.1415926535
+#define PI 3.14159265358979323846264338327950288419716939937510
 
 namespace OCL
 {

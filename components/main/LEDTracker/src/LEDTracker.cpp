@@ -41,9 +41,8 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name)
 	markerPositions.resize(12,0.0);
 	markerPositionsAndCovariance.resize(24,0.0);
 
-	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements");
-	sigma_marker = 10;
-	marker_scale = 1.0/(1000.0*1000.0);
+	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements. Default = 1e3");
+	sigma_marker = 1e3;
 
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
 
@@ -143,13 +142,13 @@ void  LEDTracker::updateHook()
 	markerPositions[11] = blobExtractor2->markerLocations.blue.y;
 	for(unsigned int i=0; i<12; i++)
 	{
-		if(isnan(markerPositions[i])){
+		if(isnan(markerPositions[i])){ // Marker was not detected properly.. Put a random value and puth the weight to 0
 			markerPositionsAndCovariance[i] = 1000.0;
 			markerPositionsAndCovariance[i+12] = 0.0;
 		}
 		else{
 		markerPositionsAndCovariance[i] = markerPositions[i];
-		markerPositionsAndCovariance[i+12] = 1.0e-6;//1.0/(sigma_marker*sigma_marker);
+		markerPositionsAndCovariance[i+12] = 1.0/(sigma_marker*sigma_marker);
 		}
 	}
 

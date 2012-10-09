@@ -31,8 +31,11 @@ namespace OCL
 		imucov_prev.resize(6,0.0);
 		halfBufferIndex = 0;
 		fullBufferIndex = 0;
-		acc_scale = 1.0/(70.0*70.0);
-		angvel_scale = 1.0/(6.0*6.0);
+
+		sigma_omega = 1.0;
+		sigma_acc = 0.1;
+		addProperty("sigma_omega",sigma_omega).doc("The standard deviation of the angular velocity measurements. Default = 1.0");
+		addProperty("sigma_acc",sigma_acc).doc("The standard deviation of the acceleration measurements. Default = 0.1");
 
 		_imuMeanCov.setDataSample( imuMeanCov );
 		_imuMeanCov.write( imuMeanCov );
@@ -130,12 +133,13 @@ namespace OCL
 			imucov_last[i] = 1.0/(  ( halfBuffer.size()-1.0 )*(halfBuffer.size())  )*imucov_last[i];
 			imucov_prev[i] = 1.0/(  ( fullBuffer.size()-1.0 )*(fullBuffer.size())  )*imucov_prev[i];
 		}
+		// Use fixed values for now
 		for(unsigned int i = 0 ; i < 3 ; i++ )
 		{
-			imucov_last[i] = 1.0;
-			imucov_last[i+3] = 1.0e-2;
-			imucov_prev[i] = 1.0;
-			imucov_prev[i+3] = 1.0e-2;
+			imucov_last[i] = 1.0/sigma_omega/sigma_omega;
+			imucov_last[i+3] = 1.0/sigma_acc/sigma_acc;
+			imucov_prev[i] = 1.0/sigma_omega/sigma_omega;
+			imucov_prev[i+3] = 1.0/sigma_acc/sigma_acc;
 		}
 
 		// Write it on the port
@@ -148,14 +152,6 @@ namespace OCL
 			//imuMeanCov[i+18] = 1.0/imucov_prev[i];
 			imuMeanCov[i+18] = imucov_prev[i];
 		}
-		// Scale the covariance
-//		for(unsigned int i = 0 ; i < 3 ; i++ )
-//		{
-//			imuMeanCov[i+6] = angvel_scale*imuMeanCov[i+6];
-//			imuMeanCov[i+18] = angvel_scale*imuMeanCov[i+18];
-//			imuMeanCov[i+9] = acc_scale*imuMeanCov[i+9];
-//			imuMeanCov[i+21] = acc_scale*imuMeanCov[i+21];
-//		}
 		_imuMeanCov.write(imuMeanCov);
 	}
 
