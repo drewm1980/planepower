@@ -136,7 +136,7 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	portOneStepPrediction.setDataSample( oneStepPrediction );
 	portOneStepPrediction.write( oneStepPrediction );
 
-	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC,0.0);
+	StateAndControl.resize(5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+3*(N + 1) * NX,0.0);
 	portStateAndControl.setDataSample( StateAndControl );
 	portStateAndControl.write( StateAndControl );
 
@@ -162,6 +162,34 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	numSQPIterations = 1;
 	this->addProperty("propNumSQPIterations", numSQPIterations)
 			.doc("Number of SQP iterations. Default = 1, Max = 10.");
+
+	this->addProperty("propSigma_delta", sigma_delta)
+			.doc("The standard deviation of the measurement of delta. Default = 1e-2");
+	sigma_delta = 1e-2;
+
+	this->addProperty("propSigma_ur", sigma_ur)
+			.doc("The standard deviation of the measurement of ur. Default = 1e-2");
+	sigma_ur = 1e-2;
+
+	this->addProperty("propSigma_up", sigma_up)
+			.doc("The standard deviation of the measurement of up. Default = 1e-2");
+	sigma_up = 1e-2;
+
+	this->addProperty("propSigma_delta", sigma_dddelta)
+			.doc("The standard deviation of the measurement of dddelta. Default = 0.03162");
+	sigma_dddelta = 0.03162;
+
+	this->addProperty("propSigma_dur", sigma_dur)
+			.doc("The standard deviation of the measurement of dur. Default = 0.03162");
+	sigma_dur = 0.03162;
+
+	this->addProperty("propSigma_dup", sigma_dup)
+			.doc("The standard deviation of the measurement of dup. Default = 0.03162");
+	sigma_dup = 0.03162;
+
+	this->addProperty("propScale_Obj", SCALE_OBJ)
+			.doc("Scaling of the objective. Default = 0.01");
+	SCALE_OBJ = 0.01;
 
 	// ACADO properties
 	this->addProperty("mk", acadoVariables.p[ 0 ]);
@@ -269,21 +297,21 @@ bool DynamicMHE::startHook( )
 	for (i = 0; i < N; ++i)
 	{
 		// delta
-		acadoVariables.S[i * NY * NY + 18 * NY + 18] = SCALE_OBJ * 1e4;
+		acadoVariables.S[i * NY * NY + 18 * NY + 18] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta
 
 		// ur, up
-		acadoVariables.S[i * NY * NY + 19 * NY + 19] = SCALE_OBJ * 1e4;
-		acadoVariables.S[i * NY * NY + 20 * NY + 20] = SCALE_OBJ * 1e4;
+		acadoVariables.S[i * NY * NY + 19 * NY + 19] = SCALE_OBJ * 1.0/sigma_ur/sigma_ur; // ur
+		acadoVariables.S[i * NY * NY + 20 * NY + 20] = SCALE_OBJ * 1.0/sigma_up/sigma_up; // up
 
 		// controls
-		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1e3;
-		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1e3;
-		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1e3;
+		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1.0/sigma_dddelta/sigma_dddelta; // dddelta
+		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
+		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
 	}
 
-	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1e4;
-	acadoVariables.SN[7 * NYN + 7] = SCALE_OBJ * 1e4;
-	acadoVariables.SN[8 * NYN + 8] = SCALE_OBJ * 1e4;
+	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta
+	acadoVariables.SN[7 * NYN + 7] = SCALE_OBJ * 1.0/sigma_ur/sigma_ur; // ur
+	acadoVariables.SN[8 * NYN + 8] = SCALE_OBJ * 1.0/sigma_up/sigma_up; // up
 
 	return true;
 }
@@ -656,9 +684,6 @@ void DynamicMHE::mheFeedbackPhase( )
 				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+i] = measurementsEncoder[i];
 			}
 		}
-		if(sqpIterationsCounter==2){
-			portStateAndControl.write(StateAndControl);
-		}
 
 		// Copy the full state vector over the full horizon and write it to a port
 		copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
@@ -666,6 +691,26 @@ void DynamicMHE::mheFeedbackPhase( )
 		// Copy the full control vector over the full horizon and write it to a port
 		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
 		portFullControlVector.write( fullControlVector );
+
+		if(sqpIterationsCounter==0){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+i] = fullStateVector[i];
+			}
+		}
+		if(sqpIterationsCounter==1){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+(N + 1)*NX+i] = fullStateVector[i];
+			}
+		}
+		if(sqpIterationsCounter==2){
+			for(i = 0; i < (N + 1)*NX; i++){
+				StateAndControl[5*NX+2*NU+NY_MARK+NY_IMU+NY_POSE+NY_ENC+2*(N + 1)*NX+i] = fullStateVector[i];
+			}
+		}
+
+		if(sqpIterationsCounter==0){
+			portStateAndControl.write(StateAndControl);
+		}
 	}
 	
 	// The user component should always read _first_ whether the MHE is ready

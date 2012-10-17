@@ -1,3 +1,7 @@
+% Depending on "flag", outputs a variety of shit:
+%   Simulate the ODE
+%	Evaluate camera model
+%	Evaluate imu measurement model
 function sys = Model_integ_ACADO(t,state,flag,P)
 
 % Load all of the modeling constants from parameters.m	

@@ -57,8 +57,6 @@ using namespace std;
 
 #define DEEP_DEBUG	0 // Dumping MHE data on ports and so...
 
-#define SCALE_OBJ	0.01 	// Scaling of the objective
-
 #define SCALE_UR	1.25e6	// Scaling of ur_1, ur_2
 #define SCALE_UP	2e5		// Scaling of u_p
 
@@ -217,6 +215,15 @@ private:
 	/// Number of SQP iterations
 	unsigned numSQPIterations;
 	unsigned sqpIterationsCounter;
+
+	double sigma_delta;
+	double sigma_ur;
+	double sigma_up;
+	double sigma_dddelta;
+	double sigma_dur;
+	double sigma_dup;
+
+	double SCALE_OBJ; // Scaling of the objective
 
 	//
 	// TODO Logging

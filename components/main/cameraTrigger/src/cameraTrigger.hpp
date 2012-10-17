@@ -44,6 +44,7 @@ namespace OCL
 		OutputPort<TIME_TYPE>	_TriggerTriggeredTime; // Mainly for debugging
 		OutputPort<TIME_TYPE>	_TriggerResetTime; // Mainly for debugging
     private:
+		TIME_TYPE tempTime;
 
     public:
         CameraTrigger(std::string name);

@@ -30,17 +30,21 @@ namespace OCL
 		//addPort( "cov_rt",_cov_rt ).doc("covariance of pose estimate");
 		addPort( "pose_and_cov_rt_inv",_pose_and_cov_rt_inv ).doc("The estimated (state dependent) covariance matrix of the pose measurement vector.");
 
-	markerPositions.resize(NMARKERPOSITIONS);
-	pfm.resize(NPOSE);
-	cov_rt.resize(NPOSE*NPOSE);
-	cov_rt_inv.resize(NPOSE*NPOSE);
-	pose_and_cov_rt_inv.resize(NPOSE + NPOSE*NPOSE);
+	markerPositions.resize(NMARKERPOSITIONS,0.0);
+	pfm.resize(NPOSE,0.0);
+	cov_rt.resize(NPOSE*NPOSE,0.0);
+	cov_rt_inv.resize(NPOSE*NPOSE,0.0);
+	pose_and_cov_rt_inv.resize(NPOSE + NPOSE*NPOSE,0.0);
 	
 	getPoseWrapper_input[0] = getPoseWrapper_markerPositions;
 	getPoseWrapper_output[0] = getPoseWrapper_pose;
 	getPoseWrapper_output[1] = getPoseWrapper_cov_rt;
 	getPoseWrapper_output[2] = getPoseWrapper_cov_rt_inv;
 
+        _pfm.setDataSample( pfm );
+        _pfm.write( pfm );
+        _pose_and_cov_rt_inv.setDataSample( pose_and_cov_rt_inv );
+        _pose_and_cov_rt_inv.write( pose_and_cov_rt_inv );
 	}
 
 	PoseFromMarkers::~PoseFromMarkers()

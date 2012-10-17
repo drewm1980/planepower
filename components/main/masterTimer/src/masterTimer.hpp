@@ -61,6 +61,7 @@ namespace OCL
 
     private:
 		uint64_t base_clock_index;
+	TIME_TYPE myticks;
 
     public:
         MasterTimer(std::string name);

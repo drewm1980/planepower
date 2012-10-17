@@ -31,12 +31,7 @@ namespace OCL
      VoltageController::VoltageController(std::string name)
          : TaskContext(name)
      {
-        properties()->addProperty( "prop",_prop ).doc("The description of the property");
-
-        ports()->addPort( "inPort",_inPort ).doc("The description of the port");
-        ports()->addPort( "outPort",_outPort ).doc("The description of the port");
-
-		provides()->addOperation("setVoltage",&VoltageController::setVoltage,this).doc("Set voltage in a safe way").arg("channel","The channel to write to (0 or 1)").arg("voltage","The voltage to put on [channel] (between -10 and 10)");
+		addOperation("setVoltage",&VoltageController::setVoltage,this).doc("Set voltage in a safe way").arg("channel","The channel to write to (0 or 1)").arg("voltage","The voltage to put on [channel] (between -10 and 10)");
 		theVoltageController = this;
 		signal(SIGSEGV,voltage_controller_signal_handler);
     }
