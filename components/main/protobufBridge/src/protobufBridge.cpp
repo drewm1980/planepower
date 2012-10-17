@@ -45,23 +45,23 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	{
 		_stateInputPort.read(X);
 
-		xyz.set_x(2);
-		xyz.set_y(2);
-		xyz.set_z(2);
-		dcm.set_r11(1);
-		dcm.set_r12(0);
-		dcm.set_r13(0);
-		dcm.set_r21(0);
-		dcm.set_r22(1);
-		dcm.set_r23(0);
-		dcm.set_r31(0);
-		dcm.set_r32(0);
-		dcm.set_r33(1);
+		xyz.set_x(X[0]);
+		xyz.set_y(X[1]);
+		xyz.set_z(X[2]);
+		dcm.set_r11(X[6]);
+		dcm.set_r21(X[7]);
+		dcm.set_r31(X[8]);
+		dcm.set_r12(X[9]);
+		dcm.set_r22(X[10]);
+		dcm.set_r32(X[11]);
+		dcm.set_r13(X[12]);
+		dcm.set_r23(X[13]);
+		dcm.set_r33(X[14]);
 		cs.mutable_kitexyz()->CopyFrom(xyz);
 		cs.mutable_kitedcm()->CopyFrom(dcm);
-		cs.set_delta(0.1);
-		cs.set_rarm(1);
-		cs.set_zt(-0.5);
+		cs.set_delta(X[18]);
+		cs.set_rarm(1.085);
+		cs.set_zt(-.03);
 		// To Add: Messages
 		cs.set_w0(0);
 
