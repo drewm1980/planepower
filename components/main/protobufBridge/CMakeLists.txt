@@ -35,15 +35,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_find_ros_package(rtt )
 find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
  
-# Defines the orocos_* cmake macros. See that file for additional
-# documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
  
-#common commands for building c++ executables and libraries
-orocos_component(${PROJECT_NAME} src/protobufBridge.cpp)
+include_directories(../../../../rawesome/carousel-cpp)
+orocos_component(${PROJECT_NAME} src/protobufBridge.cpp 
+	../../../../rawesome/carousel-cpp/kite.pb.cc)
 rosbuild_add_library(protobufBridge src/protobufBridge.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} protobuf)
+target_link_libraries(${PROJECT_NAME} zmq)
+
+

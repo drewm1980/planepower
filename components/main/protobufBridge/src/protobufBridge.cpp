@@ -11,7 +11,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	namespace OCL
 {
 	ProtobufBridge::ProtobufBridge(std::string name)
-		: TaskContext(name)
+		: TaskContext(name) , context(1) , socket(context, ZMQ_PUB)
 	{
 		ports()->addPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
 					 ",dx,dy,dz"
@@ -27,7 +27,12 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 	bool  ProtobufBridge::configureHook()
 	{
+		GOOGLE_PROTOBUF_VERIFY_VERSION;
+
 		X.resize(NSTATES,0.0);
+
+		socket.bind("tcp://*:5563");
+
 		return true;
 	}
 
@@ -39,6 +44,33 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	void  ProtobufBridge::updateHook()
 	{
 		_stateInputPort.read(X);
+
+		xyz.set_x(2);
+		xyz.set_y(2);
+		xyz.set_z(2);
+		dcm.set_r11(1);
+		dcm.set_r12(0);
+		dcm.set_r13(0);
+		dcm.set_r21(0);
+		dcm.set_r22(1);
+		dcm.set_r23(0);
+		dcm.set_r31(0);
+		dcm.set_r32(0);
+		dcm.set_r33(1);
+		cs.mutable_kitexyz()->CopyFrom(xyz);
+		cs.mutable_kitedcm()->CopyFrom(dcm);
+		cs.set_delta(0.1);
+		cs.set_rarm(1);
+		cs.set_zt(-0.5);
+		// To Add: Messages
+		cs.set_w0(0);
+
+		if (!cs.SerializeToString(&X_serialized)) {
+			cerr << "Failed to serialize cs." << endl;
+			return;
+		}
+		s_sendmore(socket, "carousel");
+		s_send(socket, X_serialized);
 	}
 
 	void  ProtobufBridge::stopHook()
@@ -47,6 +79,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 	void  ProtobufBridge::cleanUpHook()
 	{
+		google::protobuf::ShutdownProtobufLibrary(); // optional
 	}
 
 }//namespace

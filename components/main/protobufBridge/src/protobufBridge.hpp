@@ -21,6 +21,12 @@ using namespace BFL;
 using namespace Orocos;
 using namespace KDL;
 
+#include <zmq.hpp>
+
+// These files are in the "rawesome" git repo maintained by Greg Horn
+#include "zhelpers.hpp"
+#include "kite.pb.h"
+
 #define NSTATES 22
 
 namespace OCL
@@ -33,6 +39,16 @@ namespace OCL
 			vector<double>						X;
 
 		private:
+			kite::Xyz xyz;
+			kite::Dcm dcm;
+			kite::CarouselState cs;
+
+			//zmq::context_t context(1);
+			//zmq::socket_t socket(context,ZMQ_PUB);
+			zmq::context_t context;
+			zmq::socket_t socket;
+
+			string X_serialized;
 
 		public:
 			ProtobufBridge(std::string name);
