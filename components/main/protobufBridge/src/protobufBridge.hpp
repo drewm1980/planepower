@@ -21,49 +21,27 @@ using namespace BFL;
 using namespace Orocos;
 using namespace KDL;
 
+#define NSTATES 22
+
 namespace OCL
 {
-
-	/// ProtobufBridge class
-	/**
-	This class simulates the free motion of a ball attached to a pendulum.
-	The pendulum motion is executed in the x=0 plane of the pendulum reference
-	frame. The state of the ball in the pendulum plane is given by
-	[theta,omega,alpha]. The position of the ball in the world frame is given by
-	[x,y,z].
-	The pendulum reference frame wrt to the world reference frame gives the pose
-	of the pendulum motion plane wrt to the world.
-	*/
 	class ProtobufBridge
 		: public TaskContext
 	{
-	protected:
-		/*********
-		PROPERTIES
-		*********/
-		//! Example of a property
-		Property<double>			_prop;
+		protected:
+			InputPort<vector<double> >			_stateInputPort;
+			vector<double>						X;
 
-		/*********
-		DATAPORTS
-		*********/
-		//! Input port
-		InputPort<double>			_inPort;
-		//! Output port
-		OutputPort<double>			_outPort;
+		private:
 
-	private:
-		void					simpleFunction(void);
-
-	public:
-		ProtobufBridge(std::string name);
-		~ProtobufBridge();
-		bool		configureHook();
-		bool		startHook();
-		void		updateHook();
-		void		stopHook();
-		void		cleanUpHook();
-		
+		public:
+			ProtobufBridge(std::string name);
+			~ProtobufBridge();
+			bool		configureHook();
+			bool		startHook();
+			void		updateHook();
+			void		stopHook();
+			void		cleanUpHook();
 	};
 }
 #endif // __PROTOBUFBRIDGE__

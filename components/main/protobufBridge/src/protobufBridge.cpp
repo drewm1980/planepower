@@ -3,31 +3,23 @@
 
 ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
-using namespace std;
-using namespace RTT;
-using namespace Orocos;
-using namespace BFL;
+	using namespace std;
+	using namespace RTT;
+	using namespace Orocos;
+	using namespace BFL;
 
-
-namespace OCL
+	namespace OCL
 {
-	 ProtobufBridge::ProtobufBridge(std::string name)
-		 : TaskContext(name)
-	 {
-		// Add properties
-
-		properties()->addProperty( "prop",_prop ).doc("The description of the property");
-
-		// Add ports
-
-		ports()->addPort( "inPort",_inPort ).doc("The description of the port");
-		ports()->addPort( "outPort",_outPort ).doc("The description of the port");
-
-		// Add operations
-
-	provides()->addOperation("operationExample",&ProtobufBridge::simpleFunction,this).doc("Description of the method");
+	ProtobufBridge::ProtobufBridge(std::string name)
+		: TaskContext(name)
+	{
+		ports()->addPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
+					 ",dx,dy,dz"
+					 ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
+					 ",w1,w2,w3"
+					 ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
+											 // mismatch in u has no effect on us.
 	}
-	
 
 	ProtobufBridge::~ProtobufBridge()
 	{
@@ -35,8 +27,9 @@ namespace OCL
 
 	bool  ProtobufBridge::configureHook()
 	{
+		X.resize(NSTATES,0.0);
 		return true;
-	 }
+	}
 
 	bool  ProtobufBridge::startHook()
 	{
@@ -45,6 +38,7 @@ namespace OCL
 
 	void  ProtobufBridge::updateHook()
 	{
+		_stateInputPort.read(X);
 	}
 
 	void  ProtobufBridge::stopHook()
@@ -54,10 +48,6 @@ namespace OCL
 	void  ProtobufBridge::cleanUpHook()
 	{
 	}
-
-	void ProtobufBridge::simpleFunction(){
-	}
-
 
 }//namespace
 
