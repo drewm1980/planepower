@@ -4,11 +4,11 @@ clc
 
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 
-z_start = -0.1189362777884522; % Starting height of the ramp
-z_end = -0.04; % End height of the ramp
+z_start = -0.27; % Starting height of the ramp
+z_end = -0.16; % End height of the ramp
 
 Ts = 0.1; % Sampling time
-Tc = 10; % Time of ramp
+Tc = 4; % Time of ramp
 
 delta_z = (z_end-z_start)/(Tc/Ts);
 MPC.is_init = 0;
@@ -58,7 +58,7 @@ Sim.Noise.factor = 1/40;    % noise: factor*scale_of_related_state = max_noise
 MPC.Ref.z = z_start + i*delta_z ;         % reference trajectory height (relative to the arm)
 MPC.Ref.r = 1.2;            % tether length
 MPC.Ref.delta = 0;          % initial carousel angle
-MPC.Ref.RPM = 60;           % carousel rotational velocity
+MPC.Ref.RPM = 45;           % carousel rotational velocity
 MPC.Ref.ddelta = 2*pi*MPC.Ref.RPM/60.;
 Sim.r = MPC.Ref.r;          % copy the tether length (just for the ease of use)
 
@@ -91,6 +91,17 @@ sol_K_matrix = [];
 for i=1:size(sol_K,3)
     sol_K_matrix = [sol_K_matrix; sol_K(:,:,i)];
 end
-
+sol_S_matrix = [];
+for i=1:size(sol_S,3)
+    S = sol_S(:,:,i);
+    sol_S_matrix = [sol_S_matrix; reshape(S',1,size(S,1)*size(S,2))];
+end
+for i=1:100
+    sol_X = [sol_X(:,1) sol_X sol_X(:,end)];
+    sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix; sol_S_matrix(end,:)];
+end
+sol_X = [sol_X; zeros(3,size(sol_X,2))];
+sol_S_matrix = sol_S_matrix*100;
 dlmwrite('Xrefslope.dat',sol_X','delimiter','\t');
-dlmwrite('Kslope.dat',sol_K_matrix,'delimiter','\t');
+%dlmwrite('Kslope.dat',sol_K_matrix,'delimiter','\t');
+dlmwrite('Sslope.dat',sol_S_matrix,'delimiter','\t');

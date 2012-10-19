@@ -57,10 +57,6 @@ loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 loadComponent("reporter","OCL::FileReporting")
 #loadComponent("reporter1","OCL::FileReporting")
 
-#profobuf
-import("protobufBridge")
-loadComponent("protobuf","OCL::ProtobufBridge")
-
 ################################################################################
 #
 # Configure components' properties
@@ -95,19 +91,6 @@ encoder.encoderPort = 0;
 # LED tracker
 # LEDTracker hangs until frame arrival, does processing, and re-triggers itself.
 LEDTracker.useExternalTrigger=true;
-LEDTracker.sigma_marker=1000;
-
-# imuBuffer
-imuBuffer.sigma_omega = 1.0;
-imuBuffer.sigma_acc = 0.1;
-
-# dynamicMHE
-dynamicMHE.propSigma_delta = 1e-2;
-dynamicMHE.propSigma_ur = 1e-2;
-dynamicMHE.propSigma_up = 1e-2;
-dynamicMHE.propSigma_dddelta = 0.03162;
-dynamicMHE.propSigma_dur = 0.03162;
-dynamicMHE.propSigma_dup = 0.03162;
 
 # MPC
 dynamicMPC.propNumSQPIterations = 5
@@ -124,8 +107,6 @@ trajectoryGenerator.NU = 3
 
 trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
 trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
-#trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
-#trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
@@ -179,8 +160,6 @@ setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
 #setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
 
-setActivity("protobuf",0.0,11,ORO_SCHED_RT)
-
 ################################################################################
 #
 # Connect components
@@ -205,8 +184,6 @@ connect("LEDTracker.markerPositions","poseFromMarkers.markerPositions",cp)
 
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","mcuHandler.imuData",cp)
-
-connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
 
 connect("dynamicMHE.portMeasurementsMarkers",	"LEDTracker.markerPositionsAndCovariance",cp)
 connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose",cp)
@@ -245,6 +222,7 @@ connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReferenc
 #connectPeers("reporter","poseFromMarkers")
 #connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
+connectPeers("reporter","dynamicMPC")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -258,33 +236,29 @@ connectPeers("reporter","dynamicMHE")
 #reporter.reportPort("encoder","deltaOmega")
 #reporter.reportPort("imuBuffer","imuMeanCov")
 
+#reporter.reportPort("dynamicMHE","portStateAndControl")
+
 #reporter.reportPort("dynamicMHE","portReady")
 #reporter.reportPort("dynamicMHE","portDataSizeValid")
-#reporter.reportPort("dynamicMHE","portQPSolverStatus")
-#reporter.reportPort("dynamicMHE","portKKTTolerance")
-#reporter.reportPort("dynamicMHE","portObjectivevalue")
-#reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
-#reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
-#reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+reporter.reportPort("dynamicMHE","portQPSolverStatus")
+reporter.reportPort("dynamicMHE","portKKTTolerance")
+reporter.reportPort("dynamicMHE","portObjectivevalue")
+reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
+reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
+reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
 
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
 #reporter.reportPort("dynamicMHE","portFullControlVector")
-
-
-#connectPeers("reporter1","poseFromMarkers")
-#connectPeers("reporter1","encoder")
-#connectPeers("reporter1","dynamicMHE")
-#reporter1.reportPort("poseFromMarkers","pose")
-#reporter1.reportPort("encoder","deltaOmega")
-#reporter1.reportPort("dynamicMHE","portOneStepPrediction")
-
-
-
 #reporter.reportPort("dynamicMHE","portStateEstimate")
 
+#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+#reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portObjectivevalue")
+#reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMPC","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMPC","portFeedbackPhaseExecTime")
 
-reporter.reportPort("dynamicMHE","portStateAndControl")
 
 ################################################################################
 #
@@ -334,6 +308,3 @@ reporter.configure()
 #reporter1.start()
 
 masterTimer.start()
-
-protobuf.configure()
-protobuf.start()

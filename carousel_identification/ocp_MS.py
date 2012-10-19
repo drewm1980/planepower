@@ -21,9 +21,6 @@ if 1:
     pIMU = ssym("pIMU")
     yIMU = ssym("yIMU")
     
-    A_dddelta = ssym("A_dddelta") # amplitude of variation of dddelta
-    P_dddelta = ssym("P_dddelta") # phase of variation of dddelta
-    
     g = NP.loadtxt('g.dat')
     
     X = vertcat([alpha,beta,R,rIMU,pIMU,yIMU])
@@ -66,18 +63,18 @@ if 1:
     ddelta_i[:,0] = ddelta_MS
     dt = 0.002
     for i in range(1,Nmeas_i):
-        ddelta_i[:,i] = ddelta_i[:,i-1] + dt*(dddelta_MS[i/Nmeas_i] + A_dddelta*sin(delta_i[:,i]+P_dddelta))
-        delta_i[:,i] = delta_i[:,i-1] + dt*ddelta_i[:,i-1] + dt**2/2*(dddelta_MS[i/Nmeas_i] + A_dddelta*sin(delta_i[:,i]+P_dddelta))
-    h_delta = SXFunction([delta_MS,ddelta_MS,dddelta_MS,A_dddelta,P_dddelta],[delta_i])
+        ddelta_i[:,i] = ddelta_i[:,i-1] + dt*dddelta_MS[i/Nmeas_i]
+        delta_i[:,i] = delta_i[:,i-1] + dt*ddelta_i[:,i-1] + dt**2/2*dddelta_MS[i/Nmeas_i]
+    h_delta = SXFunction([delta_MS,ddelta_MS,dddelta_MS],[delta_i])
     h_delta.init()
-    h_ddelta = SXFunction([ddelta_MS,dddelta_MS,A_dddelta,P_dddelta],[ddelta_i])
+    h_ddelta = SXFunction([ddelta_MS,dddelta_MS],[ddelta_i])
     h_ddelta.init()
     obj = 0
     for i in range(Nmeas):
         obj += mul((aIMU_meas[i,:].T - h.eval([X,delta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],ddelta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],dddelta_MS[i/Nmeas_i,0]])[0]).T,(aIMU_meas[i,:].T - h.eval([X,delta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],ddelta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],dddelta_MS[i/Nmeas_i,0]])[0]))
         obj += mul((wIMU_meas[i,:].T - h.eval([X,delta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],ddelta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],dddelta_MS[i/Nmeas_i,0]])[1]).T,(wIMU_meas[i,:].T - h.eval([X,delta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],ddelta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i],dddelta_MS[i/Nmeas_i,0]])[1]))
         obj += (delta_i[i/Nmeas_i,i-(i/Nmeas_i)*Nmeas_i]-delta_meas[i])**2
-    Xall = vertcat([X,delta_MS,ddelta_MS,dddelta_MS,A_dddelta,P_dddelta])
+    Xall = vertcat([X,delta_MS,ddelta_MS,dddelta_MS])
     f_obj = SXFunction([Xall],[obj])
     f_obj.setOption('numeric_hessian',True)
     f_obj.init()
@@ -103,8 +100,6 @@ if 1:
         nlp_solver.input(NLP_X_INIT)[6+i] = delta_meas[i*Nmeas_i]; # delta_0
         nlp_solver.input(NLP_X_INIT)[6+N+i] = NP.loadtxt("ddelta.dat"); # ddelta_0
         nlp_solver.input(NLP_X_INIT)[6+2*N+i] = 0.0; # dddelta
-    nlp_solver.input(NLP_X_INIT)[6+3*N] = 0.0;
-    nlp_solver.input(NLP_X_INIT)[6+3*N+1] = 0.0;
     nlp_solver.input(NLP_LBG).set(DMatrix.zeros(2*(N-1),1))
     nlp_solver.input(NLP_UBG).set(DMatrix.zeros(2*(N-1),1))
     nlp_solver.solve()
@@ -119,8 +114,6 @@ if 1:
     delta_MS_sol = Xsol[6:6+N]
     ddelta_MS_sol = Xsol[6+N:6+2*N]
     dddelta_MS_sol = Xsol[6+2*N:6+3*N]
-    A_dddelta_sol = Xsol[6+3*N]
-    P_dddelta_sol = Xsol[6+3*N+1]
     print 'got solution'
     res = jacobian(obj,Xall)
     f = SXFunction([Xall],[res])  
@@ -140,21 +133,18 @@ print 'computing prediction'
 h_delta.input(0).set(delta_MS_sol)
 h_delta.input(1).set(ddelta_MS_sol)
 h_delta.input(2).set(dddelta_MS_sol)
-h_delta.input(3).set(A_dddelta_sol)
-h_delta.input(4).set(P_dddelta_sol)
 h_delta.evaluate()
 h_ddelta.input(0).set(ddelta_MS_sol)
 h_ddelta.input(1).set(dddelta_MS_sol)
-h_ddelta.input(2).set(A_dddelta_sol)
-h_ddelta.input(3).set(P_dddelta_sol)
 h_ddelta.evaluate()
 print 'delta computed'
 
 for i in range(Nmeas):
+    print i
     h.input(0).set(Xsol[0:6])
     h.input(1).set(h_delta.output(0)[i/Nmeas_i,i-Nmeas_i*(i/Nmeas_i)])
     h.input(2).set(h_ddelta.output(0)[i/Nmeas_i,i-Nmeas_i*(i/Nmeas_i)])
-    h.input(3).set(dddelta_MS_sol[i/Nmeas_i]+A_dddelta_sol*sin(h_delta.output(0)[i/Nmeas_i,i-Nmeas_i*(i/Nmeas_i)]+P_dddelta_sol))
+    h.input(3).set(dddelta_MS_sol[i/Nmeas_i])
     h.evaluate()
     aIMU_pred[i,:] = h.output(0).T
     wIMU_pred[i,:] = h.output(1).T

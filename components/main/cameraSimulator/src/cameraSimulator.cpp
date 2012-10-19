@@ -75,7 +75,9 @@ namespace OCL
 		copy(fullstate.begin()+6, fullstate.begin()+6+9, pose.begin()+3);
 
 		getMarkersWrapper(pose,&markerPositions);
-
+		for(unsigned int i=0; i<markerPositions.size(); i++){
+			markerPositions[i] += (drand48()-0.5)*20.0; // Add noise
+		}
 		_markerPositions.write(markerPositions);
 		
 		//double invcov = 1.0/(sigma_marker*sigma_marker);
@@ -85,7 +87,6 @@ namespace OCL
 		copy(markerPositions.begin(),markerPositions.end(), markerPositionsAndCovariance.begin());
 		for(int i=0; i<NMARKERS; i++)
 		{
-			//markerPositionsAndCovariance[i] += (drand48()-0.5)*20.0; // Add noise
 			markerPositionsAndCovariance[NMARKERS+i] = invcov;
 		}
 

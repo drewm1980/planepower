@@ -175,7 +175,7 @@ DynamicMHE::DynamicMHE(const std::string& name)
 			.doc("The standard deviation of the measurement of up. Default = 1e-2");
 	sigma_up = 1e-2;
 
-	this->addProperty("propSigma_delta", sigma_dddelta)
+	this->addProperty("propSigma_dddelta", sigma_dddelta)
 			.doc("The standard deviation of the measurement of dddelta. Default = 0.03162");
 	sigma_dddelta = 0.03162;
 

@@ -92,6 +92,30 @@ namespace OCL
 	X[19] = 6.2832;
 	X[20] = 0;
 	X[21] = 0;
+
+	X[0] =     1.1640;
+	X[1] =    -0.1107;
+	X[2] =    -0.2700;
+	X[3] =          0;
+	X[4] =          0;
+	X[5] =          0;
+	X[6] =     0.1244;
+	X[7] =     0.3631;
+	X[8] =     0.9234;
+	X[9] =     0.9914;
+	X[10] =    -0.0837;
+	X[11] =    -0.1007;
+	X[12] =     0.0408;
+	X[13] =     0.9280;
+	X[14] =    -0.3704;
+	X[15] =     0.1922;
+	X[16] =     4.3731;
+	X[17] =    -1.7452;
+	X[18] =          0;
+	X[19] =     4.7124;
+	X[20] =    -0.0066;
+	X[21] =          0;
+
   	for(int i=22; i<NSTATES+NIMU;i++){X[i] = 0.0;}
 	//_stateOutputPort.write(X);
         return true;
@@ -126,6 +150,10 @@ namespace OCL
 	controlOutputPort[2] = SCALE_UP*X[21];
 	_stateOutputPort.write(X);
 	_triggerTimeStampOut.write(triggerTimeStamp);
+	for(unsigned int i=0; i<3; i++){
+		IMU[i] += (drand48()-0.5)*0.05;
+		IMU[i+3] += (drand48()-0.5)*0.5;
+	}
 	_IMUOutputPort.write(IMU);
 	_controlOutputPort.write(controlOutputPort);
 	_deltaOmega.write(deltaOmega);
