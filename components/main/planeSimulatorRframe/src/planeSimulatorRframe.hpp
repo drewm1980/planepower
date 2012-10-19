@@ -9,7 +9,7 @@
 #include <rtt/OperationCaller.hpp>
 #include <rtt/Operation.hpp>
 #include <rtt/Port.hpp>
-
+#include <stdlib.h>
 #include <ocl/OCL.hpp>
 
 #include <fstream>
