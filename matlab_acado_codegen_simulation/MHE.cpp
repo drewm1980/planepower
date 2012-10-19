@@ -83,9 +83,9 @@ int main( int argc, char * const argv[] )
 	IntermediateState ddyIMU; 
 	IntermediateState ddzIMU; 
 
-    ddxIMU = ddq(0,0)*e11 + ddq(1,0)*e21 + ddq(2,0)*e31 - ddelta*ddelta*e11*x - ddelta*ddelta*e21*y + 2*ddelta*dx*e21 - 2*ddelta*dy*e11 + dddelta*e21*rA + dddelta*e21*x - dddelta*e11*y - ddelta*ddelta*e11*rA;
-	ddyIMU = ddq(0,0)*e12 + ddq(1,0)*e22 + ddq(2,0)*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + dddelta*e22*rA + dddelta*e22*x - dddelta*e12*y - ddelta*ddelta*e12*rA;
-	ddzIMU = ddq(0,0)*e13 + ddq(1,0)*e23 + ddq(2,0)*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + dddelta*e23*rA + dddelta*e23*x - dddelta*e13*y - ddelta*ddelta*e13*rA;	
+	ddxIMU = ddq(0,0)*e11 + ddq(1,0)*e21 + ddq(2,0)*e31 - ddelta*ddelta*e11*x - ddelta*ddelta*e21*y + 2*ddelta*dx*e21 - 2*ddelta*dy*e11 + dddelta*e21*rA + dddelta*e21*x - dddelta*e11*y - ddelta*ddelta*e11*rA + e31*g;
+	ddyIMU = ddq(0,0)*e12 + ddq(1,0)*e22 + ddq(2,0)*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + dddelta*e22*rA + dddelta*e22*x - dddelta*e12*y - ddelta*ddelta*e12*rA + e32*g;
+	ddzIMU = ddq(0,0)*e13 + ddq(1,0)*e23 + ddq(2,0)*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + dddelta*e23*rA + dddelta*e23*x - dddelta*e13*y - ddelta*ddelta*e13*rA + e33*g;	
 	
 	IntermediateState G1end(3,1); 
 	G1end(0,0) = F[0] + (m*(2*ddelta*dy + 2*ddelta*ddelta*rA + 2*ddelta*ddelta*x))/2 + ddelta*dy*m; 
@@ -107,9 +107,9 @@ int main( int argc, char * const argv[] )
 	IntermediateState ddxIMUend; 
 	IntermediateState ddyIMUend; 
 	IntermediateState ddzIMUend; 
-	ddxIMUend = ddqend(0,0)*e11 + ddqend(1,0)*e21 + ddqend(2,0)*e31 - ddelta*ddelta*e11*x - ddelta*ddelta*e21*y + 2*ddelta*dx*e21 - 2*ddelta*dy*e11 + - ddelta*ddelta*e11*rA;
-	ddyIMUend = ddqend(0,0)*e12 + ddqend(1,0)*e22 + ddqend(2,0)*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + - ddelta*ddelta*e12*rA;
-	ddzIMUend = ddqend(0,0)*e13 + ddqend(1,0)*e23 + ddqend(2,0)*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + - ddelta*ddelta*e13*rA;
+	ddxIMUend = ddqend(0,0)*e11 + ddqend(1,0)*e21 + ddqend(2,0)*e31 - ddelta*ddelta*e11*x - ddelta*ddelta*e21*y + 2*ddelta*dx*e21 - 2*ddelta*dy*e11 + - ddelta*ddelta*e11*rA + e31*g;
+	ddyIMUend = ddqend(0,0)*e12 + ddqend(1,0)*e22 + ddqend(2,0)*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + - ddelta*ddelta*e12*rA + e32*g;
+	ddzIMUend = ddqend(0,0)*e13 + ddqend(1,0)*e23 + ddqend(2,0)*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + - ddelta*ddelta*e13*rA + e33*g;
 		
 // 	ddyIMU = ddX(1,0)*(q0*q0 - q1*q1 + q2*q2 - q3*q3) + (ddX(2,0) + g)*(2*q0*q1 + 2*q2*q3) - ddX(0,0)*(2*q0*q3 - 2*q1*q2); 
 // 	ddzIMU = ddX(0,0)*(2*q0*q2 + 2*q1*q3) - ddX(1,0)*(2*q0*q1 - 2*q2*q3) + (ddX(2,0) + g)*(q0*q0 - q1*q1 - q2*q2 + q3*q3); 
@@ -583,7 +583,7 @@ int main( int argc, char * const argv[] )
 
 #endif
 
-	printf("Stigao do ovde");
+	printf("Stigao do ovde\n");
 	
 	mhe.exportCode( "code_export_mhe" );
 	mhe.printDimensionsQP();
