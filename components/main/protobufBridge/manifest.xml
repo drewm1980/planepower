@@ -1,0 +1,19 @@
+<package>
+  <description brief="protobufBridge">
+
+	  The protobufBridge takes OROCOS signals on input ports,
+	  serializes them into Google Protocol Buffers, and sends
+	  them over the network using libzmq.
+
+  </description>
+  <author></author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/protobufBridge</url>
+
+<depend package="rtt_ros_integration" />
+<depend package="rtt_ros_integration_std_msgs" />
+<depend package="rtt_ros_param" />
+<depend package="rtt" />
+<depend package="ocl" />
+</package>
