@@ -63,17 +63,17 @@ var double base_hz = masterTimer.imu_target_hz
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
-reporter.WriteHeader = false
+#reporter.WriteHeader = false
 reporter.ReportFile = "mhe_mpc_derivatives_closed_loop.dat"
-#reporter.NullSample = "nan"
+reporter.NullSample = "nan"
 
 # MHE
-dynamicMHE.propNumSQPIterations = 3
+dynamicMHE.propNumSQPIterations = 1
 loadService("dynamicMHE", "marshalling")
 dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
 
 # MPC
-dynamicMPC.propNumSQPIterations = 5
+dynamicMPC.propNumSQPIterations = 1
 
 dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
 dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
@@ -85,8 +85,10 @@ trajectoryGenerator.N = 10
 trajectoryGenerator.NX = 22
 trajectoryGenerator.NU = 3
 
-trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
-trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
+#trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
+#trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
+trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
+trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
 
 ################################################################################
 #
@@ -232,7 +234,10 @@ connectPeers("reporter","sim")
 #reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
 
 #reporter.reportPort("sim","stateOutputPort")
-reporter.reportPort("dynamicMHE","portStateAndControl")
+#reporter.reportPort("dynamicMHE","portStateAndControl")
+
+reporter.reportPort("dynamicMHE","portFullStateVector")
+reporter.reportPort("dynamicMPC","portFullStateVector")
 
 ################################################################################
 #

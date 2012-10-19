@@ -13,7 +13,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	ProtobufBridge::ProtobufBridge(std::string name)
 		: TaskContext(name) , context(1) , socket(context, ZMQ_PUB)
 	{
-		ports()->addPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
+		ports()->addEventPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
 					 ",dx,dy,dz"
 					 ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
 					 ",w1,w2,w3"
