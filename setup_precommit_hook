@@ -37,8 +37,8 @@ do
 	if [ $sze -gt 100 ] 
 	then
 		echo "$x is `du -h $x | cut -f1`!"
+		foundbigfile=1
 	fi
-	foundbigfile=1
 done
 if [ $foundbigfile ]
 then
