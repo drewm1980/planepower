@@ -97,6 +97,9 @@ for i in range(delta_meas.shape[0]):
     aIMU_pred[i,:] = h.output(0).T
     wIMU_pred[i,:] = h.output(1).T
 
+aIMU_res = aIMU_pred-aIMU_meas
+wIMU_res = wIMU_pred-wIMU_meas
+
 NP.savetxt('wIMU_res.dat',wIMU_res)
 NP.savetxt('aIMU_res.dat',aIMU_res)
 NP.savetxt('aIMU_pred.dat',aIMU_pred)
@@ -127,9 +130,6 @@ plt.title("Angular velocities meaured vs predicted")
 plt.legend(['wx_predicted','wx_measured','wy_predicted','wy_measured','wz_predicted','wz_measured'])
 plt.xlabel('time')
 plt.grid()
-
-aIMU_res = aIMU_pred-aIMU_meas
-wIMU_res = wIMU_pred-wIMU_meas
 
 plt.figure(3)
 plt.clf()
