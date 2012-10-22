@@ -485,7 +485,6 @@ void DynamicMHE::mhePreparationPhase( )
 			acadoVariables.x[ 15 ] = initPose[ 9 ] * initDdelta;
 			acadoVariables.x[ 16 ] = initPose[ 10 ] * initDdelta;
 			acadoVariables.x[ 17 ] = initPose[ 11 ] * initDdelta;
-
 			// ur, up
 //			acadoVariables.x[ 20 ] = acadoVariables.yMeas[ 19 ];
 //			acadoVariables.x[ 21 ] = acadoVariables.yMeas[ 20 ];
