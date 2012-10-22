@@ -9,7 +9,7 @@ then
 	echo "Setting up pre-commit hook..."
 	(
 	cd .git/hooks
-	ln -s ../../setup_precommit_hook pre-commit
+	ln -sf ../../setup_precommit_hook pre-commit
 	)
 	echo "done!"
 	exit 0
@@ -24,7 +24,13 @@ else
 fi
 
 # If you want to allow non-ascii filenames set this variable to true.
-allownonascii=$(git config hooks.allownonascii)
+allownonascii=false
+if [ `git ls-files --cached | grep ' ' | wc -l` -gt 0 ]
+then
+	echo "HAEEEEPA!  Please replace spaces with underscores in the following files:"
+	echo `git ls-files --cached | grep ' '`
+	exit 1
+fi
 
 # Redirect output to stderr.
 exec 1>&2
