@@ -104,7 +104,6 @@ int main( int argc, char * const argv[] )
 	Translation(0,3) = x;
 	Translation(1,3) = y;
 	Translation(2,3) = z;
-cout << "reading camera props" << endl;
 	Matrix RPC1 = readFromFile( "cameras/RPC1.dat" );
 	Matrix RPC2 = readFromFile( "cameras/RPC2.dat" );
 	Matrix ProjC1_dat = readFromFile( "cameras/PC1.dat" );
@@ -115,7 +114,6 @@ cout << "reading camera props" << endl;
 	Matrix ProjC2 = eye(3);
 	ProjC2(0,0) = ProjC2_dat(0,0); ProjC2(0,2) = ProjC2_dat(2,0);
 	ProjC2(1,1) = ProjC2_dat(1,0); ProjC2(1,2) = ProjC2_dat(3,0);
-cout << "reading marker props" << endl;
 	Matrix pos_marker_body1_short = readFromFile( "markers/pos_marker_body1.dat" );
 	Matrix pos_marker_body2_short = readFromFile( "markers/pos_marker_body2.dat" );
 	Matrix pos_marker_body3_short = readFromFile( "markers/pos_marker_body3.dat" );
