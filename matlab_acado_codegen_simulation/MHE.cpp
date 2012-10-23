@@ -148,14 +148,14 @@ int main( int argc, char * const argv[] )
 	RpC2Full = RpC2Temp;
 	
 	Matrix RpC1(3,4), RpC2(3,4);
-	RpC1(0,0) = RpC1Full(0,0); 	RpC1(0,1) = RpC1Full(0,1); 	RpC1(0,2) = RpC1Full(0,2); 	RpC1(0,3) = RpC1Full(0,3); 
-	RpC1(1,0) = RpC1Full(1,0); 	RpC1(1,1) = RpC1Full(1,1); 	RpC1(1,2) = RpC1Full(1,2); 	RpC1(1,3) = RpC1Full(1,3); 
-	RpC1(2,0) = RpC1Full(2,0); 	RpC1(2,1) = RpC1Full(2,1); 	RpC1(2,2) = RpC1Full(2,2); 	RpC1(2,3) = RpC1Full(2,3); 
-	
-	RpC2(0,0) = RpC2Full(0,0); 	RpC2(0,1) = RpC2Full(0,1); 	RpC2(0,2) = RpC2Full(0,2); 	RpC2(0,3) = RpC2Full(0,3); 
-	RpC2(1,0) = RpC2Full(1,0); 	RpC2(1,1) = RpC2Full(1,1); 	RpC2(1,2) = RpC2Full(1,2); 	RpC2(1,3) = RpC2Full(1,3); 
-	RpC2(2,0) = RpC2Full(2,0); 	RpC2(2,1) = RpC2Full(2,1); 	RpC2(2,2) = RpC2Full(2,2); 	RpC2(2,3) = RpC2Full(2,3); 
-	
+	RpC1(0,0) = RpC1Full(0,0);  RpC1(0,1) = RpC1Full(0,1);  RpC1(0,2) = RpC1Full(0,2);  RpC1(0,3) = RpC1Full(0,3); 
+	RpC1(1,0) = RpC1Full(1,0);  RpC1(1,1) = RpC1Full(1,1);  RpC1(1,2) = RpC1Full(1,2);  RpC1(1,3) = RpC1Full(1,3); 
+	RpC1(2,0) = RpC1Full(2,0);  RpC1(2,1) = RpC1Full(2,1);  RpC1(2,2) = RpC1Full(2,2);  RpC1(2,3) = RpC1Full(2,3); 
+
+	RpC2(0,0) = RpC2Full(0,0);  RpC2(0,1) = RpC2Full(0,1);  RpC2(0,2) = RpC2Full(0,2);  RpC2(0,3) = RpC2Full(0,3); 
+	RpC2(1,0) = RpC2Full(1,0);  RpC2(1,1) = RpC2Full(1,1);  RpC2(1,2) = RpC2Full(1,2);  RpC2(1,3) = RpC2Full(1,3); 
+	RpC2(2,0) = RpC2Full(2,0);  RpC2(2,1) = RpC2Full(2,1);  RpC2(2,2) = RpC2Full(2,2);  RpC2(2,3) = RpC2Full(2,3); 
+
 	IntermediateState uvsC1M1(3,1), uvsC2M2(3,1), uvsC1M3(3,1), uvsC2M1(3,1), uvsC1M2(3,1), uvsC2M3(3,1);
 	uvsC1M1 = ProjC1*RpC1*Translation*Rotation*pos_marker_body1;
 	uvsC1M2 = ProjC1*RpC1*Translation*Rotation*pos_marker_body2;
@@ -165,14 +165,14 @@ int main( int argc, char * const argv[] )
 	uvsC2M3 = ProjC2*RpC2*Translation*Rotation*pos_marker_body3;
 	
 	IntermediateState uvC1M1(2,1), uvC2M2(2,1), uvC1M3(2,1), uvC2M1(2,1), uvC1M2(2,1), uvC2M3(2,1);
-	uvC1M1(0,0) = uvsC1M1(0,0)/uvsC1M1(2,0);	uvC1M1(1,0) = uvsC1M1(1,0)/uvsC1M1(2,0);
-	uvC1M2(0,0) = uvsC1M2(0,0)/uvsC1M2(2,0);	uvC1M2(1,0) = uvsC1M2(1,0)/uvsC1M2(2,0);
-	uvC1M3(0,0) = uvsC1M3(0,0)/uvsC1M3(2,0);	uvC1M3(1,0) = uvsC1M3(1,0)/uvsC1M3(2,0);
-	
-	uvC2M1(0,0) = uvsC2M1(0,0)/uvsC2M1(2,0);	uvC2M1(1,0) = uvsC2M1(1,0)/uvsC2M1(2,0);
-	uvC2M2(0,0) = uvsC2M2(0,0)/uvsC2M2(2,0);	uvC2M2(1,0) = uvsC2M2(1,0)/uvsC2M2(2,0);
-	uvC2M3(0,0) = uvsC2M3(0,0)/uvsC2M3(2,0);	uvC2M3(1,0) = uvsC2M3(1,0)/uvsC2M3(2,0);
-	
+	uvC1M1(0,0) = uvsC1M1(0,0)/uvsC1M1(2,0);uvC1M1(1,0) = uvsC1M1(1,0)/uvsC1M1(2,0);
+	uvC1M2(0,0) = uvsC1M2(0,0)/uvsC1M2(2,0);uvC1M2(1,0) = uvsC1M2(1,0)/uvsC1M2(2,0);
+	uvC1M3(0,0) = uvsC1M3(0,0)/uvsC1M3(2,0);uvC1M3(1,0) = uvsC1M3(1,0)/uvsC1M3(2,0);
+
+	uvC2M1(0,0) = uvsC2M1(0,0)/uvsC2M1(2,0);uvC2M1(1,0) = uvsC2M1(1,0)/uvsC2M1(2,0);
+	uvC2M2(0,0) = uvsC2M2(0,0)/uvsC2M2(2,0);uvC2M2(1,0) = uvsC2M2(1,0)/uvsC2M2(2,0);
+	uvC2M3(0,0) = uvsC2M3(0,0)/uvsC2M3(2,0);uvC2M3(1,0) = uvsC2M3(1,0)/uvsC2M3(2,0);
+
 #if (CODEGEN_FOR_OROCOS == 1)
 	Matrix RIMU = readFromFile( "../../../../matlab_acado_codegen_simulation/IMU/RIMU.txt" );
 #else
@@ -215,14 +215,14 @@ int main( int argc, char * const argv[] )
 	CostLSQend << delta;
 	CostLSQend << ur;
 	CostLSQend << up;
-	
-	
+
+
 	// COST FUNCTION
 	//---------------
 	Function CostLSQx;
-	
+
 	int j = 0;
-	
+
 	CostLSQx << uvC1M1(0,0);
 	CostLSQx << uvC1M1(1,0);
 	CostLSQx << uvC1M2(0,0);
@@ -244,7 +244,7 @@ int main( int argc, char * const argv[] )
 	CostLSQx << delta;
 	CostLSQx << ur;
 	CostLSQx << up;
-	
+
 	Function CostLSQu;
 	CostLSQu << dddelta;
 	CostLSQu << dur;
@@ -254,22 +254,22 @@ int main( int argc, char * const argv[] )
 	CostLSQx.getExpression(ExprCostLSQx);
 	Expression ExprCostLSQu;
 	CostLSQu.getExpression(ExprCostLSQu);
-	
+
 	Function CostLSQ;
 	CostLSQ << ExprCostLSQx;
 	CostLSQ << ExprCostLSQu;
-	
+
 	cout << "f dim: " << f.getDim() << endl;
 	cout << "CostLSQend dim: " << CostLSQend.getDim() << endl;
 	cout << "CostLSQend #u: " << CostLSQend.getNU() << endl;
 	cout << "CostLSQ dim: " << CostLSQ.getDim() << endl;
 	cout << "CostLSQ  #u: " << CostLSQ.getNU() << endl;
-	
+
 	// DEFINE AN OPTIMAL CONTROL PROBLEM:
 	// ----------------------------------
 	OCP ocp( 0.0, Tc, Ncvp );
 	ExportVariable QQ, QQend;
-	
+
 	ocp.minimizeLSQ(QQ, CostLSQ);
 	ocp.minimizeLSQEndTerm(QQend, CostLSQend);
 	
