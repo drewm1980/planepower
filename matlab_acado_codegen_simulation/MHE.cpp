@@ -178,7 +178,6 @@ int main( int argc, char * const argv[] )
 #else
 	Matrix RIMU = readFromFile( "IMU/RIMU.txt" );
 #endif
-	
 // 	RIMU = eye(3);
 	
 	IntermediateState aE(3,1), aEend(3,1);
