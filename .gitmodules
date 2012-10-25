@@ -2,3 +2,6 @@
 	path = components/lowlevel/soem
 	url = http://git.mech.kuleuven.be/robotics/soem.git
         ignore = dirty
+[submodule "tools/PyKinetics"]
+	path = tools/PyKinetics
+	url = https://github.com/jgillis/PyKinetics.git
