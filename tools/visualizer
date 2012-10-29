@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# This is just a slightly more convenient wrapper around greg's 
+# rapidly evolving 3d visualizer in haskell
+
+# Our DNS is fucked up... pull carousl ip address from /etc/hosts
+ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut -f1`
+
+CMD="multicarousel --ip tcp://$ip:5563"
+
+echo $0: running $CMD...
+$CMD
