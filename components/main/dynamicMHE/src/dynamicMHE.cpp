@@ -282,6 +282,9 @@ bool DynamicMHE::startHook( )
 	//
 	// Misc.
 	//
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables.x, 0, sizeof( acadoVariables.x ));
+	memset(&acadoVariables.u, 0, sizeof( acadoVariables.u ));
 
 	kktTolerance = 0.0;
 	numOfActiveSetChanges = 0;
@@ -378,8 +381,14 @@ void DynamicMHE::mhePreparationPhase( )
 			// 2: dup, used
 			// TODO This should not be hardcoded, should be programmed in more elegnat way
 
-			acadoWorkspace.state[ indexU + 1 ] = measurementsCtrlRates[ 0 ] / SCALE_UR;
-			acadoWorkspace.state[ indexU + 2 ] = measurementsCtrlRates[ 2 ] / SCALE_UP;
+			if(isfinite(measurementsCtrlRates[0]) && isfinite(measurementsCtrlRates[2])){
+				acadoWorkspace.state[ indexU + 1 ] = measurementsCtrlRates[ 0 ] / SCALE_UR;
+				acadoWorkspace.state[ indexU + 2 ] = measurementsCtrlRates[ 2 ] / SCALE_UP;
+			}
+			else{
+				acadoWorkspace.state[ indexU + 1 ] = 0.0; 
+				acadoWorkspace.state[ indexU + 2 ] = 0.0;
+			}
 		}
 		else
 		{
@@ -740,6 +749,20 @@ bool DynamicMHE::prepareMeasurements( void )
 	statusMeasurementsPose = portMeasurementsPose.read( measurementsPose );
 
 	//
+	// Check if the controls are valid (not Nan's)
+	//
+	for(i=0; i<measurementsCtrl.size(); i++){
+		if(not(isfinite(measurementsCtrl[i]))){
+			measurementsCtrl[i] = 0.0;
+		}
+	}
+	for(i=0; i<measurementsCtrlRates.size(); i++){
+		if(not(isfinite(measurementsCtrlRates[i]))){
+			measurementsCtrlRates[i] = 0.0;
+		}
+	}
+
+	//
 	// Read the measurements of controls
 	//
 	if (statusMeasurementsCtrl == NewData)
@@ -843,7 +866,6 @@ bool DynamicMHE::prepareMeasurements( void )
 				//
 				// Catch initial pose
 				//
-
 				if (statusMeasurementsPose != NewData)
 				{
 					return false;
