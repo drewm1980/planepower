@@ -31,6 +31,11 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 		X.resize(NSTATES,0.0);
 
+		cs = mc.add_css(); 
+		cs = mc.mutable_css(0);
+		xyz = cs->mutable_kitexyz();
+		dcm = cs->mutable_kitedcm();
+
 		socket.bind("tcp://*:5563");
 
 		return true;
@@ -45,32 +50,28 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	{
 		_stateInputPort.read(X);
 
-		xyz.set_x(X[0]);
-		xyz.set_y(X[1]);
-		xyz.set_z(X[2]);
-		dcm.set_r11(X[6]);
-		dcm.set_r21(X[7]);
-		dcm.set_r31(X[8]);
-		dcm.set_r12(X[9]);
-		dcm.set_r22(X[10]);
-		dcm.set_r32(X[11]);
-		dcm.set_r13(X[12]);
-		dcm.set_r23(X[13]);
-		dcm.set_r33(X[14]);
-		cs.mutable_kitexyz()->CopyFrom(xyz);
-		cs.mutable_kitedcm()->CopyFrom(dcm);
-		cs.set_delta(X[18]);
-		cs.set_rarm(1.085);
-		cs.set_zt(-.03);
-		cs.set_w0(0);
-		mc.mutable_css(0)->CopyFrom(cs);
-		// To Add: Messages
+		xyz->set_x(X[0]);
+		xyz->set_y(X[1]);
+		xyz->set_z(X[2]);
+		dcm->set_r11(X[6]);
+		dcm->set_r21(X[7]);
+		dcm->set_r31(X[8]);
+		dcm->set_r12(X[9]);
+		dcm->set_r22(X[10]);
+		dcm->set_r32(X[11]);
+		dcm->set_r13(X[12]);
+		dcm->set_r23(X[13]);
+		dcm->set_r33(X[14]);
+		cs->set_delta(X[18]);
+		cs->set_rarm(1.085);
+		cs->set_zt(-.03); // PROBABLY WRONG; AT LEAST ONLY FOR VISUALIZATION
+		cs->set_w0(0);
 
 		if (!mc.SerializeToString(&X_serialized)) {
 			cerr << "Failed to serialize mc." << endl;
 			return;
 		}
-		s_sendmore(socket, "carousel");
+		s_sendmore(socket, "multi-carousel");
 		s_send(socket, X_serialized);
 	}
 

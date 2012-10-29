@@ -39,10 +39,10 @@ namespace OCL
 			vector<double>						X;
 
 		private:
-			kite::Xyz xyz;
-			kite::Dcm dcm;
-			kite::CarouselState cs;
 			kite::MultiCarousel mc;
+			kite::CarouselState *cs;
+			kite::Xyz *xyz;
+			kite::Dcm *dcm;
 
 			//zmq::context_t context(1);
 			//zmq::socket_t socket(context,ZMQ_PUB);
