@@ -67,7 +67,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 		// To Add: Messages
 
 		if (!mc.SerializeToString(&X_serialized)) {
-			cerr << "Failed to serialize cs." << endl;
+			cerr << "Failed to serialize mc." << endl;
 			return;
 		}
 		s_sendmore(socket, "carousel");
