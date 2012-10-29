@@ -42,6 +42,7 @@ namespace OCL
 			kite::Xyz xyz;
 			kite::Dcm dcm;
 			kite::CarouselState cs;
+			kite::MultiCarousel mc;
 
 			//zmq::context_t context(1);
 			//zmq::socket_t socket(context,ZMQ_PUB);

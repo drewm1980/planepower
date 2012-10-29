@@ -62,10 +62,11 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 		cs.set_delta(X[18]);
 		cs.set_rarm(1.085);
 		cs.set_zt(-.03);
-		// To Add: Messages
 		cs.set_w0(0);
+		mc.mutable_css(0)->CopyFrom(cs);
+		// To Add: Messages
 
-		if (!cs.SerializeToString(&X_serialized)) {
+		if (!mc.SerializeToString(&X_serialized)) {
 			cerr << "Failed to serialize cs." << endl;
 			return;
 		}
