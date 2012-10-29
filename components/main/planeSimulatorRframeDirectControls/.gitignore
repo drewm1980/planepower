@@ -1,2 +1,3 @@
 *.dat
 rk4.c
+Makefile

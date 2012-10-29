@@ -13,9 +13,7 @@ import("encoderLatch")
 loadComponent("EncoderLatch","OCL::EncoderLatch")
 
 # Simulator
-#import("planeSimulatorRframe")
 import("planeSimulatorRframe")
-#loadComponent("sim","OCL::planeSimulatorRframe")
 loadComponent("sim","OCL::planeSimulatorRframe")
 setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
 
@@ -53,6 +51,9 @@ loadComponent("reporter","OCL::FileReporting")
 #profobuf
 import("protobufBridge")
 loadComponent("protobuf","OCL::ProtobufBridge")
+# measurementsRecorder
+import("measurementsRecorder")
+loadComponent("measurementsRecorder","OCL::MeasurementsRecorder")
 
 ################################################################################
 #
@@ -137,6 +138,7 @@ setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
 
 setActivity("protobuf",0.0,11,ORO_SCHED_RT)
+setActivity("measurementsRecorder",0.00,LowestPriority,ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -291,6 +293,9 @@ trajectoryGenerator.configure()
  
 reporter.configure()
 reporter.start()
+
+measurementsRecorder.configure()
+#measurementsRecorder.start()
 
 masterTimer.start()
 
