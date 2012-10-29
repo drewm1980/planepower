@@ -57,7 +57,7 @@ if True:
     ue     = ssym("ue")	      # Elevator input
     
     # Gather all the states in one vector
-    XD = SXMatrix([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,delta,ddelta,ua,ue])
+    XD = SXMatrix(vertcat([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,delta,ddelta,ua,ue]))
     
    
     # Define the slack variables
