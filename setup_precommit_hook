@@ -39,7 +39,12 @@ foundbigfile=
 
 for x in `git ls-files --cached`
 do
-	sze=`du -k $x | cut -f1` # Size of the file in K
+	if [ -d $x ]
+	then
+		sze=0
+	else
+		sze=`du -k $x | cut -f1` # Size of the file in K
+	fi
 	if [ $sze -gt 100 ] 
 	then
 		echo "$x is `du -h $x | cut -f1`!"
