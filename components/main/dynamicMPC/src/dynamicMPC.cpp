@@ -310,8 +310,6 @@ bool DynamicMPC::configureHook()
 
 bool DynamicMPC::startHook()
 {
-	unsigned i, j;
-
 	kktTolerance = 0.0;
 	numOfActiveSetChanges = 0;
 
@@ -346,12 +344,10 @@ void DynamicMPC::updateHook()
 
 void DynamicMPC::stopHook( )
 {
-	unsigned i;
-
 	//
 	// Reset all controls -- for safety
 	//
-	for (i = 0; i < N_OUT; ++i)
+	for (unsigned i = 0; i < N_OUT; ++i)
 	{
 		controls[ i ] = 0.0;
 		controlsForMeasurement[ i ] = 0.0;
@@ -476,7 +472,8 @@ void DynamicMPC::mpcPreparationPhase()
 
 void DynamicMPC::mpcFeedbackPhase()
 {
-	unsigned i, j;
+	unsigned i;
+	//unsigned j;
 	bool isFinite;
 
 	tickFeedbackPhaseBegin = TimeService::Instance()->getTicks();
