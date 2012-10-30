@@ -31,16 +31,17 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 		X.resize(NSTATES,0.0);
 
+		mc.clear_css();
 		cs = mc.add_css(); 
 		cs = mc.mutable_css(0);
-
-		socket.bind("tcp://*:5563");
 
 		return true;
 	}
 
 	bool  ProtobufBridge::startHook()
 	{
+		socket.bind("tcp://*:5563");
+
 		return true;
 	}
 
@@ -82,6 +83,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 	void  ProtobufBridge::stopHook()
 	{
+		socket.close();
 	}
 
 	void  ProtobufBridge::cleanUpHook()
