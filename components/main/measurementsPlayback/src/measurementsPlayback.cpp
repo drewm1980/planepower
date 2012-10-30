@@ -72,16 +72,16 @@ namespace OCL
 			copy(s.measurementsCtrl,s.measurementsCtrl+NY_CTRL,measurementsCtrl.begin());
 			copy(s.measurementsPose,s.measurementsPose+NY_POSE,measurementsPose.begin());
 
-			cout << "Done copying the s into the ports" << endl;
+			//cout << "Done copying the s into the ports" << endl;
 		
 			// Write our ports.
 			portMeasurementsMarkers.write( measurementsMarkers );
 			portMeasurementsIMU.write( measurementsIMU );
-			portMeasurementsEncoder.write( measurementsEncoder );
 			portMeasurementsCtrl.write( measurementsCtrl );
 			portMeasurementsPose.write( measurementsPose );
+			portMeasurementsEncoder.write( measurementsEncoder ); // MHE wants this port to be written last
 			
-			cout << "Done writing the ports" << endl;
+			//cout << "Done writing the ports" << endl;
 
 			samplesPlayed+=1;
 		} else {
