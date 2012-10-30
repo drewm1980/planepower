@@ -10,7 +10,16 @@ using namespace BFL;
 
 namespace OCL
 {
-	MeasurementsRecorder::MeasurementsRecorder(std::string name) : TaskContext(name) { }
+	MeasurementsRecorder::MeasurementsRecorder(std::string name) : TaskContext(name) {
+       
+	addPort("portMeasurementsMarkers",portMeasurementsMarkers);
+	addPort("portMeasurementsIMU",portMeasurementsIMU);
+	addEventPort("portMeasurementsEncoder",portMeasurementsEncoder);
+	addPort("portMeasurementsCtrl",portMeasurementsCtrl);
+	addPort("portMeasurementsPose",portMeasurementsPose);
+
+
+	}
 	MeasurementsRecorder::~MeasurementsRecorder() { } 
 
 	bool  MeasurementsRecorder::configureHook()
