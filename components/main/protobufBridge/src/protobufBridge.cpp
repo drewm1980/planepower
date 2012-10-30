@@ -11,7 +11,7 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 	namespace OCL
 {
 	ProtobufBridge::ProtobufBridge(std::string name)
-		: TaskContext(name) , context(1) , socket(context, ZMQ_PUB)
+		: TaskContext(name)
 	{
 		ports()->addEventPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
 					 ",dx,dy,dz"
@@ -35,12 +35,15 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 		cs = mc.add_css(); 
 		cs = mc.mutable_css(0);
 
+		context = new zmq::context_t(1);
+
 		return true;
 	}
 
 	bool  ProtobufBridge::startHook()
 	{
-		socket.bind("tcp://*:5563");
+		socket = new zmq::socket_t(*context,ZMQ_PUB);
+		socket->bind("tcp://*:5563");
 
 		return true;
 	}
@@ -77,17 +80,18 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 			cerr << "Failed to serialize mc." << endl;
 			return;
 		}
-		s_sendmore(socket, "multi-carousel");
-		s_send(socket, X_serialized);
+		s_sendmore(*socket, "multi-carousel");
+		s_send(*socket, X_serialized);
 	}
 
 	void  ProtobufBridge::stopHook()
 	{
-		socket.close();
+		delete socket;
 	}
 
 	void  ProtobufBridge::cleanUpHook()
 	{
+		delete context;
 		google::protobuf::ShutdownProtobufLibrary(); // optional
 	}
 

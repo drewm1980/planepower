@@ -25,7 +25,13 @@ namespace OCL
 		cout << "(measurementsRecorder) Loading from file..." << endl;
 		ifstream myfile;
 		myfile.open (DEFAULT_LOG_FILE_NAME, ios::in|ios::binary);
+		if(myfile.fail())
+		{
+			cout << "(measurementsPlayback) Couldn't open file " 
+				<< DEFAULT_LOG_FILE_NAME << endl;
+		}
 		myfile.read((char*)&samplesRecorded,sizeof(samplesRecorded));
+		cout << "samplesRecorded read from file: " << samplesRecorded << endl;
 
 		sampleSet = (Sample*) calloc(samplesRecorded,sizeof(Sample)); 
 		if(sampleSet==NULL)
