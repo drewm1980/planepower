@@ -72,7 +72,7 @@ namespace OCL
 			copy(s.measurementsCtrl,s.measurementsCtrl+NY_CTRL,measurementsCtrl.begin());
 			copy(s.measurementsPose,s.measurementsPose+NY_POSE,measurementsPose.begin());
 
-			cout << "Copied data out of 
+			cout << "Done copying the s into the ports" << endl;
 		
 			// Write our ports.
 			portMeasurementsMarkers.write( measurementsMarkers );
@@ -80,6 +80,8 @@ namespace OCL
 			portMeasurementsEncoder.write( measurementsEncoder );
 			portMeasurementsCtrl.write( measurementsCtrl );
 			portMeasurementsPose.write( measurementsPose );
+			
+			cout << "Done writing the ports" << endl;
 
 			samplesPlayed+=1;
 		} else {
