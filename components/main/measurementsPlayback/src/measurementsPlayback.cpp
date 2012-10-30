@@ -41,7 +41,14 @@ namespace OCL
 		}
 		myfile.read((char*)sampleSet,samplesRecorded*sizeof(Sample));
 		myfile.close();
-		cout << "(measurementsRecorder) Done Loading from file!" << endl;
+		cout << "(measurementsPlayback) Done Loading from file!" << endl;
+
+		measurementsMarkers.resize(NY_MARK*2);
+		measurementsIMU.resize(IMU_VEC_SIZE);
+		measurementsEncoder.resize(NY_ENC);
+		measurementsCtrl.resize(NY_CTRL);
+		measurementsPose.resize(NY_POSE);
+		cout << "(measurementsPlayback) Done resizing port vectors!" << endl;
 
 		return true;
 	}
@@ -56,7 +63,7 @@ namespace OCL
 	{
 		if(samplesPlayed<samplesRecorded)
 		{
-			s = sampleSet[samplesPlayed];
+			s = sampleSet[samplesPlayed]; // Copy instance of Sample
 			
 			// Copy our data from Sample s
 			copy(s.measurementsMarkers,s.measurementsMarkers+NY_MARK*2,measurementsMarkers.begin());
@@ -64,6 +71,8 @@ namespace OCL
 			copy(s.measurementsEncoder,s.measurementsEncoder+NY_ENC,measurementsEncoder.begin());
 			copy(s.measurementsCtrl,s.measurementsCtrl+NY_CTRL,measurementsCtrl.begin());
 			copy(s.measurementsPose,s.measurementsPose+NY_POSE,measurementsPose.begin());
+
+			cout << "Copied data out of 
 		
 			// Write our ports.
 			portMeasurementsMarkers.write( measurementsMarkers );
