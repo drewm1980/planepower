@@ -10,7 +10,14 @@ using namespace BFL;
 
 namespace OCL
 {
-	MeasurementsPlayback::MeasurementsPlayback(std::string name) : TaskContext(name) { }
+	MeasurementsPlayback::MeasurementsPlayback(std::string name) : TaskContext(name) { 
+		addPort("portMeasurementsMarkers",portMeasurementsMarkers);
+		addPort("portMeasurementsIMU",portMeasurementsIMU);
+		addPort("portMeasurementsEncoder",portMeasurementsEncoder);
+		addPort("portMeasurementsCtrl",portMeasurementsCtrl);
+		addPort("portMeasurementsPose",portMeasurementsPose);
+
+	}
 	MeasurementsPlayback::~MeasurementsPlayback() { } 
 
 	bool  MeasurementsPlayback::configureHook()
