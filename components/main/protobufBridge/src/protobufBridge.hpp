@@ -44,10 +44,8 @@ namespace OCL
 			kite::MultiCarousel mc;
 			kite::CarouselState *cs;
 
-			//zmq::context_t context(1);
-			//zmq::socket_t socket(context,ZMQ_PUB);
-			zmq::context_t context;
-			zmq::socket_t socket;
+			zmq::context_t *context;
+			zmq::socket_t *socket;
 
 			string X_serialized;
 
