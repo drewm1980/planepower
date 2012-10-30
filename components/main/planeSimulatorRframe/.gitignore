@@ -2,3 +2,4 @@
 *.txt
 
 rk4.c
+Makefile

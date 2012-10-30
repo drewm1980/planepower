@@ -92,7 +92,7 @@ namespace OCL
 	X[19] = 6.2832;
 	X[20] = 0;
 	X[21] = 0;
-
+#if 0
 	X[0] =     1.1640;
 	X[1] =    -0.1107;
 	X[2] =    -0.2700;
@@ -115,7 +115,7 @@ namespace OCL
 	X[19] =     4.7124;
 	X[20] =    -0.0066;
 	X[21] =          0;
-
+#endif
   	for(int i=22; i<NSTATES+NIMU;i++){X[i] = 0.0;}
 	//_stateOutputPort.write(X);
         return true;

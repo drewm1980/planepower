@@ -14,16 +14,16 @@ loadComponent("masterTimer","OCL::MasterTimer")
 
 # Encoder
 import("encoderLatch")
-loadComponent("encoder","OCL::EncoderLatch")
+loadComponent("EncoderLatch","OCL::EncoderLatch")
 
 # Simulator
 import("planeSimulatorRframe")
 loadComponent("sim","OCL::planeSimulatorRframe")
 setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
 
-# LEDTracker
+# LEDTrackerSimulator
 import("LEDTrackerSimulator")
-loadComponent("LEDTracker","OCL::LEDTrackerSimulator")
+loadComponent("LEDTrackerSimulator","OCL::LEDTrackerSimulator")
 
 # IMU buffer
 import("imuBuffer")
@@ -41,16 +41,20 @@ loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
 import("dynamicMHE")
 loadComponent("dynamicMHE","DynamicMHE")
 
-# Manual controller
-import("manualController")
-loadComponent("manualController","OCL::ManualController")
+# MPC, with dynamic model
+import("dynamicMPC")
+loadComponent("dynamicMPC","DynamicMPC")
+
+# Trajectory generator
+import("simpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
 
 # measurementsRecorder
 import("measurementsRecorder")
-loadComponent("measurementsRecorder","OCL::measurementsRecorder")
+loadComponent("measurementsRecorder","OCL::MeasurementsRecorder")
 
 ################################################################################
 #
@@ -60,20 +64,37 @@ loadComponent("measurementsRecorder","OCL::measurementsRecorder")
 
 # Master timer
 loadService("masterTimer", "marshalling")
-masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
 var double base_hz = masterTimer.imu_target_hz
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "state.dat"
-#reporter.NullSample = "nan"
+#reporter.WriteHeader = false
+reporter.ReportFile = "mhe_mpc_derivatives_closed_loop.dat"
+reporter.NullSample = "nan"
 
 # MHE
-dynamicMHE.propNumSQPIterations = 3
-dynamicMHE.propDragScaling = 0.5
+dynamicMHE.propNumSQPIterations = 1
+loadService("dynamicMHE", "marshalling")
+dynamicMHE.marshalling.loadProperties("../../../properties/mhe_properties/mhe_properties.cpf")
 
-#loadService("measurementsRecorder","marshalling")
-#measurementsRecorder.marshalling.loadProperties("../../../properties/measurementsRecorder/measurementsRecorder.cpf")
+# MPC
+dynamicMPC.propNumSQPIterations = 1
+
+dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
+dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
+loadService("dynamicMPC", "marshalling")
+dynamicMPC.marshalling.loadProperties("../../properties/mpc_properties/mpc_properties.cpf")
+
+# trajectoryGenerator
+trajectoryGenerator.N = 10
+trajectoryGenerator.NX = 22
+trajectoryGenerator.NU = 3
+
+#trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
+#trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
+trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
+trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
 
 ################################################################################
 #
@@ -92,7 +113,7 @@ LEDTrackerPrio = 99
 
 setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
 
-setActivity("encoder",0,sensorPrio,ORO_SCHED_RT)
+setActivity("EncoderLatch",0,sensorPrio,ORO_SCHED_RT)
 
 # Simulator property depends on period of master timer..
 sim.integrationStep = masterTimer.getPeriod()
@@ -103,18 +124,21 @@ setActivity("sim",0,sensorPrio,ORO_SCHED_RT)
 
 setActivity("cameraSimulator",0,sensorPrio,ORO_SCHED_RT)
 
-setActivity("LEDTracker", 0, LEDTrackerPrio, ORO_SCHED_RT)
+setActivity("LEDTrackerSimulator", 0, LEDTrackerPrio, ORO_SCHED_RT)
 
 setActivity("poseFromMarkers", 0, LEDTrackerPrio, ORO_SCHED_RT)
 
 # MHE, with dynamic model
 setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 
-setActivity("manualController",0,11,ORO_SCHED_RT)
+# MPC, with dynamic model
+setActivity("dynamicMPC", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
 
 setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
 
-setActivity("measurementsRecorder",0.00,HighestPriority,ORO_SCHED_RT)
+setActivity("measurementsRecorder",0.00,LowestPriority,ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -125,30 +149,59 @@ setActivity("measurementsRecorder",0.00,HighestPriority,ORO_SCHED_RT)
 var ConnPolicy cp
 
 connect("masterTimer.imuClock","sim.trigger",cp)
-connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
+connect("masterTimer.cameraClock","LEDTrackerSimulator.triggerTimeStampIn",cp)
 
-connect("encoder.triggerTimeStampIn","masterTimer.cameraClock",cp)
-connect("encoder.deltaOmegaIn","sim.deltaOmega",cp)
+connect("EncoderLatch.triggerTimeStampIn","masterTimer.cameraClock",cp)
+connect("EncoderLatch.deltaOmegaIn","sim.deltaOmega",cp)
 
-connect("poseFromMarkers.markerPositions","LEDTracker.markerPositions",cp)
+connect("poseFromMarkers.markerPositions","LEDTrackerSimulator.markerPositions",cp)
 
 connect("sim.triggerTimeStampOut", "cameraSimulator.triggerTimeStampIn",cp)
 connect("sim.stateOutputPort","cameraSimulator.stateInputPort",cp)
 
-connect("LEDTracker.triggerTimeStampIn","cameraSimulator.triggerTimeStampOut",cp)
-connect("LEDTracker.markerPositionsIn","cameraSimulator.markerPositions",cp)
-connect("LEDTracker.markerPositionsAndCovarianceIn","cameraSimulator.markerPositionsAndCovariance",cp)
+connect("LEDTrackerSimulator.triggerTimeStampIn","cameraSimulator.triggerTimeStampOut",cp)
+connect("LEDTrackerSimulator.markerPositionsIn","cameraSimulator.markerPositions",cp)
+connect("LEDTrackerSimulator.markerPositionsAndCovarianceIn","cameraSimulator.markerPositionsAndCovariance",cp)
 
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","sim.imuData",cp)
 
-connect("dynamicMHE.portMeasurementsMarkers",	"LEDTracker.markerPositionsAndCovariance",cp)
-connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose",cp)
-connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov",cp)
-connect("dynamicMHE.portMeasurementsEncoder","encoder.deltaOmega",cp)
-connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort",cp)
+#
+# Connection between sensors and the MHE
+#
+connect("dynamicMHE.portMeasurementsMarkers",	"LEDTrackerSimulator.markerPositionsAndCovariance", cp)
+connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose", cp)
+connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov", cp)
+connect("dynamicMHE.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
 
-connect("manualController.controlAction","sim.controlInputPort",cp)
+#
+# Connection between MHE and MPC
+#
+
+connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
+connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
+connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
+connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
+connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
+
+# 1. Use this guy for open loop control testing
+connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
+# OR
+# 2. Use this guy to feed MHE with MPC DATA
+#connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
+
+# TODO
+# connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
+
+#
+# Connection between NMPC and "real" world
+#
+# TODO Put "control interpolator" component in between
+connect("dynamicMPC.portControlRates", "sim.controlInputPort", cp)
+connect("dynamicMPC.portControlInput", "sim.controlOutputPort",cp)
+#connect("dynamicMPC.portControlsForMeasurement", "sim.controlInputPort", cp)
+
+connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
 ################################################################################
 #
@@ -156,29 +209,43 @@ connect("manualController.controlAction","sim.controlInputPort",cp)
 #
 ################################################################################
 
-connectPeers("reporter","LEDTracker")
+connectPeers("reporter","LEDTrackerSimulator")
 connectPeers("reporter","poseFromMarkers")
 connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
+connectPeers("reporter","dynamicMPC")
 connectPeers("reporter","sim")
 
 #reporter.reportPort("poseFromMarkers","pose")
-#reporter.reportPort("LEDTracker","compTime")
-#reporter.reportPort("LEDTracker","triggerTimeStampOut")
-#reporter.reportPort("LEDTracker","markerPositionsAndCovariance")
+#reporter.reportPort("LEDTrackerSimulator","compTime")
+#reporter.reportPort("LEDTrackerSimulator","triggerTimeStampOut")
+#reporter.reportPort("LEDTrackerSimulator","markerPositionsAndCovariance")
 #reporter.reportPort("imuBuffer","imuMeanCov")
-reporter.reportPort("sim","stateOutputPort")
 
 #reporter.reportPort("dynamicMHE","portReady")
 #reporter.reportPort("dynamicMHE","portWeightingCoefficients")
 #reporter.reportPort("dynamicMHE","portDataSizeValid")
 #reporter.reportPort("dynamicMHE","portQPSolverStatus")
-reporter.reportPort("dynamicMHE","portKKTTolerance")
+#reporter.reportPort("dynamicMHE","portKKTTolerance")
 #reporter.reportPort("dynamicMHE","portFullStateVector")
 #reporter.reportPort("dynamicMHE","portStateEstimate")
 #reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
 #reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+
+#reporter.reportPort("dynamicMPC","portDataSizeValid")
+#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+#reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portControlsForMHE")
+#reporter.reportPort("dynamicMPC","portControls")
+#reporter.reportPort("dynamicMPC","portControlRates")
+#reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+
+#reporter.reportPort("sim","stateOutputPort")
+#reporter.reportPort("dynamicMHE","portStateAndControl")
+
+reporter.reportPort("dynamicMHE","portFullStateVector")
+reporter.reportPort("dynamicMPC","portFullStateVector")
 
 ################################################################################
 #
@@ -186,7 +253,7 @@ reporter.reportPort("dynamicMHE","portKKTTolerance")
 #
 ################################################################################
 
-#encoder.deltaOmega.last[1]/2.0/3.14159*60.0
+#EncoderLatch.deltaOmega.last[1]/2.0/3.14159*60.0
 
 ################################################################################
 #
@@ -202,11 +269,11 @@ sim.start()
 cameraSimulator.configure()
 cameraSimulator.start()
 
-encoder.configure()
-encoder.start()
+EncoderLatch.configure()
+EncoderLatch.start()
 
-LEDTracker.configure()
-LEDTracker.start()
+LEDTrackerSimulator.configure()
+LEDTrackerSimulator.start()
 
 poseFromMarkers.configure()
 poseFromMarkers.start()
@@ -217,14 +284,17 @@ imuBuffer.start()
 dynamicMHE.configure()
 #dynamicMHE.start()
 
-manualController.configure()
-manualController.start()
+dynamicMPC.configure()
+#dynamicMPC.start()
+
+trajectoryGenerator.configure()
+#trajectoryGenerator.start()
  
 reporter.configure()
 reporter.start()
 
 measurementsRecorder.configure()
-measurementsRecorder.start()
+#measurementsRecorder.start()
 
 masterTimer.start()
 
