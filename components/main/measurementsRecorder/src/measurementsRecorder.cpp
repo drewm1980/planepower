@@ -55,7 +55,7 @@ namespace OCL
 
 		if(samplesRecorded<BUFFER_IN_SAMPLES)
 		{
-			sampleSet[samplesRecorded+1] = s;
+			sampleSet[samplesRecorded] = s;
 			samplesRecorded+=1;
 		} else {
 			cout << "(measurementsRecorder) End of Buffer reached!" << endl;
