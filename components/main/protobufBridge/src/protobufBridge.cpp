@@ -33,8 +33,6 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 		cs = mc.add_css(); 
 		cs = mc.mutable_css(0);
-		xyz = cs->mutable_kitexyz();
-		dcm = cs->mutable_kitedcm();
 
 		socket.bind("tcp://*:5563");
 
@@ -46,23 +44,30 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 		return true;
 	}
 
+	void ProtobufBridge::copy_to_protobuf(const StateVector *X , kite::CarouselState *cs)
+	{
+		kite::Xyz *xyz = cs->mutable_kitexyz();
+		kite::Dcm *dcm = cs->mutable_kitedcm();
+		xyz->set_x(X->x);
+		xyz->set_y(X->y);
+		xyz->set_z(X->z);
+		dcm->set_r11(X->e.e11); // Note, there is an implicit transpose happening in here.
+		dcm->set_r21(X->e.e12);
+		dcm->set_r31(X->e.e13);
+		dcm->set_r12(X->e.e21);
+		dcm->set_r22(X->e.e22);
+		dcm->set_r32(X->e.e23);
+		dcm->set_r13(X->e.e31);
+		dcm->set_r23(X->e.e32);
+		dcm->set_r33(X->e.e33);
+		cs->set_delta(X->delta);
+	}
+
 	void  ProtobufBridge::updateHook()
 	{
 		_stateInputPort.read(X);
-
-		xyz->set_x(X[0]);
-		xyz->set_y(X[1]);
-		xyz->set_z(X[2]);
-		dcm->set_r11(X[6]);
-		dcm->set_r21(X[7]);
-		dcm->set_r31(X[8]);
-		dcm->set_r12(X[9]);
-		dcm->set_r22(X[10]);
-		dcm->set_r32(X[11]);
-		dcm->set_r13(X[12]);
-		dcm->set_r23(X[13]);
-		dcm->set_r33(X[14]);
-		cs->set_delta(X[18]);
+		
+		copy_to_protobuf((StateVector *) &X[0], cs);
 		cs->set_rarm(1.085);
 		cs->set_zt(-.03); // PROBABLY WRONG; AT LEAST ONLY FOR VISUALIZATION
 		cs->set_w0(0);
