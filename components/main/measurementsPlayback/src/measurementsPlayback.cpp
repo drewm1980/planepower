@@ -15,6 +15,7 @@ namespace OCL
 		addPort("portMeasurementsIMU",portMeasurementsIMU);
 		addPort("portMeasurementsEncoder",portMeasurementsEncoder);
 		addPort("portMeasurementsCtrl",portMeasurementsCtrl);
+		addPort("portMeasurementsCtrlRates",portMeasurementsCtrlRates);
 		addPort("portMeasurementsPose",portMeasurementsPose);
 
 	}
@@ -47,6 +48,7 @@ namespace OCL
 		measurementsIMU.resize(IMU_VEC_SIZE);
 		measurementsEncoder.resize(NY_ENC);
 		measurementsCtrl.resize(NY_CTRL);
+		measurementsCtrlRates.resize(NY_CTRL);
 		measurementsPose.resize(NY_POSE);
 		cout << "(measurementsPlayback) Done resizing port vectors!" << endl;
 
@@ -70,6 +72,7 @@ namespace OCL
 			copy(s.measurementsIMU,s.measurementsIMU+IMU_VEC_SIZE,measurementsIMU.begin());
 			copy(s.measurementsEncoder,s.measurementsEncoder+NY_ENC,measurementsEncoder.begin());
 			copy(s.measurementsCtrl,s.measurementsCtrl+NY_CTRL,measurementsCtrl.begin());
+			copy(s.measurementsCtrlRates,s.measurementsCtrlRates+NY_CTRL,measurementsCtrlRates.begin());
 			copy(s.measurementsPose,s.measurementsPose+NY_POSE,measurementsPose.begin());
 
 			//cout << "Done copying the s into the ports" << endl;
@@ -78,9 +81,9 @@ namespace OCL
 			portMeasurementsMarkers.write( measurementsMarkers );
 			portMeasurementsIMU.write( measurementsIMU );
 			portMeasurementsCtrl.write( measurementsCtrl );
+			portMeasurementsCtrlRates.write( measurementsCtrlRates );
 			portMeasurementsPose.write( measurementsPose );
 			portMeasurementsEncoder.write( measurementsEncoder ); // MHE wants this port to be written last
-			
 			//cout << "Done writing the ports" << endl;
 
 			samplesPlayed+=1;

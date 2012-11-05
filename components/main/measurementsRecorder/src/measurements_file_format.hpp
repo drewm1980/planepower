@@ -22,6 +22,7 @@ struct Sample
 	double measurementsIMU[IMU_VEC_SIZE];  // Samples, plus Cov. Matrix diag. elements, in imuBuffer output format.
 	double measurementsEncoder[NY_ENC];
 	double measurementsCtrl[NY_CTRL];
+	double measurementsCtrlRates[NY_CTRL];
 	double measurementsPose[NY_POSE];  // Just the x,y,z,e11,e12,...
 };
 
