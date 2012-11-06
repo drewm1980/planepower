@@ -224,7 +224,7 @@ connect("measurementsRecorder.portMeasurementsPose",            "poseFromMarkers
 connect("measurementsRecorder.portMeasurementsIMU",             "imuBuffer.imuMeanCov", cp)
 connect("measurementsRecorder.portMeasurementsEncoder", "encoder.deltaOmega", cp)
 connect("measurementsRecorder.portMeasurementsCtrl",    "mcuHandler.controlOutputPort", cp)
-
+connect("measurementsRecorder.portMeasurementsCtrlRates","dynamicMPC.portControlRates",cp)
 
 #
 # Connection between MHE and MPC
@@ -349,3 +349,5 @@ masterTimer.start()
 
 protobuf.configure()
 protobuf.start()
+
+measurementsRecorder.configure()
