@@ -56,6 +56,15 @@ reporter.NullSample = "nan"
 dynamicMHE.propNumSQPIterations = 1
 loadService("dynamicMHE", "marshalling")
 dynamicMHE.marshalling.loadProperties("../../../properties/mhe_properties/mhe_properties.cpf")
+dynamicMHE.propSigma_ur = 1e-2
+dynamicMHE.propSigma_up = 1e-2
+dynamicMHE.propSigma_dur = 0.03162
+dynamicMHE.propSigma_dup = 0.03162
+
+dynamicMHE.propSigma_ur = 1e-2*1e3
+dynamicMHE.propSigma_up = 1e-2*1e3
+dynamicMHE.propSigma_dur = 0.03162*1e3
+dynamicMHE.propSigma_dup = 0.03162*1e3
 
 # MPC
 dynamicMPC.propNumSQPIterations = 1
