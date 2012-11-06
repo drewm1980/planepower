@@ -310,9 +310,15 @@ bool DynamicMPC::configureHook()
 
 bool DynamicMPC::startHook()
 {
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables.x, 0, sizeof( acadoVariables.x ));
+	memset(&acadoVariables.u, 0, sizeof( acadoVariables.u ));
+	memset(&acadoVariables.xRef, 0, sizeof( acadoVariables.u ));
+	memset(&acadoVariables.uRef, 0, sizeof( acadoVariables.u ));
+	qpSolverStatus = 0.0; 
 	kktTolerance = 0.0;
 	numOfActiveSetChanges = 0;
-
+	dataSizeValid = false;
 	initialized = false;
 
 	firstRefArrived = false;
@@ -541,8 +547,8 @@ void DynamicMPC::mpcFeedbackPhase()
 		else
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
-
 			// Stop the component is case we are not lucky today
+			cout << "MPC want to trow garbage. stopping it.. " << endl;
 			stop();
 		}
 
