@@ -123,6 +123,7 @@ connect("dynamicMHE.portMeasurementsPose",		"measurementsPlayback.portMeasuremen
 connect("dynamicMHE.portMeasurementsIMU",		"measurementsPlayback.portMeasurementsIMU", cp)
 connect("dynamicMHE.portMeasurementsEncoder",	"measurementsPlayback.portMeasurementsEncoder", cp)
 connect("dynamicMHE.portMeasurementsCtrl",	"measurementsPlayback.portMeasurementsCtrl", cp)
+connect("dynamicMHE.portMeasurementsCtrlRates",	"measurementsPlayback.portMeasurementsCtrlRates", cp)
 
 #
 # Connection between MHE and MPC
@@ -169,6 +170,7 @@ reporter.reportPort("measurementsPlayback","portMeasurementsPose")
 reporter.reportPort("measurementsPlayback","portMeasurementsIMU")
 reporter.reportPort("measurementsPlayback","portMeasurementsEncoder")
 reporter.reportPort("measurementsPlayback","portMeasurementsCtrl")
+reporter.reportPort("measurementsPlayback","portMeasurementsCtrlRates")
 
 
 ################################################################################
