@@ -99,19 +99,21 @@ encoder.encoderPort = 0;
 # LED tracker
 # LEDTracker hangs until frame arrival, does processing, and re-triggers itself.
 LEDTracker.useExternalTrigger=true;
+
+# Weights
+dynamicMHE.propSigma_delta = 1e-2;
+dynamicMHE.propSigma_ur = 1e-3;
+dynamicMHE.propSigma_up = 1e-3;
+dynamicMHE.propSigma_dddelta = 0.03162;
+#dynamicMHE.propSigma_dur = 0.03162;
+#dynamicMHE.propSigma_dup = 0.03162;
+
 LEDTracker.sigma_marker=1000;
 
-# imuBuffer
 imuBuffer.sigma_omega = 1.0;
 imuBuffer.sigma_acc = 0.1;
 
-# dynamicMHE
-dynamicMHE.propSigma_delta = 1e-2;
-dynamicMHE.propSigma_ur = 1e-2;
-dynamicMHE.propSigma_up = 1e-2;
-dynamicMHE.propSigma_dddelta = 0.03162;
-dynamicMHE.propSigma_dur = 0.03162;
-dynamicMHE.propSigma_dup = 0.03162;
+dynamicMHE.propScale_Obj = 0.01;
 
 # MPC
 dynamicMPC.propNumSQPIterations = 5
@@ -225,6 +227,7 @@ connect("measurementsRecorder.portMeasurementsIMU",             "imuBuffer.imuMe
 connect("measurementsRecorder.portMeasurementsEncoder", "encoder.deltaOmega", cp)
 connect("measurementsRecorder.portMeasurementsCtrl",    "mcuHandler.controlOutputPort", cp)
 connect("measurementsRecorder.portMeasurementsCtrlRates","dynamicMPC.portControlRates",cp)
+connect("measurementsRecorder.portStateEstimate","dynamicMHE.portStateEstimate",cp)
 
 #
 # Connection between MHE and MPC

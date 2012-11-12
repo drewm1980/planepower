@@ -18,6 +18,7 @@ namespace OCL
 	addPort("portMeasurementsCtrl",portMeasurementsCtrl);
 	addPort("portMeasurementsCtrlRates",portMeasurementsCtrlRates);
 	addPort("portMeasurementsPose",portMeasurementsPose);
+	addPort("portStateEstimate",portStateEstimate);
 
 
 	}
@@ -47,6 +48,7 @@ namespace OCL
 		statusMeasurementsCtrl = portMeasurementsCtrl.read( measurementsCtrl );
 		statusMeasurementsCtrlRates = portMeasurementsCtrlRates.read( measurementsCtrlRates );
 		statusMeasurementsPose = portMeasurementsPose.read( measurementsPose );
+		statusStateEstimate = portStateEstimate.read( stateEstimate );
 		
 		// Copy our data into Sample s
 		copy(measurementsMarkers.begin(),measurementsMarkers.end(),s.measurementsMarkers);
@@ -55,6 +57,7 @@ namespace OCL
 		copy(measurementsCtrl.begin(),measurementsCtrl.end(),s.measurementsCtrl);
 		copy(measurementsCtrlRates.begin(),measurementsCtrlRates.end(),s.measurementsCtrlRates);
 		copy(measurementsPose.begin(),measurementsPose.end(),s.measurementsPose);
+		copy(stateEstimate.begin(),stateEstimate.end(),s.stateEstimate);
 
 		if(samplesRecorded<BUFFER_IN_SAMPLES)
 		{
