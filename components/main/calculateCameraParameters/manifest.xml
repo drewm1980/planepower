@@ -14,9 +14,9 @@
   <url>http://ros.org/wiki/calculateCameraParameters</url>
 
 <depend package="rtt" />
-<depend package="rtt_ros_integration"/>
-<depend package="rtt_ros_integration_std_msgs"/>
-<depend package="rtt_ros_param"/>
+<depend package="rtt_rosnode"/>
+<depend package="rtt_std_msgs"/>
+<depend package="rtt_rosnode"/>
 <depend package="ocl" />
 <depend package="bfl" />
 <depend package="kdl" />
