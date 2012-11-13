@@ -41,4 +41,9 @@ rosmake orocos_toolchain rtt_ros_integration rtt_ros_comm rtt_common_msgs rtt_ge
 
 4. Build the flight software...
 
+cd planepower
+git submodule init
+git submodule update
+
+components/lowlevel/make_all.sh
 
