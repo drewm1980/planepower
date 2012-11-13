@@ -1,7 +1,9 @@
 [submodule "components/lowlevel/soem"]
 	path = components/lowlevel/soem
-	url = http://git.mech.kuleuven.be/robotics/soem.git
-        ignore = dirty
+	;url = http://git.mech.kuleuven.be/robotics/soem.git
+	url = git@github.com:drewm1980/soem.git
+	ignore = untracked
 [submodule "tools/PyKinetics"]
 	path = tools/PyKinetics
 	url = https://github.com/jgillis/PyKinetics.git
+	ignore = untracked
