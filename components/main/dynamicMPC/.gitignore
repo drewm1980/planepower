@@ -1,1 +1,4 @@
-nmpc_codegenMakefile
+nmpc_codegen
+Makefile
+solver.cpp
+solver.hpp

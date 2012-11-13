@@ -308,8 +308,8 @@ bool DynamicMHE::startHook( )
 
 		// controls
 		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1.0/sigma_dddelta/sigma_dddelta; // dddelta
-		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
-		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
+		acadoVariables.S[i * NY * NY + 22 * NY + 22] = 0.0*SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
+		acadoVariables.S[i * NY * NY + 23 * NY + 23] = 0.0*SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
 	}
 
 	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta

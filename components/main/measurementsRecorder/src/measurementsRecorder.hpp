@@ -62,6 +62,16 @@ namespace OCL
 		vector< double > measurementsCtrl;
 		FlowStatus statusMeasurementsCtrl;
 
+		/// Measurements: dur, dup
+		InputPort< vector< double > > portMeasurementsCtrlRates;
+		vector< double > measurementsCtrlRates;
+		FlowStatus statusMeasurementsCtrlRates;
+
+		/// State estimate
+		InputPort< vector< double > > portStateEstimate;
+		vector< double > stateEstimate;
+		FlowStatus statusStateEstimate;
+
 	public:
 		MeasurementsRecorder(std::string name);
 		~MeasurementsRecorder();

@@ -178,6 +178,7 @@ connect("measurementsRecorder.portMeasurementsMarkers",	"LEDTrackerSimulator.mar
 connect("measurementsRecorder.portMeasurementsPose",		"poseFromMarkers.pose", cp)
 connect("measurementsRecorder.portMeasurementsIMU",		"imuBuffer.imuMeanCov", cp)
 connect("measurementsRecorder.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
+connect("measurementsRecorder.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 
 
 #
@@ -191,7 +192,6 @@ connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatr
 connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 
 # 1. Use this guy for open loop control testing
-connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 # OR
 # 2. Use this guy to feed MHE with MPC DATA
 #connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)

@@ -1,15 +1,221 @@
-#Import libraries
+# 
+# This script runs a simulation and records the inputs to the MHE component
+# in a binary file.
+#
+################################################################################
+#
+# Import and load components
+#
+################################################################################
+
+# Master Timer
+import("masterTimer")
+loadComponent("masterTimer","OCL::MasterTimer")
+
+# MHE, with dynamic model
+import("dynamicMHE")
+loadComponent("dynamicMHE","DynamicMHE")
+
+# MPC, with dynamic model
+import("dynamicMPC")
+loadComponent("dynamicMPC","DynamicMPC")
+
+# Trajectory generator
+import("simpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
+
+# OCL reporter
+loadComponent("reporter","OCL::FileReporting")
+
+# measurementsPlayback
 import("measurementsPlayback")
+loadComponent("measurementsPlayback","OCL::MeasurementsPlayback")
+
+#profobuf
+import("protobufBridge")
+loadComponent("protobuf","OCL::ProtobufBridge")
+
+################################################################################
+#
+# Configure components' properties
+#
+################################################################################
+
+# Master timer
+loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz
+
+# OCL Reporter (non real-time)
+#(optionally, overwrite the default report file name)
+#reporter.WriteHeader = false
+reporter.ReportFile = "measurementsPlayback.dat"
+reporter.NullSample = "nan"
+
+# MHE
+dynamicMHE.propNumSQPIterations = 1
+loadService("dynamicMHE", "marshalling")
+dynamicMHE.marshalling.loadProperties("../../../properties/mhe_properties/mhe_properties.cpf")
+dynamicMHE.propSigma_ur = 1e-2
+dynamicMHE.propSigma_up = 1e-2
+dynamicMHE.propSigma_dur = 0.03162
+dynamicMHE.propSigma_dup = 0.03162
+
+dynamicMHE.propSigma_ur = 1e-3
+dynamicMHE.propSigma_up = 1e-3
+#dynamicMHE.propSigma_dur = 0.03162*1e3
+#dynamicMHE.propSigma_dup = 0.03162*1e3
+
+# MPC
+dynamicMPC.propNumSQPIterations = 1
+
+dynamicMPC.propFileNameWeightsQ = "../../../properties/mpc_properties/MPC_Q.dat"
+dynamicMPC.propFileNameWeightsR = "../../../properties/mpc_properties/MPC_R.dat"
+loadService("dynamicMPC", "marshalling")
+dynamicMPC.marshalling.loadProperties("../../../properties/mpc_properties/mpc_properties.cpf")
+
+# trajectoryGenerator
+trajectoryGenerator.N = 10
+trajectoryGenerator.NX = 22
+trajectoryGenerator.NU = 3
+
+#trajectoryGenerator.referencesFileName = "../../../matlab_acado_codegen_simulation/refs.dat"
+#trajectoryGenerator.weightsPFileName = "../../../matlab_acado_codegen_simulation/weights.dat"
+trajectoryGenerator.referencesFileName = "../../../matlab_acado_codegen_simulation/Xrefslope.dat"
+trajectoryGenerator.weightsPFileName = "../../../matlab_acado_codegen_simulation/Sslope.dat"
+
+################################################################################
+#
+# Set activities and priorities
+#
+################################################################################
+
+var int masterTimerPrio = 99
+var int sensorPrio = 90
+var int ocpPrio = 80
+var int LEDTrackerPrio = 70
+masterTimerPrio = 99
+sensorPrio = 99
+ocpPrio = 99
+LEDTrackerPrio = 99
+
+setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
+
+# MHE, with dynamic model
+setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
+
+# MPC, with dynamic model
+setActivity("dynamicMPC", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("reporter", 0.0, 10, ORO_SCHED_RT)
+
+setActivity("measurementsPlayback",0.1,LowestPriority,ORO_SCHED_RT)
+
+setActivity("protobuf",0.0,11,ORO_SCHED_RT)
+
+################################################################################
+#
+# Connect components
+#
+################################################################################
+
+var ConnPolicy cp
+
+
+#
+# Connection between sensors and the MHE
+#
+connect("dynamicMHE.portMeasurementsMarkers",	"measurementsPlayback.portMeasurementsMarkers", cp)
+connect("dynamicMHE.portMeasurementsPose",		"measurementsPlayback.portMeasurementsPose", cp)
+connect("dynamicMHE.portMeasurementsIMU",		"measurementsPlayback.portMeasurementsIMU", cp)
+connect("dynamicMHE.portMeasurementsEncoder",	"measurementsPlayback.portMeasurementsEncoder", cp)
+connect("dynamicMHE.portMeasurementsCtrl",	"measurementsPlayback.portMeasurementsCtrl", cp)
+connect("dynamicMHE.portMeasurementsCtrlRates",	"measurementsPlayback.portMeasurementsCtrlRates", cp)
+
+#
+# Connection between MHE and MPC
+#
+
+connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
+connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
+connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
+connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
+connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
+
+# 1. Use this guy for open loop control testing
+# OR
+# 2. Use this guy to feed MHE with MPC DATA
+#connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
+
+# TODO
+# connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
+
+#
+# Connection between NMPC and "real" world
+#
+# TODO Put "control interpolator" component in between
+#connect("dynamicMPC.portControlsForMeasurement", "sim.controlInputPort", cp)
+
+connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
+
+connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+
+################################################################################
+#
+# Reporter configuration
+#
+################################################################################
+
+connectPeers("reporter","dynamicMHE")
+connectPeers("reporter","dynamicMPC")
+connectPeers("reporter","measurementsPlayback")
+
+#reporter.reportPort("dynamicMHE","portFullStateVector")
+#reporter.reportPort("dynamicMPC","portFullStateVector")
+reporter.reportPort("measurementsPlayback","portMeasurementsMarkers")
+reporter.reportPort("measurementsPlayback","portMeasurementsPose")
+reporter.reportPort("measurementsPlayback","portMeasurementsIMU")
+reporter.reportPort("measurementsPlayback","portMeasurementsEncoder")
+reporter.reportPort("measurementsPlayback","portMeasurementsCtrl")
+reporter.reportPort("measurementsPlayback","portMeasurementsCtrlRates")
+
+
+################################################################################
+#
+# Aliases
+#
+################################################################################
+
+#EncoderLatch.deltaOmega.last[1]/2.0/3.14159*60.0
+
+################################################################################
+#
+# Configure and start components
+#
+################################################################################
+
+masterTimer.configure()
+
+dynamicMHE.configure()
+dynamicMHE.start()
+
+dynamicMPC.configure()
+#dynamicMPC.start()
+
+trajectoryGenerator.configure()
+#trajectoryGenerator.start()
  
-#Create components
-loadComponent("measurementsPlayback","OCL::measurementsPlayback")
- 
-#Load properties
-loadService("measurementsPlayback","marshalling")
-measurementsPlayback.marshalling.loadProperties("../../../properties/measurementsPlayback/measurementsPlayback.cpf")
- 
-#Set activities
-setActivity("measurementsPlayback",0.01,HighestPriority,ORO_SCHED_RT)
- 
+reporter.configure()
+#reporter.start()
+
 measurementsPlayback.configure()
-measurementsPlayback.start()
+#measurementsPlayback.start()
+
+masterTimer.start()
+
+protobuf.configure()
+protobuf.start()
+
+var double velocity = 1.0

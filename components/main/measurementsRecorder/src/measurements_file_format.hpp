@@ -9,6 +9,7 @@
 #define NY_ENC	2		// # of encoder measurements, angle true, ang. velocity fake, some averaging; vel. used only for initialization
 #define NY_CTRL	3		// # of control measurements; ur1, ur2 and up
 #define IMU_VEC_SIZE	(4 * NY_IMU)	// Samples + Cov. matrix diag. elements
+#define N_STATE 22
 
 #define BUFFER_IN_MINUTES 30
 #define SAMPLING_FREQUENCY 10 // Hz
@@ -22,7 +23,9 @@ struct Sample
 	double measurementsIMU[IMU_VEC_SIZE];  // Samples, plus Cov. Matrix diag. elements, in imuBuffer output format.
 	double measurementsEncoder[NY_ENC];
 	double measurementsCtrl[NY_CTRL];
+	double measurementsCtrlRates[NY_CTRL];
 	double measurementsPose[NY_POSE];  // Just the x,y,z,e11,e12,...
+	double stateEstimate[N_STATE];  // Just the x,y,z,e11,e12,...
 };
 
 #endif
