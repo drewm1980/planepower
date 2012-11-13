@@ -19,6 +19,8 @@ namespace OCL
 		addPort("portMeasurementsPose",portMeasurementsPose);
 		addPort("portStateEstimate",portStateEstimate);
 
+		addOperation("exportData",&MeasurementsPlayback::exportData,this).doc("Export the data in the log file to ASCII file");
+
 	}
 	MeasurementsPlayback::~MeasurementsPlayback() { } 
 
@@ -103,5 +105,19 @@ namespace OCL
 	{
 		free(sampleSet);
 	}
+
+	void MeasurementsPlayback::exportData()
+	{
+		ofstream myfile;
+		myfile.open ("logData.dat");
+		for(unsigned int i=0; i<samplesRecorded; i++)
+		{
+			s = sampleSet[i];
+			myfile << s.measurementsMarkers[0];
+			myfile << "\n";
+		}
+		myfile.close();
+	}
+
 }//namespace
 

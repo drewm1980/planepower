@@ -68,6 +68,7 @@ namespace OCL
 		vector< double > stateEstimate;
 
 	private:
+		void exportData();
 	public:
 		MeasurementsPlayback(std::string name);
 		~MeasurementsPlayback();
