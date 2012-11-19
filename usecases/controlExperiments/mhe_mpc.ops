@@ -260,6 +260,7 @@ connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReferenc
 #connectPeers("reporter","poseFromMarkers")
 #connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
+connectPeers("reporter","dynamicMPC")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -299,7 +300,25 @@ connectPeers("reporter","dynamicMHE")
 #reporter.reportPort("dynamicMHE","portStateEstimate")
 
 
-reporter.reportPort("dynamicMHE","portStateAndControl")
+#reporter.reportPort("dynamicMHE","portStateAndControl")
+
+
+reporter.reportPort("dynamicMHE","portStateEstimate")
+reporter.reportPort("dynamicMHE","portQPSolverStatus")
+reporter.reportPort("dynamicMHE","portKKTTolerance")
+reporter.reportPort("dynamicMHE","portObjectivevalue")
+reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
+reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
+reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+reporter.reportPort("dynamicMHE","portExecutionTime")
+
+reporter.reportPort("dynamicMPC","portQPSolverStatus")
+reporter.reportPort("dynamicMPC","portKKTTolerance")
+reporter.reportPort("dynamicMPC","portObjectivevalue")
+reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+reporter.reportPort("dynamicMPC","portPreparationPhaseExecTime")
+reporter.reportPort("dynamicMPC","portFeedbackPhaseExecTime")
+reporter.reportPort("dynamicMPC","portExecutionTime")
 
 ################################################################################
 #
