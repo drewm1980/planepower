@@ -1,0 +1,13 @@
+CXX = clang++
+CXXFLAGS += -Wall
+CXXFLAGS += -O0
+CXXFLAGS += -g
+CXXFLAGS += -fPIC
+
+CC=clang
+
+!cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %f.o
+!cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %f.o
+!ar = |> ar crs %o %f |>
+
+.gitignore

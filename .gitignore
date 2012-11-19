@@ -30,3 +30,4 @@ types
 .cproject
 .project
 .pydevproject
+.tup
