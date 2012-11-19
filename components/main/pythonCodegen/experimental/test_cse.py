@@ -4,7 +4,6 @@
 # elimination of casadi expressions.
 
 import casadi
-import casadi_monkeypatches
 
 from casadi import SX, SXFunction, getFree
 
