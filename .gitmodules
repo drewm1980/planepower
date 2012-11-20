@@ -7,3 +7,6 @@
 	path = tools/PyKinetics
 	url = https://github.com/jgillis/PyKinetics.git
 	ignore = untracked
+[submodule "extern/rtt"]
+	path = extern/rtt
+	url = git://gitorious.org/orocos-toolchain/rtt.git
