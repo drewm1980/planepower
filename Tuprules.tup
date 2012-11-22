@@ -1,13 +1,18 @@
+CC=clang
 CXX = clang++
 CXXFLAGS += -Wall
 CXXFLAGS += -O0
 CXXFLAGS += -g
 CXXFLAGS += -fPIC
 
-CC=clang
+# Orocos specific flags
+CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
+LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
+CXXFLAGS += -DRTT_COMPONENT
 
-!cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %f.o
-!cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %f.o
+!cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
+!ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
 
 .gitignore
