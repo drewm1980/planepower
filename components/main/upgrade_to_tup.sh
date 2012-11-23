@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 c=`ls|grep -v *.cpp|grep -v *.h|grep -v .sh | grep -v Tupfile |grep -v pythonCodegen`
 
+echo "Will try to tupify the following components:"
+echo $c
+
 for x in c
 do
 	(
+	echo "Upgrading component $x..."
 	cd $x
 
 	# Switch build system
