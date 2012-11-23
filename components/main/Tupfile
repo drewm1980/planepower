@@ -1,5 +1,0 @@
-include_rules
-#CPPFLAGS += -I../../include
-#: foreach *.c |> !cc |>
-#: foreach *.cpp |> !cxx |>
-
