@@ -1,2 +1,3 @@
 #!/bin/sh
-deployer-gnulinux -lerror -s masterTimer.ops
+#$MYOROCOSCOMPONENTS/usecases/common.sh
+  rosrun ocl deployer-gnulinux -lerror -s masterTimer.ops
