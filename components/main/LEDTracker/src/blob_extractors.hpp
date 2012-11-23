@@ -10,9 +10,6 @@
 #include <cxcore.h>
 #include <highgui.h>
 
-// Main header for cvblobs library
-#include "BlobResult.h"
-
 #include "types.hpp"
 
 using namespace std;
@@ -92,74 +89,6 @@ void find_single_led_singlepass(const Mat& m, Point2d &p)
 {
 	find_single_led_singlepass<w,h>(m.data, p);
 }
-
-// Finds a single connected component in a "binary" uint8_t image.
-// Return value is the number of connected components. (hopefully just 1)
-// p is the center of one of the components.
-template<int w, int h>
-int find_single_led(const Mat& m, Point2d &p)
-{
-	// get blobs and filter them using its area
-	CBlobResult blobs;
-
-	IplImage iplm = m;
-
-#if 0
-	cout << "Displaying image input of find_single_led..." << endl;
-	namedWindow("input");
-	cvShowImage("input",&iplm);
-	waitKey();	
-	destroyWindow("input");
-#endif
-
-	// find blobs in image
-	blobs = CBlobResult( &iplm, NULL, 0);
-
-	//blobs.Filter( blobs, B_EXCLUDE, CBlobGetArea(), B_LESS, param2 );
-
-	int blobCount = blobs.GetNumBlobs();
-
-	CBlob b;
-
-	double mynan = nanl("b");
-	Point2d nanpoint;
-	nanpoint.x = mynan;
-	nanpoint.y = mynan;
-	if(blobCount == 0) 
-	{
-		p = nanpoint;
-	} else {
-		b = blobs.GetBlob(0);
-#if 1
-		// Use center of Bounding box as center
-		CvRect r = b.GetBoundingBox();
-		p.x = r.x + r.width/2;
-		p.y = r.y + r.height/2;
-#else
-		// Use center of fitted ellipse as center
-		CvBox2D box = b.GetEllipse();
-		p = box.center;
-#endif
-	}
-	
-#if 0
-	if(blobCount > 0)
-	{
-		cout << "Displaying blob detector result..." << endl;
-		Mat foom = Mat::zeros(h, w, CV_8UC(3));
-		IplImage foo = foom;
-		b.FillBlob(&foo, Scalar(127,127,127));
-		circle(foom, p, 3, Scalar(255, 255, 255), -1);
-		namedWindow("foom");
-		imshow("foom",foom);
-		cvWaitKey(-1);
-		destroyWindow("foom");
-	}
-#endif
-
-	return blobCount;
-}
-
 
 // This function extracts a red, a green, and a blue blob from a bayer coded image.
 // Coordinates are traditional image coordinates: u increases to the right along scaline,
