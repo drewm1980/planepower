@@ -25,7 +25,7 @@ EOF
 
 	# unROSify the manifest
 	xmlstarlet sel -t -v //description manifest.xml >readme.txt
-	sed -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' readme.txt
+	sed -i -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' readme.txt
 	git add readme.txt
 	git rm manifest*.xml
 
