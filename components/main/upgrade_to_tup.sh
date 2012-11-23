@@ -11,6 +11,7 @@ do
 	cd $x
 
 	# Switch build system
+	find . -name ".gitignore" | xargs git rm
 	find . -name CMakeLists.txt | xargs git rm
 	# This is a "herefile" that spits out a Tupfile.
 	# This may or may not be cleaner than copying a template Tupfile.
