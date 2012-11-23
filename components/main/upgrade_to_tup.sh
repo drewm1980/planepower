@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 c=`ls|grep -v *.cpp|grep -v *.h|grep -v .sh | grep -v Tupfile |grep -v pythonCodegen`
 
-echo "Will try to tupify the following components:"
-echo $c
-
 for x in $c
 do
 	(
@@ -12,9 +9,9 @@ do
 
 	# Switch build system
 	touch .gitignore
-	find . -name ".gitignore" | xargs git rm --ignore-unmatch
+	find . -name ".gitignore" | xargs git rm --ignore-unmatch -q
 	rm -f .gitignore
-	find . -name CMakeLists.txt | xargs git rm
+	find . -name CMakeLists.txt | xargs git rm -q
 	# This is a "herefile" that spits out a Tupfile.
 	# This may or may not be cleaner than copying a template Tupfile.
 	(
@@ -30,11 +27,11 @@ EOF
 	xmlstarlet sel -t -v //description manifest.xml >readme.txt
 	sed -i -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' readme.txt
 	git add readme.txt
-	git rm manifest*.xml
+	git rm manifest*.xml -q
 
 	# unROSify the scripts that "test" the component
 	git mv $x.ops test.ops
-	git rm run*.sh
+	git rm run*.sh -q
 	echo "#!/usr/bin/env bash">test.sh
 	echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
 	chmod +x test.sh
