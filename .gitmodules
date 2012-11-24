@@ -14,7 +14,7 @@
 [submodule "extern/ocl"]
 	path = extern/ocl
 	;url = https://git.gitorious.org/orocos-toolchain/ocl.git
-	url = https://git.gitorious.org/orocos-toolchain/ocl_highwind.git
+	url = git@gitorious.org:~drewm1980/orocos-toolchain/ocl_highwind.git
 	ignore = dirty
 [submodule "extern/log4cpp"]
 	path = extern/log4cpp
