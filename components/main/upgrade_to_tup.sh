@@ -30,12 +30,18 @@ EOF
 	git rm manifest*.xml -q
 
 	# unROSify the scripts that "test" the component
-	git mv $x.ops test.ops
+	echo "#!/usr/bin/env deployer" > test.ops
+	echo "" >> test.ops
+	cat $x.ops >> test.ops
+	chmod +x test.ops
+	git add test.ops
+	git rm $x.ops
 	git rm run*.sh -q
-	echo "#!/usr/bin/env bash">test.sh
-	echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
-	chmod +x test.sh
-	git add test.sh
+
+	#echo "#!/usr/bin/env bash" > test.sh
+	#echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
+	#chmod +x test.sh
+	#git add test.sh
 
 	# Flatten the directory structure a bit
 	git mv src/* .
