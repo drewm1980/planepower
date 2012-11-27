@@ -1,18 +1,28 @@
+# Generic rules
 CC=clang
 CXX = clang++
 CXXFLAGS += -Wall
 CXXFLAGS += -O0
 CXXFLAGS += -g
 CXXFLAGS += -fPIC
-
-# Orocos specific flags
-CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
-LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
-CXXFLAGS += -DRTT_COMPONENT
-
+PATH=$PATH:$(TUP_CWD)/tools
+export PATH
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
 !ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+
+# CasADi related rules
+TOOLS = $(TUP_CWD)/tools/
+!rename_casadi = |> $(TOOLS)/rename_casadi_function %f %B.cpp |> %B.cpp %B.h
+
+# Orocos specific flags and rules
+CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
+LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
+CXXFLAGS += -DRTT_COMPONENT
+!cxx_orocos = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!cc_orocos = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!ar_orocos = |> ar crs %o %f |>
+!ld_orocos = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
 
 .gitignore
