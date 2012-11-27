@@ -23,3 +23,12 @@
 [submodule "extern/tup"]
 	path = extern/tup
 	url = git://github.com/gittup/tup.git
+	ignore = dirty
+[submodule "extern/casadi"]
+	path = extern/casadi
+	url = https://github.com/casadi/casadi.git
+	ignore = dirty
+[submodule "extern/ipopt"]
+	path = extern/ipopt
+	url = git://github.com/pemryan/Ipopt.git
+	ignore = dirty

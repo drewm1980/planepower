@@ -34,3 +34,20 @@ make -j4
 sudo make install
 )
 
+echo "Bootstrapping IpOPT..."
+(
+cd ipopt
+./configure
+make
+sudo make install
+)
+
+echo "Bootstrapping CasADi..."
+sudo apt-get install gcc gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
+(
+cd casadi
+cmake .
+make
+make_python
+sudo make install_python
+)
