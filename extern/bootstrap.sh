@@ -34,20 +34,27 @@ make -j4
 sudo make install
 )
 
-echo "Bootstrapping IpOPT..."
-(
-cd ipopt
-./configure
+echo "Bootstrapping IPOPT..."
+svn co https://projects.coin-or.org/svn/Ipopt/stable/3.10 ipopt
+(cd ipopt
+(cd ThirdParty/HSL
+scp -r nonfree@moinette.esat.kuleuven.be:hsl/ .
+mv hsl/*.f .
+rmdir hsl
+)
+for x in Blas Metis Mumps
+do
+	(cd ThirdParty/$x && ./get.$x)
+done
+./configure --prefix=/usr/local
 make
 sudo make install
 )
-
 echo "Bootstrapping CasADi..."
-sudo apt-get install gcc gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
+sudo apt-get install gcc llvm-dev octave3.2-headers gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
 (
 cd casadi
 cmake .
-make
 make_python
 sudo make install_python
 )
