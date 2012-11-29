@@ -19,8 +19,8 @@ do
 	(
 	cat <<'EOF'
 include_rules
-: foreach *.cpp |> !cxx |>
-: *.o |> !ld |> %d.so
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos |> %d.so
 EOF
 	)>Tupfile
 	git add Tupfile
