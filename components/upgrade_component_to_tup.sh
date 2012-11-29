@@ -7,11 +7,11 @@
 #
 # Oh, and it also assumes you're using git like most sane people these days ;)
 
-x=$1
+x=`basename $1`
 
 (
 echo "Upgrading component $x..."
-cd $x
+cd $1
 
 # Blow away soon to be obsolete .gitignore files
 touch .gitignore
