@@ -1,0 +1,4 @@
+include_rules
+LDFLAGS += -ldc1394
+: foreach *.cpp |> !cc |> 
+: *.o |> !ld |> reinsertCameras
