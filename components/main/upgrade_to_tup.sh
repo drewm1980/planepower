@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-c=`ls|grep -v *.cpp|grep -v *.h|grep -v .sh | grep -v Tupfile |grep -v pythonCodegen`
+
+# List of orocos components
+c=`ls|grep -v *.cpp|grep -v *.h|grep -v .sh | grep -v Tupfile`
 
 for x in $c
 do
