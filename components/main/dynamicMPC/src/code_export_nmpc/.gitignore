@@ -1,9 +1,0 @@
-
-acado.h
-auxiliary_functions.c
-condensing.c
-gauss_newton_method.c
-integrator.c
-sfunction.cpp
-test.c
-
