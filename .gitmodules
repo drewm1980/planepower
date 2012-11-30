@@ -20,6 +20,10 @@
 	path = extern/log4cpp
 	url = https://git.gitorious.org/orocos-toolchain/log4cpp.git
 	ignore = dirty
+[submodule "extern/orogen"]
+	path = extern/orogen
+	url = git://gitorious.org/orocos-toolchain/orogen.git
+	ignore = dirty
 [submodule "extern/tup"]
 	path = extern/tup
 	url = git://github.com/gittup/tup.git
