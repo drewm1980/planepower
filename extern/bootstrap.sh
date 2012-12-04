@@ -16,25 +16,7 @@ sudo cp tup.1 /usr/local/share/man/man1/
 echo "Done bootstrapping tup"
 )
 
-echo "Bootstrapping OROCOS..."
-(
-cd rtt
-cmake . -DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB
-make -j4
-sudo make install
-)
-(
-cd log4cpp
-cmake .
-make -j4
-sudo make install
-)
-(
-cd ocl
-cmake .
-make -j4
-sudo make install
-)
+(./bootstrap_orocos.sh)
 
 echo "Bootstrapping IPOPT..."
 svn co https://projects.coin-or.org/svn/Ipopt/stable/3.10 ipopt

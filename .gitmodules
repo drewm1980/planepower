@@ -40,3 +40,6 @@
 	path = extern/acado_public
 	url = git@github.com:drewm1980/acado.git
 	ignore = dirty
+[submodule "extern/utilmm"]
+	path = extern/utilmm
+	url = git://gitorious.org/orocos-toolchain/utilmm.git
