@@ -43,3 +43,4 @@
 [submodule "extern/utilmm"]
 	path = extern/utilmm
 	url = git://gitorious.org/orocos-toolchain/utilmm.git
+	ignore = dirty
