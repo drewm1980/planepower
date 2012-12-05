@@ -4,9 +4,9 @@
 #c=`find lowlevel -name manifest.xml | xargs -n1 dirname | xargs -n1 basename | grep -v soem`
 
 # Building: 
-c="safeStopper encoderLatch mcuHandler safeStopper voltageController"
+c="encoder encoderLatch mcuHandler safeStopper segFaulter voltageController"
 
-# Not building yet: encoder soem
+# Not building yet: soem
 
 for x in $c
 do

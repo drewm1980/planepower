@@ -10,16 +10,17 @@
 x=`basename $1`
 
 (
-echo "Upgrading component $x..."
+echo ""
+echo "*** Upgrading component $x... ***"
 cd $1
 
-# Blow away soon to be obsolete .gitignore files
+echo "Blowing away soon to be obsolete .gitignore file..."
 touch .gitignore
 find . -name ".gitignore" | xargs git rm --ignore-unmatch -q
 rm -f .gitignore
 
-# Replace the CMakeLists file with a simple Tupfile, remove Makefile
-find . -name CMakeLists.txt | xargs git rm -q
+echo "Replace the CMakeLists file with a simple Tupfile..."
+find . -name CMakeLists.txt | xargs -n1 --no-run-if-empty git rm -q 
 # This is a "herefile" that spits out a Tupfile.
 # This may or may not be cleaner than copying a template Tupfile.
 (
@@ -30,35 +31,40 @@ include_rules
 EOF
 )>Tupfile
 git add Tupfile
-git rm -q --ignore-unmatch Makefile
-rm -f Makefile
 
-# unROSify manifest.xml
+echo "Removing any obsolete Makefile..."
+if [ -f Makefile ]; then
+	echo "Found a makefile to blow away..."
+	git rm -q --cached --ignore-unmatch -- Makefile
+	rm -f Makefile
+fi
+
+echo "unROSify manifest.xml ..."
 xmlstarlet sel -t -v //description manifest.xml >readme.txt
+# Clean up some white space
 sed -i -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' readme.txt
 git add readme.txt
-git rm manifest*.xml -q
+find . -name "manifest*.xml" | xargs -n1 --no-run-if-empty git rm -q
 
-# unROSify the scripts that "test" the component.
+echo "unROSify the script that test runs the component..."
 # Note: the shebang will only work for you when/if some
 # patches from Andrew Wagner make it into mainline.
 echo "#!/usr/bin/env deployer" > test.ops
 echo "" >> test.ops
-cat $x.ops >> test.ops
+opsname=`find . -name "*$x.ops" | head -n1`
+cat $opsname >> test.ops
 chmod +x test.ops
 git add test.ops
-git rm $x.ops
-git rm run*.sh -q
-
-# Output a test.sh file just in case the deployer
-# does ~not have the above mentioned patch, or
-# the user wants to modify the debug level.
+git rm -q $opsname
+echo "Blow away any shell script"
+shname=`find . -name "*$x.sh" | head -n1`
+git rm -q $shname
 echo "#!/usr/bin/env bash" > test.sh
 echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
 chmod +x test.sh
 git add test.sh
 
-# Flatten the directory structure a bit
+echo "Flattening the directory structure a bit..."
 git mv src/* .
 rmdir src
 )
