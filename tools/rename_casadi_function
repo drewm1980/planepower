@@ -18,11 +18,12 @@ echo "#include <math.h>" >> $outfile
 
 y=`basename $infile .c`
 sed -e "s/evaluate/${y}/" -ne "/${y}/,$ p" < $infile >> $outfile
-#sed -i -e 's/const//' $outfile
-#sed -i -e 's/\<d\>/double/' $outfile
+sed -i -e 's/const//' $outfile
+sed -i -e 's/\<d\>/double/' $outfile
+
 # For some reason, those sed -i are not playing well with tup...
-vim -V0 --cmd "e $outfile|%s/const//|wq"
-vim -V0 --cmd "e $outfile|%s/\<d\>/double/|wq"
+#vim -V0 --cmd "e $outfile|%s/const//|wq"
+#vim -V0 --cmd "e $outfile|%s/\<d\>/double/|wq"
 
 # Generate the header, starting with the warning,
 headerfilename=$(dirname $outfile)/$(basename $outfile .cpp).h
