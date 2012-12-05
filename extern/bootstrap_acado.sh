@@ -5,9 +5,9 @@ echo "Bootstrapping ACADO..."
 echo "Downloading and unpacking a stable acado revision from tar file..."
 ACADO_PRIVATE=acado_private_r3094_trimmed
 if [ ! -f $ACADO_PRIVATE.tar.gz ]; then
-	scp gitmirrorbot@moinette.esat.kuleuven.be:acado_private_r3094_trimmed.tar.gz .
+	scp gitmirrorbot@moinette.esat.kuleuven.be:$ACADO_PRIVATE.tgz .
 fi
-[ ! -d $ACADO_PRIVATE.tar.gz ] && tar -xvf $ACADO_PRIVATE.tar
+[ ! -d $ACADO_PRIVATE ] && tar -xvf $ACADO_PRIVATE.tgz
 
 echo "Make main acado..."
 (
