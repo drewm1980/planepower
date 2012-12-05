@@ -11,16 +11,9 @@
 #include <rtt/Port.hpp>
 #include <rtt/os/TimeService.hpp>
 
-#include <soem_master/soem_driver.h>
-#include <soem_ebox/EBOXOut.h>
-#include <soem_ebox/EBOXAnalog.h>
-#include <soem_ebox/EBOXDigital.h>
-#include <soem_ebox/EBOXPWM.h>
-
 #include <ocl/OCL.hpp>
 
 #include <math.h>
-//#include <math.h>
 #include <fstream>
 using std::ifstream;
 
