@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-sudo apt-get install gcc llvm-dev octave3.2-headers gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
-
 echo "Bootstrapping IPOPT..."
+
+echo "Installing dependencies that are in apt..."
+sudo apt-get install gcc llvm-dev octave3.2-headers gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
 
 [ -d "ipopt" ] && svn co https://projects.coin-or.org/svn/Ipopt/stable/3.10 ipopt
 
@@ -25,8 +26,12 @@ sudo make install
 echo "Bootstrapping CasADi..."
 (
 cd casadi
-git clean -xdf swig
-cmake .
+mkdir -p build
+(cd build
+#git clean -xdf swig
+cmake ..
+make all python
 sudo make install
 sudo make install_python
+)
 )
