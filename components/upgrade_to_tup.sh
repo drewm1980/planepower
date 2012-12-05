@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 # Upgrade the components in lowlevel
-c=`find lowlevel -name manifest.xml | xargs -n1 dirname | xargs -n1 basename | grep -v soem`
+#c=`find lowlevel -name manifest.xml | xargs -n1 dirname | xargs -n1 basename | grep -v soem`
+
+# Building: 
+c="safeStopper encoderLatch mcuHandler safeStopper voltageController"
+
+# Not building yet: encoder soem
 
 for x in $c
 do

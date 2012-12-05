@@ -58,4 +58,5 @@ git add test.sh
 
 # Flatten the directory structure a bit
 git mv src/* .
+rmdir src
 )
