@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
 
-(cd acado_public; git log -1 | grep git-svn-id | cut -d ' ' -f 6)
-(cd acado_private; git log -1 | grep git-svn-id | cut -d ' ' -f 6)
-
 echo "Bootstrapping ACADO..."
+
+echo "Downloading and unpacking a stable acado revision from tar file..."
+ACADO_PRIVATE=acado_private_r3094_trimmed
+if [ ! -f $ACADO_PRIVATE.tar.gz ]; then
+	scp gitmirrorbot@moinette.esat.kuleuven.be:acado_private_r3094_trimmed.tar.gz .
+fi
+[ ! -d $ACADO_PRIVATE.tar.gz ] && tar -xvf $ACADO_PRIVATE.tar
+
+echo "Make main acado..."
 (
-cd acado_public
-cmake .
-make -j3
-#DO NOT INSTALL ACADO!!! IT INSTALLS SOME THINGS IN /usr/lib!!!
+mkdir -p $ACADO_PRIVATE/build
+cd $ACADO_PRIVATE/build
+cmake ..
+make
 )
 
-source acado_public/acado_env.sh
+source $ACADO_PRIVATE/build/acado_env.sh
+
+echo "Make mhe codegen stuff..."
 (
-cd acado_private/testing/mvukov/mhe_export
+cd $ACADO_PRIVATE/testing/mvukov/mhe_export
 cmake .
-make -j3
+make
 )
 
-# To build component, will need 
-# FindACADO.cmake -- in main <ACADO_main>/cmake and
-# FindMHEExport -- in mhe_export folder
-# AND environment variables from:
-#source extern/acado_public/acado_env.sh
-#source extern/acado_private/testing/mvukov/mhe_export/mhe_export_env.sh
