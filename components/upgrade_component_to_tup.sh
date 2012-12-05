@@ -18,7 +18,7 @@ touch .gitignore
 find . -name ".gitignore" | xargs git rm --ignore-unmatch -q
 rm -f .gitignore
 
-# Replace the CMakeLists file with a simple Tupfile
+# Replace the CMakeLists file with a simple Tupfile, remove Makefile
 find . -name CMakeLists.txt | xargs git rm -q
 # This is a "herefile" that spits out a Tupfile.
 # This may or may not be cleaner than copying a template Tupfile.
@@ -30,6 +30,8 @@ include_rules
 EOF
 )>Tupfile
 git add Tupfile
+git rm -q --ignore-unmatch Makefile
+rm -f Makefile
 
 # unROSify manifest.xml
 xmlstarlet sel -t -v //description manifest.xml >readme.txt
