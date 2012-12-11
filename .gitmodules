@@ -37,3 +37,6 @@
 	path = extern/casadi
 	url = https://github.com/casadi/casadi.git
 	ignore = dirty
+[submodule "extern/rtnet"]
+	path = extern/rtnet
+	url = git://rtnet.git.sourceforge.net/gitroot/rtnet/rtnet
