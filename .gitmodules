@@ -7,27 +7,6 @@
 	path = tools/PyKinetics
 	url = https://github.com/jgillis/PyKinetics.git
 	ignore = dirty
-[submodule "extern/rtt"]
-	path = extern/rtt
-	url = git://gitorious.org/orocos-toolchain/rtt.git
-	ignore = dirty
-[submodule "extern/ocl"]
-	path = extern/ocl
-	;url = https://git.gitorious.org/orocos-toolchain/ocl.git
-	url = git@gitorious.org:~drewm1980/orocos-toolchain/ocl_highwind.git
-	ignore = dirty
-[submodule "extern/log4cpp"]
-	path = extern/log4cpp
-	url = https://git.gitorious.org/orocos-toolchain/log4cpp.git
-	ignore = dirty
-[submodule "extern/orogen"]
-	path = extern/orogen
-	url = git://gitorious.org/orocos-toolchain/orogen.git
-	ignore = dirty
-[submodule "extern/utilmm"]
-	path = extern/utilmm
-	url = git://gitorious.org/orocos-toolchain/utilmm.git
-	ignore = dirty
 
 [submodule "extern/tup"]
 	path = extern/tup

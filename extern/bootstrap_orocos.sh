@@ -1,31 +1,14 @@
+#! /usr/bin/env bash
 echo "Bootstrapping OROCOS..."
+
+sudo apt-get install ruby-nokogiri wget
+
+mkdir -p orocos
 (
-cd rtt
-cmake . -DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB
-make -j4
-sudo make install
-)
-(
-cd log4cpp
-cmake .
-make -j4
-sudo make install
-)
-(
-cd ocl
-cmake .
-make -j4
-sudo make install
-)
-(
-cd utilmm
-cmake .
-make -j4
-sudo make install
-)
-(
-cd typelib
-cmake .
-make -j4
-sudo make install
+cd orocos
+wget http://rock-robotics.org/stable/autoproj_bootstrap
+ruby autoproj_bootstrap $@ git git://gitorious.org/orocos-toolchain/build.git branch=toolchain-2.6 push_to=git@gitorious.org:orocos-toolchain/build.git
+. $PWD/env.sh
+autoproj update
+autoproj fast-build
 )
