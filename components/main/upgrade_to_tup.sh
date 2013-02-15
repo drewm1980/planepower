@@ -10,28 +10,28 @@ imuBuffer \
 cameraSimulator \
 imuSimulator \
 LEDTrackerSimulator \
+measurementsRecorder \
+cameraTrigger \
+controlDerivativeHandler \
+lqrController \
+manualController \
+playControls \
+simpleTrajectoryGenerator\
 "
 converting="\
+poseFromMarkers \
+controlsPlayback \
+measurementsPlayback \
 protobufBridge \
 planeSimulatorDirectControls \
 planeSimulatorRframeDirectControls \
-"
-unknown="\
-measurementsPlayback \
-measurementsRecorder \
-cameraTrigger \
 LEDTracker \
+calibrationCamera \
 dynamicMHE \
 dynamicMPC \
-calibrationCamera \
-controlDerivativeHandler \
-controlsPlayback \
-lqrController \
 lqrController_control_derivatives \
-manualController \
-playControls \
-poseFromMarkers \
-simpleTrajectoryGenerator"
-
-for x in $unknown; do ../upgrade_component_to_tup.sh $x; done
+"
+unknown="\
+"
+for x in $building; do ../upgrade_component_to_tup.sh $x; done
 
