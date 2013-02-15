@@ -23,14 +23,19 @@ echo "Replace the CMakeLists file with a simple Tupfile..."
 find . -name CMakeLists.txt | xargs -n1 --no-run-if-empty git rm -q 
 # This is a "herefile" that spits out a Tupfile.
 # This may or may not be cleaner than copying a template Tupfile.
-(
-cat <<'EOF'
+if [ -f Tupfile ]; then
+	echo "Ignoring a pre-existing Tupfile..."
+else
+	(
+	echo "Generating a simple Tupfile..."
+	cat <<'EOF'
 include_rules
 : foreach *.cpp |> !cxx_orocos |>
 : *.o |> !ld_orocos |> %d.so
 EOF
-)>Tupfile
-git add Tupfile
+	)>Tupfile
+	git add Tupfile
+fi
 
 echo "Removing any obsolete Makefile..."
 if [ -f Makefile ]; then

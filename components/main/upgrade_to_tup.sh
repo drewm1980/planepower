@@ -33,5 +33,5 @@ lqrController_control_derivatives \
 "
 unknown="\
 "
-for x in $building; do ../upgrade_component_to_tup.sh $x; done
+for x in $building $converting; do ../upgrade_component_to_tup.sh $x; done
 
