@@ -2,19 +2,21 @@
 
 # Upgrade the components in lowlevel
 # Building: 
-upgrade="\
+building="\
 masterTimer \
 planeSimulator \
-planeSimulatorDirectControls \
 planeSimulatorRframe \
-planeSimulatorRframeDirectControls \
-protobufBridge \
 imuBuffer \
 cameraSimulator \
 imuSimulator \
 LEDTrackerSimulator \
 "
-noupgrade="\
+converting="\
+protobufBridge \
+planeSimulatorDirectControls \
+planeSimulatorRframeDirectControls \
+"
+unknown="\
 measurementsPlayback \
 measurementsRecorder \
 cameraTrigger \
@@ -31,5 +33,5 @@ playControls \
 poseFromMarkers \
 simpleTrajectoryGenerator"
 
-for x in $upgrade; do ../upgrade_component_to_tup.sh $x; done
+for x in $unknown; do ../upgrade_component_to_tup.sh $x; done
 

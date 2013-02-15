@@ -59,7 +59,7 @@ git rm -q $opsname
 echo "Blow away superfluous shell scripts..."
 shname=`find . -name "*$x.sh" | head -n1 | grep -v cleanData.sh`
 echo "Removing $shname..."
-git rm -q -ignore-unmatched -- $shname
+git rm -q --ignore-unmatch -- $shname rsinrsetne
 echo "#!/usr/bin/env bash" > test.sh
 echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
 chmod +x test.sh
