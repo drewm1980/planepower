@@ -19,9 +19,9 @@ playControls \
 simpleTrajectoryGenerator\
 "
 converting="\
-poseFromMarkers \
 controlsPlayback \
 measurementsPlayback \
+poseFromMarkers \
 protobufBridge \
 planeSimulatorDirectControls \
 planeSimulatorRframeDirectControls \

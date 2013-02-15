@@ -3,9 +3,7 @@
 #include <math.h>
 #include <string.h>
 
-#include <cv.h>
-#include <cxcore.h>
-//#include <highgui.h>
+#include <opencv2/opencv.hpp>
 
 ORO_CREATE_COMPONENT( OCL::PoseFromMarkers)
 

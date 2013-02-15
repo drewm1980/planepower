@@ -4,7 +4,7 @@ from numpy import loadtxt, dot
 from rotation_matrices import invert_se3
 
 cameraspecs='../properties/cameras'
-markersspecs='../properties/markers'
+markerspecs='../properties/markers'
 
 # Intrinsics for camera 1
 PdatC1 = loadtxt(cameraspecs+'/PC1.dat') # fx fy cx cy

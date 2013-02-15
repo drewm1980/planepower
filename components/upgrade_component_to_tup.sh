@@ -26,8 +26,8 @@ find . -name CMakeLists.txt | xargs -n1 --no-run-if-empty git rm -q
 if [ -f Tupfile ]; then
 	echo "Ignoring a pre-existing Tupfile..."
 else
-	(
 	echo "Generating a simple Tupfile..."
+	(
 	cat <<'EOF'
 include_rules
 : foreach *.cpp |> !cxx_orocos |>
