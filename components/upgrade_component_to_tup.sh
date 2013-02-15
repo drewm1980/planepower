@@ -71,6 +71,6 @@ chmod +x test.sh
 git add test.sh
 
 echo "Flattening the directory structure a bit..."
-git mv src/* .
-rmdir src
+git mv -k src/* .
+git rm -r src
 )

@@ -17,10 +17,10 @@ lqrController \
 manualController \
 playControls \
 simpleTrajectoryGenerator\
-"
-converting="\
 controlsPlayback \
 measurementsPlayback \
+"
+converting="\
 poseFromMarkers \
 protobufBridge \
 planeSimulatorDirectControls \
