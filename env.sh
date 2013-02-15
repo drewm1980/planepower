@@ -18,3 +18,7 @@ tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
 . $PLANEPOWER_ROOT/extern/orocos/env.sh
+
+# This makes sure the highwind version of deployer is found
+# instead of the stock version.
+export PATH=$PLANEPOWER_ROOT/tools:$PATH
