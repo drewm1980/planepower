@@ -56,9 +56,10 @@ cat $opsname >> test.ops
 chmod +x test.ops
 git add test.ops
 git rm -q $opsname
-echo "Blow away any shell script"
-shname=`find . -name "*$x.sh" | head -n1`
-git rm -q $shname
+echo "Blow away superfluous shell scripts..."
+shname=`find . -name "*$x.sh" | head -n1 | grep -v cleanData.sh`
+echo "Removing $shname..."
+git rm -q -ignore-unmatched -- $shname
 echo "#!/usr/bin/env bash" > test.sh
 echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
 chmod +x test.sh
