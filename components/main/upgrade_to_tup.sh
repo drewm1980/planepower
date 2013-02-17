@@ -19,10 +19,10 @@ playControls \
 simpleTrajectoryGenerator\
 controlsPlayback \
 measurementsPlayback \
-"
-converting="\
 poseFromMarkers \
 protobufBridge \
+"
+converting="\
 planeSimulatorDirectControls \
 planeSimulatorRframeDirectControls \
 LEDTracker \
@@ -35,3 +35,4 @@ unknown="\
 "
 for x in $building $converting; do ../upgrade_component_to_tup.sh $x; done
 
+git rm make_all.sh
