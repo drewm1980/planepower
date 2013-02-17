@@ -21,9 +21,9 @@ controlsPlayback \
 measurementsPlayback \
 poseFromMarkers \
 protobufBridge \
+planeSimulatorDirectControls \
 "
 converting="\
-planeSimulatorDirectControls \
 planeSimulatorRframeDirectControls \
 LEDTracker \
 calibrationCamera \
