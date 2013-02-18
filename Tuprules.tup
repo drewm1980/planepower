@@ -16,6 +16,8 @@ export PATH
 TOOLS = $(TUP_CWD)/tools/
 !rename_casadi = |> $(TOOLS)/rename_casadi_function %f %B.cpp |> %B.cpp %B.h
 
+CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
+
 # Orocos specific flags and rules
 CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
