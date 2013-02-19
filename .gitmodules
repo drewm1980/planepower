@@ -7,7 +7,6 @@
 	path = tools/PyKinetics
 	url = https://github.com/jgillis/PyKinetics.git
 	ignore = dirty
-
 [submodule "extern/tup"]
 	path = extern/tup
 	url = git://github.com/gittup/tup.git
@@ -19,3 +18,7 @@
 [submodule "extern/rtnet"]
 	path = extern/rtnet
 	url = git://rtnet.git.sourceforge.net/gitroot/rtnet/rtnet
+[submodule "extern/orocos_kinematics_dynamics"]
+	path = extern/orocos_kinematics_dynamics
+	url = http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git
+	ignore = dirty
