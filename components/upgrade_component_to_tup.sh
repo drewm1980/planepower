@@ -72,6 +72,6 @@ git add test.sh
 
 echo "Flattening the directory structure a bit..."
 git mv -k src/* .
-git rm -r src
+rmdir --ignore-fail-on-non-empty src
 )
 
