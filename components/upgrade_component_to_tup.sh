@@ -74,3 +74,4 @@ echo "Flattening the directory structure a bit..."
 git mv -k src/* .
 git rm -r src
 )
+

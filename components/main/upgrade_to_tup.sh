@@ -41,3 +41,5 @@ winchControl \
 for x in $building $converting; do ../upgrade_component_to_tup.sh $x; done
 
 git rm make_all.sh
+
+
