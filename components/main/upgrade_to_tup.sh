@@ -16,23 +16,28 @@ controlDerivativeHandler \
 lqrController \
 manualController \
 playControls \
-simpleTrajectoryGenerator\
+simpleTrajectoryGenerator \
 controlsPlayback \
 measurementsPlayback \
 poseFromMarkers \
 protobufBridge \
 planeSimulatorDirectControls \
 planeSimulatorRframeDirectControls \
+cameraTrigger \
 "
 converting="\
-lqrController_control_derivatives \
 LEDTracker \
+calibrationCamera \
 dynamicMHE \
 dynamicMPC \
-calibrationCamera \
+lqrController_control_derivatives \
+calculateCameraParameters \
+winchControl \
 "
-unknown="\
-"
+
+# calibrationCamera depends on ROS to talk to cameras
+# dynamicMHE,MPC need to be ported manually from CMake
+
 for x in $building $converting; do ../upgrade_component_to_tup.sh $x; done
 
 git rm make_all.sh
