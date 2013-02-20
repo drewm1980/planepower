@@ -72,7 +72,7 @@ if __name__=='__main__':
     code = generateSimpleCode(F,
                               'drew_style.c',
                               docstring='// Example of an exported function')
-    print(code)
+    #print(code)
     import os
     os.system('gcc -c -Wall -Werror drew_style.c')
 

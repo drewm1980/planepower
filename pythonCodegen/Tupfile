@@ -1,3 +1,6 @@
 include_rules
 
-: foreach markers_from_pose.py pose_from_markers.py |> python -B %f |> %B.h
+: markers_from_pose.py |> python -B %f |> %B.h
+: pose_from_markers.py |> python -B %f |> %B.h
+
+: simple_codegen.py |> python -B %f |> drew_style.c joel_style.c drew_style.o
