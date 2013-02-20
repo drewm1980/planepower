@@ -57,13 +57,19 @@ echo "unROSify the script that test runs the component..."
 echo "#!/usr/bin/env deployer" > test.ops
 echo "" >> test.ops
 opsname=`find . -name "*$x.ops" | head -n1`
-cat $opsname >> test.ops
+if [ -f $opsname ]; then
+	echo "cat $opsname >> test.ops"
+	cat $opsname >> test.ops;
+fi
+echo "chmod +x test.ops"
 chmod +x test.ops
+echo "git add test.ops"
 git add test.ops
+echo "git rm old ops file..."
 git rm -q $opsname
 echo "Blow away superfluous shell scripts..."
 shname=`find . -name "*$x.sh" | head -n1 | grep -v cleanData.sh`
-echo "Removing $shname..."
+echo -e "\e[31mRemoving $shname...\e[0m"
 git rm -q --ignore-unmatch -- $shname rsinrsetne
 echo "#!/usr/bin/env bash" > test.sh
 echo "deployer-gnulinux -lerror -s test.ops" >> test.sh
