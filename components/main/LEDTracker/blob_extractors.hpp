@@ -6,9 +6,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
 
 #include "types.hpp"
 
@@ -123,9 +121,9 @@ void extract_blobs(const Mat & bayer, MarkerLocations &l)
 		}
 	}
 
-	find_single_led<w,h>(r_mask, l.red);
-	find_single_led<w,h>(g_mask, l.green);
-	find_single_led<w,h>(b_mask, l.blue);
+	find_single_led_singlepass<w,h>(r_mask, l.red);
+	find_single_led_singlepass<w,h>(g_mask, l.green);
+	find_single_led_singlepass<w,h>(b_mask, l.blue);
 
 #if 0
 	cout << "Displaying composite of thresholded images for debugging..." << endl;

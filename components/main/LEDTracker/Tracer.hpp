@@ -4,9 +4,7 @@
 #include "StereoPair.hpp"
 #include "BlobExtractor.hpp"
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
 
 class Tracer
 {

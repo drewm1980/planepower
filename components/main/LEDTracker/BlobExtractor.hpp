@@ -6,9 +6,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
 
 #include "types.hpp"
 #include "MedianFinder.hpp"
