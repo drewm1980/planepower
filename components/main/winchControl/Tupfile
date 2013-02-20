@@ -1,3 +1,0 @@
-include_rules
-: foreach *.cpp |> !cxx_orocos |>
-: *.o |> !ld_orocos |> %d.so
