@@ -1,3 +1,5 @@
+#!/usr/bin/env deployer
+
 import("dynamicMHE")
 
 loadComponent("LoggingService", "OCL::logging::LoggingService")
