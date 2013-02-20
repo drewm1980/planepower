@@ -1,14 +1,2 @@
 #!/usr/bin/env deployer
 
-#Import libraries
-import("winchControl")
- 
-#Create components
-loadComponent("winchControl","OCL::WinchControl")
- 
- 
-#Set activities
-setActivity("winchControl",0.01,HighestPriority,ORO_SCHED_RT)
- 
-winchControl.configure()
-winchControl.start()
