@@ -38,7 +38,7 @@ winchControl \
 # calibrationCamera depends on ROS to talk to cameras
 # dynamicMHE,MPC need to be ported manually from CMake
 
-for x in $building $converting; do ../upgrade_component_to_tup.sh $x; done
+for x in $converting $building; do ../upgrade_component_to_tup.sh $x; done
 
 git rm make_all.sh
 
