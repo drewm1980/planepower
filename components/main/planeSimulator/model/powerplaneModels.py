@@ -153,10 +153,10 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     SPAN = 0.96;
     CHORD = 0.1;
     
-    e1 = np.array([e11,e12,e13])
-    e2 = np.array([e21,e22,e23])
-    e3 = np.array([e31,e32,e33])
-    R = np.array([e1,e2,e3])
+    e1 = horzcat([e11,e12,e13])
+    e2 = horzcat([e21,e22,e23])
+    e3 = horzcat([e31,e32,e33])
+    R = vertcat([e1,e2,e3])
     
     #                        MODEL EQUATIONS :
     # ===============================================================
@@ -308,7 +308,9 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     # -----------------------------------------------------------
     
     
-    W = np.array([[0,-w3,w2],[w3,0,-w1],[-w2,w1,0]])
+    W = vertcat([horzcat([0,-w3,w2]),
+                 horzcat([w3,0,-w1]),
+                 horzcat([-w2,w1,0])])
     
     RotPole = 1/2;
     RP = RotPole*mul(R,(inv(mul(R.T,R)) - np.eye(3)));
@@ -372,16 +374,18 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     
     ############### END OF AUTO-GENERATED CODE ########################### 
     	     
-    ConstR1 = np.dot(e1,e1) - 1
-    ConstR2 = np.dot(e1,e2)
-    ConstR3 = np.dot(e1,e3)
+    from casadi_vector_ops import dot,cross
+
+    ConstR1 = dot(e1,e1) - 1
+    ConstR2 = dot(e1,e2)
+    ConstR3 = dot(e1,e3)
     
-    ConstR4 = np.dot(e2,e2) - 1
-    ConstR5 = np.dot(e2,e3)
+    ConstR4 = dot(e2,e2) - 1
+    ConstR5 = dot(e2,e3)
     
-    ConstR6 = np.dot(e3,e3) - 1
+    ConstR6 = dot(e3,e3) - 1
     
-    ConstRpos = np.dot(np.cross(e1,e2),e3)
+    ConstRpos = dot(cross(e1,e2),e3)
     
     
     Fcable = lambda_*r;      

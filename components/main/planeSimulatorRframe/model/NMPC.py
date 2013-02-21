@@ -11,6 +11,8 @@ plt.interactive(True)
 #from generate_reference4 import *
 #from powerkiteFunctions import*
 
+from simple_codegen import generateSimpleCode
+
 tic = time.time()
 #def powerkiteCollDualClosureInit():
 if True:
@@ -57,7 +59,7 @@ if True:
     ue     = ssym("ue")	      # Elevator input
     
     # Gather all the states in one vector
-    XD = SXMatrix(vertcat([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,delta,ddelta,ua,ue]))
+    XD = vertcat([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,delta,ddelta,ua,ue])
     
    
     # Define the slack variables
@@ -66,7 +68,7 @@ if True:
     saT = ssym('saT')
     sb = ssym('sb')
     
-    S = SXMatrix([sCL,saT,sb])
+    S = vertcat([sCL,saT,sb])
     
     Us = U
     XDs = XD
@@ -95,12 +97,12 @@ if True:
 #    X0 = np.array([append(XD0[0,:],U00[0,-2:])])
     X0 = XD0[1:]   
     U0 = np.array([zeros(3)])
-    print X0
+    #print X0
     
     ffcn.setInput(X0,0)
     ffcn.setInput(U0.T,1)
     ffcn.evaluate()
-    print ffcn.output()
+    #print ffcn.output()
         
     h = ssym("h")    
 #    X_0 = ssym("X_0", XD.shape[0], 1)
@@ -116,7 +118,8 @@ if True:
     
     Ifcn = SXFunction([XD,U,h],[X_1,IMU])
     Ifcn.init()
-    Ifcn.generateCode("rk4.c")
+    generateSimpleCode(Ifcn,"rk4_rframe.h",
+                      docstring="// This function integrates a kite model. See model/NMPC.py")
     
     X0 = [1.1365549923016651e+00, -3.8502305057510727e-01, 0.0000000000000000e+00, 0.0000000000000000e+00, 0.0000000000000000e+00, 0.0000000000000000e+00, 2.5366718640228059e-01, -5.6665870432704568e-01, 7.8393295080200864e-01, 9.6482527701369714e-01, 2.0606092542526261e-01, -1.6325158452011110e-01, -6.9030017950115444e-02, 7.9776989653864372e-01, 5.9899753655464105e-01, -4.3372940878416538e-01, 5.0125478139316062e+00, 3.7636213216801204e+00, 0.0000000000000000e+00, 6.2831999999999999e+00, 1.9382406007636174e-02, -2.2180874727969077e-02]
     X = np.array([X0])
@@ -130,7 +133,7 @@ if True:
         X = append(X,Ifcn.output()[:22,:].T,axis=0)
         T = append(T,T[-1]+h)
     
-    print "Error after one turn", X[-1,:]-X[0,:]
+    #print "Error after one turn", X[-1,:]-X[0,:]
 
     #assert(1==0)
     ## Compare matlab simulation (in files below) with this integrator

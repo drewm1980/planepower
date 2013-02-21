@@ -11,6 +11,7 @@
 #include <rtt/Port.hpp>
 
 #include <ocl/OCL.hpp>
+#include "model/rk4.h"
 
 #include <fstream>
 using std::ifstream;

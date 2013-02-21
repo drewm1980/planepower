@@ -7,6 +7,7 @@ CXXFLAGS += -g
 CXXFLAGS += -fPIC
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
+export PKG_CONFIG_PATH
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
@@ -19,6 +20,7 @@ TOOLS = $(TUP_CWD)/tools/
 CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
 
 # Orocos specific flags and rules
+export OROCOS_TARGET
 CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
 CXXFLAGS += -DRTT_COMPONENT

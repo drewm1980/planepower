@@ -10,6 +10,8 @@ import time
 #from generate_reference4 import *
 #from powerkiteFunctions import*
 
+from simple_codegen import generateSimpleCode
+
 tic = time.time()
 #def powerkiteCollDualClosureInit():
 if True:
@@ -56,7 +58,7 @@ if True:
     ue     = ssym("ue")	      # Elevator input
     
     # Gather all the states in one vector
-    XD = SXMatrix([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,r,dr,delta,ddelta,ua,ue])
+    XD = vertcat([x,y,z,dx,dy,dz,e11,e12,e13,e21,e22,e23,e31,e32,e33,w1,w2,w3,r,dr,delta,ddelta,ua,ue])
     
    
     # Define the slack variables
@@ -65,7 +67,7 @@ if True:
     saT = ssym('saT')
     sb = ssym('sb')
     
-    S = SXMatrix([sCL,saT,sb])
+    S = vertcat([sCL,saT,sb])
     
     Us = U
     XDs = XD
@@ -96,7 +98,7 @@ if True:
     ffcn.setInput(X0[-1,:].T,0)
     ffcn.setInput(U0.T,1)
     ffcn.evaluate()
-    print ffcn.output()
+    #print ffcn.output()
         
     h = ssym("h")    
     X_0 = ssym("X_0", XD.shape[0], 1)
@@ -116,7 +118,8 @@ if True:
     #Ifcn = SXFunction([X_0,U,h],[X_1, dX_1[3:6]])
     Ifcn = SXFunction([X_0,U,h],[Xa_1])
     Ifcn.init()
-    Ifcn.generateCode("rk4.c")
+    generateSimpleCode(Ifcn,"rk4.h",
+                      docstring="// This function integrates a kite model. See model/NMPC.py")
     
     
     X = X0
@@ -130,7 +133,7 @@ if True:
         X = append(X,Ifcn.output()[:24,:].T,axis=0)
         T = append(T,T[-1]+h)
     
-    print "Error after one turn", X[-1,:]-X[0,:]
+    #print "Error after one turn", X[-1,:]-X[0,:]
     
 #    
 #    XDDOT = ssym("XDDOT", XD.shape[0], 1)

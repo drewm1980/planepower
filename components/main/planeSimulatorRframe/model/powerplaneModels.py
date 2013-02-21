@@ -146,10 +146,10 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     
     
         
-    e1 = np.array([e11,e12,e13])
-    e2 = np.array([e21,e22,e23])
-    e3 = np.array([e31,e32,e33])
-    R = np.array([e1,e2,e3])
+    e1 = horzcat([e11,e12,e13])
+    e2 = horzcat([e21,e22,e23])
+    e3 = horzcat([e31,e32,e33])
+    R = vertcat([e1,e2,e3])
     
     #                        MODEL EQUATIONS :
     # ===============================================================
@@ -307,7 +307,9 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     # -----------------------------------------------------------
     
     
-    W = np.array([[0,-w3,w2],[w3,0,-w1],[-w2,w1,0]])
+    W = vertcat([horzcat([0,-w3,w2]),
+                 horzcat([w3,0,-w1]),
+                 horzcat([-w2,w1,0])])
     
     RotPole = 1/2;
     RP = RotPole*mul(R,(inv(mul(R.T,R)) - np.eye(3)));
@@ -323,10 +325,10 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     de33 = e31*w2 - e32*w1; 
     
 
-    de1 = np.array([de11,de12,de13])
-    de2 = np.array([de21,de22,de23])
-    de3 = np.array([de31,de32,de33])
-    dR = np.array([de1,de2,de3])+ RP; 
+    de1 = horzcat([de11,de12,de13])
+    de2 = horzcat([de21,de22,de23])
+    de3 = horzcat([de31,de32,de33])
+    dR = vertcat([de1,de2,de3])+ RP; 
     
     #    dq0 = (-q1*w1 - q2*w2 - q3*w3)/2;
     #    dq1 = ( q0*w1 - q3*w2 + q2*w3)/2;
@@ -411,16 +413,18 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     dw2 = T[1]/I2; 
     dw3 = (I31*T[0])/(I31*I31 - I1*I3) - (I1*T[2])/(I31*I31 - I1*I3); 
 	
-    ConstR1 = np.dot(e1,e1) - 1
-    ConstR2 = np.dot(e1,e2)
-    ConstR3 = np.dot(e1,e3)
+    from casadi_vector_ops import dot,cross
+
+    ConstR1 = dot(e1,e1) - 1
+    ConstR2 = dot(e1,e2)
+    ConstR3 = dot(e1,e3)
     
-    ConstR4 = np.dot(e2,e2) - 1
-    ConstR5 = np.dot(e2,e3)
+    ConstR4 = dot(e2,e2) - 1
+    ConstR5 = dot(e2,e3)
     
-    ConstR6 = np.dot(e3,e3) - 1
+    ConstR6 = dot(e3,e3) - 1
     
-    ConstRpos = np.dot(np.cross(e1,e2),e3)
+    ConstRpos = dot(cross(e1,e2),e3)
     
     
     Fcable = lambda_*r;      
@@ -465,16 +469,16 @@ def RotModelCarouselR(XD,U,P,Scaling,flag):
     ddyIMU = ddx*e12 + ddy*e22 + ddz*e32 - ddelta*ddelta*e12*x - ddelta*ddelta*e22*y + 2*ddelta*dx*e22 - 2*ddelta*dy*e12 + dddelta*e22*rA + dddelta*e22*x - dddelta*e12*y - ddelta*ddelta*e12*rA+e32*g;
     ddzIMU = ddx*e13 + ddy*e23 + ddz*e33 - ddelta*ddelta*e13*x - ddelta*ddelta*e23*y + 2*ddelta*dx*e23 - 2*ddelta*dy*e13 + dddelta*e23*rA + dddelta*e23*x - dddelta*e13*y - ddelta*ddelta*e13*rA+e33*g;
     
-    RIMU = np.loadtxt('IMU/RIMU.dat');
+    RIMU = np.loadtxt('../../../../properties/IMU/RIMU.dat');
         
     
-    aE = SXMatrix([ddxIMU,ddyIMU,ddzIMU]); 
+    aE = vertcat([ddxIMU,ddyIMU,ddzIMU]); 
     
-    w = SXMatrix([w1,w2,w3]);
+    w = vertcat([w1,w2,w3]);
     
     aIMU = mul(RIMU,aE);
     wIMU = mul(RIMU,w);
-    IMU = [wIMU[0], wIMU[1], wIMU[2], aIMU[0], aIMU[1], aIMU[2]]
+    IMU = vertcat([wIMU[0], wIMU[1], wIMU[2], aIMU[0], aIMU[1], aIMU[2]])
     #IMU = [w1,w2,w3, ddxIMU,ddyIMU,ddzIMU]
     
     

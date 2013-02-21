@@ -1,6 +1,5 @@
 #include "planeSimulator.hpp"
 #include <ocl/Component.hpp>
-// #include "model/casadi_functions.cpp"
 
 ORO_CREATE_COMPONENT( OCL::planeSimulator)
 
