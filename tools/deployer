@@ -14,10 +14,7 @@ scan_dir()
 {
 	if [ `find "$x" -maxdepth 1 -name $MAGIC_FILE_NAME` ]
 	then 
-		for p in `cat "$x"/$MAGIC_FILE_NAME`
-		do
-			export RTT_COMPONENT_PATH=${RTT_COMPONENT_PATH}:$x/$p
-		done
+		RTT_PROJECT_ROOT=$x
 		break;
 	fi
 }
@@ -27,6 +24,13 @@ until [ "$x" == "/" ]
 do 
 	x=`dirname "$x"`
 	scan_dir
+done
+echo "deployer: found a $MAGIC_FILE_NAME file in $RTT_PROJECT_ROOT."
+export RTT_PROJECT_ROOT
+for p in `cat "$RTT_PROJECT_ROOT"/$MAGIC_FILE_NAME`
+do
+	echo "Adding ${RTT_COMPONENT_PATH}:$x/$p to RTT_COMPONENT_PATH"
+	export RTT_COMPONENT_PATH=${RTT_COMPONENT_PATH}:$x/$p
 done
 
 # Figure out what suffix the build system stuck
@@ -40,8 +44,12 @@ if [ -z "${OROCOS_TARGET}" ]; then
 	exit 1
     fi
     cmd=$possibilities
-else
+elif [ -f $abspath/$cmd-${OROCOS_TARGET} ]; then
     cmd=$abspath/$cmd-${OROCOS_TARGET}
+elif [ -f deployer-${OROCOS_TARGET} ]; then
+	cmd=deployer-${OROCOS_TARGET}
+elif [ -f /usr/local/bin/deployer-${OROCOS_TARGET} ]; then
+	cmd=/usr/local/bin/deployer-${OROCOS_TARGET}
 fi
 
 # If there is only a single argument, and it is a .ops script,
@@ -63,4 +71,5 @@ if [ $# == 1 ]; then
 	fi
 fi
 
+echo "Running $cmd $MISSING_START_FLAG $*"
 $cmd $MISSING_START_FLAG $*
