@@ -1,0 +1,7 @@
+CPPFLAGS_ACADO = -O0
+LDFLAGS_ACADO = $(LDFLAGS)
+CXXFLAGS_ACADO = $(CXXFLAGS)
+!cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
+!cc_acado = |> $(CC) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
+!ar_acado = |> ar crs %o %f |>
+!ld_acado = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_ACADO) |>

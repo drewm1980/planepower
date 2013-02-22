@@ -21,12 +21,12 @@ CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
 
 # Orocos specific flags and rules
 export OROCOS_TARGET
-CPPFLAGS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
-LDFLAGS  += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
-CXXFLAGS += -DRTT_COMPONENT
-!cxx_orocos = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
-!cc_orocos = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+CPPFLAGS_OROCOS = $(CPPFLAGS) `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
+LDFLAGS_OROCOS = $(LDFLAGS) `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
+CXXFLAGS_OROCOS = $(CXXFLAGS) -DRTT_COMPONENT
+!cxx_orocos = |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!cc_orocos = |> $(CC) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 !ar_orocos = |> ar crs %o %f |>
-!ld_orocos = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+!ld_orocos = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_OROCOS) |>
 
 .gitignore

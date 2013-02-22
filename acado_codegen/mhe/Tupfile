@@ -1,0 +1,5 @@
+include_rules
+include ../Tuprules_acado.tup
+: mhe.cpp |> !cxx_acado |> mhe.o
+#: foreach ../qpoases/SRC/*.cpp |> !cxx |> 
+#: *.o |> !ld_acado |> %d.so
