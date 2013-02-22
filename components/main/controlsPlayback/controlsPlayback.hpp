@@ -23,7 +23,7 @@ using namespace BFL;
 using namespace Orocos;
 using namespace KDL;
 
-#define SEQUENCE_FILENAME STUPID_LONG_PATH "sequence.dat"
+#define SEQUENCE_FILENAME "sequence.dat"
 typedef uint64_t TIME_TYPE;
 
 namespace OCL
