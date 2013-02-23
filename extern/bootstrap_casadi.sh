@@ -5,7 +5,10 @@ echo "Bootstrapping IPOPT..."
 echo "Installing dependencies that are in apt..."
 sudo apt-get install gcc llvm-dev octave3.2-headers gfortran git cmake liblapack-dev swig ipython python-dev python-numpy python-scipy python-matplotlib --install-recommends
 
-[ -d "ipopt" ] && svn co https://projects.coin-or.org/svn/Ipopt/stable/3.10 ipopt
+mkdir -p ipopt
+if [ ! -d ipopt/.svn ]; then
+	svn co https://projects.coin-or.org/svn/Ipopt/stable/3.10 ipopt
+fi
 
 (cd ipopt
 (cd ThirdParty/HSL
