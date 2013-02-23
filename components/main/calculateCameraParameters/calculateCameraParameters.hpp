@@ -15,7 +15,7 @@
 
 #include <ocl/OCL.hpp>
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <kdl/frames.hpp>
 #include <kdl/frames_io.hpp>
