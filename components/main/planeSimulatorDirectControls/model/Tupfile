@@ -1,1 +1,2 @@
 : NMPC.py |> PYTHONPATH=../../../../pythonCodegen python -B %f |> rk4_direct_controls.h
+.gitignore
