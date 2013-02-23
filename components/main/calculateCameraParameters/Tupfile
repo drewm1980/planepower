@@ -1,4 +1,4 @@
 include_rules
 CPPFLAGS_OROCOS +=-I/usr/include/eigen3
-: foreach *.cpp |> !cxx_orocos |>
-: *.o |> !ld_orocos |> %d.so
+#: foreach *.cpp |> !cxx_orocos |>
+#: *.o |> !ld_orocos |> %d.so
