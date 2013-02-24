@@ -1,5 +1,7 @@
 include_rules
 include ../Tuprules_acado.tup
+CPPFLAGS_ACADO += -I..
 : mhe.cpp |> !cxx_acado |> mhe.o
+: mhe.o |> !ld_acado |> mhe
 #: foreach ../qpoases/SRC/*.cpp |> !cxx |> 
 #: *.o |> !ld_acado |> %d.so

@@ -1,4 +1,7 @@
-CPPFLAGS_ACADO = -O0
+CPPFLAGS_ACADO = -O0 -w
+ACADO_ROOT = $PLANEPOWER_ROOT/extern/acado_private_r3094_trimmed
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/include
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/testing/mvukov/mhe_export
 LDFLAGS_ACADO = $(LDFLAGS)
 CXXFLAGS_ACADO = $(CXXFLAGS)
 !cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
