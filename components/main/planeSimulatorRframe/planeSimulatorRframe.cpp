@@ -1,4 +1,5 @@
 #include "planeSimulatorRframe.hpp"
+#include "model/rk4_rframe.h"
 #include <ocl/Component.hpp>
 
 ORO_CREATE_COMPONENT( OCL::planeSimulatorRframe)
@@ -7,8 +8,6 @@ using namespace std;
 using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
-
-extern int rk4( double** x, double** r);
 
 namespace OCL
 {
@@ -177,7 +176,7 @@ namespace OCL
 		copy(X.begin(), X.end(), rk4Wrapper_input[0]);
 		copy(U.begin(), U.end(), rk4Wrapper_input[1]);
 		rk4Wrapper_input[2][0] = h;
-		if( rk4(rk4Wrapper_input, rk4Wrapper_output) ){ return 1;}
+		if( rk4_rframe(rk4Wrapper_input, rk4Wrapper_output) ){ return 1;}
 		(*X1).assign(rk4Wrapper_output[0],rk4Wrapper_output[0]+NSTATES);
 		(*IMU).assign(rk4Wrapper_output[1],rk4Wrapper_output[1]+NIMU);
 		return 0;
