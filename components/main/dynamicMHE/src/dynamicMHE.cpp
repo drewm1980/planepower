@@ -72,6 +72,9 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	this->addPort("portStateEstimate", portStateEstimate)
 			.doc("State estimate.");
 	
+	this->addPort("portControlEstimate", portControlEstimate)
+			.doc("Control estimate.");
+	
 	this->addPort("portKKTTolerance", portKKTTolerance)
 			.doc("KKT tolerance.");
 
@@ -113,6 +116,10 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	stateEstimate.resize(NX, 0.0);
 	portStateEstimate.setDataSample( stateEstimate );
 	portStateEstimate.write( stateEstimate );
+	
+	controlEstimate.resize(NU, 0.0);
+	portControlEstimate.setDataSample( controlEstimate );
+	portControlEstimate.write( controlEstimate );
 	
 	kktTolerance = 0.0;
 	portKKTTolerance.write( kktTolerance );
@@ -612,7 +619,11 @@ void DynamicMHE::mheFeedbackPhase( )
 		for (i = 0; i < NX; ++i)
 			stateEstimate[ i ] = acadoVariables.x[N * NX + i];
 
+		for (i = 0; i < NU; ++i)
+			controlEstimate[ i ] = acadoVariables.u[(N-1) * NU + i]; 
+
 		portStateEstimate.write( stateEstimate );
+		portControlEstimate.write( controlEstimate );
 
 		kktTolerance = getKKT();
 

@@ -149,24 +149,18 @@ void SimpleTrajectoryGenerator::updateHook()
 	if (trigger == false)
 		return;
 	
-	if ((refCounter + N) < numOfRefs)
-	{
-		for (i = 0, itExecRefs = execReferences.begin(); i < N; ++i)
-			copy(references[refCounter + i].begin(), references[refCounter + i].end(), itExecRefs + i * (NX + NU));
+	for (i = 0, itExecRefs = execReferences.begin(); i < N; ++i)
+		copy(references[(refCounter + i) % numOfRefs].begin(), references[(refCounter + i) % numOfRefs].end(), itExecRefs + i * (NX + NU));
 
-		portReferences.write( execReferences );
+	portReferences.write( execReferences );
 
-		copy(references[refCounter].begin(), references[refCounter].begin()+NX,currentReference.begin());
-		portCurrentReference.write( currentReference );
+	copy(references[refCounter % numOfRefs].begin(), references[refCounter % numOfRefs].begin()+NX,currentReference.begin());
+	portCurrentReference.write( currentReference );
 
-		copy(weightsP[refCounter + N].begin(), weightsP[refCounter + N].end(), execWeightsP.begin());
-		portWeightsP.write( execWeightsP );
-		
-		refCounter++;
-	}
-	
-	// DO NOT USE cout in update hooks!!!
-// 	else{cout << "finished trajectory" << endl;}
+	copy(weightsP[(refCounter + N) % numOfRefs].begin(), weightsP[(refCounter + N) % numOfRefs].end(), execWeightsP.begin());
+	portWeightsP.write( execWeightsP );
+	refCounter++;
+	refCounter = refCounter % numOfRefs;
 	
 	portReady.write(true);
 }

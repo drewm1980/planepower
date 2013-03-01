@@ -151,6 +151,9 @@ private:
 	/// Data sizes are valid
 	bool dataSizeValid;
 
+	/// Lagrange multipliers
+	OutputPort< vector< double > > portMultipliers;
+	vector< double > multipliers;
 	//
 	// Properties
 	//

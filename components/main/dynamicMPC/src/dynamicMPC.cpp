@@ -66,6 +66,8 @@ using namespace MPCHACK;
 
 #define N_OUT	3		// dimension of the output vector of this component
 
+//#define N_MULTIPLIERS 5*N + NX  // We have 5 constraints and it appears there are NX extra variables in the struct-variable
+#define N_MULTIPLIERS QPOASES_NVMAX + QPOASES_NCMAX
 //using namespace boost::math;
 
 //
@@ -138,6 +140,9 @@ DynamicMPC::DynamicMPC(const std::string& name)
 
 	this->addPort("portDataSizeValid", portDataSizeValid);
 
+	this->addPort("portMultipliers", portMultipliers)
+			.doc("Lagrange multipliers");
+
 	//
 	// Initialize and output the relevant output ports
 	//
@@ -167,6 +172,10 @@ DynamicMPC::DynamicMPC(const std::string& name)
 
 	dataSizeValid = false;
 	portDataSizeValid.write( dataSizeValid );
+
+	multipliers.resize(N_MULTIPLIERS,0.0);
+	portMultipliers.write(multipliers);
+	portMultipliers.write(multipliers);
 
 	//
 	// Properties
@@ -320,10 +329,8 @@ bool DynamicMPC::startHook()
 	numOfActiveSetChanges = 0;
 	dataSizeValid = false;
 	initialized = false;
-
 	firstRefArrived = false;
 	firstWeightPArrived = false;
-
 	return true;
 }
 
@@ -559,6 +566,8 @@ void DynamicMPC::mpcFeedbackPhase()
 			portControlRates.write( controlRates );
 		}
 
+		copy(vars.y, vars.y+N_MULTIPLIERS, multipliers.begin());
+		portMultipliers.write(multipliers);
 		portQPSolverStatus.write( qpSolverStatus );
 
 		kktTolerance = getKKT();

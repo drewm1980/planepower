@@ -82,7 +82,7 @@ mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.useExternalTrigger = true
 
 # MHE
-dynamicMHE.propNumSQPIterations = 1
+dynamicMHE.propNumSQPIterations = 3
 loadService("dynamicMHE", "marshalling")
 dynamicMHE.marshalling.loadProperties("../../properties/mhe_properties/mhe_properties.cpf")
 
@@ -102,21 +102,21 @@ LEDTracker.useExternalTrigger=true;
 
 # Weights
 dynamicMHE.propSigma_delta = 1e-2;
-dynamicMHE.propSigma_ur = 1e-3;
-dynamicMHE.propSigma_up = 1e-3;
+dynamicMHE.propSigma_ur = 1e-2;
+dynamicMHE.propSigma_up = 1e-2;
 dynamicMHE.propSigma_dddelta = 0.03162;
-#dynamicMHE.propSigma_dur = 0.03162;
-#dynamicMHE.propSigma_dup = 0.03162;
+dynamicMHE.propSigma_dur = 0.03162;
+dynamicMHE.propSigma_dup = 0.03162;
 
 LEDTracker.sigma_marker=1000;
 
 imuBuffer.sigma_omega = 1.0;
 imuBuffer.sigma_acc = 0.1;
 
-dynamicMHE.propScale_Obj = 0.01;
+dynamicMHE.propScale_Obj = 0.01/40;
 
 # MPC
-dynamicMPC.propNumSQPIterations = 5
+dynamicMPC.propNumSQPIterations = 1
 
 dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
 dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
@@ -260,6 +260,8 @@ connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReferenc
 #connectPeers("reporter","poseFromMarkers")
 #connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
+connectPeers("reporter","dynamicMPC")
+connectPeers("reporter","trajectoryGenerator")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -299,7 +301,27 @@ connectPeers("reporter","dynamicMHE")
 #reporter.reportPort("dynamicMHE","portStateEstimate")
 
 
-reporter.reportPort("dynamicMHE","portStateAndControl")
+#reporter.reportPort("dynamicMHE","portStateAndControl")
+
+
+#reporter.reportPort("dynamicMHE","portStateEstimate")
+#reporter.reportPort("dynamicMHE","portQPSolverStatus")
+reporter.reportPort("dynamicMHE","portKKTTolerance")
+reporter.reportPort("dynamicMHE","portObjectivevalue")
+#reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+#reporter.reportPort("dynamicMHE","portExecutionTime")
+
+#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+#reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portObjectivevalue")
+#reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMPC","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMPC","portFeedbackPhaseExecTime")
+#reporter.reportPort("dynamicMPC","portExecutionTime")
+
+#reporter.reportPort("trajectoryGenerator","portCurrentReference")
 
 ################################################################################
 #

@@ -110,10 +110,46 @@ namespace OCL
 	{
 		ofstream myfile;
 		myfile.open ("logData.dat");
+					
 		for(unsigned int i=0; i<samplesRecorded; i++)
 		{
 			s = sampleSet[i];
-			myfile << s.measurementsMarkers[0];
+			// Copy our data from Sample s
+			copy(s.measurementsMarkers,s.measurementsMarkers+NY_MARK*2,measurementsMarkers.begin());
+			copy(s.measurementsIMU,s.measurementsIMU+IMU_VEC_SIZE,measurementsIMU.begin());
+			copy(s.measurementsEncoder,s.measurementsEncoder+NY_ENC,measurementsEncoder.begin());
+			copy(s.measurementsCtrl,s.measurementsCtrl+NY_CTRL,measurementsCtrl.begin());
+			copy(s.measurementsCtrlRates,s.measurementsCtrlRates+NY_CTRL,measurementsCtrlRates.begin());
+			copy(s.measurementsPose,s.measurementsPose+NY_POSE,measurementsPose.begin());
+			copy(s.stateEstimate,s.stateEstimate+N_STATE,stateEstimate.begin());
+			for(unsigned int j=0; j<measurementsMarkers.size(); j++){
+				myfile << measurementsMarkers[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<measurementsIMU.size(); j++){
+				myfile << measurementsIMU[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<measurementsEncoder.size(); j++){
+				myfile << measurementsEncoder[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<measurementsCtrl.size(); j++){
+				myfile << measurementsCtrl[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<measurementsCtrlRates.size(); j++){
+				myfile << measurementsCtrlRates[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<measurementsPose.size(); j++){
+				myfile << measurementsPose[j];
+				myfile << "\t";
+			}
+			for(unsigned int j=0; j<stateEstimate.size(); j++){
+				myfile << stateEstimate[j];
+				myfile << "\t";
+			}
 			myfile << "\n";
 		}
 		myfile.close();
