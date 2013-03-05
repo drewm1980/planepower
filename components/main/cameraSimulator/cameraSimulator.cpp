@@ -8,7 +8,7 @@ using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
-extern int markers_from_pose( double** x, double** r);
+#include "markers_from_pose.h"
 
 namespace OCL
 {
