@@ -1,5 +1,9 @@
-# This assumes you have raseome checked out at the same level as planepower!
-CPPFLAGS += -I../../../../rawesome/carousel-cpp/
 include_rules
-: foreach *.cpp |> !cxx_orocos |>
-: *.o |> !ld_orocos |> %d.so
+FOO = $RAWESOME_ROOT
+LDFLAGS_OROCOS += -lzmq -lprotobuf 
+LDFLAGS_OROCOS += $(FOO)/carousel-cpp/kite.pb.o
+CPPFLAGS_OROCOS += -I$(FOO)/carousel-cpp/
+CPPFLAGS_OROCOS += -Wno-unused-function
+: foreach *.cpp |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+: *.o |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_OROCOS) |> %d.so
+

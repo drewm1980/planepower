@@ -19,6 +19,15 @@ export PLANEPOWER_ROOT=`readlink -f $tmp`
 
 . $PLANEPOWER_ROOT/extern/orocos/env.sh
 
+DEFAULT_RAWESOME_ROOT=`dirname $PLANEPOWER_ROOT`/rawesome
+if [ -d $DEFAULT_RAWESOME_ROOT ]; then
+	export RAWESOME_ROOT=$DEFAULT_RAWESOME_ROOT
+else
+	echo WARNING!!! Could not find Gregs rawesome repo in the usual place.
+	echo            Please manually set RAWESOME_ROOT environment if you
+	echo			installed rawesome repo in a non-standard place
+fi
+
 #export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/lowlevel
 
 # This makes sure the highwind version of deployer is found

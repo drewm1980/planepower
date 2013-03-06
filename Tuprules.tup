@@ -1,5 +1,5 @@
 # Generic rules
-CC=clang
+CC = clang
 CXX = clang++
 CXXFLAGS += -Wall
 CXXFLAGS += -O0
@@ -9,6 +9,7 @@ PATH=$PATH:$(TUP_CWD)/tools
 export PATH
 export PKG_CONFIG_PATH
 export PLANEPOWER_ROOT
+export RAWESOME_ROOT
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
