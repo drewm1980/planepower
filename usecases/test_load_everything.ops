@@ -1,42 +1,39 @@
 #!/usr/bin/env deployer
 # ---------- IMPORTING
 
-#import("masterTimer")
-#loadComponent("masterTimer","OCL::MasterTimer")
+import("masterTimer")
+loadComponent("masterTimer","OCL::MasterTimer")
 
-#import("encoderLatch")
-#loadComponent("EncoderLatch","OCL::EncoderLatch")
+import("encoderLatch")
+loadComponent("EncoderLatch","OCL::EncoderLatch")
 
-#import("LEDTrackerSimulator")
-#loadComponent("LEDTrackerSimulator","OCL::LEDTrackerSimulator")
+import("LEDTrackerSimulator")
+loadComponent("LEDTrackerSimulator","OCL::LEDTrackerSimulator")
 
-#import("imuBuffer")
-#loadComponent("imuBuffer","OCL::ImuBuffer")
+import("imuBuffer")
+loadComponent("imuBuffer","OCL::ImuBuffer")
 
-#import("measurementsRecorder")
-#loadComponent("measurementsRecorder","OCL::MeasurementsRecorder")
-
-# ---------- NOT IMPORTING
+import("measurementsRecorder")
+loadComponent("measurementsRecorder","OCL::MeasurementsRecorder")
 
 import("planeSimulatorRframe")
 loadComponent("sim","OCL::planeSimulatorRframe")
-setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
 
-#import("cameraSimulator")
-#loadComponent("cameraSimulator","OCL::CameraSimulator")
+import("cameraSimulator")
+loadComponent("cameraSimulator","OCL::CameraSimulator")
 
-#import("poseFromMarkers")
-#loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
+import("poseFromMarkers")
+loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
+
+import("simpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
+
+import("protobufBridge")
+loadComponent("protobuf","OCL::ProtobufBridge")
 
 #import("dynamicMHE")
 #loadComponent("dynamicMHE","DynamicMHE")
 
 #import("dynamicMPC")
 #loadComponent("dynamicMPC","DynamicMPC")
-
-#import("simpleTrajectoryGenerator")
-#loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
-
-#import("protobufBridge")
-#loadComponent("protobuf","OCL::ProtobufBridge")
 
