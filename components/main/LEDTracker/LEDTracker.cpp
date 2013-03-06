@@ -90,8 +90,8 @@ void  LEDTracker::updateHook()
 
 	frameArrivalTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time 
 	_frameArrivalTimeStamp.write(frameArrivalTimeStamp);
-	double transferTime = (frameArrivalTimeStamp-triggerTimeStamp)*1e-9; // sec
 #if VERBOSE
+	double transferTime = (frameArrivalTimeStamp-triggerTimeStamp)*1e-9; // sec
 	//COUT << "Transfer time was: " << transferTime*1e3 << "ms" << ENDL;
 #endif
 
