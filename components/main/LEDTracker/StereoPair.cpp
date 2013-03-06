@@ -192,8 +192,8 @@ void StereoPair::tweak_frame_arrival_times()
 		last_frame_timestamps[i] = current_frame_timestamps[i];
 		current_frame_timestamps[i] = current_frame[i] -> timestamp;
 	}
-	int64_t arrival_disparity = current_frame_timestamps[1] - current_frame_timestamps[0]; // us
 #if VERBOSE
+	int64_t arrival_disparity = current_frame_timestamps[1] - current_frame_timestamps[0]; // us
 	float f_arrival_disparity = (float)arrival_disparity*1.0e-6; // sec
 	float measured_period = (double)(current_frame_timestamps[0]-last_frame_timestamps[0])*1e-6; // sec
 	COUT 
