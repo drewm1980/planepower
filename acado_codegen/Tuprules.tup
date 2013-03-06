@@ -7,8 +7,9 @@ CPPFLAGS_ACADO += -I$(ACADO_PUBLIC_ROOT)/build/include
 LDFLAGS_ACADO = $(LDFLAGS) 
 LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/libs -lacado_toolkit
 LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs -lacado_csparse
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/libs
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs
+LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/casadi/libs -lacado_casadi
+#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/libs
+#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs
 
 ACADO_PRIVATE_ROOT=$PLANEPOWER_ROOT/extern/acado_private
 CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export

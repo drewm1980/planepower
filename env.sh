@@ -17,7 +17,9 @@ done
 tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
-. $PLANEPOWER_ROOT/extern/orocos/env.sh
+source $PLANEPOWER_ROOT/extern/orocos/env.sh
+source $PLANEPOWER_ROOT/extern/acado_public/build/env.sh
+source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/build/mhe_export_env.sh
 
 DEFAULT_RAWESOME_ROOT=`dirname $PLANEPOWER_ROOT`/rawesome
 if [ -d $DEFAULT_RAWESOME_ROOT ]; then
@@ -27,8 +29,6 @@ else
 	echo            Please manually set RAWESOME_ROOT environment if you
 	echo			installed rawesome repo in a non-standard place
 fi
-
-#export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/lowlevel
 
 # This makes sure the highwind version of deployer is found
 # instead of the stock version.
