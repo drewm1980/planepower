@@ -9,7 +9,7 @@ z_start =  -0.1189362777884522; % Starting height of the ramp
 %z_end = -0.00; % End height of the ramp
 z_end = -0.06;
 Ts = 0.1; % Sampling time
-Tc = 0.1; % Time of ramp
+Tc = 2; % Time of ramp
 
 delta_z = (z_end-z_start)/(Tc/Ts);
 MPC.is_init = 0;
