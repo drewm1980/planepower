@@ -10,9 +10,9 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/LEDTrackerSimulator</url>
 
-<depend package="rtt_ros_integration" />
-<depend package="rtt_ros_integration_std_msgs" />
-<depend package="rtt_ros_param" />
+<depend package="rtt_rosnode" />
+<depend package="rtt_std_msgs" />
+<depend package="rtt_rosnode" />
 <depend package="rtt" />
 <depend package="ocl" />
 </package>

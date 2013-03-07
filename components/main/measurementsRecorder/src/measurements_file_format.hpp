@@ -11,7 +11,7 @@
 #define IMU_VEC_SIZE	(4 * NY_IMU)	// Samples + Cov. matrix diag. elements
 #define N_STATE 22
 
-#define BUFFER_IN_MINUTES 30
+#define BUFFER_IN_MINUTES 480
 #define SAMPLING_FREQUENCY 10 // Hz
 #define BUFFER_IN_SAMPLES (BUFFER_IN_MINUTES*60*SAMPLING_FREQUENCY)
 

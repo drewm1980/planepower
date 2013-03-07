@@ -9,13 +9,12 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/encoder</url>
 
-<depend package="rtt_ros_integration" />
-<depend package="rtt_ros_integration_std_msgs" />
-<depend package="rtt_ros_param" />
-<depend package="rtt" />
-<depend package="ocl" />
-	<!-- Simple Open EtherCAT Master (SOEM) components -->
-	<depend package="soem_core" />
-	<depend package="soem_master" />
-	<depend package="soem_ebox" />
+ <depend package="rtt_rosnode" />
+ <depend package="rtt_std_msgs" />
+ <depend package="rtt_rosnode" />
+ <depend package="rtt" />
+ <depend package="ocl" />
+ <depend package="soem_core" />
+ <depend package="soem_master" />
+ <depend package="soem_ebox" />
 </package>
