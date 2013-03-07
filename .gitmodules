@@ -5,3 +5,6 @@
 [submodule "tools/PyKinetics"]
 	path = tools/PyKinetics
 	url = https://github.com/jgillis/PyKinetics.git
+[submodule "rawesome_stuff/rawesome"]
+	path = rawesome_stuff/rawesome
+	url = git://github.com/ghorn/rawesome.git
