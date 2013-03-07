@@ -105,8 +105,8 @@ trajectoryGenerator.N = 10
 trajectoryGenerator.NX = 22
 trajectoryGenerator.NU = 3
 
-trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
-trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
+trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
+trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
