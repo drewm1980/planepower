@@ -6,7 +6,7 @@
 # Our DNS is fucked up... pull carousl ip address from /etc/hosts
 ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut -f1`
 
-CMD="multicarousel --ip tcp://$ip:5563"
+CMD="/home/planepower/rawesome/wtfviz/dist/build/multicarousel/multicarousel --ip tcp://$ip:5563"
 
 echo $0: running $CMD...
 $CMD
