@@ -38,6 +38,7 @@ find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
  
 include_directories(../../../../rawesome/carousel-cpp)
+include_directories(../)
 orocos_component(${PROJECT_NAME} src/protobufBridge.cpp 
 	../../../../rawesome/carousel-cpp/kite.pb.cc)
 rosbuild_add_library(protobufBridge src/protobufBridge.cpp)

@@ -27,6 +27,8 @@ using namespace KDL;
 #include "zhelpers.hpp"
 #include "kite.pb.h"
 
+#include "carousel_types.h"
+
 #define NSTATES 22
 
 namespace OCL
@@ -39,17 +41,15 @@ namespace OCL
 			vector<double>						X;
 
 		private:
-			kite::Xyz xyz;
-			kite::Dcm dcm;
-			kite::CarouselState cs;
 			kite::MultiCarousel mc;
+			kite::CarouselState *cs;
 
-			//zmq::context_t context(1);
-			//zmq::socket_t socket(context,ZMQ_PUB);
-			zmq::context_t context;
-			zmq::socket_t socket;
+			zmq::context_t *context;
+			zmq::socket_t *socket;
 
 			string X_serialized;
+
+			void copy_to_protobuf(const StateVector *X, kite::CarouselState *cs);
 
 		public:
 			ProtobufBridge(std::string name);

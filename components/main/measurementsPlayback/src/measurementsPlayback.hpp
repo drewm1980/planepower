@@ -59,7 +59,16 @@ namespace OCL
 		OutputPort< vector< double > > portMeasurementsCtrl;
 		vector< double > measurementsCtrl;
 
+		/// Measurements: ur, up
+		OutputPort< vector< double > > portMeasurementsCtrlRates;
+		vector< double > measurementsCtrlRates;
+
+		/// State estimate
+		OutputPort< vector< double > > portStateEstimate;
+		vector< double > stateEstimate;
+
 	private:
+		void exportData();
 	public:
 		MeasurementsPlayback(std::string name);
 		~MeasurementsPlayback();

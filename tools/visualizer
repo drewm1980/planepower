@@ -4,7 +4,7 @@
 # rapidly evolving 3d visualizer in haskell
 
 # Our DNS is fucked up... pull carousl ip address from /etc/hosts
-ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut -f1`
+ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f1`
 
 CMD="/home/planepower/rawesome/wtfviz/dist/build/multicarousel/multicarousel --ip tcp://$ip:5563"
 

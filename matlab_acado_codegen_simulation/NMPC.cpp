@@ -41,50 +41,54 @@ int main( int argc, char * const argv[] )
 	double Tc    = IC[2]; // Prediction Horizon [s]
 	double r = IC[4]; // Tether length [m]
 	 
-   USING_NAMESPACE_ACADO
+	USING_NAMESPACE_ACADO
 
 	double PI = 3.1415926535897932;
-	
-#include "model_constants.hpp"
-#include "state_definition.hpp"
-#include "control_definition.hpp"
-#include "model_definition.hpp"
 
-    // DEFINE AN OPTIMAL CONTROL PROBLEM:
-    // ----------------------------------
-    OCP ocp( 0.0, Tc, Ncvp );
-    
-    ExportVariable QQ( "QQ",n_XD ,n_XD );
-    ExportVariable RR( "RR",n_U ,n_U ); 
-    ExportVariable QT( "QT",n_XD ,n_XD );
-    
-    ocp.minimizeLSQ( QQ, RR );
-    ocp.minimizeLSQEndTerm( QT );
-	
-    ocp.subjectTo( f );
-	
+	#include "model_constants.hpp"
+	#include "state_definition.hpp"
+	#include "control_definition.hpp"
+	#include "model_definition.hpp"
+
+	// DEFINE AN OPTIMAL CONTROL PROBLEM:
+	// ----------------------------------
+	OCP ocp( 0.0, Tc, Ncvp );
+
+	ExportVariable QQ( "QQ",n_XD ,n_XD );
+	ExportVariable RR( "RR",n_U ,n_U ); 
+	ExportVariable QT( "QT",n_XD ,n_XD );
+
+	ocp.minimizeLSQ( QQ, RR );
+	ocp.minimizeLSQEndTerm( QT );
+
+	ocp.subjectTo( f );
+
 	// BOUNDS:
 	// ---------------------------------
 	
 	// CONTROL
 	double AccRate = 30*PI/180;
 	ocp.subjectTo( -AccRate <= dddelta <= AccRate );
-    ocp.subjectTo( dddelta == 0 );
-	ocp.subjectTo(  -1 <= up  <= 1 );
-	ocp.subjectTo(  -3.2767 <= ur  <= 3.2767 );
-	ocp.subjectTo( -10 <= dup <= 10 );
-	ocp.subjectTo( -10 <= dur <= 10 );
+	ocp.subjectTo( dddelta == 0 );
+//	ocp.subjectTo(  -1 <= up  <= 1 );
+//	ocp.subjectTo(  -3.2767 <= ur  <= 3.2767 );
+	ocp.subjectTo( -32767/1.25e6 <= ur <= 32767/1.25e6 );
+	ocp.subjectTo( -32767/2e5 <= up <= 32767/2e5 );
+//	ocp.subjectTo( -10 <= dup <= 10 );
+//	ocp.subjectTo( -10 <= dur <= 10 );
+	ocp.subjectTo( -0.2 <= dur <= 0.2 );
+	ocp.subjectTo( -1 <= dup <= 1 );
 	
 	// STATE
-	ocp.subjectTo( -1 <= e11 <= 1 );
-	ocp.subjectTo( -1 <= e12 <= 1 );
-	ocp.subjectTo( -1 <= e13 <= 1 );
-	ocp.subjectTo( -1 <= e21 <= 1 );
-	ocp.subjectTo( -1 <= e22 <= 1 );
-	ocp.subjectTo( -1 <= e23 <= 1 );
-	ocp.subjectTo( -1 <= e31 <= 1 );
-	ocp.subjectTo( -1 <= e32 <= 1 );
-	ocp.subjectTo( -1 <= e33 <= 1 );
+//	ocp.subjectTo( -1 <= e11 <= 1 );
+//	ocp.subjectTo( -1 <= e12 <= 1 );
+//	ocp.subjectTo( -1 <= e13 <= 1 );
+//	ocp.subjectTo( -1 <= e21 <= 1 );
+//	ocp.subjectTo( -1 <= e22 <= 1 );
+//	ocp.subjectTo( -1 <= e23 <= 1 );
+//	ocp.subjectTo( -1 <= e31 <= 1 );
+//	ocp.subjectTo( -1 <= e32 <= 1 );
+//	ocp.subjectTo( -1 <= e33 <= 1 );
 	
 	// Export Code 
 	// ---------------------------------
@@ -117,7 +121,7 @@ int main( int argc, char * const argv[] )
 	mpc.exportCode( "code_export_nmpc" );
 	mpc.printDimensionsQP();
 
-    return 0;
+	return 0;
 }
 
 

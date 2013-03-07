@@ -81,20 +81,20 @@ dynamicMHE.marshalling.loadProperties("../../../properties/mhe_properties/mhe_pr
 # MPC
 dynamicMPC.propNumSQPIterations = 1
 
-dynamicMPC.propFileNameWeightsQ = "../../properties/mpc_properties/MPC_Q.dat"
-dynamicMPC.propFileNameWeightsR = "../../properties/mpc_properties/MPC_R.dat"
+dynamicMPC.propFileNameWeightsQ = "../../../properties/mpc_properties/MPC_Q.dat"
+dynamicMPC.propFileNameWeightsR = "../../../properties/mpc_properties/MPC_R.dat"
 loadService("dynamicMPC", "marshalling")
-dynamicMPC.marshalling.loadProperties("../../properties/mpc_properties/mpc_properties.cpf")
+dynamicMPC.marshalling.loadProperties("../../../properties/mpc_properties/mpc_properties.cpf")
 
 # trajectoryGenerator
 trajectoryGenerator.N = 10
 trajectoryGenerator.NX = 22
 trajectoryGenerator.NU = 3
 
-#trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
-#trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
-trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
-trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
+#trajectoryGenerator.referencesFileName = "../../../matlab_acado_codegen_simulation/refs.dat"
+#trajectoryGenerator.weightsPFileName = "../../../matlab_acado_codegen_simulation/weights.dat"
+trajectoryGenerator.referencesFileName = "../../../matlab_acado_codegen_simulation/Xrefslope.dat"
+trajectoryGenerator.weightsPFileName = "../../../matlab_acado_codegen_simulation/Sslope.dat"
 
 ################################################################################
 #
@@ -174,6 +174,13 @@ connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose", cp)
 connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov", cp)
 connect("dynamicMHE.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
 
+connect("measurementsRecorder.portMeasurementsMarkers",	"LEDTrackerSimulator.markerPositionsAndCovariance", cp)
+connect("measurementsRecorder.portMeasurementsPose",		"poseFromMarkers.pose", cp)
+connect("measurementsRecorder.portMeasurementsIMU",		"imuBuffer.imuMeanCov", cp)
+connect("measurementsRecorder.portMeasurementsEncoder",	"EncoderLatch.deltaOmega", cp)
+connect("measurementsRecorder.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
+
+
 #
 # Connection between MHE and MPC
 #
@@ -185,7 +192,6 @@ connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatr
 connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 
 # 1. Use this guy for open loop control testing
-connect("dynamicMHE.portMeasurementsCtrl",	"sim.controlOutputPort", cp)
 # OR
 # 2. Use this guy to feed MHE with MPC DATA
 #connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)

@@ -156,6 +156,10 @@ private:
 	OutputPort< vector< double > > portStateEstimate;
 	vector< double > stateEstimate;
 	
+	/// control estimates
+	OutputPort< vector< double > > portControlEstimate;
+	vector< double > controlEstimate;
+	
 	/// KKT tolerance
 	OutputPort< double > portKKTTolerance;
 	double kktTolerance;
