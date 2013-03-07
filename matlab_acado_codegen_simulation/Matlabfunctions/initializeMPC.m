@@ -50,7 +50,9 @@ MPC.R = 1e2*1e-2*diag([1e-4, 100, 100]);
 % State weights
 MPC.Q = 1e-2*diag([100,  100,  100, 1, 1, 1,    ...
                 We,  We,  We,  We,  We,  We,  We,  We,  We, ...
-                Ww,  Ww,  Ww, 1e-4, 1e-4, 1, 1]);
+                Ww,  Ww,  Ww, 0.0*1e-4, 0.0*1e-4, 0, 0]);
+dlmwrite('MPC_R.dat',MPC.R,'delimiter',' ');
+dlmwrite('MPC_Q.dat',MPC.Q,'delimiter',' ');
 
 % Weights without the carousel rotational dynamics
 MPC.Q1 = MPC.Q([1:18,21:22],[1:18,21:22]);
