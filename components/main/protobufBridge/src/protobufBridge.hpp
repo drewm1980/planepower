@@ -29,7 +29,10 @@ using namespace KDL;
 
 #include "carousel_types.h"
 
-#define NSTATES 22
+// Make those two guys as properties
+#define NSTATES		22
+#define NCONTROLS	3
+#define NHORIZON	10
 
 namespace OCL
 {
@@ -38,8 +41,18 @@ namespace OCL
 	{
 		protected:
 			InputPort<vector<double> >			_stateInputPort;
-			vector<double>						X;
-
+			vector< double >					X;
+			
+			InputPort< vector< double > >		portMheFullStateVector;
+			InputPort< vector< double > >		portMheFullControlVector;
+			vector< double >					mheFullStateVector;
+			vector< double >					mheFullControlVector;
+			
+			InputPort< vector< double > >		portMpcFullStateVector;
+			InputPort< vector< double > >		portMpcFullControlVector;
+			vector< double >					mpcFullStateVector;
+			vector< double >					mpcFullControlVector;
+			
 		private:
 			kite::MultiCarousel mc;
 			kite::CarouselState *cs;

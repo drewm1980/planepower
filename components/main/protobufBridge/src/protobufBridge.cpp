@@ -19,6 +19,12 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 					 ",w1,w2,w3"
 					 ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
 											 // mismatch in u has no effect on us.
+											 
+		ports()->addPort("portMheFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
+		ports()->addPort("portMheFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
+		
+		ports()->addPort("portMpcFullStateVector", portMpcFullStateVector).doc( "MPC: all states over the horizon." );
+		ports()->addPort("portMpcFullControlVector", portMpcFullControlVector).doc( "MPC: all controls over the horizon." );
 	}
 
 	ProtobufBridge::~ProtobufBridge()
@@ -30,6 +36,12 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 		GOOGLE_PROTOBUF_VERIFY_VERSION;
 
 		X.resize(NSTATES,0.0);
+		
+		mheFullStateVector.resize((NHORIZON + 1)	* NSTATES,		0.0);
+		mheFullControlVector.resize(NHORIZON		* NCONTROLS,	0.0);
+		
+		mpcFullStateVector.resize((NHORIZON + 1)	* NSTATES,		0.0);
+		mpcFullControlVector.resize(NHORIZON		* NCONTROLS,	0.0);
 
 		mc.clear_css();
 		cs = mc.add_css(); 
@@ -69,7 +81,13 @@ ORO_CREATE_COMPONENT( OCL::ProtobufBridge)
 
 	void  ProtobufBridge::updateHook()
 	{
-		_stateInputPort.read(X);
+		_stateInputPort.read( X );
+		
+		portMheFullStateVector.read( mheFullStateVector );
+		portMheFullControlVector.read( mheFullControlVector );
+		
+		portMpcFullStateVector.read( mpcFullStateVector );
+		portMpcFullControlVector.read( mpcFullControlVector );
 		
 		copy_to_protobuf((StateVector *) &X[0], cs);
 		cs->set_rarm(1.085);
