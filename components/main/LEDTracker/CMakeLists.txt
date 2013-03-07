@@ -48,14 +48,15 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
  
 #rosbuild_add_library(Tracer src/Tracer.cpp)
 #target_link_libraries(Tracer ${OpenCV_LIBS})
-rosbuild_add_library(StereoPair src/StereoPair.cpp)
-rosbuild_add_library(BlobExtractor src/BlobExtractor.cpp src/MedianFinder.cpp)
-
-orocos_component(${PROJECT_NAME} src/LEDTracker.cpp)
-rosbuild_add_library(${PROJECT_NAME} src/LEDTracker.cpp)
+#rosbuild_add_library(StereoPair src/StereoPair.cpp)
+#rosbuild_add_library(BlobExtractor src/BlobExtractor.cpp src/MedianFinder.cpp)
+#rosbuild_add_library(${PROJECT_NAME} src/LEDTracker.cpp)
+include_directories(src/cvblobs)
+orocos_component(${PROJECT_NAME} src/LEDTracker.cpp src/BlobExtractor.cpp src/MedianFinder.cpp src/StereoPair.cpp )
 target_link_libraries(${PROJECT_NAME} dc1394)
-target_link_libraries(${PROJECT_NAME} StereoPair)
-target_link_libraries(${PROJECT_NAME} BlobExtractor)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+#target_link_libraries(${PROJECT_NAME} StereoPair)
+#target_link_libraries(${PROJECT_NAME} BlobExtractor)
 
 # Example for "cvblob" library from http://code.google.com/p/cvblob/
 #rosbuild_add_executable(red_object_tracking src/cvblob_samples/red_object_tracking.cpp)
@@ -63,16 +64,16 @@ target_link_libraries(${PROJECT_NAME} BlobExtractor)
 #target_link_libraries(red_object_tracking cvblob)
 
 # Example for "cvblobslib" library from http://opencv.willowgarage.com/wiki/cvBlobsLib
-rosbuild_add_library(blob src/cvblobs/BlobContour.cpp
-				src/cvblobs/blob.cpp
-				src/cvblobs/BlobOperators.cpp
-				src/cvblobs/BlobProperties.cpp
-				src/cvblobs/BlobResult.cpp
-				src/cvblobs/ComponentLabeling.cpp)
-rosbuild_add_executable(libblob_example src/cvblobs/example.cpp)
-target_link_libraries(libblob_example blob)
+#rosbuild_add_library(blob src/cvblobs/BlobContour.cpp
+				#src/cvblobs/blob.cpp
+				#src/cvblobs/BlobOperators.cpp
+				#src/cvblobs/BlobProperties.cpp
+				#src/cvblobs/BlobResult.cpp
+				#src/cvblobs/ComponentLabeling.cpp)
+#rosbuild_add_executable(libblob_example src/cvblobs/example.cpp)
+#target_link_libraries(libblob_example blob)
 #target_link_libraries(libblob_example ${OpenCV_LIBS} )
-include_directories(src/cvblobs)
+#include_directories(src/cvblobs)
 
 # Check bayer pattern generation
 #add_executable(test_bayer src/test_bayer.cpp)
