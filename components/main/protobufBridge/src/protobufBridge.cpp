@@ -82,6 +82,7 @@ namespace OCL
 
     cs->set_rarm(1.085);
     cs->set_zt(-0.05);
+    cs->set_visspan(0.96);
   }
 
   void  ProtobufBridge::updateHook()
