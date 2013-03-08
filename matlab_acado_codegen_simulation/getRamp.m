@@ -5,7 +5,9 @@ clc
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 
 z_start =  -0.1189362777884522; % Starting height of the ramp
-z_end = -0.06; % End height of the ramp
+%z_start =  -0.16; % Starting height of the ramp
+%z_end = -0.00; % End height of the ramp
+z_end = -0.06;
 Ts = 0.1; % Sampling time
 Tc = 2; % Time of ramp
 
@@ -95,12 +97,27 @@ for i=1:size(sol_S,3)
     S = sol_S(:,:,i);
     sol_S_matrix = [sol_S_matrix; reshape(S',1,size(S,1)*size(S,2))];
 end
-for i=1:40
+for i=1:30
     sol_X = [sol_X(:,1) sol_X sol_X(:,end)];
     sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix; sol_S_matrix(end,:)];
 end
 sol_X = [sol_X; zeros(3,size(sol_X,2))];
+sol_X = sol_X';
+sol_X_one_ramp = [sol_X; flipud(sol_X)];
+sol_S_matrix_one_ramp = [sol_S_matrix; flipud(sol_S_matrix)];
+sol_X = [];
+sol_S_matrix = [];
+for i=1:1
+    sol_X = [sol_X; sol_X_one_ramp];
+    sol_S_matrix = [sol_S_matrix; sol_S_matrix_one_ramp];
+end
+%Make start and end a bit longer constant
+% for i=1:20
+%     sol_X = [sol_X(1,:); sol_X; sol_X(end,:)];
+%     sol_S_matrix = [sol_S_matrix(1,:); sol_S_matrix; sol_S_matrix(end,:)];
+% end
+
 %sol_S_matrix = sol_S_matrix*10;
-dlmwrite('Xrefslope.dat',sol_X','delimiter','\t');
+dlmwrite('Xrefslope.dat',sol_X,'delimiter','\t');
 %dlmwrite('Kslope.dat',sol_K_matrix,'delimiter','\t');
 dlmwrite('Sslope.dat',sol_S_matrix,'delimiter','\t');
