@@ -55,14 +55,14 @@ namespace OCL
                         
   private:
     kite::MultiCarousel mc;
-    kite::CarouselState *cs;
 
     zmq::context_t *context;
     zmq::socket_t *socket;
 
     string X_serialized;
 
-    void copy_to_protobuf(const StateVector *X, kite::CarouselState *cs);
+    void toCarouselState(const StateVector *state, const ControlVector *control,
+			 double transparency, kite::CarouselState *cs);
 
   public:
     ProtobufBridge(std::string name);

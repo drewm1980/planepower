@@ -37,15 +37,14 @@ namespace OCL
 
     X.resize(NSTATES,0.0);
                 
-    mheFullStateVector.resize((NHORIZON + 1)        * NSTATES,              0.0);
-    mheFullControlVector.resize(NHORIZON            * NCONTROLS,    0.0);
+    mheFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
+    mheFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
                 
-    mpcFullStateVector.resize((NHORIZON + 1)        * NSTATES,              0.0);
-    mpcFullControlVector.resize(NHORIZON            * NCONTROLS,    0.0);
+    mpcFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
+    mpcFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
 
     mc.clear_css();
-    cs = mc.add_css(); 
-    cs = mc.mutable_css(0);
+    for (int k=0; k<NHORIZON+1; k++) mc.add_css();
 
     context = new zmq::context_t(1);
 
@@ -60,23 +59,29 @@ namespace OCL
     return true;
   }
 
-  void ProtobufBridge::copy_to_protobuf(const StateVector *X , kite::CarouselState *cs)
+  void ProtobufBridge::toCarouselState(const StateVector *state, const ControlVector *control,
+				       double transparency, kite::CarouselState *cs)
   {
     kite::Xyz *xyz = cs->mutable_kitexyz();
     kite::Dcm *dcm = cs->mutable_kitedcm();
-    xyz->set_x(X->x);
-    xyz->set_y(X->y);
-    xyz->set_z(X->z);
-    dcm->set_r11(X->e.e11); // Note, there is an implicit transpose happening in here.
-    dcm->set_r21(X->e.e12);
-    dcm->set_r31(X->e.e13);
-    dcm->set_r12(X->e.e21);
-    dcm->set_r22(X->e.e22);
-    dcm->set_r32(X->e.e23);
-    dcm->set_r13(X->e.e31);
-    dcm->set_r23(X->e.e32);
-    dcm->set_r33(X->e.e33);
-    cs->set_delta(X->delta);
+    xyz->set_x(state->x);
+    xyz->set_y(state->y);
+    xyz->set_z(state->z);
+    dcm->set_r11(state->e11); // Note, there is an implicit transpose happening in here.
+    dcm->set_r21(state->e12);
+    dcm->set_r31(state->e13);
+    dcm->set_r12(state->e21);
+    dcm->set_r22(state->e22);
+    dcm->set_r32(state->e23);
+    dcm->set_r13(state->e31);
+    dcm->set_r23(state->e32);
+    dcm->set_r33(state->e33);
+    cs->set_delta(state->delta);
+    cs->set_kitetransparency(transparency);
+    cs->set_linetransparency(transparency);
+
+    cs->set_rarm(1.085);
+    cs->set_zt(-0.05);
   }
 
   void  ProtobufBridge::updateHook()
@@ -88,11 +93,21 @@ namespace OCL
                 
     portMpcFullStateVector.read( mpcFullStateVector );
     portMpcFullControlVector.read( mpcFullControlVector );
-                
-    copy_to_protobuf((StateVector *) &X[0], cs);
-    cs->set_rarm(1.085);
-    cs->set_zt(-.03); // PROBABLY WRONG; AT LEAST ONLY FOR VISUALIZATION
-    cs->set_w0(0);
+
+    for (int k=0; k<NHORIZON+1; k++){
+      StateVector * mheState = (StateVector*) &(mheFullStateVector[k*NSTATES]);
+      //StateVector * mpcState = (StateVector*) &(mpcFullStateVector[k*NSTATES]);
+      ControlVector * mheControl = (ControlVector*) &(mheFullControlVector[k*NCONTROLS]);
+      //ControlVector * mpcControl = (ControlVector*) &(mpcFullControlVector[k*NCONTROLS]);
+      double transparency = 0.2;
+      if (k==0){
+	transparency = 1.0;
+	kite::CarouselState *cs = mc.mutable_currentstate(0);
+	toCarouselState(mheState, mheControl, transparency, cs);
+      }
+      kite::CarouselState *cs = mc.mutable_css(k);
+      toCarouselState(mheState, mheControl, transparency, cs);
+    }
 
     if (!mc.SerializeToString(&X_serialized)) {
       cerr << "Failed to serialize mc." << endl;
