@@ -20,11 +20,11 @@ namespace OCL
 								  ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
     // mismatch in u has no effect on us.
                                                                                          
-    ports()->addPort("portMheFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
-    ports()->addPort("portMheFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
+    ports()->addPort("portMHEFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
+    ports()->addPort("portMHEFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
                 
-    ports()->addPort("portMpcFullStateVector", portMpcFullStateVector).doc( "MPC: all states over the horizon." );
-    ports()->addPort("portMpcFullControlVector", portMpcFullControlVector).doc( "MPC: all controls over the horizon." );
+    ports()->addPort("portMPCFullStateVector", portMpcFullStateVector).doc( "MPC: all states over the horizon." );
+    ports()->addPort("portMPCFullControlVector", portMpcFullControlVector).doc( "MPC: all controls over the horizon." );
   }
 
   ProtobufBridge::~ProtobufBridge()
@@ -102,7 +102,7 @@ namespace OCL
       double transparency = 0.2;
       if (k==0){
 	transparency = 1.0;
-	kite::CarouselState *cs = mc.mutable_currentstate(0);
+	kite::CarouselState *cs = mc.mutable_currentstate();
 	toCarouselState(mheState, mheControl, transparency, cs);
       }
       kite::CarouselState *cs = mc.mutable_css(k);

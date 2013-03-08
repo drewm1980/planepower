@@ -165,7 +165,10 @@ connect("LEDTrackerSimulator.markerPositionsAndCovarianceIn","cameraSimulator.ma
 
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","sim.imuData",cp)
+
 connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
+connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
 
 #
 # Connection between sensors and the MHE
