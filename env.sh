@@ -17,9 +17,9 @@ done
 tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
-source $PLANEPOWER_ROOT/extern/orocos/env.sh
-source $PLANEPOWER_ROOT/extern/acado_public/build/env.sh
-source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/build/mhe_export_env.sh
+#source $PLANEPOWER_ROOT/extern/orocos/env.sh
+#source $PLANEPOWER_ROOT/extern/acado_public/build/env.sh
+#source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/build/mhe_export_env.sh
 
 DEFAULT_RAWESOME_ROOT=`dirname $PLANEPOWER_ROOT`/rawesome
 if [ -d $DEFAULT_RAWESOME_ROOT ]; then
