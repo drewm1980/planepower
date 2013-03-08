@@ -5,8 +5,8 @@
 
 # Our DNS is fucked up... pull carousl ip address from /etc/hosts
 ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f1`
-
-CMD="../rawesome_stuff/rawesome/wtfviz/dist/build/multicarousel/multicarousel --ip tcp://$ip:5563"
+#$PLANEPOWER_ROOT is defined in env.sh, which is currently in the tuplified branch. Source it in your bashrc
+CMD="$PLANEPOWER_ROOT/rawesome_stuff/rawesome/wtfviz/dist/build/multicarousel/multicarousel --ip tcp://$ip:5563"
 
 echo $0: running $CMD...
 $CMD
