@@ -40,7 +40,7 @@ struct ControlVector
   carousel_float_t dddelta;
   carousel_float_t dur; // 20
   carousel_float_t dup; // 21
-}
+};
 
 //struct StateVectorWithActuators
 //{
