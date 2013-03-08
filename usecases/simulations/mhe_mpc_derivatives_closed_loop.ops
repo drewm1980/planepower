@@ -70,7 +70,7 @@ var double base_hz = masterTimer.imu_target_hz
 #(optionally, overwrite the default report file name)
 #reporter.WriteHeader = false
 reporter.ReportFile = "mhe_mpc_derivatives_closed_loop.dat"
-reporter.NullSample = "nan"
+#reporter.NullSample = "nan"
 
 # MHE
 dynamicMHE.propNumSQPIterations = 1
