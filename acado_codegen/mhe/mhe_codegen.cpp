@@ -1,6 +1,17 @@
 #include <acado_toolkit.hpp>
 #include <mhe_export.hpp>
 
+//#define XSTR(s) STR(s)
+//#define STR(s) #s
+//#define PROPS STR(PLANEPOWER_ROOT) "/properties"
+#define PROPS "../../../properties"
+
+//STR (foo)
+	//==> "foo"
+//XSTR (foo)
+	//==> XSTR (4)
+	//==> STR (4)
+	//==> "4"
 int main( int argc, char * const argv[] )
 {
 	//======================================================================
@@ -104,19 +115,19 @@ int main( int argc, char * const argv[] )
 	Translation(0,3) = x;
 	Translation(1,3) = y;
 	Translation(2,3) = z;
-	Matrix RPC1 = readFromFile( "cameras/RPC1.dat" );
-	Matrix RPC2 = readFromFile( "cameras/RPC2.dat" );
-	Matrix ProjC1_dat = readFromFile( "cameras/PC1.dat" );
-	Matrix ProjC2_dat = readFromFile( "cameras/PC2.dat" );
+	Matrix RPC1 = readFromFile( PROPS "/cameras/RPC1.dat" );
+	Matrix RPC2 = readFromFile( PROPS "/cameras/RPC2.dat" );
+	Matrix ProjC1_dat = readFromFile( PROPS "/cameras/PC1.dat" );
+	Matrix ProjC2_dat = readFromFile( PROPS "/cameras/PC2.dat" );
 	Matrix ProjC1 = eye(3);
 	ProjC1(0,0) = ProjC1_dat(0,0); ProjC1(0,2) = ProjC1_dat(2,0);
 	ProjC1(1,1) = ProjC1_dat(1,0); ProjC1(1,2) = ProjC1_dat(3,0);
 	Matrix ProjC2 = eye(3);
 	ProjC2(0,0) = ProjC2_dat(0,0); ProjC2(0,2) = ProjC2_dat(2,0);
 	ProjC2(1,1) = ProjC2_dat(1,0); ProjC2(1,2) = ProjC2_dat(3,0);
-	Matrix pos_marker_body1_short = readFromFile( "markers/pos_marker_body1.dat" );
-	Matrix pos_marker_body2_short = readFromFile( "markers/pos_marker_body2.dat" );
-	Matrix pos_marker_body3_short = readFromFile( "markers/pos_marker_body3.dat" );
+	Matrix pos_marker_body1_short = readFromFile( PROPS "/markers/pos_marker_body1.dat" );
+	Matrix pos_marker_body2_short = readFromFile( PROPS "/markers/pos_marker_body2.dat" );
+	Matrix pos_marker_body3_short = readFromFile( PROPS "/markers/pos_marker_body3.dat" );
 	Matrix pos_marker_body1(4,1);
 	pos_marker_body1(0,0) = pos_marker_body1_short(0,0); pos_marker_body1(1,0) = pos_marker_body1_short(1,0); pos_marker_body1(2,0) = pos_marker_body1_short(2,0); pos_marker_body1(3,0) = 1.0;
 	Matrix pos_marker_body2(4,1);
@@ -173,12 +184,7 @@ int main( int argc, char * const argv[] )
 	uvC2M2(0,0) = uvsC2M2(0,0)/uvsC2M2(2,0);uvC2M2(1,0) = uvsC2M2(1,0)/uvsC2M2(2,0);
 	uvC2M3(0,0) = uvsC2M3(0,0)/uvsC2M3(2,0);uvC2M3(1,0) = uvsC2M3(1,0)/uvsC2M3(2,0);
 
-#if (CODEGEN_FOR_OROCOS == 1)
-	Matrix RIMU = readFromFile( "../../../../matlab_acado_codegen_simulation/IMU/RIMU.txt" );
-#else
-	Matrix RIMU = readFromFile( "IMU/RIMU.txt" );
-#endif
-// 	RIMU = eye(3);
+	Matrix RIMU = readFromFile( PROPS "/IMU/RIMU.dat" );
 	
 	IntermediateState aE(3,1), aEend(3,1);
 	aE(0,0) = ddxIMU;
@@ -315,14 +321,9 @@ int main( int argc, char * const argv[] )
 	
 	mhe.set(PRINTLEVEL, HIGH);
 
-#if ( CODEGEN_FOR_OROCOS == 1 )
-
 	mhe.set( CG_USE_VARIABLE_WEIGHTING_MATRIX, YES);
 
-#endif
-	printf("Stigao do ovde\n");
-	
-	mhe.exportCode( "code_export_mhe" );
+	mhe.exportCode( "." );
 	mhe.printDimensionsQP();
 
     return 0;

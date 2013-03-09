@@ -1,6 +1,7 @@
 include_rules
+
 CPPFLAGS_ACADO += -I..
-: mhe.cpp |> !cxx_acado |> mhe.o
-: mhe.o |> !ld_acado |> mhe
-#: foreach ../qpoases/SRC/*.cpp |> !cxx |> 
-#: *.o |> !ld_acado |> %d.so
+
+: mhe_codegen.cpp |> !cxx_acado |> mhe_codegen.o
+: mhe_codegen.o |> !ld_acado |> mhe_codegen
+
