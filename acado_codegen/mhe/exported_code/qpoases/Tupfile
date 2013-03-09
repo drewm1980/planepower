@@ -1,3 +1,7 @@
+include_rules
 
-#: foreach ../qpoases/SRC/*.cpp |> !cxx |> 
+CPPFLAGS_ACADO += -I../../../qpoases/INCLUDE
+CPPFLAGS_ACADO += -I../../../qpoases/SRC
+CPPFLAGS_ACADO += -I.
+: foreach ../../../qpoases/SRC/*.cpp | ../solver.hpp |> !cxx_acado |> 
 #: *.o |> !ld_acado |> %d.so
