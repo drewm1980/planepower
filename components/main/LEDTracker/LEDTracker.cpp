@@ -9,7 +9,7 @@
 #include "blob_extractors.hpp"
 #include "cout.hpp"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 ORO_CREATE_COMPONENT( OCL::LEDTracker)
 
@@ -92,7 +92,7 @@ void  LEDTracker::updateHook()
 	_frameArrivalTimeStamp.write(frameArrivalTimeStamp);
 #if VERBOSE
 	double transferTime = (frameArrivalTimeStamp-triggerTimeStamp)*1e-9; // sec
-	//COUT << "Transfer time was: " << transferTime*1e3 << "ms" << ENDL;
+	COUT << "Transfer time was: " << transferTime*1e3 << "ms" << ENDL;
 #endif
 
 	// This blocks until computation is complete
