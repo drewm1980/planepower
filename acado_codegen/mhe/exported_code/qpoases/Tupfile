@@ -1,0 +1,3 @@
+
+#: foreach ../qpoases/SRC/*.cpp |> !cxx |> 
+#: *.o |> !ld_acado |> %d.so
