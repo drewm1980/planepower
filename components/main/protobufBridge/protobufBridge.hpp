@@ -27,38 +27,51 @@ using namespace KDL;
 #include "zhelpers.hpp"
 #include "kite.pb.h"
 
-#include "../carousel_types.h"
+#include "carousel_types.h"
 
-#define NSTATES 22
+// Make those two guys as properties
+#define NSTATES         22
+#define NCONTROLS       3
+#define NHORIZON        10
 
 namespace OCL
 {
-	class ProtobufBridge
-		: public TaskContext
-	{
-		protected:
-			InputPort<vector<double> >			_stateInputPort;
-			vector<double>						X;
+  class ProtobufBridge
+    : public TaskContext
+  {
+  protected:
+    InputPort< vector< double > > _stateInputPort;
+    vector< double >              X;
+                        
+    InputPort< vector< double > > portMheFullStateVector;
+    InputPort< vector< double > > portMheFullControlVector;
+    vector< double > mheFullStateVector;
+    vector< double > mheFullControlVector;
+                        
+    InputPort< vector< double > > portMpcFullStateVector;
+    InputPort< vector< double > > portMpcFullControlVector;
+    vector< double > mpcFullStateVector;
+    vector< double > mpcFullControlVector;
+                        
+  private:
+    kite::MultiCarousel mc;
 
-		private:
-			kite::MultiCarousel mc;
-			kite::CarouselState *cs;
+    zmq::context_t *context;
+    zmq::socket_t *socket;
 
-			zmq::context_t *context;
-			zmq::socket_t *socket;
+    string X_serialized;
 
-			string X_serialized;
+    void toCarouselState(const StateVector *state, const ControlVector *control,
+			 double transparency, kite::CarouselState *cs);
 
-			void copy_to_protobuf(const StateVector *X, kite::CarouselState *cs);
-
-		public:
-			ProtobufBridge(std::string name);
-			~ProtobufBridge();
-			bool		configureHook();
-			bool		startHook();
-			void		updateHook();
-			void		stopHook();
-			void		cleanUpHook();
-	};
+  public:
+    ProtobufBridge(std::string name);
+    ~ProtobufBridge();
+    bool configureHook();
+    bool startHook();
+    void updateHook();
+    void stopHook();
+    void cleanUpHook();
+  };
 }
 #endif // __PROTOBUFBRIDGE__

@@ -3,6 +3,7 @@ FOO = $RAWESOME_ROOT
 LDFLAGS_OROCOS += -lzmq -lprotobuf 
 LDFLAGS_OROCOS += $(FOO)/carousel-cpp/kite.pb.o
 CPPFLAGS_OROCOS += -I$(FOO)/carousel-cpp/
+CPPFLAGS_OROCOS += -I..
 CPPFLAGS_OROCOS += -Wno-unused-function
 : foreach *.cpp |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 : *.o |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_OROCOS) |> %d.so
