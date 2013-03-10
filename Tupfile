@@ -1,0 +1,3 @@
+# Note, this files does NOT include the rules file.
+#  Therefore, we can add stuff to .gitignore in this directory without it being over-written.
+

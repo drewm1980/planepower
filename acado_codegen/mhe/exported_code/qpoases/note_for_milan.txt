@@ -1,0 +1,4 @@
+The symlinks in here are an ugly hack.  Tup requires all build products to be
+in the same directory as the Tupfile that builds them.  Acado codegen spits out
+a couple files in the qpoases subdirectory.  A better solution would be for
+acado codegen to support exporting all code in one directory.

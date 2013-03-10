@@ -1,0 +1,36 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("planeSimulatorRframe")
+import("cameraSimulator")
+ 
+#Create components
+loadComponent("sim","OCL::planeSimulatorRframe")
+loadComponent("cameraSimulator","OCL::CameraSimulator")
+#loadComponent("reporter","OCL::FileReporting")
+ 
+#Set activities
+setActivity("sim",0.00100,HighestPriority,ORO_SCHED_RT)
+setActivity("cameraSimulator",0,HighestPriority,ORO_SCHED_RT)
+#setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+
+sim.configure()
+cameraSimulator.configure()
+connectPeers("cameraSimulator","sim")
+
+var ConnPolicy cp
+connect("sim.triggerTimeStampOut", "cameraSimulator.triggerTimeStampIn",cp)
+connect("sim.stateOutputPort","cameraSimulator.stateInputPort",cp)
+
+#connectPeers("reporter","sim")
+#connectPeers("reporter","cameraSimulator")
+
+#reporter.reportPort("sim","stateOutputPort")
+#reporter.reportPort("cameraSimulator","markerPositions")
+#reporter.ReportFile = "state.dat"
+#reporter.NullSample = "nan" 
+#reporter.configure()
+#reporter.start()
+
+sim.start()
+cameraSimulator.start()

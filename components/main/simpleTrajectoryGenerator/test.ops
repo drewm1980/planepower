@@ -1,0 +1,21 @@
+#!/usr/bin/env deployer
+
+import("simpleTrajectoryGenerator")
+
+loadComponent("LoggingService", "OCL::logging::LoggingService")
+setActivity("LoggingService", 0.5, 0, 0)
+
+LoggingService.configure()
+LoggingService.start()
+
+# Set up the MPC component
+loadComponent("simpleTrajectoryGenerator", "SimpleTrajectoryGenerator")
+
+# Set up non-periodic activity
+setActivity("simpleTrajectoryGenerator", 0.0, HighestPriority, ORO_SCHED_RT)
+
+# Configuring components
+simpleTrajectoryGenerator.configure()
+
+# Starting components
+simpleTrajectoryGenerator.start()

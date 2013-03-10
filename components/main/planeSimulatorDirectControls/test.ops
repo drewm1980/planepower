@@ -1,0 +1,24 @@
+#!/usr/bin/env deployer
+
+#VELOCITYCONTROLLER
+
+#Import libraries
+import("planeSimulatorDirectControls")
+ 
+#Create components
+loadComponent("sim","OCL::planeSimulatorDirectControls")
+ 
+#Set activities
+setActivity("sim",0.01,HighestPriority,ORO_SCHED_RT)
+
+sim.configure()
+#sim.start()
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter","sim")
+reporter.reportPort("sim","stateOutputPort")
+reporter.ReportFile = "state.dat"
+reporter.NullSample = "nan" 
+reporter.configure()
+reporter.start()

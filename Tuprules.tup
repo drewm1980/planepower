@@ -1,0 +1,60 @@
+# Generic rules
+CC = clang
+CXX = clang++
+CXXFLAGS += -Wall
+CXXFLAGS += -O0
+CXXFLAGS += -g
+CXXFLAGS += -fPIC
+PATH=$PATH:$(TUP_CWD)/tools
+export PATH
+export PKG_CONFIG_PATH
+export PLANEPOWER_ROOT
+export RAWESOME_ROOT
+!cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!ar = |> ar crs %o %f |>
+!ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+
+# CasADi related rules
+TOOLS = $(TUP_CWD)/tools/
+!rename_casadi = |> $(TOOLS)/rename_casadi_function %f %B.cpp |> %B.cpp %B.h
+
+CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
+
+# Orocos specific flags and rules
+export OROCOS_TARGET
+CPPFLAGS_OROCOS = $(CPPFLAGS) `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
+LDFLAGS_OROCOS = $(LDFLAGS) `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
+CXXFLAGS_OROCOS = $(CXXFLAGS) -DRTT_COMPONENT
+!cxx_orocos = |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!cc_orocos = |> $(CC) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!ar_orocos = |> ar crs %o %f |>
+!ld_orocos = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_OROCOS) |>
+
+# Acado specific flags and rules
+CPPFLAGS_ACADO=-O0 -ggdb -w
+CXXFLAGS_ACADO = $(CXXFLAGS)
+
+ACADO_PUBLIC_ROOT=$PLANEPOWER_ROOT/extern/acado_public
+CPPFLAGS_ACADO += -I$(ACADO_PUBLIC_ROOT)/include
+CPPFLAGS_ACADO += -I$(ACADO_PUBLIC_ROOT)/build/include
+LDFLAGS_ACADO = $(LDFLAGS) 
+LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/libs -lacado_toolkit
+LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs -lacado_csparse
+LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/casadi/libs -lacado_casadi
+#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/libs
+#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs
+
+ACADO_PRIVATE_ROOT=$PLANEPOWER_ROOT/extern/acado_private
+CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export
+LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib -lmhe_export
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib
+
+!cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
+!ld_acado = |> $(CXX) -o %o %f $(LDFLAGS_ACADO) |>
+
+# Try to make PLANEPOWER_ROOT available to C code...
+#TEMP=$PLANEPOWER_ROOT
+#CPPFLAGS_ACADO += -DPLANEPOWER_ROOT=$(TEMP)
+
+.gitignore

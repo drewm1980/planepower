@@ -1,0 +1,3 @@
+include_rules
+: cameraSimulator.cpp | ../../../pythonCodegen/markers_from_pose.h |> !cxx_orocos |>
+: *.o |> !ld_orocos |> %d.so
