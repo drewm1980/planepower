@@ -1,5 +1,4 @@
-import rawe
-import casadi as C
+import rawe.models.carousel
 
 import codegen_utils
 
