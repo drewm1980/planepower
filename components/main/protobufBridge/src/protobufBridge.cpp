@@ -102,9 +102,6 @@ namespace OCL
       //ControlVector * mpcControl = (ControlVector*) &(mpcFullControlVector[k*NCONTROLS]);
       double transparency = 0.2;
       if (k==NHORIZON){
-        // set camera rotation
-        mc.set_camerarotrads(mheState->delta);
-
         // set transparency
         transparency = 1.0;
 
