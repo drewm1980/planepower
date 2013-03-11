@@ -49,5 +49,34 @@ struct ParamVec
 {
 };
 
+struct MeasurementsXVec {
+  carousel_float_t uvC1M1_0;
+  carousel_float_t uvC1M1_1;
+  carousel_float_t uvC1M2_0;
+  carousel_float_t uvC1M2_1;
+  carousel_float_t uvC1M3_0;
+  carousel_float_t uvC1M3_1;
+  carousel_float_t uvC2M1_0;
+  carousel_float_t uvC2M1_1;
+  carousel_float_t uvC2M2_0;
+  carousel_float_t uvC2M2_1;
+  carousel_float_t uvC2M3_0;
+  carousel_float_t uvC2M3_1;
+  carousel_float_t wIMU_0;
+  carousel_float_t wIMU_1;
+  carousel_float_t wIMU_2;
+  carousel_float_t aIMU_0;
+  carousel_float_t aIMU_1;
+  carousel_float_t aIMU_2;
+  carousel_float_t delta;
+  carousel_float_t ur;
+  carousel_float_t up;
+};
+
+struct MeasurementsUVec {
+  carousel_float_t dddelta;
+  carousel_float_t dur;
+  carousel_float_t dup;
+};
 
 #endif
