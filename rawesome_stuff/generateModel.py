@@ -1,5 +1,4 @@
-import rawe
-import casadi as C
+import rawe.models.carousel
 
 import codegen_utils
 
@@ -16,18 +15,21 @@ if __name__=='__main__':
 #    f.write(modelFile)
 #    f.close()
 
+    from dummy_model import dummyModel
+    dae = dummyModel()
     # write a bunch of glue to convert from vectors to structs to protobufs
     structs = ''
     protoConverters = ''
     protoConverterPrototypes = ''
     protobufs = ''
-    for (vecname,fieldnames) in [('DiffStateVec',dae.xNames()),
-                                 ('AlgVarVec',dae.zNames()),
-                                 ('ControlVec',dae.uNames()),
-                                 ('ParamVec',dae.pNames())]:
-        protobufs += codegen_utils.makeProtoBuf(vecname, fieldnames)
+    for (vecname,protoname,fieldnames) in \
+            [('DiffStateVec','DifferentialStates',dae.xNames()),
+             ('AlgVarVec','AlgebraicVars',dae.zNames()),
+             ('ControlVec','Controls',dae.uNames()),
+             ('ParamVec','Parameters',dae.pNames())]:
+        protobufs += codegen_utils.makeProtoBuf(protoname, fieldnames)
         structs += codegen_utils.makeStruct(vecname,fieldnames)
-        (pc,pcpt) = codegen_utils.makeProtoConverter(vecname,fieldnames)
+        (pc,pcpt) = codegen_utils.makeProtoConverter(vecname,protoname,fieldnames)
         protoConverters += pc
         protoConverterPrototypes += pcpt
     print '------------ PROTOBUFS: -----------'

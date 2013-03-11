@@ -1,7 +1,7 @@
 
-def makeProtoBuf(vecname, fieldnames):
+def makeProtoBuf(protoname, fieldnames):
     ret = []
-    ret.append('message '+vecname+' {')
+    ret.append('message '+protoname+' {')
     for k,name in enumerate(fieldnames):
         ret.append('  required double '+name+' = '+str(k+1)+';')
     ret.append('}\n\n')
@@ -17,9 +17,9 @@ def makeStruct(vecname,fieldnames):
 
     return '\n'.join(ret)
 
-def makeProtoConverter(vecname,fieldnames):
+def makeProtoConverter(vecname,protoname,fieldnames):
     ret = []
-    prototype = 'void ProtobufBridge::from'+vecname+'(kite::'+vecname+' *proto, const '+vecname+' *data)'
+    prototype = 'void ProtobufBridge::from'+vecname+'(MheMpc::'+protoname+' *proto, const '+vecname+' *data)'
     ret.append(prototype)
     ret.append('{')
     for name in fieldnames:

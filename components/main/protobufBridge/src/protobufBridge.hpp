@@ -54,15 +54,18 @@ namespace OCL
     vector< double > mpcFullControlVector;
                         
   private:
-    kite::MultiCarousel mc;
+    MheMpc::MheMpcHorizon mmh;
 
     zmq::context_t *context;
     zmq::socket_t *socket;
 
     string X_serialized;
 
-    void toCarouselState(const StateVector *state, const ControlVector *control,
-			 double transparency, kite::CarouselState *cs);
+    void toDae(MheMpc::Dae * dae, const DiffStateVec * x, const ControlVec * u);
+    void fromDiffStateVec(MheMpc::DifferentialStates *proto, const DiffStateVec *data);
+    void fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data);
+    void fromControlVec(MheMpc::Controls *proto, const ControlVec *data);
+    void fromParamVec(MheMpc::Parameters *proto, const ParamVec *data);
 
   public:
     ProtobufBridge(std::string name);
