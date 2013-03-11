@@ -40,7 +40,8 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 include_directories(../../../rawesome_stuff/rawesome/carousel-cpp)
 include_directories(../)
 orocos_component(${PROJECT_NAME} src/protobufBridge.cpp 
-	../../../rawesome_stuff/rawesome/carousel-cpp/kite.pb.cc)
+	../../../rawesome_stuff/rawesome/carousel-cpp/kite.pb.cc
+	../../../rawesome_stuff/rawesome/carousel-cpp/mhempc.pb.cc)
 rosbuild_add_library(protobufBridge src/protobufBridge.cpp)
 target_link_libraries(${PROJECT_NAME} protobuf)
 target_link_libraries(${PROJECT_NAME} zmq)
