@@ -53,8 +53,9 @@ T_body_to_anchor = casadi.mul(RPC1,T_body_to_cam1)
 pose = vectorize_se3(T_body_to_anchor)
 pose_from_markers = casadi.SXFunction([markers], [pose])
 pose_from_markers.init()
-
-J = pose_from_markers.jacobian().outputSX() # A 12 x 12 SX
+#J = pose_from_markers.jacobian().outputSX() # A 12 x 12 SX
+#J = casadi.jacobian(pose_from_markers.outputExpr(),pose_from_markers.inputExpr())
+J = casadi.jacobian(pose,markers)
 
 sigma = 10 # pixels
 cov_uv = casadi.SXMatrix.eye(12)

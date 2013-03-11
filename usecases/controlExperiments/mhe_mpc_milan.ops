@@ -53,6 +53,10 @@ loadComponent("dynamicMPC","DynamicMPC")
 import("simpleTrajectoryGenerator")
 loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 
+#profobuf
+import("protobufBridge")
+loadComponent("protobuf","OCL::ProtobufBridge")
+
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
 #loadComponent("reporter1","OCL::FileReporting")
@@ -148,6 +152,8 @@ setActivity("LEDTracker", 0.000, LEDTrackerPrio, ORO_SCHED_RT)
 
 setActivity("poseFromMarkers", 0, LEDTrackerPrio, ORO_SCHED_RT)
 
+setActivity("protobuf",0.0,11,ORO_SCHED_RT)
+
 # MHE, with dynamic model
 setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 
@@ -209,6 +215,11 @@ connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", c
 connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
 
 connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
+
+#Protobuf connections
+connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
+connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
 
 ################################################################################
 #
@@ -306,5 +317,8 @@ reporter.configure()
 
 #reporter1.configure()
 #reporter1.start()
+
+protobuf.configure()
+protobuf.start()
 
 masterTimer.start()
