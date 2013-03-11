@@ -6,7 +6,7 @@
 #include <rtt/Time.hpp>
 
 #include "types.hpp"
-#include "blob_extractors.hpp"
+//#include "blob_extractors.hpp"
 #include "cout.hpp"
 
 #define VERBOSE 1
@@ -143,7 +143,7 @@ void  LEDTracker::updateHook()
 	for(unsigned int i=0; i<12; i++)
 	{
 		if(isnan(markerPositions[i])){ // Marker was not detected properly.. Put a random value and puth the weight to 0
-			markerPositionsAndCovariance[i] = 1000.0;
+			markerPositionsAndCovariance[i] = -1000.0;
 			markerPositionsAndCovariance[i+12] = 0.0;
 		}
 		else{

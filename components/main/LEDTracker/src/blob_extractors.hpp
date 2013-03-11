@@ -6,12 +6,10 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include "opencv2/opencv.hpp"
 
 // Main header for cvblobs library
-#include "BlobResult.h"
+//#include "BlobResult.h"
 
 #include "types.hpp"
 
@@ -93,9 +91,9 @@ void find_single_led_singlepass(const Mat& m, Point2d &p)
 	find_single_led_singlepass<w,h>(m.data, p);
 }
 
-// Finds a single connected component in a "binary" uint8_t image.
-// Return value is the number of connected components. (hopefully just 1)
-// p is the center of one of the components.
+//Finds a single connected component in a "binary" uint8_t image.
+//Return value is the number of connected components. (hopefully just 1)
+//p is the center of one of the components.
 template<int w, int h>
 int find_single_led(const Mat& m, Point2d &p)
 {
@@ -194,9 +192,9 @@ void extract_blobs(const Mat & bayer, MarkerLocations &l)
 		}
 	}
 
-	find_single_led<w,h>(r_mask, l.red);
-	find_single_led<w,h>(g_mask, l.green);
-	find_single_led<w,h>(b_mask, l.blue);
+	find_single_led_singlepass<w,h>(r_mask, l.red);
+	find_single_led_singlepass<w,h>(g_mask, l.green);
+	find_single_led_singlepass<w,h>(b_mask, l.blue);
 
 #if 0
 	cout << "Displaying composite of thresholded images for debugging..." << endl;

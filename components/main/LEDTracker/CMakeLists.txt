@@ -45,13 +45,17 @@ find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
- 
-#rosbuild_add_library(Tracer src/Tracer.cpp)
-#target_link_libraries(Tracer ${OpenCV_LIBS})
-#rosbuild_add_library(StereoPair src/StereoPair.cpp)
-#rosbuild_add_library(BlobExtractor src/BlobExtractor.cpp src/MedianFinder.cpp)
-#rosbuild_add_library(${PROJECT_NAME} src/LEDTracker.cpp)
-include_directories(src/cvblobs)
+
+link_directories(/usr/lib/x86_64-linux-gnu/)
+
+rosbuild_add_library(Tracer src/Tracer.cpp)
+target_link_libraries(Tracer ${OpenCV_LIBS})
+add_library(StereoPair src/StereoPair.cpp)
+target_link_libraries(StereoPair dc1394)
+add_library(BlobExtractor src/BlobExtractor.cpp src/MedianFinder.cpp)
+add_library(${PROJECT_NAME} src/LEDTracker.cpp)
+
+#include_directories(src/cvblobs)
 orocos_component(${PROJECT_NAME} src/LEDTracker.cpp src/BlobExtractor.cpp src/MedianFinder.cpp src/StereoPair.cpp )
 target_link_libraries(${PROJECT_NAME} dc1394)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
@@ -84,10 +88,10 @@ target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 #target_link_libraries(test_extractors ${OpenCV_LIBS})
 #target_link_libraries(test_extractors blob)
 
-#add_executable(test_stereo_pair src/test_stereo_pair.cpp)
+add_executable(test_stereo_pair src/test_stereo_pair.cpp)
 #target_link_libraries(test_stereo_pair dc1394)
-#target_link_libraries(test_stereo_pair StereoPair)
-#target_link_libraries(test_stereo_pair Tracer)
+target_link_libraries(test_stereo_pair StereoPair)
+target_link_libraries(test_stereo_pair Tracer)
 
 #add_executable(test_stereo_pair_and_blob_extractor src/test_stereo_pair_and_blob_extractor.cpp)
 #target_link_libraries(test_stereo_pair_and_blob_extractor dc1394)

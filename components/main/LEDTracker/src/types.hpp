@@ -1,9 +1,7 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include "opencv2/opencv.hpp"
 
 struct cameraSpecs
 {
