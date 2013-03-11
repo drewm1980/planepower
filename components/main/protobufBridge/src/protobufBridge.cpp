@@ -138,13 +138,13 @@ namespace OCL
     google::protobuf::ShutdownProtobufLibrary(); // optional
   }
 
-  void toDae(MheMpc::Dae * dae, const DiffStateVec * x, const ControlVec * u){
+  void ProtobufBridge::toDae(MheMpc::Dae * dae, const DiffStateVec * x, const ControlVec * u){
       fromDiffStateVec(dae->mutable_diffstates(), x);
       if (u != NULL)
           fromControlVec(dae->mutable_controls(), u);
   }
 
-  void fromDiffStateVec(MheMpc::DifferentialStates *proto, const DiffStateVec *data)
+  void ProtobufBridge::fromDiffStateVec(MheMpc::DifferentialStates *proto, const DiffStateVec *data)
   {
     proto->set_x( data->x );
     proto->set_y( data->y );
@@ -170,18 +170,18 @@ namespace OCL
     proto->set_up( data->up );
   }
   
-  void fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data)
+  void ProtobufBridge::fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data)
   {
   }
   
-  void fromControlVec(MheMpc::Controls *proto, const ControlVec *data)
+  void ProtobufBridge::fromControlVec(MheMpc::Controls *proto, const ControlVec *data)
   {
     proto->set_dddelta( data->dddelta );
     proto->set_dur( data->dur );
     proto->set_dup( data->dup );
   }
   
-  void fromParamVec(MheMpc::Parameters *proto, const ParamVec *data)
+  void ProtobufBridge::fromParamVec(MheMpc::Parameters *proto, const ParamVec *data)
   {
   }
 }//namespace
