@@ -1,27 +1,27 @@
 [submodule "components/lowlevel/soem"]
 	path = components/lowlevel/soem
-	;url = http://git.mech.kuleuven.be/robotics/soem.git
-	url = git@github.com:drewm1980/soem.git
+	url = http://git.mech.kuleuven.be/robotics/soem.git
+	;url = git@github.com:drewm1980/soem.git
 	ignore = dirty
-[submodule "tools/PyKinetics"]
-	path = tools/PyKinetics
-	url = https://github.com/jgillis/PyKinetics.git
+[submodule "extern/rtnet"]
+	path = extern/rtnet
+	url = git://rtnet.git.sourceforge.net/gitroot/rtnet/rtnet
 [submodule "rawesome_stuff/rawesome"]
 	path = rawesome_stuff/rawesome
 	url = git://github.com/ghorn/rawesome.git
-	ignore = dirty
-[submodule "extern/tup"]
-	path = extern/tup
-	url = git://github.com/gittup/tup.git
 	ignore = dirty
 [submodule "extern/casadi"]
 	path = extern/casadi
 	url = https://github.com/casadi/casadi.git
 	ignore = dirty
-[submodule "extern/rtnet"]
-	path = extern/rtnet
-	url = git://rtnet.git.sourceforge.net/gitroot/rtnet/rtnet
-[submodule "extern/orocos_kinematics_dynamics"]
-	path = extern/orocos_kinematics_dynamics
-	url = http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git
-	ignore = dirty
+;[submodule "tools/PyKinetics"]
+	;path = tools/PyKinetics
+	;url = https://github.com/jgillis/PyKinetics.git
+;[submodule "extern/tup"]
+	;path = extern/tup
+	;url = git://github.com/gittup/tup.git
+	;ignore = dirty
+;[submodule "extern/orocos_kinematics_dynamics"]
+	;path = extern/orocos_kinematics_dynamics
+	;url = http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git
+	;ignore = dirty
