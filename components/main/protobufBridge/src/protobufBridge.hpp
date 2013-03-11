@@ -36,7 +36,7 @@ using namespace KDL;
 #define NHORIZON        10
 
 #define NY              (21 + 3)
-#define NYN             (24)
+#define NYN             (21)
 
 namespace OCL
 {
@@ -76,6 +76,8 @@ namespace OCL
     void fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data);
     void fromControlVec(MheMpc::Controls *proto, const ControlVec *data);
     void fromParamVec(MheMpc::Parameters *proto, const ParamVec *data);
+    void fromMeasurementsXVec(MheMpc::MeasurementsX *proto, const MeasurementsXVec *data);
+    void fromMeasurementsUVec(MheMpc::MeasurementsU *proto, const MeasurementsUVec *data);
 
   public:
     ProtobufBridge(std::string name);

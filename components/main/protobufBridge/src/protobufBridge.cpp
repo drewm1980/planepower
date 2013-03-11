@@ -51,9 +51,11 @@ namespace OCL
 
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
+    mmh.clear_measurementshorizon();
     for (int k=0; k<NHORIZON+1; k++){
         mmh.add_mhehorizon();
         mmh.add_mpchorizon();
+        mmh.add_measurementshorizon();
     }
 
     context = new zmq::context_t(1);
@@ -128,6 +130,25 @@ namespace OCL
         daeplus->set_linetransparency(transparency);
     }
 
+    // set measurement horizon
+    for (int k=0; k<NHORIZON; k++){
+        fromMeasurementsXVec((mmh.mutable_measurementshorizon(k))->mutable_measurementsx(),
+                             (MeasurementsXVec*)&(measurementsPast[k*NY]));
+        fromMeasurementsUVec((mmh.mutable_measurementshorizon(k))->mutable_measurementsu(),
+                             (MeasurementsUVec*)&(measurementsPast[k*NY+NYN]));
+    }
+    fromMeasurementsXVec((mmh.mutable_measurementshorizon(NHORIZON))->mutable_measurementsx(),
+                         (MeasurementsXVec*)&(measurementsCurrent[0]));
+
+    // set current measurement
+    fromMeasurementsXVec(mmh.mutable_measurementscurrentx(),
+                         (MeasurementsXVec*)&(measurementsCurrent[0]));
+    fromMeasurementsXVec(mmh.mutable_measurementslastlatest()->mutable_measurementsx(),
+                         (MeasurementsXVec*)&(measurementsPast[NY*(NHORIZON-1)]));
+    fromMeasurementsUVec(mmh.mutable_measurementslastlatest()->mutable_measurementsu(),
+                         (MeasurementsUVec*)&(measurementsPast[NY*(NHORIZON-1)+NYN]));
+
+
     if (!mmh.SerializeToString(&X_serialized)) {
       cerr << "Failed to serialize mmh." << endl;
       return;
@@ -193,5 +214,36 @@ namespace OCL
   void ProtobufBridge::fromParamVec(MheMpc::Parameters *proto, const ParamVec *data)
   {
   }
+
+  void ProtobufBridge::fromMeasurementsXVec(MheMpc::MeasurementsX *proto, const MeasurementsXVec *data){
+    proto->set_uvc1m1_0(data->uvC1M1_0);
+    proto->set_uvc1m1_1(data->uvC1M1_1);
+    proto->set_uvc1m2_0(data->uvC1M2_0);
+    proto->set_uvc1m2_1(data->uvC1M2_1);
+    proto->set_uvc1m3_0(data->uvC1M3_0);
+    proto->set_uvc1m3_1(data->uvC1M3_1);
+    proto->set_uvc2m1_0(data->uvC2M1_0);
+    proto->set_uvc2m1_1(data->uvC2M1_1);
+    proto->set_uvc2m2_0(data->uvC2M2_0);
+    proto->set_uvc2m2_1(data->uvC2M2_1);
+    proto->set_uvc2m3_0(data->uvC2M3_0);
+    proto->set_uvc2m3_1(data->uvC2M3_1);
+    proto->set_wimu_0  (data->wIMU_0  );
+    proto->set_wimu_1  (data->wIMU_1  );
+    proto->set_wimu_2  (data->wIMU_2  );
+    proto->set_aimu_0  (data->aIMU_0  );
+    proto->set_aimu_1  (data->aIMU_1  );
+    proto->set_aimu_2  (data->aIMU_2  );
+    proto->set_delta   (data->delta   );
+    proto->set_ur      (data->ur      );
+    proto->set_up      (data->up      );
+  }
+
+  void ProtobufBridge::fromMeasurementsUVec(MheMpc::MeasurementsU *proto, const MeasurementsUVec *data){
+    proto->set_dddelta(data->dddelta);
+    proto->set_dur    (data->dur    );
+    proto->set_dup    (data->dup    );
+  };
+
 }//namespace
 
