@@ -35,8 +35,8 @@ using namespace KDL;
 #define NCONTROLS       3
 #define NHORIZON        10
 
-#define NY		(21 + 3)
-#define NYN		( 24 )
+#define NY              (21 + 3)
+#define NYN             (24)
 
 namespace OCL
 {
@@ -46,23 +46,23 @@ namespace OCL
   protected:
     InputPort< vector< double > > _stateInputPort;
     vector< double >              X;
-                        
+
     InputPort< vector< double > > portMheFullStateVector;
     InputPort< vector< double > > portMheFullControlVector;
     vector< double > mheFullStateVector;
     vector< double > mheFullControlVector;
-                        
+
     InputPort< vector< double > > portMpcFullStateVector;
     InputPort< vector< double > > portMpcFullControlVector;
     vector< double > mpcFullStateVector;
     vector< double > mpcFullControlVector;
-    
+
     InputPort< vector< double > > portMeasurementsPast;
-	vector< double > measurementsPast;
-	
-	InputPort< vector< double > > portMeasurementsCurrent;
-	vector< double > measurementsCurrent;
-                        
+    vector< double > measurementsPast;
+
+    InputPort< vector< double > > portMeasurementsCurrent;
+    vector< double > measurementsCurrent;
+
   private:
     MheMpc::MheMpcHorizons mmh;
 
