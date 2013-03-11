@@ -102,9 +102,15 @@ namespace OCL
       //ControlVector * mpcControl = (ControlVector*) &(mpcFullControlVector[k*NCONTROLS]);
       double transparency = 0.2;
       if (k==NHORIZON){
-	transparency = 1.0;
-	kite::CarouselState *cs = mc.mutable_currentstate();
-	toCarouselState(mheState, mheControl, transparency, cs);
+        // set camera rotation
+        mc.set_camerarotrads(mheState->delta);
+
+        // set transparency
+        transparency = 1.0;
+
+        // write the "current state" field
+        kite::CarouselState *cs = mc.mutable_currentstate();
+        toCarouselState(mheState, mheControl, transparency, cs);
       }
       kite::CarouselState *cs = mc.mutable_css(k);
       toCarouselState(mheState, mheControl, transparency, cs);
