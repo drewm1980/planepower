@@ -55,7 +55,7 @@ namespace OCL
     vector< double > mpcFullControlVector;
                         
   private:
-    MheMpc::MheMpcHorizon mmh;
+    MheMpc::MheMpcHorizons mmh;
 
     zmq::context_t *context;
     zmq::socket_t *socket;

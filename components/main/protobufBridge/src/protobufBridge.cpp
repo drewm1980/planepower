@@ -119,8 +119,8 @@ namespace OCL
         daeplus->set_linetransparency(transparency);
     }
 
-    if (!mc.SerializeToString(&X_serialized)) {
-      cerr << "Failed to serialize mc." << endl;
+    if (!mmh.SerializeToString(&X_serialized)) {
+      cerr << "Failed to serialize mmh." << endl;
       return;
     }
     s_sendmore(*socket, "mhe-mpc-horizons");
