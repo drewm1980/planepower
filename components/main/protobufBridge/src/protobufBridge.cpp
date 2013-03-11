@@ -43,8 +43,12 @@ namespace OCL
     mpcFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
     mpcFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
 
-    mc.clear_css();
-    for (int k=0; k<NHORIZON+1; k++) mc.add_css();
+    mmh.clear_mhehorizon();
+    mmh.clear_mpchorizon();
+    for (int k=0; k<NHORIZON+1; k++){
+        mmh.add_mhehorizon();
+        mmh.add_mpchorizon();
+    }
 
     context = new zmq::context_t(1);
 
@@ -59,32 +63,6 @@ namespace OCL
     return true;
   }
 
-  void ProtobufBridge::toCarouselState(const StateVector *state, const ControlVector *control,
-				       double transparency, kite::CarouselState *cs)
-  {
-    kite::Xyz *xyz = cs->mutable_kitexyz();
-    kite::Dcm *dcm = cs->mutable_kitedcm();
-    xyz->set_x(state->x);
-    xyz->set_y(state->y);
-    xyz->set_z(state->z);
-    dcm->set_r11(state->e11); // Note, there is an implicit transpose happening in here.
-    dcm->set_r21(state->e12);
-    dcm->set_r31(state->e13);
-    dcm->set_r12(state->e21);
-    dcm->set_r22(state->e22);
-    dcm->set_r32(state->e23);
-    dcm->set_r13(state->e31);
-    dcm->set_r23(state->e32);
-    dcm->set_r33(state->e33);
-    cs->set_delta(state->delta);
-    cs->set_kitetransparency(transparency);
-    cs->set_linetransparency(transparency);
-
-    cs->set_rarm(1.085);
-    cs->set_zt(-0.05);
-    cs->set_visspan(0.96);
-  }
-
   void  ProtobufBridge::updateHook()
   {
     _stateInputPort.read( X );
@@ -95,29 +73,57 @@ namespace OCL
     portMpcFullStateVector.read( mpcFullStateVector );
     portMpcFullControlVector.read( mpcFullControlVector );
 
-    for (int k=0; k<NHORIZON+1; k++){
-      StateVector * mheState = (StateVector*) &(mheFullStateVector[k*NSTATES]);
-      //StateVector * mpcState = (StateVector*) &(mpcFullStateVector[k*NSTATES]);
-      ControlVector * mheControl = (ControlVector*) &(mheFullControlVector[k*NCONTROLS]);
-      //ControlVector * mpcControl = (ControlVector*) &(mpcFullControlVector[k*NCONTROLS]);
-      double transparency = 0.2;
-      if (k==NHORIZON){
-        // set transparency
-        transparency = 1.0;
+    // set some constants
+    mmh.set_carouselarmheight(2.0);
+    mmh.set_visspan(0.96);
+    mmh.set_rarm(1.085);
+    mmh.set_zt(-0.05);
 
-        // write the "current state" field
-        kite::CarouselState *cs = mc.mutable_currentstate();
-        toCarouselState(mheState, mheControl, transparency, cs);
-      }
-      kite::CarouselState *cs = mc.mutable_css(k);
-      toCarouselState(mheState, mheControl, transparency, cs);
+    MheMpc::DaePlus *daeplus;
+
+    // write the "current state" field
+    MheMpc::Dae *dae = mmh.mutable_currentstate();
+    DiffStateVec * x = (DiffStateVec*) &(mpcFullStateVector[0]);
+    ControlVec   * u = (ControlVec*)   &(mpcFullControlVector[0]);
+    toDae(dae, x, u);
+
+    // set mhe horizon
+    for (int k=0; k<NHORIZON+1; k++){
+        x = (DiffStateVec*) &(mheFullStateVector[k*NSTATES]);
+        u = (ControlVec*)   &(mheFullControlVector[k*NCONTROLS]);
+        double transparency = 0.2;
+        if (k==NHORIZON) transparency = 1.0;
+        daeplus = mmh.mutable_mhehorizon(k);
+        dae = daeplus->mutable_dae();
+        if (k<NHORIZON)
+            toDae(dae, x, u);
+        else
+            toDae(dae, x, NULL);
+        daeplus->set_kitetransparency(transparency);
+        daeplus->set_linetransparency(transparency);
+    }
+
+    // set mpc horizon
+    for (int k=0; k<NHORIZON+1; k++){
+        x = (DiffStateVec*) &(mpcFullStateVector[k*NSTATES]);
+        u = (ControlVec*)   &(mpcFullControlVector[k*NCONTROLS]);
+        double transparency = 0.2;
+        if (k==0) transparency = 1.0;
+        daeplus = mmh.mutable_mpchorizon(k);
+        dae = daeplus->mutable_dae();
+        if (k<NHORIZON)
+            toDae(dae, x, u);
+        else
+            toDae(dae, x, NULL);
+        daeplus->set_kitetransparency(transparency);
+        daeplus->set_linetransparency(transparency);
     }
 
     if (!mc.SerializeToString(&X_serialized)) {
       cerr << "Failed to serialize mc." << endl;
       return;
     }
-    s_sendmore(*socket, "multi-carousel");
+    s_sendmore(*socket, "mhe-mpc-horizons");
     s_send(*socket, X_serialized);
   }
 
@@ -132,5 +138,51 @@ namespace OCL
     google::protobuf::ShutdownProtobufLibrary(); // optional
   }
 
+  void toDae(MheMpc::Dae * dae, const DiffStateVec * x, const ControlVec * u){
+      fromDiffStateVec(dae->mutable_diffstates(), x);
+      if (u != NULL)
+          fromControlVec(dae->mutable_controls(), u);
+  }
+
+  void fromDiffStateVec(MheMpc::DifferentialStates *proto, const DiffStateVec *data)
+  {
+    proto->set_x( data->x );
+    proto->set_y( data->y );
+    proto->set_z( data->z );
+    proto->set_dx( data->dx );
+    proto->set_dy( data->dy );
+    proto->set_dz( data->dz );
+    proto->set_e11( data->e11 );
+    proto->set_e12( data->e12 );
+    proto->set_e13( data->e13 );
+    proto->set_e21( data->e21 );
+    proto->set_e22( data->e22 );
+    proto->set_e23( data->e23 );
+    proto->set_e31( data->e31 );
+    proto->set_e32( data->e32 );
+    proto->set_e33( data->e33 );
+    proto->set_wx( data->wx );
+    proto->set_wy( data->wy );
+    proto->set_wz( data->wz );
+    proto->set_delta( data->delta );
+    proto->set_ddelta( data->ddelta );
+    proto->set_ur( data->ur );
+    proto->set_up( data->up );
+  }
+  
+  void fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data)
+  {
+  }
+  
+  void fromControlVec(MheMpc::Controls *proto, const ControlVec *data)
+  {
+    proto->set_dddelta( data->dddelta );
+    proto->set_dur( data->dur );
+    proto->set_dup( data->dup );
+  }
+  
+  void fromParamVec(MheMpc::Parameters *proto, const ParamVec *data)
+  {
+  }
 }//namespace
 
