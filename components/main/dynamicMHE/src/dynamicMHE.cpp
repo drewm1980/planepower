@@ -109,6 +109,9 @@ DynamicMHE::DynamicMHE(const std::string& name)
 			.doc("Full state vector in the MHE.");
 	
 	this->addPort("portFullControlVector", portFullControlVector);
+	
+	this->addPort("portMeasurementsPast", portMeasurementsPast);
+	this->addPort("portMeasurementsCurrent", portMeasurementsCurrent);
 			
 	//
 	// Initialize and output the relevant output ports

@@ -25,6 +25,9 @@ namespace OCL
                 
     ports()->addPort("portMPCFullStateVector", portMpcFullStateVector).doc( "MPC: all states over the horizon." );
     ports()->addPort("portMPCFullControlVector", portMpcFullControlVector).doc( "MPC: all controls over the horizon." );
+    
+    ports()->addPort("portMeasurementsPast", portMeasurementsPast).doc( "MHE measurements on 1. N nodes." );
+    ports()->addPort("portMeasurementsCurrent", portMeasurementsCurrent).doc( "MHE measurements on N + 1st node." );
   }
 
   ProtobufBridge::~ProtobufBridge()
@@ -42,6 +45,9 @@ namespace OCL
                 
     mpcFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
     mpcFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
+    
+    measurementsPast.resize(	NHORIZON * NY, 0.0);
+    measurementsCurrent.resize(	NYN, 0.0);
 
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
@@ -72,6 +78,9 @@ namespace OCL
                 
     portMpcFullStateVector.read( mpcFullStateVector );
     portMpcFullControlVector.read( mpcFullControlVector );
+    
+    portMeasurementsPast.read( measurementsPast );
+    portMeasurementsCurrent.read( measurementsCurrent );
 
     // set some constants
     mmh.set_carouselarmheight(2.0);
