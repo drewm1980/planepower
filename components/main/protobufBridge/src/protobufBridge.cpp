@@ -28,6 +28,8 @@ namespace OCL
 
     ports()->addPort("portMeasurementsPast", portMeasurementsPast).doc( "MHE measurements on 1. N nodes." );
     ports()->addPort("portMeasurementsCurrent", portMeasurementsCurrent).doc( "MHE measurements on N + 1st node." );
+
+    ports()->addPort("portDebugVec", portDebugVec).doc( "10 entries for debugging purposes." );
   }
 
   ProtobufBridge::~ProtobufBridge()
@@ -39,6 +41,8 @@ namespace OCL
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     X.resize(NSTATES,0.0);
+    
+    debugVec.resize(10, 0.0);
 
     mheFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
     mheFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
@@ -86,6 +90,21 @@ namespace OCL
 
     portMeasurementsPast.read( measurementsPast );
     portMeasurementsCurrent.read( measurementsCurrent );
+
+    portDebugVec.read( debugVec );
+
+    // set the debug vector
+    mmh.mutable_debug()->set_d0(debugVec[0]);
+    mmh.mutable_debug()->set_d1(debugVec[1]);
+    mmh.mutable_debug()->set_d2(debugVec[2]);
+    mmh.mutable_debug()->set_d3(debugVec[3]);
+    mmh.mutable_debug()->set_d4(debugVec[4]);
+    mmh.mutable_debug()->set_d5(debugVec[5]);
+    mmh.mutable_debug()->set_d6(debugVec[6]);
+    mmh.mutable_debug()->set_d7(debugVec[7]);
+    mmh.mutable_debug()->set_d8(debugVec[8]);
+    mmh.mutable_debug()->set_d9(debugVec[9]);
+
 
     // set some constants
     mmh.mutable_visconf()->set_carouselarmheight(2.0);
