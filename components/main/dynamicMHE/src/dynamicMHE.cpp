@@ -743,10 +743,10 @@ void DynamicMHE::mheFeedbackPhase( )
 		}
 	}
 	
-	copy(acadoVariables.y, acadoVariables.y + N * NY, measurementsPast.begin());
+	copy(acadoVariables.yMeas, acadoVariables.yMeas + N * NY, measurementsPast.begin());
 	portMeasurementsPast.write( measurementsPast );
 	
-	copy(acadoVariables.yN, acadoVariables.yN + NYN, measurementsCurrent.begin());
+	copy(lastMeasurementForMHE, lastMeasurementForMHE + NYN, measurementsCurrent.begin());
 	portMeasurementsCurrent.write( measurementsCurrent );
 	
 	// The user component should always read _first_ whether the MHE is ready
