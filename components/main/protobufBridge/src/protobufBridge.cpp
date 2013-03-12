@@ -115,7 +115,7 @@ namespace OCL
     toDae(mmh.mutable_currentstate(), x, u);
 
     // set reference trajectory
-    toDae(mmh.mutable_referencetrajectory(0), x, u); // off by one so that it lines up with mpc
+    toDae(mmh.mutable_referencetrajectory(0)->mutable_dae(), x, u); // off by one so that it lines up with mpc
     for (int k=0; k<NHORIZON; k++){
         x = (DiffStateVec*) &(referenceTrajectory[k*(NSTATES+NCONTROLS)]);
         u = (ControlVec*)   &(referenceTrajectory[k*(NSTATES+NCONTROLS)+NSTATES]);
