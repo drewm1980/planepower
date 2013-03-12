@@ -106,7 +106,7 @@ dynamicMHE.propSigma_ur = 1e-3;
 dynamicMHE.propSigma_up = 1e-3;
 dynamicMHE.propSigma_dddelta = 0.03162;
 dynamicMHE.propSigma_dur = 0.03162;
-dynamicMHE.propSigma_dup = 0.03162;
+dynamicMHE.propSigma_dur = 0.03162;
 
 LEDTracker.sigma_marker=1000;
 
@@ -177,7 +177,7 @@ setActivity("mcuHandler",0,sensorPrio,ORO_SCHED_RT)
 
 setActivity("imuBuffer",0,sensorPrio,ORO_SCHED_RT)
 
-setActivity("soemMaster",0.001, soemPrio,ORO_SCHED_RT)
+setActivity("soemMaster",0.005, soemPrio,ORO_SCHED_RT)
 
 setActivity("voltageController", 0.1, sensorPrio,ORO_SCHED_RT)
 
@@ -258,7 +258,6 @@ connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 connect("dynamicMPC.portControlsForMeasurement","mcuHandler.controlInputPort",cp)
 connect("dynamicMPC.portControlInput","mcuHandler.controlOutputPort",cp)
 connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
-connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
 
 connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
@@ -266,6 +265,8 @@ connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReferenc
 connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
 connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
 connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
+connect("protobuf.portMPCFullStateVector","dynamicMPC.portFullStateVector",cp)
+connect("protobuf.portMPCFullControlVector","dynamicMPC.portFullControlVector",cp)
 connect("protobuf.portMeasurementsPast","dynamicMHE.portMeasurementsPast",cp)
 connect("protobuf.portMeasurementsCurrent","dynamicMHE.portMeasurementsCurrent",cp)
 
@@ -284,6 +285,8 @@ connect("protobuf.portMeasurementsCurrent","dynamicMHE.portMeasurementsCurrent",
 connectPeers("reporter","dynamicMHE")
 connectPeers("reporter","dynamicMPC")
 connectPeers("reporter","trajectoryGenerator")
+connectPeers("reporter","encoder")
+connectPeers("reporter","LEDTracker")
 
 #reporter.reportPort("poseFromMarkers","pose")
 #reporter.reportPort("mcuHandler","imuTimeStamp")
@@ -326,27 +329,29 @@ connectPeers("reporter","trajectoryGenerator")
 #reporter.reportPort("dynamicMHE","portStateAndControl")
 
 
-reporter.reportPort("dynamicMHE","portStateEstimate")
-reporter.reportPort("dynamicMHE","portControlEstimate")
-reporter.reportPort("dynamicMHE","portQPSolverStatus")
-reporter.reportPort("dynamicMHE","portKKTTolerance")
-reporter.reportPort("dynamicMHE","portObjectivevalue")
-reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
-reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
-reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
-reporter.reportPort("dynamicMHE","portExecutionTime")
+#reporter.reportPort("dynamicMHE","portStateEstimate")
+#reporter.reportPort("dynamicMHE","portControlEstimate")
+#reporter.reportPort("dynamicMHE","portQPSolverStatus")
+#reporter.reportPort("dynamicMHE","portKKTTolerance")
+#reporter.reportPort("dynamicMHE","portObjectivevalue")
+#reporter.reportPort("dynamicMHE","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMHE","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
+#reporter.reportPort("dynamicMHE","portExecutionTime")
 
-reporter.reportPort("dynamicMPC","portQPSolverStatus")
-reporter.reportPort("dynamicMPC","portKKTTolerance")
-reporter.reportPort("dynamicMPC","portObjectivevalue")
-reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
-reporter.reportPort("dynamicMPC","portPreparationPhaseExecTime")
-reporter.reportPort("dynamicMPC","portFeedbackPhaseExecTime")
-reporter.reportPort("dynamicMPC","portExecutionTime")
-reporter.reportPort("dynamicMPC","portMultipliers")
+#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+#reporter.reportPort("dynamicMPC","portKKTTolerance")
+#reporter.reportPort("dynamicMPC","portObjectivevalue")
+#reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+#reporter.reportPort("dynamicMPC","portPreparationPhaseExecTime")
+#reporter.reportPort("dynamicMPC","portFeedbackPhaseExecTime")
+#reporter.reportPort("dynamicMPC","portExecutionTime")
+#reporter.reportPort("dynamicMPC","portMultipliers")
 
-reporter.reportPort("trajectoryGenerator","portCurrentReference")
+#reporter.reportPort("trajectoryGenerator","portCurrentReference")
 
+#reporter.reportPort("encoder","encoderTimeStampOut")
+reporter.reportPort("LEDTracker","compTime")
 ################################################################################
 #
 # Configure and start components
