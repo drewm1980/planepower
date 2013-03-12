@@ -14,18 +14,18 @@ namespace OCL
     : TaskContext(name)
   {
     ports()->addEventPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
-								  ",dx,dy,dz"
-								  ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
-								  ",w1,w2,w3"
-								  ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
+                                                                  ",dx,dy,dz"
+                                                                  ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
+                                                                  ",w1,w2,w3"
+                                                                  ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
     // mismatch in u has no effect on us.
-                                                                                         
+
     ports()->addPort("portMHEFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
     ports()->addPort("portMHEFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
-                
+
     ports()->addPort("portMPCFullStateVector", portMpcFullStateVector).doc( "MPC: all states over the horizon." );
     ports()->addPort("portMPCFullControlVector", portMpcFullControlVector).doc( "MPC: all controls over the horizon." );
-    
+
     ports()->addPort("portMeasurementsPast", portMeasurementsPast).doc( "MHE measurements on 1. N nodes." );
     ports()->addPort("portMeasurementsCurrent", portMeasurementsCurrent).doc( "MHE measurements on N + 1st node." );
   }
@@ -39,15 +39,15 @@ namespace OCL
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     X.resize(NSTATES,0.0);
-                
+
     mheFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
     mheFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
-                
+
     mpcFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
     mpcFullControlVector.resize(  NHORIZON      * NCONTROLS, 0.0);
-    
-    measurementsPast.resize(	NHORIZON * NY, 0.0);
-    measurementsCurrent.resize(	NYN, 0.0);
+
+    measurementsPast.resize(    NHORIZON * NY, 0.0);
+    measurementsCurrent.resize(         NYN, 0.0);
 
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
@@ -74,13 +74,13 @@ namespace OCL
   void  ProtobufBridge::updateHook()
   {
     _stateInputPort.read( X );
-                
+
     portMheFullStateVector.read( mheFullStateVector );
     portMheFullControlVector.read( mheFullControlVector );
-                
+
     portMpcFullStateVector.read( mpcFullStateVector );
     portMpcFullControlVector.read( mpcFullControlVector );
-    
+
     portMeasurementsPast.read( measurementsPast );
     portMeasurementsCurrent.read( measurementsCurrent );
 
@@ -199,18 +199,18 @@ namespace OCL
     proto->set_ur( data->ur );
     proto->set_up( data->up );
   }
-  
+
   void ProtobufBridge::fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data)
   {
   }
-  
+
   void ProtobufBridge::fromControlVec(MheMpc::Controls *proto, const ControlVec *data)
   {
     proto->set_dddelta( data->dddelta );
     proto->set_dur( data->dur );
     proto->set_dup( data->dup );
   }
-  
+
   void ProtobufBridge::fromParamVec(MheMpc::Parameters *proto, const ParamVec *data)
   {
   }
@@ -246,4 +246,3 @@ namespace OCL
   };
 
 }//namespace
-
