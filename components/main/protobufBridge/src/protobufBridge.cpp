@@ -93,10 +93,9 @@ namespace OCL
     MheMpc::DaePlus *daeplus;
 
     // write the "current state" field
-    MheMpc::Dae *dae = mmh.mutable_currentstate();
     DiffStateVec * x = (DiffStateVec*) &(mheFullStateVector[NHORIZON*NSTATES]);
     ControlVec   * u = (ControlVec*)   &(mpcFullControlVector[0]);
-    toDae(dae, x, u);
+    toDae(mmh.mutable_currentstate(), x, u);
 
     // set mhe horizon
     for (int k=0; k<NHORIZON+1; k++){
@@ -105,11 +104,10 @@ namespace OCL
         double transparency = 0.2;
         if (k==NHORIZON) transparency = 1.0;
         daeplus = mmh.mutable_mhehorizon(k);
-        dae = daeplus->mutable_dae();
         if (k<NHORIZON)
-            toDae(dae, x, u);
+            toDae(daeplus->mutable_dae(), x, u);
         else
-            toDae(dae, x, NULL);
+            toDae(daeplus->mutable_dae(), x, NULL);
         daeplus->set_kitetransparency(transparency);
         daeplus->set_linetransparency(transparency);
     }
@@ -121,11 +119,10 @@ namespace OCL
         double transparency = 0.2;
         if (k==0) transparency = 1.0;
         daeplus = mmh.mutable_mpchorizon(k);
-        dae = daeplus->mutable_dae();
         if (k<NHORIZON)
-            toDae(dae, x, u);
+            toDae(daeplus->mutable_dae(), x, u);
         else
-            toDae(dae, x, NULL);
+            toDae(daeplus->mutable_dae(), x, NULL);
         daeplus->set_kitetransparency(transparency);
         daeplus->set_linetransparency(transparency);
     }
