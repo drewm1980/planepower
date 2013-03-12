@@ -146,11 +146,11 @@ namespace OCL
     // measurementsCurrentX uses measurementsCurrent, X only
     fromMeasurementsXVec(mmh.mutable_measurementscurrentx(),
                          (MeasurementsXVec*)&(measurementsCurrent[0]));
-    // measurementsLastLatest uses measurementsPast[NHORIZON-1], X and U
+    // measurementsLastLatest uses measurementsPast[0], X and U
     fromMeasurementsXVec(mmh.mutable_measurementslastlatest()->mutable_measurementsx(),
-                         (MeasurementsXVec*)&(measurementsPast[NY*(NHORIZON-1)]));
+                         (MeasurementsXVec*)&(measurementsPast[0*NY*(NHORIZON-1)]));
     fromMeasurementsUVec(mmh.mutable_measurementslastlatest()->mutable_measurementsu(),
-                         (MeasurementsUVec*)&(measurementsPast[NY*(NHORIZON-1)+NYN]));
+                         (MeasurementsUVec*)&(measurementsPast[0*NY*(NHORIZON-1)+NYN]));
 
 
     if (!mmh.SerializeToString(&X_serialized)) {
