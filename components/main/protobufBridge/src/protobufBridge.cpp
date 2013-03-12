@@ -85,10 +85,10 @@ namespace OCL
     portMeasurementsCurrent.read( measurementsCurrent );
 
     // set some constants
-    mmh.set_carouselarmheight(2.0);
-    mmh.set_visspan(0.96);
-    mmh.set_rarm(1.085);
-    mmh.set_zt(-0.05);
+    mmh.mutable_visconf()->set_carouselarmheight(2.0);
+    mmh.mutable_visconf()->set_visspan(0.96);
+    mmh.mutable_visconf()->set_rarm(1.085);
+    mmh.mutable_visconf()->set_zt(-0.05);
 
     MheMpc::DaePlus *daeplus;
 
