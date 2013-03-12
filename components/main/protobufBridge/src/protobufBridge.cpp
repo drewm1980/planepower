@@ -13,6 +13,7 @@ namespace OCL
   ProtobufBridge::ProtobufBridge(std::string name)
     : TaskContext(name)
   {
+    ports()->addEventPort("portTrigger",portTrigger).doc("This port triggers the protobuf");
     ports()->addPort("portMHEFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
     ports()->addPort("portMHEFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
 

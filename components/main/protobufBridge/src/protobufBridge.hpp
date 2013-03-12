@@ -38,6 +38,8 @@ using namespace KDL;
 #define NY              (21 + 3)
 #define NYN             (21)
 
+typedef uint64_t TIME_TYPE;
+
 namespace OCL
 {
   class ProtobufBridge
@@ -66,6 +68,7 @@ namespace OCL
     InputPort< vector< double > > portDebugVec;
     vector< double > debugVec;
 
+    InputPort< TIME_TYPE > portTrigger;
   private:
     MheMpc::MheMpcHorizons mmh;
 
