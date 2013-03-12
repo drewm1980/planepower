@@ -131,18 +131,22 @@ namespace OCL
     }
 
     // set measurement horizon
+    // 0 through (NHORIZON-1) are measurementsPast, X and U
     for (int k=0; k<NHORIZON; k++){
         fromMeasurementsXVec((mmh.mutable_measurementshorizon(k))->mutable_measurementsx(),
                              (MeasurementsXVec*)&(measurementsPast[k*NY]));
         fromMeasurementsUVec((mmh.mutable_measurementshorizon(k))->mutable_measurementsu(),
                              (MeasurementsUVec*)&(measurementsPast[k*NY+NYN]));
     }
+    // NHORIZON is measurementsCurrent, X only
     fromMeasurementsXVec((mmh.mutable_measurementshorizon(NHORIZON))->mutable_measurementsx(),
                          (MeasurementsXVec*)&(measurementsCurrent[0]));
 
     // set current measurement
+    // measurementsCurrentX uses measurementsCurrent, X only
     fromMeasurementsXVec(mmh.mutable_measurementscurrentx(),
                          (MeasurementsXVec*)&(measurementsCurrent[0]));
+    // measurementsLastLatest uses measurementsPast[NHORIZON-1], X and U
     fromMeasurementsXVec(mmh.mutable_measurementslastlatest()->mutable_measurementsx(),
                          (MeasurementsXVec*)&(measurementsPast[NY*(NHORIZON-1)]));
     fromMeasurementsUVec(mmh.mutable_measurementslastlatest()->mutable_measurementsu(),
