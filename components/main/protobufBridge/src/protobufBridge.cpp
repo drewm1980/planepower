@@ -13,13 +13,6 @@ namespace OCL
   ProtobufBridge::ProtobufBridge(std::string name)
     : TaskContext(name)
   {
-    ports()->addEventPort( "stateInputPort",_stateInputPort ).doc("x,y,z"
-                                                                  ",dx,dy,dz"
-                                                                  ",e11,e12,e13,e21,e22,e23,e31,e32,e33"
-                                                                  ",w1,w2,w3"
-                                                                  ",delta,ddelta,ur,up"); // We ONLY use the first 18 states from this;
-    // mismatch in u has no effect on us.
-
     ports()->addPort("portMHEFullStateVector", portMheFullStateVector).doc( "MHE: all states over the horizon." );
     ports()->addPort("portMHEFullControlVector", portMheFullControlVector).doc( "MHE: all controls over the horizon." );
 
@@ -41,8 +34,6 @@ namespace OCL
   {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    X.resize(NSTATES,0.0);
-    
     debugVec.resize(10, 0.0);
 
     mheFullStateVector.resize(   (NHORIZON + 1) * NSTATES,   0.0);
@@ -84,8 +75,6 @@ namespace OCL
 
   void  ProtobufBridge::updateHook()
   {
-    _stateInputPort.read( X );
-
     portMheFullStateVector.read( mheFullStateVector );
     portMheFullControlVector.read( mheFullControlVector );
 

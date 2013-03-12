@@ -44,9 +44,6 @@ namespace OCL
     : public TaskContext
   {
   protected:
-    InputPort< vector< double > > _stateInputPort;
-    vector< double >              X;
-
     InputPort< vector< double > > portMheFullStateVector;
     InputPort< vector< double > > portMheFullControlVector;
     vector< double > mheFullStateVector;
