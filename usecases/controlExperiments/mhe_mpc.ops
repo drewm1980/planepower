@@ -229,8 +229,6 @@ connect("LEDTracker.markerPositions","poseFromMarkers.markerPositions",cp)
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","mcuHandler.imuData",cp)
 
-connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
-
 connect("dynamicMHE.portMeasurementsMarkers",	"LEDTracker.markerPositionsAndCovariance",cp)
 connect("dynamicMHE.portMeasurementsPose",		"poseFromMarkers.pose",cp)
 connect("dynamicMHE.portMeasurementsIMU",		"imuBuffer.imuMeanCov",cp)
@@ -263,6 +261,14 @@ connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", c
 connect("dynamicMHE.portMeasurementsCtrl","dynamicMPC.portControlsForMeasurement", cp)
 
 connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
+
+#Protobuf connections
+connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
+connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
+connect("protobuf.portMeasurementsPast","dynamicMHE.portMeasurementsPast",cp)
+connect("protobuf.portMeasurementsCurrent","dynamicMHE.portMeasurementsCurrent",cp)
+
 
 ################################################################################
 #

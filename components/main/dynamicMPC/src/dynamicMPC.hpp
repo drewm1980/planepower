@@ -67,6 +67,8 @@ private:
 	void printMatrix(string name, vector< vector< double > > data);
 
 	bool prepareInputData( void );
+	
+	bool initializeSolver();
 
 	/// Indicator whether the MPC is ready for outputting the data
 	bool initialized;

@@ -235,7 +235,6 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	// Misc
 	//
 
-
 	this->addPort("portFullStateVector", portFullStateVector)
 			.doc("Full state vector in the MHE.");
 
@@ -248,8 +247,24 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	fullControlVector.resize(N * NU, 0.0);
 	portFullControlVector.setDataSample( fullControlVector );
 	portFullControlVector.write( fullControlVector );
+}
 
-
+bool DynamicMPC::initializeSolver()
+{
+	memset(&acadoWorkspace,			0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables.x,		0, sizeof( acadoVariables.x ));
+	memset(&acadoVariables.u,		0, sizeof( acadoVariables.u ));
+	memset(&acadoVariables.xRef,	0, sizeof( acadoVariables.xRef ));
+	memset(&acadoVariables.uRef,	0, sizeof( acadoVariables.uRef ));
+	
+	dataSizeValid = false;
+	initialized = false;
+	firstRefArrived = false;
+	firstWeightPArrived = false;
+	
+	qpSolverStatus = 0.0; 
+	kktTolerance = 0.0;
+	numOfActiveSetChanges = 0;
 }
 
 bool DynamicMPC::configureHook()
@@ -319,18 +334,8 @@ bool DynamicMPC::configureHook()
 
 bool DynamicMPC::startHook()
 {
-	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
-	memset(&acadoVariables.x, 0, sizeof( acadoVariables.x ));
-	memset(&acadoVariables.u, 0, sizeof( acadoVariables.u ));
-	memset(&acadoVariables.xRef, 0, sizeof( acadoVariables.u ));
-	memset(&acadoVariables.uRef, 0, sizeof( acadoVariables.u ));
-	qpSolverStatus = 0.0; 
-	kktTolerance = 0.0;
-	numOfActiveSetChanges = 0;
-	dataSizeValid = false;
-	initialized = false;
-	firstRefArrived = false;
-	firstWeightPArrived = false;
+	initializeSolver();
+
 	return true;
 }
 
@@ -555,7 +560,8 @@ void DynamicMPC::mpcFeedbackPhase()
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 			// Stop the component is case we are not lucky today
-			cout << "MPC want to trow garbage. stopping it.. " << endl;
+			log( Error )  << "MPC want to trow garbage. stopping it.. " << endl;
+			
 			stop();
 		}
 
