@@ -29,6 +29,7 @@ namespace OCL
     ports()->addPort("portMeasurementsPast", portMeasurementsPast).doc( "MHE measurements on 1. N nodes." );
     ports()->addPort("portMeasurementsCurrent", portMeasurementsCurrent).doc( "MHE measurements on N + 1st node." );
 
+    ports()->addPort("portReferenceTrajectory", portReferenceTrajectory).doc( "Reference trajectory for MPC." );
     ports()->addPort("portDebugVec", portDebugVec).doc( "10 entries for debugging purposes." );
   }
 
@@ -53,17 +54,20 @@ namespace OCL
     measurementsPast.resize(    NHORIZON * NY, 0.0);
     measurementsCurrent.resize(         NYN, 0.0);
 
+    referenceTrajectory.resize(  (NHORIZON + 1) * (NSTATES + NCONTROLS),   0.0);
+
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
     mmh.clear_measurementshorizon();
     mmh.clear_referencetrajectory();
-    for (int k=0; k<NHORIZON; k++)
-        mmh.add_referencetrajectory();
     for (int k=0; k<NHORIZON+1; k++){
         mmh.add_mhehorizon();
         mmh.add_mpchorizon();
         mmh.add_measurementshorizon();
+        mmh.add_referencetrajectory();
     }
+    mmh.mutable_referencetrajectory(0)->set_kitetransparency(0.0);
+    mmh.mutable_referencetrajectory(0)->set_linetransparency(0.0);
 
     context = new zmq::context_t(1);
 
@@ -90,6 +94,8 @@ namespace OCL
 
     portMeasurementsPast.read( measurementsPast );
     portMeasurementsCurrent.read( measurementsCurrent );
+
+    portReferenceTrajectory.read( referenceTrajectory );
 
     portDebugVec.read( debugVec );
 
@@ -119,12 +125,13 @@ namespace OCL
     ControlVec   * u = (ControlVec*)   &(mpcFullControlVector[0]);
     toDae(mmh.mutable_currentstate(), x, u);
 
-    // set reference trajectory USING MPC TRAJECTORY AS A PLACEHOLDER
+    // set reference trajectory
+    toDae(mmh.mutable_referencetrajectory(0), x, u); // off by one so that it lines up with mpc
     for (int k=0; k<NHORIZON; k++){
-        x = (DiffStateVec*) &(mpcFullStateVector[k*NSTATES]);
-        u = (ControlVec*)   &(mpcFullControlVector[k*NCONTROLS]);
+        x = (DiffStateVec*) &(referenceTrajectory[k*(NSTATES+NCONTROLS)]);
+        u = (ControlVec*)   &(referenceTrajectory[k*(NSTATES+NCONTROLS)+NSTATES]);
         double transparency = 0.2;
-        daeplus = mmh.mutable_referencetrajectory(k);
+        daeplus = mmh.mutable_referencetrajectory(k+1); // off by one so that it lines up with mpc
         toDae(daeplus->mutable_dae(), x, u);
         daeplus->set_kitetransparency(transparency);
         daeplus->set_linetransparency(transparency);
