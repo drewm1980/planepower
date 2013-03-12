@@ -44,9 +44,6 @@ namespace OCL
     : public TaskContext
   {
   protected:
-    InputPort< vector< double > > _stateInputPort;
-    vector< double >              X;
-
     InputPort< vector< double > > portMheFullStateVector;
     InputPort< vector< double > > portMheFullControlVector;
     vector< double > mheFullStateVector;
@@ -62,6 +59,12 @@ namespace OCL
 
     InputPort< vector< double > > portMeasurementsCurrent;
     vector< double > measurementsCurrent;
+
+    InputPort< vector< double > > portReferenceTrajectory;
+    vector< double > referenceTrajectory;
+
+    InputPort< vector< double > > portDebugVec;
+    vector< double > debugVec;
 
   private:
     MheMpc::MheMpcHorizons mmh;

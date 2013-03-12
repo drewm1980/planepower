@@ -262,7 +262,7 @@ connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", c
 connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
 #Protobuf connections
-connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portCurrentReference",cp)
 connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
 connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
 connect("protobuf.portMPCFullStateVector","dynamicMPC.portFullStateVector",cp)
