@@ -94,7 +94,7 @@ namespace OCL
 
     // write the "current state" field
     MheMpc::Dae *dae = mmh.mutable_currentstate();
-    DiffStateVec * x = (DiffStateVec*) &(mpcFullStateVector[0]);
+    DiffStateVec * x = (DiffStateVec*) &(mheFullStateVector[NHORIZON*NSTATES]);
     ControlVec   * u = (ControlVec*)   &(mpcFullControlVector[0]);
     toDae(dae, x, u);
 
