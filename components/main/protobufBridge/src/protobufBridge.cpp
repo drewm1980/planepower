@@ -52,6 +52,9 @@ namespace OCL
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
     mmh.clear_measurementshorizon();
+    mmh.clear_referencetrajectory();
+    for (int k=0; k<NHORIZON; k++)
+        mmh.add_referencetrajectory();
     for (int k=0; k<NHORIZON+1; k++){
         mmh.add_mhehorizon();
         mmh.add_mpchorizon();
@@ -96,6 +99,17 @@ namespace OCL
     DiffStateVec * x = (DiffStateVec*) &(mheFullStateVector[NHORIZON*NSTATES]);
     ControlVec   * u = (ControlVec*)   &(mpcFullControlVector[0]);
     toDae(mmh.mutable_currentstate(), x, u);
+
+    // set reference trajectory USING MPC TRAJECTORY AS A PLACEHOLDER
+    for (int k=0; k<NHORIZON; k++){
+        x = (DiffStateVec*) &(mpcFullStateVector[k*NSTATES]);
+        u = (ControlVec*)   &(mpcFullControlVector[k*NCONTROLS]);
+        double transparency = 0.2;
+        daeplus = mmh.mutable_referencetrajectory(k);
+        toDae(daeplus->mutable_dae(), x, u);
+        daeplus->set_kitetransparency(transparency);
+        daeplus->set_linetransparency(transparency);
+    }
 
     // set mhe horizon
     for (int k=0; k<NHORIZON+1; k++){
