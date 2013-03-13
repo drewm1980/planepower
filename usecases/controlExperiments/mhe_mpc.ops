@@ -263,13 +263,14 @@ connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", c
 connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
 #Protobuf connections
-connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portCurrentReference",cp)
+connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portReferences",cp)
 connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
 connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
 connect("protobuf.portMPCFullStateVector","dynamicMPC.portFullStateVector",cp)
 connect("protobuf.portMPCFullControlVector","dynamicMPC.portFullControlVector",cp)
 connect("protobuf.portMeasurementsPast","dynamicMHE.portMeasurementsPast",cp)
 connect("protobuf.portMeasurementsCurrent","dynamicMHE.portMeasurementsCurrent",cp)
+connect("protobuf.portControlsApplied","mcuHandler.controlOutputPort",cp)
 
 
 ################################################################################
@@ -340,7 +341,8 @@ connectPeers("reporter","LEDTracker")
 #reporter.reportPort("dynamicMHE","portFeedbackPhaseExecTime")
 #reporter.reportPort("dynamicMHE","portExecutionTime")
 
-#reporter.reportPort("dynamicMPC","portQPSolverStatus")
+reporter.reportPort("dynamicMPC","portQPSolverStatus")
+reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
 #reporter.reportPort("dynamicMPC","portKKTTolerance")
 #reporter.reportPort("dynamicMPC","portObjectivevalue")
 #reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
@@ -352,7 +354,7 @@ connectPeers("reporter","LEDTracker")
 #reporter.reportPort("trajectoryGenerator","portCurrentReference")
 
 #reporter.reportPort("encoder","encoderTimeStampOut")
-reporter.reportPort("LEDTracker","compTime")
+#reporter.reportPort("LEDTracker","compTime")
 ################################################################################
 #
 # Configure and start components
