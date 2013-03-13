@@ -9,4 +9,4 @@ ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f
 CMD="$PLANEPOWER_ROOT/rawesome_stuff/rawesome/plotter/dist/build/plot-ho-matic/plot-ho-matic --ip tcp://$ip:5563"
 
 echo $0: running $CMD...
-$CMD
+$CMD &disown
