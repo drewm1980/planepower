@@ -99,7 +99,7 @@ int main( int argc, char * const argv[] )
 	mpc.set( HESSIAN_APPROXIMATION,       GAUSS_NEWTON    );
 	mpc.set( DISCRETIZATION_TYPE,   MULTIPLE_SHOOTING );
 	mpc.set( QP_SOLVER,             QP_QPOASES      );
-	mpc.set( HOTSTART_QP,           YES              );
+	mpc.set( HOTSTART_QP,           NO              );
     
 	mpc.set( INTEGRATOR_TYPE,             INT_IRK_GL2    );
 	mpc.set( NUM_INTEGRATOR_STEPS,        30              );
