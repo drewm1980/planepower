@@ -8,7 +8,10 @@ using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
-extern int markers_from_pose( double** x, double** r);
+extern "C"
+{
+	        extern int evaluateWrap( double** x, double** r);
+}
 
 namespace OCL
 {
@@ -108,7 +111,7 @@ namespace OCL
 		double* temp = &((*markerPositions)[0]);
 		outputs[0] = temp;
 		// Call wrapped function
-		markers_from_pose(inputs, outputs);
+		evaluateWrap(inputs, outputs);
 	}
 
     void  CameraSimulator::stopHook()

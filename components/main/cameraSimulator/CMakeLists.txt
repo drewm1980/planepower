@@ -37,7 +37,7 @@ find_package(Orocos-RTT HINTS ${rtt_PACKAGE_PATH}/install )
 # Defines the orocos_* cmake macros. See that file for additional
 # documentation.
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
-
+ADD_DEFINITIONS(-fvisibility=hidden -fvisibility-inlines-hidden)
 ADD_CUSTOM_COMMAND(
 	COMMAND
 		python ${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/markers_from_pose.py
@@ -49,23 +49,11 @@ ADD_CUSTOM_COMMAND(
 		"Creating a file: markers_from_pose.c"
 )
 
-ADD_CUSTOM_COMMAND(
-	COMMAND
-		sh ${CMAKE_CURRENT_SOURCE_DIR}/../../../tools/rename_casadi_functions
-	WORKING_DIRECTORY
-		${CMAKE_CURRENT_SOURCE_DIR}/src
-	OUTPUT
-		${CMAKE_CURRENT_SOURCE_DIR}/src/casadi_functions.cpp
-	DEPENDS
-		${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/markers_from_pose.c
-	COMMENT
-		"Creating a file: casadi_functions.cpp"
-)
  
 #common commands for building c++ executables and libraries
 orocos_component(${PROJECT_NAME} 
 	src/cameraSimulator.cpp
-	src/casadi_functions.cpp)
+	${CMAKE_CURRENT_SOURCE_DIR}/../cameraCalibration/markers_from_pose.c)
 rosbuild_add_library(cameraSimulator src/cameraSimulator.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
