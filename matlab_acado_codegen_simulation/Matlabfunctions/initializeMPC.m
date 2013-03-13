@@ -46,7 +46,7 @@ MPC.B = MPC.B([1:18,21:22],2:3);
 We = 100;
 Ww = 1;
 % Control weights
-MPC.R = 1e2*1e-2*diag([1e-4, 100, 100]);
+MPC.R = 5*1e2*1e-2*diag([1e-4, 100, 100]);
 % State weights
 MPC.Q = 1e-2*diag([100,  100,  100, 1, 1, 1,    ...
                 We,  We,  We,  We,  We,  We,  We,  We,  We, ...
