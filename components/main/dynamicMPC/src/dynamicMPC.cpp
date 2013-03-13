@@ -70,6 +70,15 @@ using namespace MPCHACK;
 #define N_MULTIPLIERS QPOASES_NVMAX + QPOASES_NCMAX
 //using namespace boost::math;
 
+static bool isNaN(double* array, unsigned dim)
+{
+	for (unsigned i = 0; i < dim; ++i)
+		if (isfinite( array[ i ] ) == false )
+			return true;
+
+	return false;	
+}
+
 //
 // Class methods
 //
@@ -644,8 +653,15 @@ bool DynamicMPC::prepareInputData( void )
 		if (dataSizeValid == true)
 		{
 			// Set the feedback for the controls to controlinput. Do this such that we don't use the controls estimated by MHE, since MHE does not do a very good job at estimating them yet.
-			feedback[20] = controlInput[0]/SCALE_UR; // ur
-			feedback[21] = controlInput[2]/SCALE_UP; // up
+			if (isfinite(controlInput[ 0 ]) == false || isfinite(controlInput[ 1 ]) == false)
+			{
+				feedback[ 20 ] = feedback[ 21 ] = 0.0;
+			}
+			else
+			{
+				feedback[20] = controlInput[0]/SCALE_UR; // ur
+				feedback[21] = controlInput[2]/SCALE_UP; // up
+			}
 
 			// References
 			if (statusPortReferences == NewData)
