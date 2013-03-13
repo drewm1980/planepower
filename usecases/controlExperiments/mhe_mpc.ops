@@ -218,6 +218,7 @@ var ConnPolicy cp
 
 connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
+connect("masterTimer.cameraClock","protobuf.portTrigger",cp)
 
 connect("encoder.encoderTimeStampIn","masterTimer.cameraClock",cp)
 connect("cameraTrigger.Trigger","masterTimer.cameraClock",cp)
