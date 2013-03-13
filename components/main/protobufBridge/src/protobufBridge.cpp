@@ -114,9 +114,9 @@ namespace OCL
     mmh.mutable_visconf()->set_zt(-0.05);
 
     // set the controls applied
-    mmh.mutable_controlsapplied->set_urright(controlsApplied[0]);
-    mmh.mutable_controlsapplied->set_urleft(controlsApplied[1]);
-    mmh.mutable_controlsapplied->set_up(controlsApplied[2]);
+    mmh.mutable_controlsapplied()->set_urright(controlsApplied[0]);
+    mmh.mutable_controlsapplied()->set_urleft(controlsApplied[1]);
+    mmh.mutable_controlsapplied()->set_up(controlsApplied[2]);
 
     MheMpc::DaePlus *daeplus;
 
