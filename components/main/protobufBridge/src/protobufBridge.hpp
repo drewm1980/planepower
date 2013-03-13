@@ -63,6 +63,9 @@ namespace OCL
     InputPort< vector< double > > portReferenceTrajectory;
     vector< double > referenceTrajectory;
 
+    InputPort< vector< double > > portControlsApplied;
+    vector< double > controlsApplied;
+
     InputPort< vector< double > > portDebugVec;
     vector< double > debugVec;
 

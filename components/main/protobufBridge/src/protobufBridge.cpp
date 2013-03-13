@@ -24,6 +24,7 @@ namespace OCL
 
     ports()->addPort("portReferenceTrajectory", portReferenceTrajectory).doc( "Reference trajectory for MPC." );
     ports()->addPort("portDebugVec", portDebugVec).doc( "10 entries for debugging purposes." );
+    ports()->addPort("portControlsApplied", portControlsApplied).doc( "Controls commands output to actuators." );
   }
 
   ProtobufBridge::~ProtobufBridge()
@@ -46,6 +47,8 @@ namespace OCL
     measurementsCurrent.resize(         NYN, 0.0);
 
     referenceTrajectory.resize(  (NHORIZON + 1) * (NSTATES + NCONTROLS),   0.0);
+
+    controlsApplied.resize( 3 );
 
     mmh.clear_mhehorizon();
     mmh.clear_mpchorizon();
@@ -86,6 +89,8 @@ namespace OCL
 
     portReferenceTrajectory.read( referenceTrajectory );
 
+    portControlsApplied.read( controlsApplied );
+
     portDebugVec.read( debugVec );
 
     // set the debug vector
@@ -106,6 +111,11 @@ namespace OCL
     mmh.mutable_visconf()->set_visspan(0.96);
     mmh.mutable_visconf()->set_rarm(1.085);
     mmh.mutable_visconf()->set_zt(-0.05);
+
+    // set the controls applied
+    mmh.mutable_controlsapplied->set_urright(controlsApplied[0]);
+    mmh.mutable_controlsapplied->set_urleft(controlsApplied[1]);
+    mmh.mutable_controlsapplied->set_up(controlsApplied[2]);
 
     MheMpc::DaePlus *daeplus;
 
