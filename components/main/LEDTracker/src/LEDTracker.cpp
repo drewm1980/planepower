@@ -97,19 +97,15 @@ void  LEDTracker::updateHook()
 
 	// This blocks until computation is complete
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Refresh timestamp, in case PRINTF took time.
-	int trials = 1;
-	for(int foo=0; foo<trials; foo++)
-	{
-		blobExtractor1->extract_blobs(stereoPair->right_frame_data);
-		blobExtractor2->extract_blobs(stereoPair->left_frame_data);
-	}
+	blobExtractor1->extract_blobs(stereoPair->right_frame_data);
+	blobExtractor2->extract_blobs(stereoPair->left_frame_data);
 	computationCompleteTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time 
 	//double computationTime = (computationCompleteTimeStamp - tempTime)*1e-9; // sec
 	double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
 #if VERBOSE
 	//COUT << "Total computation time was: " << computationTime*1.0e3/trials << "ms" << ENDL;
 #endif
-	_compTime.write(computationTime*1.0e3/trials);
+	_compTime.write(computationTime*1.0e3);
 	
 #if 0 //VERBOSE
 	COUT 
