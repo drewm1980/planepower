@@ -41,7 +41,7 @@ namespace OCL
 			InputPort<TIME_TYPE>			_triggerTimeStampIn;
 			TIME_TYPE				triggerTimeStamp;
 			OutputPort<TIME_TYPE>			_triggerTimeStampOut;
-			OutputPort<TIME_TYPE>			_compTime;
+			OutputPort<double>			_compTime;
 
 			OutputPort<TIME_TYPE>			_frameArrivalTimeStamp;
 			TIME_TYPE				frameArrivalTimeStamp;
