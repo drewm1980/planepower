@@ -142,7 +142,7 @@ DynamicMPC::DynamicMPC(const std::string& name)
 	this->addPort("portFeedbackPhaseExecTime", portFeedbackPhaseExecTime)
 			.doc("Feedback phase execution time.");
 	this->addPort("portExecutionTime", portExecutionTime)
-				.doc("Execution time of the MPC.");
+			.doc("Execution time of the MPC.");
 
 	this->addPort("portQPSolverStatus", portQPSolverStatus)
 			.doc("Status of the QP solver; 0 - good, otherwise scratch your head.");
@@ -491,6 +491,12 @@ void DynamicMPC::mpcPreparationPhase()
 	if (initialized == true)
 	{
 		preparationStep( );
+		
+		if (isNaN(acadoVariables.x, (N + 1) * NX))
+			log( Debug ) << "Preparation step: acadoVariables.x is NaN" << endlog();
+			
+		if (isNaN(acadoVariables.u, N * NU))
+			log( Debug ) << "Preparation step: acadoVariables.u is NaN" << endlog();
 	}
 
 	timePrepPhase = TimeService::Instance()->secondsSince( tickPreparationPhaseBegin );
@@ -569,7 +575,7 @@ void DynamicMPC::mpcFeedbackPhase()
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 			// Stop the component is case we are not lucky today
-			log( Error )  << "MPC want to trow garbage. stopping it.. " << endl;
+			log( Error )  << "MPC want to trow garbage. stopping it.. " << endlog();
 			
 			stop();
 		}
@@ -621,9 +627,13 @@ bool DynamicMPC::prepareInputData( void )
 
 		// Read the feedback
 		statusPortFeedback = portFeedback.read( feedback );
-		if (feedback.size() != NX)
+		if (feedback.size() != NX || statusPortFeedback != NewData)
 		{
 			dataSizeValid = false;
+		}
+		if (isNaN(&feedback[ 0 ], NX))
+		{
+			log( Debug ) << "feedback is NaN" << endlog();
 		}
 
 		// Read the references
@@ -632,6 +642,10 @@ bool DynamicMPC::prepareInputData( void )
 		{
 			dataSizeValid = false;
 		}
+		if (isNaN(&references[ 0 ], NX * N + NU * N))
+		{
+			log( Debug ) << "references is NaN" << endlog();
+		}
 
 		// Read the weighting matrix P
 		statusPortWeightingMatrixP = portWeightingMatrixP.read( weightingMatrixP );
@@ -639,12 +653,20 @@ bool DynamicMPC::prepareInputData( void )
 		{
 			dataSizeValid = false;
 		}
+		if (isNaN(&weightingMatrixP[ 0 ], NX * NX))
+		{
+			log( Debug ) << "weightingMatrixP is NaN" << endlog();
+		}
 
 		// Read the control input
 		statusPortControlInput = portControlInput.read( controlInput );
 		if (controlInput.size() != NU)
 		{
 			dataSizeValid = false;
+		}
+		if (isNaN(&controlInput[ 0 ], NU))
+		{
+			log( Debug ) << "controlInput is NaN" << endlog();
 		}
 
 		//
