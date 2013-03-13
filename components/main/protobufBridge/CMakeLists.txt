@@ -11,6 +11,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
+set(CMAKE_VERBOSE_MAKEFILE true)
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -42,7 +44,7 @@ include_directories(../)
 orocos_component(${PROJECT_NAME} src/protobufBridge.cpp 
 	../../../rawesome_stuff/rawesome/carousel-cpp/kite.pb.cc
 	../../../rawesome_stuff/rawesome/carousel-cpp/mhempc.pb.cc)
-rosbuild_add_library(protobufBridge src/protobufBridge.cpp)
+#rosbuild_add_library(protobufBridge src/protobufBridge.cpp)
 target_link_libraries(${PROJECT_NAME} protobuf)
 target_link_libraries(${PROJECT_NAME} zmq)
 
