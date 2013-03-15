@@ -26,6 +26,7 @@ using namespace KDL;
 // These files are in the "rawesome" git repo maintained by Greg Horn
 #include "zhelpers.hpp"
 #include "kite.pb.h"
+#include "mhempc.pb.h"
 
 #include "carousel_types.h"
 
@@ -34,35 +35,58 @@ using namespace KDL;
 #define NCONTROLS       3
 #define NHORIZON        10
 
+#define NY              (21 + 3)
+#define NYN             (21)
+
+typedef uint64_t TIME_TYPE;
+
 namespace OCL
 {
   class ProtobufBridge
     : public TaskContext
   {
   protected:
-    InputPort< vector< double > > _stateInputPort;
-    vector< double >              X;
-                        
     InputPort< vector< double > > portMheFullStateVector;
     InputPort< vector< double > > portMheFullControlVector;
     vector< double > mheFullStateVector;
     vector< double > mheFullControlVector;
-                        
+
     InputPort< vector< double > > portMpcFullStateVector;
     InputPort< vector< double > > portMpcFullControlVector;
     vector< double > mpcFullStateVector;
     vector< double > mpcFullControlVector;
-                        
+
+    InputPort< vector< double > > portMeasurementsPast;
+    vector< double > measurementsPast;
+
+    InputPort< vector< double > > portMeasurementsCurrent;
+    vector< double > measurementsCurrent;
+
+    InputPort< vector< double > > portReferenceTrajectory;
+    vector< double > referenceTrajectory;
+
+    InputPort< vector< double > > portControlsApplied;
+    vector< double > controlsApplied;
+
+    InputPort< vector< double > > portDebugVec;
+    vector< double > debugVec;
+
+    InputPort< TIME_TYPE > portTrigger;
   private:
-    kite::MultiCarousel mc;
+    MheMpc::MheMpcHorizons mmh;
 
     zmq::context_t *context;
     zmq::socket_t *socket;
 
     string X_serialized;
 
-    void toCarouselState(const StateVector *state, const ControlVector *control,
-			 double transparency, kite::CarouselState *cs);
+    void toDae(MheMpc::Dae * dae, const DiffStateVec * x, const ControlVec * u);
+    void fromDiffStateVec(MheMpc::DifferentialStates *proto, const DiffStateVec *data);
+    void fromAlgVarVec(MheMpc::AlgebraicVars *proto, const AlgVarVec *data);
+    void fromControlVec(MheMpc::Controls *proto, const ControlVec *data);
+    void fromParamVec(MheMpc::Parameters *proto, const ParamVec *data);
+    void fromMeasurementsXVec(MheMpc::MeasurementsX *proto, const MeasurementsXVec *data);
+    void fromMeasurementsUVec(MheMpc::MeasurementsU *proto, const MeasurementsUVec *data);
 
   public:
     ProtobufBridge(std::string name);

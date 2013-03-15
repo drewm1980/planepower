@@ -5,9 +5,10 @@ clc
 addpath('Simulation','Matlabfunctions','code_export_MPC','code_export_MHE')
 
 z_start =  -0.1189362777884522; % Starting height of the ramp
-%z_start =  -0.16; % Starting height of the ramp
+%z_start = 0; % Starting height of the ramp
 %z_end = -0.00; % End height of the ramp
 z_end = -0.06;
+%z_end = z_start;
 Ts = 0.1; % Sampling time
 Tc = 2; % Time of ramp
 

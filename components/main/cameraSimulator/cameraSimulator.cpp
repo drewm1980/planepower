@@ -108,7 +108,7 @@ namespace OCL
 		double* temp = &((*markerPositions)[0]);
 		outputs[0] = temp;
 		// Call wrapped function
-		markers_from_pose(inputs, outputs);
+		evaluateWrap(inputs, outputs);
 	}
 
     void  CameraSimulator::stopHook()

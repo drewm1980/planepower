@@ -77,8 +77,10 @@ Tracer::~Tracer()
 
 void Tracer::update(void)
 {
-	scanline.setTo(cvScalar(0));
-	normline.setTo(cvScalar(0));
+	//scanline.setTo(cvScalar(0));
+	//normline.setTo(cvScalar(0));
+	scanline = cvScalar(0);
+	normline = cvScalar(0);
 
 	for(int frameidx=0; frameidx<2; frameidx++)
 	//int frameidx=0;

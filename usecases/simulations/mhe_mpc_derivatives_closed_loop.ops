@@ -151,6 +151,7 @@ var ConnPolicy cp
 
 connect("masterTimer.imuClock","sim.trigger",cp)
 connect("masterTimer.cameraClock","LEDTrackerSimulator.triggerTimeStampIn",cp)
+connect("masterTimer.cameraClock","protobuf.portTrigger",cp)
 
 connect("EncoderLatch.triggerTimeStampIn","masterTimer.cameraClock",cp)
 connect("EncoderLatch.deltaOmegaIn","sim.deltaOmega",cp)
@@ -167,10 +168,14 @@ connect("LEDTrackerSimulator.markerPositionsAndCovarianceIn","cameraSimulator.ma
 connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
 connect("imuBuffer.imuData","sim.imuData",cp)
 
-connect("protobuf.stateInputPort","dynamicMHE.portStateEstimate",cp)
+
+connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portReferences",cp)
 connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
 connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
-
+connect("protobuf.portMPCFullStateVector","dynamicMPC.portFullStateVector",cp)
+connect("protobuf.portMPCFullControlVector","dynamicMPC.portFullControlVector",cp)
+connect("protobuf.portMeasurementsPast","dynamicMHE.portMeasurementsPast",cp)
+connect("protobuf.portMeasurementsCurrent","dynamicMHE.portMeasurementsCurrent",cp)
 #
 # Connection between sensors and the MHE
 #
@@ -249,8 +254,11 @@ connectPeers("reporter","sim")
 #reporter.reportPort("sim","stateOutputPort")
 #reporter.reportPort("dynamicMHE","portStateAndControl")
 
-reporter.reportPort("dynamicMHE","portFullStateVector")
-reporter.reportPort("dynamicMPC","portFullStateVector")
+reporter.reportPort("dynamicMPC","portQPSolverStatus")
+reporter.reportPort("dynamicMPC","portNumOfActiveSetChanges")
+
+#reporter.reportPort("dynamicMHE","portFullStateVector")
+#reporter.reportPort("dynamicMPC","portFullStateVector")
 
 ################################################################################
 #

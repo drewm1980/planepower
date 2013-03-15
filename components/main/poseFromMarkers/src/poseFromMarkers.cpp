@@ -13,7 +13,10 @@ using namespace Orocos;
 using namespace BFL;
 using namespace cv;
 
-extern int pose_from_markers( double** x, double** r);
+extern "C"
+{
+	extern int evaluateWrap( double** x, double** r);
+}
 
 namespace OCL
 {
@@ -122,7 +125,7 @@ namespace OCL
 	{
 		copy(markerPositions.begin(), markerPositions.end(), getPoseWrapper_input[0]);
 
-		if( pose_from_markers(getPoseWrapper_input, getPoseWrapper_output) ){ return 1;}
+		if( evaluateWrap(getPoseWrapper_input, getPoseWrapper_output) ){ return 1;}
 
 		(*pose).assign(getPoseWrapper_output[0]
 				 	  ,getPoseWrapper_output[0]+NPOSE);
