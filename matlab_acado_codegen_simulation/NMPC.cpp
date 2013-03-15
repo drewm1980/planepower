@@ -111,6 +111,7 @@ int main( int argc, char * const argv[] )
 	mpc.set( IMPLICIT_INTEGRATOR_MODE, IFTR );
 	
 	mpc.set(SPARSE_QP_SOLUTION, CONDENSING);
+	mpc.set(MAX_NUM_QP_ITERATIONS, 20);
     
 	mpc.set( GENERATE_TEST_FILE,          YES            );
 	mpc.set( GENERATE_SIMULINK_INTERFACE, YES );
