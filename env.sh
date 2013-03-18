@@ -20,6 +20,10 @@ export PLANEPOWER_ROOT=`readlink -f $tmp`
 source $PLANEPOWER_ROOT/extern/orocos/env.sh
 source $PLANEPOWER_ROOT/extern/acado_public/build/acado_env.sh
 source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/build/mhe_export_env.sh
+export LUA_PATH=";;;$PLANEPOWER_ROOT/extern/orocos/ocl/lua/modules/?.lua"
+export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
+export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
+alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
 
 DEFAULT_RAWESOME_ROOT=`dirname $PLANEPOWER_ROOT`/rawesome
 if [ -d $DEFAULT_RAWESOME_ROOT ]; then

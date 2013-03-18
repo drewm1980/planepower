@@ -12,3 +12,11 @@ ruby autoproj_bootstrap $@ git git://gitorious.org/orocos-toolchain/build.git br
 autoproj update
 autoproj fast-build
 )
+
+echo "Bootstrapping rttlua tab completion..."
+git clone git://gitorious.org/orocos-toolchain/rttlua_completion.git
+(
+cd rttlua_completion
+make
+)
+
