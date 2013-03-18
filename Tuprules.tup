@@ -2,8 +2,8 @@
 CC = clang
 CXX = clang++
 CXXFLAGS += -Wall
-CXXFLAGS += -O0
-CXXFLAGS += -g
+#CXXFLAGS += -g
+CXXFLAGS += -O2
 CXXFLAGS += -fPIC
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
