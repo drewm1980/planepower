@@ -23,7 +23,6 @@ using namespace KDL;
 
 #include <zmq.hpp>
 
-// These files are in the "rawesome" git repo maintained by Greg Horn
 #include "zhelpers.hpp"
 #include "mhempc.pb.h"
 
