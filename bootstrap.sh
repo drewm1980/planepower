@@ -15,4 +15,7 @@ cd extern
 echo "Done bootstrapping dependencies in extern..."
 )
 
+# Do this in this (planepower) directory!!
+tup init
+
 ./setup_precommit_hook
