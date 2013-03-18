@@ -25,7 +25,6 @@ using namespace KDL;
 
 // These files are in the "rawesome" git repo maintained by Greg Horn
 #include "zhelpers.hpp"
-#include "kite.pb.h"
 #include "mhempc.pb.h"
 
 #include "carousel_types.h"
