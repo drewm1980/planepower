@@ -1,7 +1,6 @@
 include_rules
 FOO = $RAWESOME_ROOT
 LDFLAGS_OROCOS += -lzmq -lprotobuf 
-LDFLAGS_OROCOS += $(FOO)/carousel-cpp/kite.pb.o
 CPPFLAGS_OROCOS += -I..
 CPPFLAGS_OROCOS += -Wno-unused-function
 : $(RAWESOME_ROOT)/mhempc.proto |> protoc --cpp_out=. --proto_path=$(RAWESOME_ROOT) $(RAWESOME_ROOT)/mhempc.proto |> mhempc.pb.cc mhempc.pb.h
