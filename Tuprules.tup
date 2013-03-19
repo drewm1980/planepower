@@ -8,6 +8,11 @@ CXXFLAGS += -fPIC
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
 export PKG_CONFIG_PATH
+# The following makes the PLANEPOWER_ROOT environment variable
+# available as an absolute path to build targets.
+export PLANEPOWER_ROOT
+# The following command sets a tup variable that seems
+# redundant with the above, but tup expands it to a relative path.
 PLANEPOWER_ROOT=$(TUP_CWD)
 RAWESOME_ROOT=$(PLANEPOWER_ROOT)/rawesome_stuff/rawesome
 
@@ -36,17 +41,24 @@ CXXFLAGS_OROCOS = $(CXXFLAGS) -DRTT_COMPONENT
 CPPFLAGS_ACADO=-O0 -ggdb -w
 CXXFLAGS_ACADO = $(CXXFLAGS)
 
+# Note: here we keep PLANEPOWER_ROOT a shell variable;
+# if it were a tup variable, it would be a relative
+# path in the build rule and rpath wouldn't work
+# when the build executable is run in an arbitrary location.
 ACADO_PUBLIC_ROOT=$PLANEPOWER_ROOT/extern/acado_public
-CPPFLAGS_ACADO += -I$(ACADO_PUBLIC_ROOT)/include
-CPPFLAGS_ACADO += -I$(ACADO_PUBLIC_ROOT)/build/include
-LDFLAGS_ACADO = $(LDFLAGS) 
-LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/libs -lacado_toolkit
-LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs -lacado_csparse
-LDFLAGS_ACADO += -L$(ACADO_PUBLIC_ROOT)/build/external_packages/casadi/libs -lacado_casadi
-#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/libs
-#LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PUBLIC_ROOT)/build/external_packages/csparse/libs
-
 ACADO_PRIVATE_ROOT=$PLANEPOWER_ROOT/extern/acado_private
+
+#ACADO_ROOT = $(ACADO_PRIVATE_ROOT)
+ACADO_ROOT = $(ACADO_PUBLIC_ROOT)
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/include
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/build/include
+LDFLAGS_ACADO = $(LDFLAGS) 
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/libs -lacado_toolkit
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/csparse/libs -lacado_csparse
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/casadi/libs -lacado_casadi
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/libs
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/external_packages/csparse/libs
+
 CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export
 LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib -lmhe_export
 LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib

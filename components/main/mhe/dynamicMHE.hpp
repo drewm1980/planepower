@@ -210,7 +210,13 @@ private:
 
 	// Inputport for the reference of the controller. For reporting purposes only.
 	InputPort<vector<double> > portStateReference;
-	vector<double> StateReference; 
+	vector<double> StateReference;
+	
+	OutputPort< vector< double > > portMeasurementsPast;
+	vector< double > measurementsPast;
+	
+	OutputPort< vector< double > > portMeasurementsCurrent;
+	vector< double > measurementsCurrent;
 
 	//
 	// Properties
