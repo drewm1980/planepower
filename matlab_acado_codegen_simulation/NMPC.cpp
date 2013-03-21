@@ -102,7 +102,7 @@ int main( int argc, char * const argv[] )
 	mpc.set( HOTSTART_QP,           NO              );
     
 	mpc.set( INTEGRATOR_TYPE,             INT_IRK_GL2    );
-	mpc.set( NUM_INTEGRATOR_STEPS,        30              );
+	mpc.set( NUM_INTEGRATOR_STEPS,        40              );
 	
 	mpc.set( IMPLICIT_INTEGRATOR_NUM_ITS, 3				);
 	mpc.set( IMPLICIT_INTEGRATOR_NUM_ITS_INIT, 0		);
@@ -111,7 +111,7 @@ int main( int argc, char * const argv[] )
 	mpc.set( IMPLICIT_INTEGRATOR_MODE, IFTR );
 	
 	mpc.set(SPARSE_QP_SOLUTION, CONDENSING);
-	mpc.set(MAX_NUM_QP_ITERATIONS, 20);
+	mpc.set(MAX_NUM_QP_ITERATIONS, 30);
     
 	mpc.set( GENERATE_TEST_FILE,          YES            );
 	mpc.set( GENERATE_SIMULINK_INTERFACE, YES );

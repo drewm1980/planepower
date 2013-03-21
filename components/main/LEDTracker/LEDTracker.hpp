@@ -36,6 +36,7 @@ namespace OCL
 	{
 		protected:
 			OutputPort< vector<double> >	_markerPositions;
+			// Warning!!! These are actually invers covariances, i.e. weights!!!
 			OutputPort< vector<double> >	_markerPositionsAndCovariance;
 			Attribute<bool> _useExternalTrigger;
 			InputPort<TIME_TYPE>			_triggerTimeStampIn;
