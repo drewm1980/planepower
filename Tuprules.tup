@@ -63,6 +63,9 @@ CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export
 LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib -lmhe_export
 LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib
 
+CPPFLAGS_ACADO += -DACADO_CMAKE_BUILD
+CPPFLAGS_ACADO += -DCODEGEN_FOR_OROCOS
+
 !cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
 !ld_acado = |> $(CXX) -o %o %f $(LDFLAGS_ACADO) |>
 
