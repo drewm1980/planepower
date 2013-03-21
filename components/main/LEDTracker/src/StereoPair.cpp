@@ -39,24 +39,24 @@ StereoPair::StereoPair(bool useExternalTrigger)
 	for(int i=0; i<2; i++)
 	{
 		cameras[i] = dc1394_camera_new(dc1394_driver,guids[i]); 
-        if (!cameras[i]) {
-            CERR << "Failed to initialize camera with guid " << guids[i] << ENDL;
-            continue;
-        }
+		if (!cameras[i]) {
+			CERR << "Failed to initialize camera with guid " << guids[i] << ENDL;
+			continue;
+		}
 	}
 	COUT << "Successfully connected to both cameras..." << ENDL;
 
-    for(unsigned int i=0; i < 2; i++) {
-        err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
+	for(unsigned int i=0; i < 2; i++) {
+		err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
 		err=dc1394_video_set_operation_mode(cameras[i], DC1394_OPERATION_MODE_1394B);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
-        err=dc1394_video_set_iso_speed(cameras[i], DC1394_ISO_SPEED_800);
+		err=dc1394_video_set_iso_speed(cameras[i], DC1394_ISO_SPEED_800);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
-        err=dc1394_video_set_mode(cameras[i], DC1394_VIDEO_MODE_1600x1200_MONO8);
+		err=dc1394_video_set_mode(cameras[i], DC1394_VIDEO_MODE_1600x1200_MONO8);
 		frame_w=1600;
 		frame_h=1200;
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
@@ -83,10 +83,10 @@ StereoPair::StereoPair(bool useExternalTrigger)
 			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 		}
 
-        err=dc1394_capture_setup(cameras[i], FRAME_BUFFER_DEPTH, DC1394_CAPTURE_FLAGS_DEFAULT);
+		err=dc1394_capture_setup(cameras[i], FRAME_BUFFER_DEPTH, DC1394_CAPTURE_FLAGS_DEFAULT);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
-    }
+	}
 
 	// Put all cameras into broadcast mode
 	for(unsigned int i=0; i < 2; i++) {
@@ -118,18 +118,18 @@ StereoPair::StereoPair(bool useExternalTrigger)
 		float temp_exposure_time = -1.0f;
 		dc1394bool_t absolute_supported;
 		err = dc1394_feature_has_absolute_control(cameras[i], 
-													DC1394_FEATURE_SHUTTER, 
-													&absolute_supported);
+				DC1394_FEATURE_SHUTTER, 
+				&absolute_supported);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 		err = dc1394_feature_get_absolute_value(cameras[0], 
-													DC1394_FEATURE_SHUTTER, 
-													&temp_exposure_time);
+				DC1394_FEATURE_SHUTTER, 
+				&temp_exposure_time);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 		if((temp_exposure_time - exposure_time) > 1e-9)
 		{
 			COUT << "Shutter values from the cameras do not match!\n"
-						<< "This might screw up frame arrival time estimates!"
-						<< "Please double-check the cameras using coriander or flycap!" << ENDL;
+				<< "This might screw up frame arrival time estimates!"
+				<< "Please double-check the cameras using coriander or flycap!" << ENDL;
 		}
 	}
 
@@ -171,7 +171,7 @@ bool  StereoPair::startHook()
 
 void StereoPair::flush_buffer(dc1394camera_t * cam)
 {
-	dc1394video_frame_t * f;
+	dc1394video_frame_t * f = NULL;
 	while(true)
 	{
 		err = dc1394_capture_dequeue(cam, DC1394_CAPTURE_POLICY_POLL, &f);
@@ -259,9 +259,9 @@ void  StereoPair::cleanUpHook()
 		err = dc1394_camera_set_broadcast(cameras[i], DC1394_FALSE);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 	}
-    for(unsigned int i=0; i < 2; i++) {
+	for(unsigned int i=0; i < 2; i++) {
 		dc1394_camera_free(cameras[i]);
-    }
+	}
 	dc1394_camera_free_list(camera_list);
 	dc1394_free(dc1394_driver);
 	COUT << "(StereoPair) cleanupHook finished" << ENDL;
