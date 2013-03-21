@@ -79,7 +79,7 @@ namespace OCL
 
 		getMarkersWrapper(pose,&markerPositions);
 		for(unsigned int i=0; i<markerPositions.size(); i++){
-			markerPositions[i] += (drand48()-0.5)*20.0; // Add noise
+			markerPositions[i] += (drand48()-0.5)*150.0; // Add noise
 		}
 		_markerPositions.write(markerPositions);
 		
