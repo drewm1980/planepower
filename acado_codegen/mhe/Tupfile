@@ -1,0 +1,8 @@
+include_rules
+
+CPPFLAGS_ACADO += -I..
+#CPPFLAGS_ACADO += -Dreal_t=float
+
+: mhe_codegen.cpp |> !cxx_acado |> mhe_codegen.o
+: mhe_codegen.o |> !ld_acado |> mhe_codegen
+

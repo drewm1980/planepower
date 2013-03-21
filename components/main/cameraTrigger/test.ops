@@ -1,0 +1,16 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("cameraTrigger")
+ 
+#Create components
+loadComponent("cameraTrigger","OCL::cameraTrigger")
+ 
+#Load properties
+#loadService("cameraTrigger","marshalling")
+#cameraTrigger.marshalling.loadProperties("../../../properties/cameraTrigger.cpf")
+ 
+setActivity("cameraTrigger",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+ 
+cameraTrigger.configure()
+cameraTrigger.start()

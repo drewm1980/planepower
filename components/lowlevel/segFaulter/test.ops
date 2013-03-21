@@ -1,0 +1,13 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("segFaulter")
+ 
+#Create components
+loadComponent("segFaulter","OCL::SegFaulter")
+ 
+#Set activities
+setActivity("segFaulter",0.01,HighestPriority,ORO_SCHED_RT)
+ 
+segFaulter.configure()
+segFaulter.start()

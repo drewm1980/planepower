@@ -1,0 +1,2 @@
+: NMPC.py |> PYTHONPATH=../../../../pythonCodegen python -B %f |> rk4_rframe.h
+.gitignore

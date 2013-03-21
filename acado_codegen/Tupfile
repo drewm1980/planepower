@@ -1,0 +1,4 @@
+
+: mhe/exported_code/qpoases/*.o mhe/exported_code/*.o |> ar rs %o %f |> libmhe_solver.a
+
+.gitignore
