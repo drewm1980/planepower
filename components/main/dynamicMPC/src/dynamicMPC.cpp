@@ -73,7 +73,7 @@ using namespace MPCHACK;
 static bool isNaN(double* array, unsigned dim)
 {
 	for (unsigned i = 0; i < dim; ++i)
-		if (isfinite( array[ i ] ) == false )
+		if ((array[ i ] != array[ i ]) || (array[ i ] < -1e12) || (array[ i ] > 1e12))
 			return true;
 
 	return false;	
@@ -522,11 +522,29 @@ void DynamicMPC::mpcFeedbackPhase()
 		// Run the NMPC
 		qpSolverStatus = feedbackStep( feedbackForMPC );
 
+		kktTolerance = getKKT();
+
+		objectiveValue = getObjectiveValue();
+
+		portKKTTolerance.write( kktTolerance );
+		portObjectiveValue.write( objectiveValue );
+
+		numOfActiveSetChanges = logNWSR;
+		portNumOfActiveSetChanges.write( numOfActiveSetChanges );
 		// First check if states && controls are NaN
 		// XXX isfinite is something compiler dependent and should be tested...
 		// XXX If we have NaN we should shutdown everything!!!
 		isFinite = true;
-		for (i = 0; i < NX * (N + 1); ++i)
+		if (isNaN(acadoVariables.x, NX * (N + 1)) == true)
+		{
+			isFinite = false;
+		}
+		if (isNaN(acadoVariables.u, NU * N) == true)
+		{
+			isFinite = false;
+		}
+
+/*		for (i = 0; i < NX * (N + 1); ++i)
 		{
 			if (isfinite( static_cast< double >( acadoVariables.x[ i ] ) ) == false)
 			{
@@ -546,11 +564,11 @@ void DynamicMPC::mpcFeedbackPhase()
 					break;
 				}
 			}
-		}
+		} */
 
 
 		// Now check for QP solver status
-		if (qpSolverStatus == 0 && isFinite == true)
+		if ((qpSolverStatus == 0 || qpSolverStatus == 58) && isFinite == true)
 		{
 			// HUH, we are so lucky today
 
@@ -575,9 +593,11 @@ void DynamicMPC::mpcFeedbackPhase()
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 			// Stop the component is case we are not lucky today
-			log( Error )  << "MPC want to trow garbage. stopping it.. " << endlog();
+//			log( Error )  << "MPC want to trow garbage. stopping it.. " << endlog();
 			
 			stop();
+
+//			goto feedbackStepExit;
 		}
 
 		if (sqpIterationsCounter == (numSQPIterations - 1))
@@ -591,15 +611,6 @@ void DynamicMPC::mpcFeedbackPhase()
 		portMultipliers.write(multipliers);
 		portQPSolverStatus.write( qpSolverStatus );
 
-		kktTolerance = getKKT();
-
-		objectiveValue = getObjectiveValue();
-
-		portKKTTolerance.write( kktTolerance );
-		portObjectiveValue.write( objectiveValue );
-
-		numOfActiveSetChanges = logNWSR;
-		portNumOfActiveSetChanges.write( numOfActiveSetChanges );
 
 		// Copy the full state vector over the full horizon and write it to a port
 		copy(acadoVariables.x, acadoVariables.x + (N + 1) * NX, fullStateVector.begin());
@@ -608,6 +619,8 @@ void DynamicMPC::mpcFeedbackPhase()
 		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
 		portFullControlVector.write( fullControlVector );
 	}
+
+	feedbackStepExit:
 
 	// Write the info about data sizes
 	portDataSizeValid.write( dataSizeValid );
