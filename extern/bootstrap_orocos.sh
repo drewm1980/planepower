@@ -1,8 +1,6 @@
 #! /usr/bin/env bash
 echo "Bootstrapping OROCOS..."
 
-sudo apt-get install ruby-nokogiri wget
-
 mkdir -p orocos
 (
 cd orocos
