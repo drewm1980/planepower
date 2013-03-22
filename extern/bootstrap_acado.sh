@@ -9,7 +9,7 @@ echo "Bootstrapping ACADO..."
 
 echo "Cloning acado_public"
 ACADO_PUBLIC=acado_public
-git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_private $ACADO_PUBLIC
+git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_public $ACADO_PUBLIC
 (
 cd $ACADO_PUBLIC
 git co kurt_at_planepower_during_embocon
