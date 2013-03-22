@@ -8,12 +8,11 @@ echo "Bootstrapping ACADO..."
 #[ ! -d $ACADO_PRIVATE ] && tar -xvf $ACADO_PRIVATE.tgz
 
 echo "Cloning acado_public"
-ACADO_PUBLIC=acado_public
-git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_public $ACADO_PUBLIC
-(
-cd $ACADO_PUBLIC
-git co kurt_at_planepower_during_embocon
-)
+ACADO_PUBLIC=acado
+#(
+#cd $ACADO_PUBLIC
+#git co kurt_at_planepower_during_embocon
+#)
 echo "Making acado_public..."
 (
 mkdir -p $ACADO_PUBLIC/build
