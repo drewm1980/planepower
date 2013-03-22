@@ -32,14 +32,16 @@ export OROCOS_TARGET
 CPPFLAGS_OROCOS = $(CPPFLAGS) `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS_OROCOS = $(LDFLAGS) `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
 CXXFLAGS_OROCOS = $(CXXFLAGS) -DRTT_COMPONENT
+CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
 !cxx_orocos = |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 !cc_orocos = |> $(CC) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 !ar_orocos = |> ar crs %o %f |>
 !ld_orocos = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS_OROCOS) |>
 
 # Acado specific flags and rules
-CPPFLAGS_ACADO=-O0 -ggdb -w
+CPPFLAGS_ACADO = -O0 -ggdb -w
 CXXFLAGS_ACADO = $(CXXFLAGS)
+CXXFLAGS_ACADO += -fvisibility=hidden -fvisibility-inlines-hidden
 
 # Note: here we keep PLANEPOWER_ROOT a shell variable;
 # if it were a tup variable, it would be a relative
