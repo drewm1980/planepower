@@ -7,7 +7,7 @@ echo "Bootstrapping ACADO..."
 #fi
 #[ ! -d $ACADO_PRIVATE ] && tar -xvf $ACADO_PRIVATE.tgz
 
-ACADO_PUBLIC=acado_public
+ACADO_PUBLIC=acado
 #echo "Cloning acado_public"
 #git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_public $ACADO_PUBLIC
 #(
