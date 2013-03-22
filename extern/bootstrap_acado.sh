@@ -7,13 +7,13 @@ echo "Bootstrapping ACADO..."
 #fi
 #[ ! -d $ACADO_PRIVATE ] && tar -xvf $ACADO_PRIVATE.tgz
 
-echo "Cloning acado_public"
 ACADO_PUBLIC=acado_public
-git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_public $ACADO_PUBLIC
-(
-cd $ACADO_PUBLIC
-git co kurt_at_planepower_during_embocon
-)
+#echo "Cloning acado_public"
+#git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_public $ACADO_PUBLIC
+#(
+#cd $ACADO_PUBLIC
+#git co kurt_at_planepower_during_embocon
+#)
 echo "Making acado_public..."
 (
 mkdir -p $ACADO_PUBLIC/build
@@ -22,14 +22,14 @@ cmake ..
 make
 )
 
-echo "Cloning acado_private"
 ACADO_PRIVATE=acado_private
-git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_private $ACADO_PRIVATE
-git co kurt_at_planepower_during_embocon
-(
-cd $ACADO_PRIVATE
-git co kurt_at_planepower_during_embocon
-)
+#echo "Cloning acado_private"
+#git clone gitmirrorbot@moinette.esat.kuleuven.be:acado_private $ACADO_PRIVATE
+#git co kurt_at_planepower_during_embocon
+#(
+#cd $ACADO_PRIVATE
+#git co kurt_at_planepower_during_embocon
+#)
 #echo "Making acado_private..."
 #(
 #mkdir -p $ACADO_PRIVATE/build
