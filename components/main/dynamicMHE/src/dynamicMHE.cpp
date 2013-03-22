@@ -384,7 +384,7 @@ void DynamicMHE::mhePreparationPhase( )
 			acadoWorkspace.state[ indexP + i ] = acadoVariables.p[ i ];
 
 		// Integrate
-		integrate( acadoWorkspace.state );
+		integrate(acadoWorkspace.state, 1);
 
 		for(i=0; i< NX; i++){
 			statePredicted[i] = acadoWorkspace.state[i];
@@ -505,7 +505,7 @@ void DynamicMHE::mhePreparationPhase( )
 
 				// set the parameters
 
-				integrate( acadoWorkspace.state );
+				integrate(acadoWorkspace.state, 1);
 
 				// Write the new states
 				for (j = 0; j < NX; ++j)

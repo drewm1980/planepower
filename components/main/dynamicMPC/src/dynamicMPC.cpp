@@ -421,7 +421,7 @@ void DynamicMPC::mpcPreparationPhase()
 		for (i = 0; i < NP; ++i)
 			acadoWorkspace.state[ indexU + NU + i ] = acadoVariables.p[i];
 
-		integrate( acadoWorkspace.state );
+		integrate(acadoWorkspace.state, 1);
 
 		shiftStates( acadoWorkspace.state );
 		shiftControls( 0 );
@@ -465,7 +465,7 @@ void DynamicMPC::mpcPreparationPhase()
 				acadoWorkspace.state[ indexU + NU + j ] = acadoVariables.p[ j ];
 
 
-			integrate( acadoWorkspace.state );
+			integrate(acadoWorkspace.state, 1);
 
 			// Write the new states
 			for (j = 0; j < NX; ++j)
