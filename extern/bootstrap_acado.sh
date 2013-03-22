@@ -30,13 +30,13 @@ ACADO_PRIVATE=acado_private
 #cd $ACADO_PRIVATE
 #git co kurt_at_planepower_during_embocon
 #)
-echo "Making acado_private..."
-(
-mkdir -p $ACADO_PRIVATE/build
-cd $ACADO_PRIVATE/build
-cmake ..
-make
-)
+#echo "Making acado_private..."
+#(
+#mkdir -p $ACADO_PRIVATE/build
+#cd $ACADO_PRIVATE/build
+#cmake ..
+#make
+#)
 
 source $ACADO_PUBLIC/build/acado_env.sh
 #source $ACADO_PRIVATE/build/acado_env.sh
