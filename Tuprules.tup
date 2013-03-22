@@ -62,8 +62,8 @@ LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/libs
 LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/external_packages/csparse/libs
 
 CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export
-LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib -lmhe_export
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/build/lib
+LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/lib -lmhe_export
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/lib
 
 CPPFLAGS_ACADO += -DACADO_CMAKE_BUILD
 CPPFLAGS_ACADO += -DCODEGEN_FOR_OROCOS
