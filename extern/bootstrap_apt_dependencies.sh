@@ -5,3 +5,4 @@ sudo apt-get install gcc llvm-dev octave3.2-headers gfortran git cmake liblapack
 sudo apt-get install ruby-nokogiri wget
 
 sudo apt-get install libfuse-dev
+sudo apt-get install libdc1394-22-dev
