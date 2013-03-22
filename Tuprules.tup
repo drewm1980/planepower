@@ -47,7 +47,7 @@ CXXFLAGS_ACADO += -fvisibility=hidden -fvisibility-inlines-hidden
 # if it were a tup variable, it would be a relative
 # path in the build rule and rpath wouldn't work
 # when the build executable is run in an arbitrary location.
-ACADO_PUBLIC_ROOT=$PLANEPOWER_ROOT/extern/acado_public
+ACADO_PUBLIC_ROOT=$PLANEPOWER_ROOT/extern/acado
 ACADO_PRIVATE_ROOT=$PLANEPOWER_ROOT/extern/acado_private
 
 #ACADO_ROOT = $(ACADO_PRIVATE_ROOT)

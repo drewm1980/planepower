@@ -18,7 +18,7 @@ echo "Making acado_public..."
 (
 mkdir -p $ACADO_PUBLIC/build
 cd $ACADO_PUBLIC/build
-cmake ..
+cmake -DWITH_ACADO_EXAMPLES=OFF ..
 make
 )
 
