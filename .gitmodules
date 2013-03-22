@@ -14,9 +14,6 @@
 	path = extern/casadi
 	url = https://github.com/casadi/casadi.git
 	ignore = dirty
-;[submodule "tools/PyKinetics"]
-	;path = tools/PyKinetics
-	;url = https://github.com/jgillis/PyKinetics.git
 ;[submodule "extern/tup"]
 	;path = extern/tup
 	;url = git://github.com/gittup/tup.git
