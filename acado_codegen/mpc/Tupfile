@@ -1,0 +1,7 @@
+include_rules
+
+CPPFLAGS_ACADO += -I..
+
+: mpc_codegen.cpp |> !cxx_acado |> mpc_codegen.o
+: mpc_codegen.o |> !ld_acado |> mpc_codegen
+

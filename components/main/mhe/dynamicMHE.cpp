@@ -109,6 +109,9 @@ DynamicMHE::DynamicMHE(const std::string& name)
 			.doc("Full state vector in the MHE.");
 	
 	this->addPort("portFullControlVector", portFullControlVector);
+	
+	this->addPort("portMeasurementsPast", portMeasurementsPast);
+	this->addPort("portMeasurementsCurrent", portMeasurementsCurrent);
 			
 	//
 	// Initialize and output the relevant output ports
@@ -157,6 +160,14 @@ DynamicMHE::DynamicMHE(const std::string& name)
 	fullControlVector.resize(N * NU, 0.0);
 	portFullControlVector.setDataSample( fullControlVector );
 	portFullControlVector.write( fullControlVector );
+	
+	measurementsPast.resize(N * NY, 0.0);
+	portMeasurementsPast.setDataSample( measurementsPast );
+	portMeasurementsPast.write( measurementsPast );
+	
+	measurementsCurrent.resize(NYN, 0.0);
+	portMeasurementsCurrent.setDataSample( measurementsCurrent );
+	portMeasurementsCurrent.write( measurementsCurrent );
 
 	//
 	// Size of input ports
@@ -280,8 +291,8 @@ bool DynamicMHE::startHook( )
 
 		// controls
 		acadoVariables.S[i * NY * NY + 21 * NY + 21] = SCALE_OBJ * 1.0/sigma_dddelta/sigma_dddelta; // dddelta
-		acadoVariables.S[i * NY * NY + 22 * NY + 22] = 0.0*SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
-		acadoVariables.S[i * NY * NY + 23 * NY + 23] = 0.0*SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
+		acadoVariables.S[i * NY * NY + 22 * NY + 22] = SCALE_OBJ * 1.0/sigma_dur/sigma_dur; // dur
+		acadoVariables.S[i * NY * NY + 23 * NY + 23] = SCALE_OBJ * 1.0/sigma_dup/sigma_dup; // dup
 	}
 
 	acadoVariables.SN[6 * NYN + 6] = SCALE_OBJ * 1.0/sigma_delta/sigma_delta; // delta
@@ -696,6 +707,12 @@ void DynamicMHE::mheFeedbackPhase( )
 			portStateAndControl.write(StateAndControl);
 		}
 	}
+	
+	copy(acadoVariables.yMeas, acadoVariables.yMeas + N * NY, measurementsPast.begin());
+	portMeasurementsPast.write( measurementsPast );
+	
+	copy(lastMeasurementForMHE, lastMeasurementForMHE + NYN, measurementsCurrent.begin());
+	portMeasurementsCurrent.write( measurementsCurrent );
 	
 	// The user component should always read _first_ whether the MHE is ready
 	portReady.write( ready );

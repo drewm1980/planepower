@@ -173,6 +173,13 @@ void  LEDTracker::updateHook()
 
 void  LEDTracker::stopHook()
 {
+	for(unsigned int i=0; i<12; i++)
+	{
+		markerPositionsAndCovariance[i] = -1000.0;
+		markerPositionsAndCovariance[i+12] = 0.0; 
+	}
+	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
+
 	stereoPair->stopHook();
 }
 

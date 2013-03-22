@@ -73,7 +73,7 @@ using namespace MPCHACK;
 static bool isNaN(double* array, unsigned dim)
 {
 	for (unsigned i = 0; i < dim; ++i)
-		if ((array[ i ] != array[ i ]) || (array[ i ] < -1e12) || (array[ i ] > 1e12))
+		if (array[ i ] < -1e-12 || array[ i ] > 1e12)
 			return true;
 
 	return false;	
@@ -536,37 +536,12 @@ void DynamicMPC::mpcFeedbackPhase()
 		// XXX If we have NaN we should shutdown everything!!!
 		isFinite = true;
 		if (isNaN(acadoVariables.x, NX * (N + 1)) == true)
-		{
 			isFinite = false;
-		}
 		if (isNaN(acadoVariables.u, NU * N) == true)
-		{
 			isFinite = false;
-		}
-
-/*		for (i = 0; i < NX * (N + 1); ++i)
-		{
-			if (isfinite( static_cast< double >( acadoVariables.x[ i ] ) ) == false)
-			{
-				isFinite = false;
-
-				break;
-			}
-		}
-		if (isFinite == true)
-		{
-			for (i = 0; i < NU * N; ++i)
-			{
-				if (isfinite( static_cast< double >( acadoVariables.u[ i ] ) ) == false)
-				{
-					isFinite = false;
-
-					break;
-				}
-			}
-		} */
 
 
+		
 		// Now check for QP solver status
 		if ((qpSolverStatus == 0 || qpSolverStatus == 58) && isFinite == true)
 		{
@@ -593,11 +568,9 @@ void DynamicMPC::mpcFeedbackPhase()
 		{
 			// XXX Implement some wisdom for the case NMPC wants to output some rubbish
 			// Stop the component is case we are not lucky today
-//			log( Error )  << "MPC want to trow garbage. stopping it.. " << endlog();
+			log( Error )  << "MPC want to trow garbage. stopping it.. " << endlog();
 			
 			stop();
-
-//			goto feedbackStepExit;
 		}
 
 		if (sqpIterationsCounter == (numSQPIterations - 1))
@@ -619,8 +592,6 @@ void DynamicMPC::mpcFeedbackPhase()
 		copy(acadoVariables.u, acadoVariables.u + N * NU, fullControlVector.begin());
 		portFullControlVector.write( fullControlVector );
 	}
-
-	feedbackStepExit:
 
 	// Write the info about data sizes
 	portDataSizeValid.write( dataSizeValid );
