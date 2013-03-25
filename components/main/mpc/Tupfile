@@ -1,0 +1,9 @@
+include_rules
+
+EXPORTED_CODE = $(PLANEPOWER_ROOT)/acado_codegen/mpc/exported_code
+CPPFLAGS_OROCOS += -I$(EXPORTED_CODE)
+CPPFLAGS_OROCOS += -I $(PLANEPOWER_ROOT)/acado_codegen/
+LDFLAGS_OROCOS += -L$(PLANEPOWER_ROOT)/acado_codegen -lmpc_solver
+
+: dynamicMPC.cpp | $(EXPORTED_CODE)/acado.h $(EXPORTED_CODE)/solver.hpp $(PLANEPOWER_ROOT)/acado_codegen/this_addproperties.h |> !cxx_orocos |>
+: *.o | $(PLANEPOWER_ROOT)/acado_codegen/libmpc_solver.a  |> !ld_orocos |> dynamicMPC.so
