@@ -1,0 +1,1 @@
+nm -C -D dynamicMHE.so | grep -v std | grep -v __ | grep -v pthread | grep -v RTT
