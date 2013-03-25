@@ -6,9 +6,10 @@ Ncvp=10
 Tc=1
 r=1.2
 
+# Run the code generator
 : ../mpc_codegen |> ../mpc_codegen $(W0) $(Ncvp) $(Tc) 1 $(r); |> acado.h auxiliary_functions.c condensing.c gauss_newton_method.c integrator.c solver.cpp solver.hpp
 
+# Compile the generated code
 CPPFLAGS += -I..
 CPPFLAGS += -w
-
-: foreach condensing.c gauss_newton_method.c integrator.c | acado.h solver.hpp |> !cc |>
+: foreach condensing.c gauss_newton_method.c integrator.c | acado.h solver.hpp |> !cc_acado |>

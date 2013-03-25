@@ -1,1 +1,2 @@
-nm -C -D dynamicMHE.so | grep -v std | grep -v __ | grep -v pthread | grep -v RTT
+#!/usr/bin/env bash
+nm -C -D $1 .so | grep -v std | grep -v __ | grep -v pthread | grep -v RTT
