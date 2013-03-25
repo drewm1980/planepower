@@ -73,6 +73,10 @@ LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/lib
 CPPFLAGS_ACADO += -DACADO_CMAKE_BUILD
 CPPFLAGS_ACADO += -DCODEGEN_FOR_OROCOS
 
+# Note: the qpoases sources should ~probably be coming from one of the acado repos,
+# instead of from a subdirectory of the code...
+CPPFLAGS_ACADO += -I$(PLANEPOWER_ROOT)/acado_codegen/qpoases/
+
 !cc_acado = |> $(CC) $(CFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
 !cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
 !ld_acado = |> $(CXX) -o %o %f $(LDFLAGS_ACADO) |>

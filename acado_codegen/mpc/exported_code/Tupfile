@@ -13,3 +13,4 @@ r=1.2
 CPPFLAGS += -I..
 CPPFLAGS += -w
 : foreach condensing.c gauss_newton_method.c integrator.c | acado.h solver.hpp |> !cc_acado |>
+: solver.cpp | solver.hpp |> !cxx_acado |>
