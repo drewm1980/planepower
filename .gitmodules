@@ -22,9 +22,6 @@
 	;path = extern/orocos_kinematics_dynamics
 	;url = http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git
 	;ignore = dirty
-[submodule "extern/acado"]
-	path = extern/acado
-	url = git://github.com/acado/acado.git
 [submodule "extern/acado_private"]
 	path = extern/acado_private
 	url = gitmirrorbot@moinette.esat.kuleuven.be:acado_private
