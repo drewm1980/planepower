@@ -25,3 +25,6 @@
 [submodule "extern/acado_private"]
 	path = extern/acado_private
 	url = gitmirrorbot@moinette.esat.kuleuven.be:acado_private
+[submodule "extern/acado"]
+	path = extern/acado
+	url = git://github.com/acado/acado.git
