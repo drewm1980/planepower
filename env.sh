@@ -18,7 +18,7 @@ tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
 source $PLANEPOWER_ROOT/extern/orocos/env.sh
-source $PLANEPOWER_ROOT/extern/acado_public/build/acado_env.sh
+source $PLANEPOWER_ROOT/extern/acado/build/acado_env.sh
 source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/build/mhe_export_env.sh
 export LUA_PATH=";;;$PLANEPOWER_ROOT/extern/orocos/ocl/lua/modules/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
