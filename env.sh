@@ -25,7 +25,7 @@ export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
 alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
 
-DEFAULT_RAWESOME_ROOT=`dirname $PLANEPOWER_ROOT`/rawesome
+DEFAULT_RAWESOME_ROOT=$PLANEPOWER_ROOT/rawesome_stuff/rawesome
 if [ -d $DEFAULT_RAWESOME_ROOT ]; then
 	export RAWESOME_ROOT=$DEFAULT_RAWESOME_ROOT
 else
@@ -33,6 +33,7 @@ else
 	echo            Please manually set RAWESOME_ROOT environment if you
 	echo			installed rawesome repo in a non-standard place
 fi
+export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
 
 # This makes sure the highwind version of deployer is found
 # instead of the stock version.
