@@ -1,4 +1,4 @@
 include_rules
 : foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp StereoPair.cpp |> !cxx_orocos |> {objsforcomponent}
 
-: {objsforcomponent} |> !ld_orocos |> %d.so
+: {objsforcomponent} |> !ld_orocos |> 
