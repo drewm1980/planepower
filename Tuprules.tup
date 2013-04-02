@@ -53,29 +53,27 @@ LDFLAGS_ACADO = $(LDFLAGS)
 # if it were a tup variable, it would be a relative
 # path in the build rule and rpath wouldn't work
 # when the build executable is run in an arbitrary location.
-ACADO_PUBLIC_ROOT=$PLANEPOWER_ROOT/extern/acado
-ACADO_PRIVATE_ROOT=$PLANEPOWER_ROOT/extern/acado_private
-
-#ACADO_ROOT = $(ACADO_PRIVATE_ROOT)
-ACADO_ROOT = $(ACADO_PUBLIC_ROOT)
+ACADO_ROOT_ABSOLUTE = $PLANEPOWER_ROOT/extern/acado
+ACADO_ROOT = $(PLANEPOWER_ROOT)/extern/acado
 CPPFLAGS_ACADO += -I$(ACADO_ROOT)/include
 CPPFLAGS_ACADO += -I$(ACADO_ROOT)/build/include
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/libs -lacado_toolkit
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/csparse/libs -lacado_csparse
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/casadi/libs -lacado_casadi
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/libs
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT)/build/external_packages/csparse/libs
-
-CPPFLAGS_ACADO += -I$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export
-LDFLAGS_ACADO += -L$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/lib -lmhe_export
-LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_PRIVATE_ROOT)/testing/mvukov/mhe_export/lib
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/libs
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/external_packages/csparse/libs
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/experimental/mvukov/mhe_export
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/experimental/mvukov/mhe_export/lib -lmhe_export
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/experimental/mvukov/mhe_export/lib
 
 CPPFLAGS_ACADO += -DACADO_CMAKE_BUILD
 CPPFLAGS_ACADO += -DCODEGEN_FOR_OROCOS
 
-# Note: the qpoases sources should ~probably be coming from one of the acado repos,
-# instead of from a subdirectory of the code...
-CPPFLAGS_ACADO += -I$(PLANEPOWER_ROOT)/acado_codegen/qpoases/
+QPOASES_ROOT=$(ACADO_ROOT)/external_packages/qpoases
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)/INCLUDE
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)/SRC
+CPPFLAGS_ACADO += -I.
 
 !cc_acado = |> $(CC) $(CFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
 !cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
