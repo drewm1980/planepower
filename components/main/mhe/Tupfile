@@ -1,9 +1,0 @@
-include_rules
-
-EXPORTED_CODE = $(PLANEPOWER_ROOT)/acado_codegen/mhe/exported_code
-CPPFLAGS_OROCOS += -I$(EXPORTED_CODE)
-CPPFLAGS_OROCOS += -I $(PLANEPOWER_ROOT)/acado_codegen/
-LDFLAGS_OROCOS += -L$(PLANEPOWER_ROOT)/acado_codegen -lmhe_solver
-
-: dynamicMHE.cpp | $(EXPORTED_CODE)/acado.h $(EXPORTED_CODE)/solver.hpp $(PLANEPOWER_ROOT)/acado_codegen/this_addproperties.h |> !cxx_orocos |>
-: *.o | $(PLANEPOWER_ROOT)/acado_codegen/libmhe_solver.a  |> !ld_orocos |> dynamicMHE.so
