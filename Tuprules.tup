@@ -60,6 +60,7 @@ CPPFLAGS_ACADO += -I$(ACADO_ROOT)/build/include
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/libs -lacado_toolkit
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/csparse/libs -lacado_csparse
 LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/casadi/libs -lacado_casadi
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/external_packages/
 LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/libs
 LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/external_packages/csparse/libs
 CPPFLAGS_ACADO += -I$(ACADO_ROOT)/experimental/mvukov/mhe_export
