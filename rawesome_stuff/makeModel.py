@@ -1,5 +1,6 @@
 import rawesome.rawe.models.carousel
 import casadi as C
+from camModel import*
 
 import codegen_utils
 def cross(a,b):
@@ -59,4 +60,8 @@ if __name__=='__main__':
     aShift = cross(dw,pIMU)
     dae['acceleration IMU'] = C.mul(RIMU,ddpIMU+aShift)
     dae['angular velocities IMU'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
-
+    
+    dae['marker positions'] = fullCamModel(dea,conf)
+    
+    
+    
