@@ -1,11 +1,9 @@
 import rawe
 import casadi as C
-import makeModel
+import carouselModel
 
 if __name__=='__main__':
-    from highwind_carousel_conf import conf
-    dae = rawe.models.carousel(conf)
-    makeModel(dae)
+    dae = carouselModel.makeModel()
 
     from rawe.ocp import Ocp
     mhe = Ocp(dae, N=10, ts=0.1)

@@ -1,7 +1,6 @@
 import rawe
-import rawe.models.carousel
 import casadi as C
-from camModel import*
+import camModel
 
 import codegen_utils
 def cross(a,b):
@@ -10,7 +9,7 @@ def cross(a,b):
                    a[0]*b[1]-a[1]*b[0]])
     return c
 
-if __name__=='__main__':
+def makeModel():
     print "creating model..."
     from highwind_carousel_conf import conf
     dae = rawe.models.carousel(conf)
@@ -61,8 +60,14 @@ if __name__=='__main__':
     aShift = cross(dw,pIMU)
     dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)
     dae['IMU angular velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
+
+    camConf = {'PdatC1':1,
+               'PdatC2':2,
+               'RPC1':3,
+               'RPC2':4,
+               'pos_marker_body1':5,
+               'pos_marker_body2':6,
+               'pos_marker_body3':7}
+    dae['marker positions'] = camModel.fullCamModel(dae,camConf)
     
-    dae['marker positions'] = fullCamModel(dae,conf)
-    
-    
-    
+    return dae
