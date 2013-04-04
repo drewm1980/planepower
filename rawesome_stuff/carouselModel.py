@@ -1,6 +1,7 @@
 import rawe
 import casadi as C
 import camModel
+import numpy as np
 
 import codegen_utils
 def cross(a,b):
@@ -61,13 +62,13 @@ def makeModel():
     dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)
     dae['IMU angular velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
 
-    camConf = {'PdatC1':1,
-               'PdatC2':2,
-               'RPC1':3,
-               'RPC2':4,
-               'pos_marker_body1':5,
-               'pos_marker_body2':6,
-               'pos_marker_body3':7}
+    camConf = {'PdatC1':C.DMatrix(np.loadtxt('../properties/cameras/PC1.dat')),
+               'PdatC2':C.DMatrix(np.loadtxt('../properties/cameras/PC2.dat')),
+               'RPC1':C.DMatrix(np.loadtxt('../properties/cameras/RPC1.dat')),
+               'RPC2':C.DMatrix(np.loadtxt('../properties/cameras/RPC2.dat')),
+               'pos_marker_body1':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body1.dat')),
+               'pos_marker_body2':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body2.dat')),
+               'pos_marker_body3':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body3.dat'))}
     dae['marker positions'] = camModel.fullCamModel(dae,camConf)
     
     return dae

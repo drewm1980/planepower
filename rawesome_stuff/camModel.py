@@ -17,7 +17,10 @@ def singleCamModel(p,R,RP,P,pos_marker_body):
     # Translate over the position of the BODY: You now have the position of the marker in the REFERENCE frame
     # Transform (rotate & translate) over the pose of the REFERENCE frame w.r.t. the CAMERA frame: You now have the position of the marker in the camera frame
     # Multiply with the camera projection matrix to get the pixel values
-    uvs = C.mul([P,RP,trans,R,C.vertcat([pos_marker_body,1.0])])
+    R_4x4 = C.SXMatrix(4,4)
+    R_4x4[0:3,0:3] = R
+    R_4x4[3,3] = 1
+    uvs = C.mul([P,RP,trans,R_4x4,C.vertcat([pos_marker_body,1.0])])
     # Devide by s, which is the homogeneous scaling factor
     uv = uvs[:2]/uvs[2]
     return uv
@@ -51,17 +54,16 @@ def fullCamModel(dae,conf):
     PC2[0,2] = PdatC2[2]
     PC2[1,2] = PdatC2[3]
     PC2[2,2] = 1.0
-    p = C.vertcat([[dae['x'],dae['y'],dae['z']]])
+    p = C.vertcat([dae['x'],dae['y'],dae['z']])
     R = C.veccat( [dae[n] for n in ['e11', 'e12', 'e13',
                                         'e21', 'e22', 'e23',
                                         'e31', 'e32', 'e33']]
                       ).reshape((3,3))
-    uv_all = C.vertcat([XD[18] ,\
-                      C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body1)) ,\
-                      C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body2)) ,\
-                      C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body3)) ,\
-                      C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body1)) ,\
-                      C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body2)) ,\
-                      C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body3))])
+    uv_all = C.vertcat([C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body1)) ,\
+                        C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body2)) ,\
+                        C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body3)) ,\
+                        C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body1)) ,\
+                        C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body2)) ,\
+                        C.vec(singleCamModel(p,R,RpC2[0:3,:],PC2,pos_marker_body3))])
     return uv_all
 
