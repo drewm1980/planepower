@@ -62,7 +62,7 @@ if __name__=='__main__':
     dae['acceleration IMU'] = C.mul(RIMU,ddpIMU+aShift)
     dae['angular velocities IMU'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
     
-    dae['marker positions'] = fullCamModel(dea,conf)
+    dae['marker positions'] = fullCamModel(dae,conf)
     
     
     
