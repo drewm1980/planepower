@@ -59,8 +59,8 @@ if __name__=='__main__':
     RIMU = C.ssym("RIMU",3,3)
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aShift = cross(dw,pIMU)
-    dae['acceleration IMU'] = C.mul(RIMU,ddpIMU+aShift)
-    dae['angular velocities IMU'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
+    dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)
+    dae['IMU angular velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
     
     dae['marker positions'] = fullCamModel(dae,conf)
     
