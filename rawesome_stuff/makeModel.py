@@ -1,4 +1,5 @@
-import rawesome.rawe.models.carousel
+import rawe
+import rawe.models.carousel
 import casadi as C
 from camModel import*
 
@@ -12,7 +13,7 @@ def cross(a,b):
 if __name__=='__main__':
     print "creating model..."
     from highwind_carousel_conf import conf
-    dae = rawesome.rawe.models.carousel(conf)
+    dae = rawe.models.carousel(conf)
 
     dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
     #ddp = C.vertcat([dae['ddx'],dae['ddy'],dae['ddz']])    
