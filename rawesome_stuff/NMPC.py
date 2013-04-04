@@ -20,6 +20,24 @@ if __name__=='__main__':
 
     ref = C.veccat( [dae[n] for n in ['x','y','z','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','dx','dy','dz','w1','w2','w3']])
 
+    myoptions=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
+               ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
+               ('QP_SOLVER','QP_QPOASES'),
+               ('HOTSTART_QP','NO'),
+               ('INTEGRATOR_TYPE','INT_IRK_GL2'),
+               ('NUM_INTEGRATOR_STEPS','40'),
+               ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
+               ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
+               ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
+               ('UNROLL_LINEAR_SOLVER','NO'),
+               ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
+               ('SPARSE_QP_SOLUTION','CONDENSING'),
+               ('AX_NUM_QP_ITERATIONS','30'),
+               ('GENERATE_TEST_FILE','YES'),
+               ('GENERATE_SIMULINK_INTERFACE','YES'),
+               ('GENERATE_MAKE_FILE','NO'),
+               ('CG_USE_C99','YES')]
+
     mpc.minimizeLsq(ref)
     mpc.minimizeLsqEndTerm(ref)
 
