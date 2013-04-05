@@ -41,6 +41,9 @@ if __name__=='__main__':
 
     r = dae['r']
 
+    cos_delta = dae['cos_delta']
+    sin_delta = dae['sin_delta']
+
     ConstR1 = e11*e11 + e12*e12 + e13*e13 - 1
     ConstR2 = e11*e21 + e12*e22 + e13*e23
     ConstR3 = e11*e31 + e12*e32 + e13*e33
@@ -51,15 +54,19 @@ if __name__=='__main__':
     Const = - r*r/2 + x*x/2 + y*y/2 + z*z/2
     dConst = dx*x + dy*y + dz*z
 
-    mhe.constrain(ConstR1,'==',0)
-    mhe.constrain(ConstR2,'==',0)
-    mhe.constrain(ConstR3,'==',0)
-    mhe.constrain(ConstR4,'==',0)
-    mhe.constrain(ConstR5,'==',0)
-    mhe.constrain(ConstR6,'==',0)
+    ConstDelta = cos_delta**2+sin_delta**2 - 1
 
-    mhe.constrain(Const,'==',0)
-    mhe.constrain(dConst,'==',0)
+    mhe.constrain(ConstR1,'==',0, when='AT_END')
+    mhe.constrain(ConstR2,'==',0, when='AT_END')
+    mhe.constrain(ConstR3,'==',0, when='AT_END')
+    mhe.constrain(ConstR4,'==',0, when='AT_END')
+    mhe.constrain(ConstR5,'==',0, when='AT_END')
+    mhe.constrain(ConstR6,'==',0, when='AT_END')
+
+    mhe.constrain(Const,'==',0, when='AT_END')
+    mhe.constrain(dConst,'==',0, when='AT_END')
+
+    mhe.constrain(ConstDelta,'==',0, when='AT_END')
 
     myoptions = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
