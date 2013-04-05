@@ -1,11 +1,11 @@
 import rawe
+from rawe.ocp import Ocp
 import casadi as C
 import carouselModel
 
 if __name__=='__main__':
     dae = carouselModel.makeModel()
 
-    from rawe.ocp import Ocp
     mhe = Ocp(dae, N=10, ts=0.1)
 
     measurements = C.veccat( [dae[n] for n in ['marker positions','IMU acceleration','IMU angular velocity']])
@@ -89,4 +89,5 @@ if __name__=='__main__':
 
 
 
-    #mhe.exportCode(CXX='clang++',options=myoptions)
+    options = {'CXX':'g++', 'CC':'gcc'}
+    mheRt = mhe.exportCode(options,qpSolver='QP_OASES')

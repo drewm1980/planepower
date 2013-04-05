@@ -16,10 +16,11 @@ def makeModel():
     dae = rawe.models.carousel(conf)
 
     dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
-    #ddp = C.vertcat([dae['ddx'],dae['ddy'],dae['ddz']])    
-    #dw = C.vertcat([dae['dw1'],dae['dw2'],dae['dw3']])    
-    ddp = C.vertcat([C.ssym('ddx'),C.ssym('ddy'),C.ssym('ddz')])
-    dw = C.vertcat([C.ssym('dw1'),C.ssym('dw2'),C.ssym('dw3')])
+    #ddp = C.vertcat([dae.ddt('dx'),dae.ddt('dy'),dae.ddt('dz')])
+    #dw  = C.vertcat([dae.ddt('w1'),dae.ddt('w2'),dae.ddt('w3')])
+    (xDotSol, zSol) = dae.solveForXDotAndZ()
+    ddp = C.vertcat([xDotSol['dx'],xDotSol['dy'],xDotSol['dz']])
+    dw  = C.vertcat([xDotSol['w1'],xDotSol['w2'],xDotSol['w3']])
     x =   dae['x']
     y =   dae['y']
     z =   dae['z']
@@ -33,7 +34,8 @@ def makeModel():
     w3  =  dae['w3']
     w = C.vertcat([w1,w2,w3])
     ddelta = dae['ddelta']
-    dddelta = C.ssym('dddelta')
+    #dddelta = dae.ddt('ddelta')
+    dddelta = xDotSol['ddelta']
     r = dae['r']
     dr = dae['dr']
     e11 = dae['e11']
@@ -48,8 +50,8 @@ def makeModel():
     e32 = dae['e32']
     e33 = dae['e33']
     R = C.veccat( [dae[n] for n in ['e11', 'e12', 'e13',
-                                        'e21', 'e22', 'e23',
-                                        'e31', 'e32', 'e33']]
+                                    'e21', 'e22', 'e23',
+                                    'e31', 'e32', 'e33']]
                       ).reshape((3,3))
 
     rA = conf['rArm']
@@ -70,5 +72,5 @@ def makeModel():
                'pos_marker_body2':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body2.dat')),
                'pos_marker_body3':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body3.dat'))}
     dae['marker positions'] = camModel.fullCamModel(dae,camConf)
-    
+
     return dae
