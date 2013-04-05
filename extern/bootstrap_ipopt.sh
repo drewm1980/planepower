@@ -18,7 +18,8 @@ for x in Blas Lapack Metis Mumps
 do
 	(cd ThirdParty/$x && ./get.$x)
 done
-./configure --prefix=/usr/local ADD_FFLAGS=-fPIC ADD_CFLAGS=-fPIC ADD_CXXFLAGS=-fPIC
-make
+./configure --prefix=/usr/local --disable-shared ADD_FFLAGS=-fPIC ADD_CFLAGS=-fPIC ADD_CXXFLAGS=-fPIC
+make -j3
+make test
 sudo make install
 )
