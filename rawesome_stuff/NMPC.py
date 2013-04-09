@@ -18,7 +18,7 @@ if __name__=='__main__':
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
 
-    ref = C.veccat( [dae[n] for n in ['x','y','z','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','dx','dy','dz','w1','w2','w3']])
+    ref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','w1','w2','w3']])
 
     myoptions=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
