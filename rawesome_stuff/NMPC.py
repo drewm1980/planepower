@@ -41,4 +41,8 @@ if __name__=='__main__':
     mpc.minimizeLsq(ref)
     mpc.minimizeLsqEndTerm(ref)
 
-    #mpc.exportCode(CXX='clang++')
+    options = {'CXX':'g++', 'CC':'gcc'}
+    mpcRT = mpc.exportCode(options,qpSolver='QP_OASES')
+
+
+   
