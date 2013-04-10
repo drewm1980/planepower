@@ -21,3 +21,6 @@
 [submodule "extern/acado"]
 	path = extern/acado
 	url = git@git.esat.kuleuven.be:acado.git
+[submodule "extern/rawesome"]
+	path = extern/rawesome
+	url = git://github.com/ghorn/rawesome.git
