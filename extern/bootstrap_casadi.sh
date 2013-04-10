@@ -6,10 +6,9 @@ cd casadi
 mkdir -p build
 (
 cd build
-#git clean -xdf swig
 rm CMakeCache.txt
 cmake ..
-make -j8
+make -j4
 make python
 sudo make install_python
 )
