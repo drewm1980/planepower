@@ -56,9 +56,8 @@ def makeModel():
 
     rA = conf['rArm']
     g = conf['g']
-    #RIMU = conf['RIMU']
-    pIMU = C.ssym("pIMU",3,1)
-    RIMU = C.ssym("RIMU",3,3)
+    pIMU = C.DMatrix(np.loadtxt('../properties/IMU/pIMU.dat'))
+    RIMU = C.DMatrix(np.loadtxt('../properties/IMU/RIMU.dat'))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aShift = cross(dw,pIMU)
     dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)
