@@ -37,7 +37,8 @@ else
 	echo			installed rawesome repo in a non-standard place
 fi
 export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
-
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build/experimental/mvukov/ocg2
 # This makes sure the highwind version of deployer is found
 # instead of the stock version.
 #export PATH=$PLANEPOWER_ROOT/tools:$PATH
