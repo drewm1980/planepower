@@ -1,7 +1,7 @@
 import rawe
 import casadi as C
 
-if __name__=='__main__':
+def makeNmpc()
     from highwind_carousel_conf import conf
     dae = rawe.models.carousel(conf)
 
@@ -45,5 +45,5 @@ if __name__=='__main__':
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
     mpcRT = mpc.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts,qpSolver='QP_OASES')
 
-
-   
+if __name__=='__main__':
+    makeNmpc()
