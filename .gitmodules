@@ -6,10 +6,6 @@
 [submodule "extern/rtnet"]
 	path = extern/rtnet
 	url = git://rtnet.git.sourceforge.net/gitroot/rtnet/rtnet
-[submodule "rawesome_stuff/rawesome"]
-	path = rawesome_stuff/rawesome
-	url = git://github.com/ghorn/rawesome.git
-	ignore = dirty
 [submodule "extern/casadi"]
 	path = extern/casadi
 	url = https://github.com/casadi/casadi.git
