@@ -67,12 +67,26 @@ if __name__=='__main__':
     for k in range(len(dae.xNames())):
         mpcRT.x0[k] = steadyState[dae.xNames()[k]]
     mpcRT.initializeNodesByForwardSimulation()
+    manualinit = 0 # if true, all nodes are given same value and delta is integrated
+    if manualinit:
+        delta=0
+        ddelta=steadyState["ddelta"]
+        for i in range(N+1):
+            for j in range(25):
+                mpcRT.x[i,j]=mpcRT.x0[j]
+                mpcRT.x[i,23] = np.cos(delta)
+                mpcRT.x[i,24] = np.sin(delta)
+                delta+=dt_NMPC*ddelta
     for k in range(N):
         for l in range(18):
             mpcRT.y[k,l] = steadyState_matlab[l]
         mpcRT.y[k,18:19] = 0.0
     for k in range(18):
         mpcRT.yN[k] = steadyState_matlab[k]
+
+    # Try one MPC step
+    mpcRT.preparationStep()
+    fbret = mpcRT.feedbackStep()
 
     assert(1==0)
     dt = 0.02
