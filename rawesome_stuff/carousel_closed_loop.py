@@ -1,7 +1,7 @@
 import casadi as C
 import numpy as np
 
-from rawe.carouselSteadyState import getSteadyState
+from rawekite.carouselSteadyState import getSteadyState
 import rawe
 import NMPC
 
