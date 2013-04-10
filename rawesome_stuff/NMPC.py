@@ -1,13 +1,9 @@
 import rawe
 import casadi as C
 
-def makeNmpc()
-    from highwind_carousel_conf import conf
-    dae = rawe.models.carousel(conf)
-
+def makeNmpc(dae,N,dt):
     from rawe.ocp import Ocp
-    N = 10
-    mpc = Ocp(dae, N=N, ts=0.1)
+    mpc = Ocp(dae, N=N, ts=dt)
     mpc.constrain( mpc['motor_torque'], '==', 0 );
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
@@ -19,7 +15,8 @@ def makeNmpc()
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
 
-    ref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','w1','w2','w3']])
+    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','w1','w2','w3']])
+    uref = C.veccat( [dae[n] for n in ['delevator','daileron']] )
 
     acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
@@ -34,16 +31,21 @@ def makeNmpc()
                ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
                ('SPARSE_QP_SOLUTION','CONDENSING'),
 #               ('AX_NUM_QP_ITERATIONS','30'),
+               ('FIX_INITIAL_STATE','YES'),
                ('GENERATE_TEST_FILE','YES'),
                ('GENERATE_SIMULINK_INTERFACE','YES'),
                ('GENERATE_MAKE_FILE','NO'),
                ('CG_USE_C99','YES')]
 
-    mpc.minimizeLsq(ref)
-    mpc.minimizeLsqEndTerm(ref)
+    mpc.minimizeLsq(C.veccat([xref,uref]))
+    mpc.minimizeLsqEndTerm(xref)
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
     mpcRT = mpc.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts,qpSolver='QP_OASES')
+    return mpcRT
 
 if __name__=='__main__':
-    makeNmpc()
+    from highwind_carousel_conf import conf
+    dae = rawe.models.carousel(conf)
+
+    OcpRt = makeNmpc(dae,10,0.1)
