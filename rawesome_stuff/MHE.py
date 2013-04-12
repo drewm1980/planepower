@@ -68,7 +68,7 @@ if __name__=='__main__':
 
     mhe.constrain(ConstDelta,'==',0, when='AT_END')
 
-    myoptions = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
+    acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                  ('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
@@ -89,5 +89,5 @@ if __name__=='__main__':
 
 
 
-    options = {'CXX':'g++', 'CC':'gcc'}
-    mheRt = mhe.exportCode(options,qpSolver='QP_OASES')
+    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+    mheRt = mhe.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts)

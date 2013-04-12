@@ -41,7 +41,7 @@ def makeNmpc(dae,N,dt):
     mpc.minimizeLsqEndTerm(xref)
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    mpcRT = mpc.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts,qpSolver='QP_OASES')
+    mpcRT = mpc.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts)
     return mpcRT
 
 if __name__=='__main__':
