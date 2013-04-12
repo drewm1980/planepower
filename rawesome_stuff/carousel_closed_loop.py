@@ -14,7 +14,7 @@ if __name__=='__main__':
     dt_NMPC = 0.1
     mpcRT = NMPC.makeNmpc(dae,N,dt_NMPC)
     steadyState = getSteadyState(dae,conf,2*C.pi,conf['rArm'])
-    steadyState_matlab = C.DMatrix(np.loadtxt('Xref_example.dat'))
+    steadyState_matlab = C.DMatrix(np.loadtxt('data/Xref_example.dat'))
     steadyState['x'] = np.double(steadyState_matlab[0])
     steadyState['y'] = np.double(steadyState_matlab[1])
     steadyState['z'] = np.double(steadyState_matlab[2])
@@ -44,12 +44,12 @@ if __name__=='__main__':
     steadyState['daileron'] = np.double(steadyState_matlab[23])
     steadyState['delevator'] = np.double(steadyState_matlab[24])
 
-    arrivalCost_matlab = C.reshape(C.DMatrix(np.loadtxt('S_example.dat')),22,22)
+    arrivalCost_matlab = C.reshape(C.DMatrix(np.loadtxt('data/S_example.dat')),22,22)
     arrivalCost_matlab = arrivalCost_matlab[0:18,0:18]
 
-    MPC_Q = C.DMatrix(np.loadtxt('MPC_Q.dat'))
+    MPC_Q = C.DMatrix(np.loadtxt('data/MPC_Q.dat'))
     MPC_Q = MPC_Q[0:18,0:18]
-    MPC_R = C.DMatrix(np.loadtxt('MPC_R.dat'))
+    MPC_R = C.DMatrix(np.loadtxt('data/MPC_R.dat'))
     MPC_R = MPC_R[1:,1:]
     S = C.DMatrix(20,20)
     S[:18,:18] = MPC_Q
