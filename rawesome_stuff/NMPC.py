@@ -15,7 +15,7 @@ def makeNmpc(dae,N,dt):
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
 
-    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e12', 'e13','e21', 'e22', 'e23','e31', 'e32', 'e33','w1','w2','w3']])
+    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e21', 'e31','e12', 'e22', 'e32','e13', 'e23', 'e33','w1','w2','w3']])
     uref = C.veccat( [dae[n] for n in ['delevator','daileron']] )
 
     acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
@@ -23,7 +23,7 @@ def makeNmpc(dae,N,dt):
                ('QP_SOLVER','QP_QPOASES'),
                ('HOTSTART_QP','NO'),
                ('INTEGRATOR_TYPE','INT_IRK_GL2'),
-               ('NUM_INTEGRATOR_STEPS',str(4*N)),
+               ('NUM_INTEGRATOR_STEPS',str(40*N)),
                ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
                ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
                ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
