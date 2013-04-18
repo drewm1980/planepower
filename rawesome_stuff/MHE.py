@@ -90,4 +90,4 @@ if __name__=='__main__':
 
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    mheRt = mhe.exportCode(cgOptions=cgOpts,acadoOptions=acadoOpts)
+    mheRt = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
