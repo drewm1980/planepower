@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import casadi as C
 import numpy as np
 
@@ -13,6 +14,8 @@ if __name__=='__main__':
     N = 10
     dt_NMPC = 0.1
     mpcRT = NMPC.makeNmpc(dae,N,dt_NMPC)
+
+    #Read the steady state and cost matrices
     steadyState = getSteadyState(dae,conf,2*C.pi,conf['rArm'])
     steadyState_matlab = C.DMatrix(np.loadtxt('data/Xref_example.dat'))
     steadyState['x'] = np.double(steadyState_matlab[0])
@@ -44,6 +47,13 @@ if __name__=='__main__':
     steadyState['daileron'] = np.double(steadyState_matlab[23])
     steadyState['delevator'] = np.double(steadyState_matlab[24])
 
+    for k in range(N):
+        for l in range(18):
+            mpcRT.y[k,l] = steadyState_matlab[l]
+        mpcRT.y[k,18:19] = 0.0
+    for k in range(18):
+        mpcRT.yN[k] = steadyState_matlab[k]
+
     arrivalCost_matlab = C.reshape(C.DMatrix(np.loadtxt('data/S_example.dat')),22,22)
     arrivalCost_matlab = arrivalCost_matlab[0:18,0:18]
 
@@ -66,57 +76,32 @@ if __name__=='__main__':
         mpcRT.u[k,3] = 0.0
     for k in range(len(dae.xNames())):
         mpcRT.x0[k] = steadyState[dae.xNames()[k]]
+        # We need to set mpcRT.x[0,:] in order to be able to use initializeNodesByForwardSimulation()
+        mpcRT.x[0,k] = mpcRT.x0[k]
     mpcRT.initializeNodesByForwardSimulation()
-    manualinit = 0 # if true, all nodes are given same value and delta is integrated
-    if manualinit:
-        delta=0
-        ddelta=steadyState["ddelta"]
-        for i in range(N+1):
-            for j in range(25):
-                mpcRT.x[i,j]=mpcRT.x0[j]
-                mpcRT.x[i,23] = np.cos(delta)
-                mpcRT.x[i,24] = np.sin(delta)
-                delta+=dt_NMPC*ddelta
-    for k in range(N):
-        for l in range(18):
-            mpcRT.y[k,l] = steadyState_matlab[l]
-        mpcRT.y[k,18:19] = 0.0
-    for k in range(18):
-        mpcRT.yN[k] = steadyState_matlab[k]
-
-    # Try one MPC step
-    mpcRT.preparationStep()
-    fbret = mpcRT.feedbackStep()
-
-    assert(1==0)
+    
+    # Create a simulator
     dt = 0.02
     sim = rawe.sim.Sim(dae,dt)
-    communicator = rawe.simutils.Communicator()
-#    js = joy.Joy()
-    x = {}
-    for name in dae.xNames():
-        x[name] = steadyState[name]
-    u = {}
-    for name in dae.uNames():
-        u[name] = steadyState[name]
-    p = {}
-    for name in dae.pNames():
-        p[name] = steadyState[name]
-
-    print "simulating..."
-    timer = rawe.simutils.Timer(dt)
-    timer.start()
-    try:
-        while True:
-            timer.sleep()
-            outs = sim.getOutputs(x,u,p)
-            communicator.sendKite(x,u,p,outs,conf)
-            try:
-                x = sim.step(x,u,p)
-            except RuntimeError:
-                communicator.close()
-                raise Exception('OH NOES, IDAS CHOKED')
-    except KeyboardInterrupt:
-        print "closing..."
-        communicator.close()
-        pass
+    # run a sim
+    x = dict([(name,mpcRT.x0[k]) for k,name in enumerate(dae.xNames())])
+    Nsim = 800
+    xh = C.DMatrix(len(dae.xNames()),Nsim)
+    for k in range(Nsim):
+        for i in range(len(dae.xNames())):
+            mpcRT.x0[i] = x[dae.xNames()[i]]
+        xh[:,k] = C.DMatrix(mpcRT.x0)
+        mpcRT.preparationStep()
+        fbret = mpcRT.feedbackStep()
+        u = dict([(name,mpcRT.u[0,k]) for k,name in enumerate(dae.uNames())])
+        for i in range(np.int(dt_NMPC/dt)):
+            x = sim.step(x,u,{})
+    t = np.linspace(0,(Nsim-1)*dt_NMPC,Nsim)
+    plt.figure(1)
+    plt.subplot(311)
+    plt.plot(t,C.vec(xh[0,:]))
+    plt.subplot(312)
+    plt.plot(t,C.vec(xh[1,:]))
+    plt.subplot(313)
+    plt.plot(t,C.vec(xh[2,:]))
+    plt.show()
