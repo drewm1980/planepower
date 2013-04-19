@@ -7,6 +7,7 @@ import rawe
 import NMPC
 
 if __name__=='__main__':
+    plt.interactive(True)
     print "creating model"
     from highwind_carousel_conf import conf
     conf['rArm'] = 1.085
@@ -50,21 +51,35 @@ if __name__=='__main__':
     for k in range(N):
         for l in range(18):
             mpcRT.y[k,l] = steadyState_matlab[l]
-        mpcRT.y[k,18:19] = 0.0
+        mpcRT.y[k,18] = steadyState['ddelta']
+        mpcRT.y[k,-3:-1] = 0.0
+        mpcRT.y[k,-1] = steadyState['motor_torque']
     for k in range(18):
         mpcRT.yN[k] = steadyState_matlab[k]
+    mpcRT.yN[18] = steadyState['ddelta']
 
-    arrivalCost_matlab = C.reshape(C.DMatrix(np.loadtxt('data/S_example.dat')),22,22)
-    arrivalCost_matlab = arrivalCost_matlab[0:18,0:18]
+    terminalCost_matlab_big = C.reshape(C.DMatrix(np.loadtxt('data/S_example.dat')),22,22)
+    terminalCost_matlab = C.DMatrix(len(mpcRT.yN),len(mpcRT.yN))
+    terminalCost_matlab[0:18,0:18] = terminalCost_matlab_big[0:18,0:18]
+    terminalCost_matlab[0:18,18] = terminalCost_matlab_big[0:18,19]
+    terminalCost_matlab[18,0:18] = terminalCost_matlab_big[19,0:18]
+    terminalCost_matlab[18,18] = terminalCost_matlab_big[19,19]
+    
 
-    MPC_Q = C.DMatrix(np.loadtxt('data/MPC_Q.dat'))
-    MPC_Q = MPC_Q[0:18,0:18]
+    MPC_Q_big = C.DMatrix(np.loadtxt('data/MPC_Q.dat'))
+    MPC_Q = C.DMatrix(len(mpcRT.yN),len(mpcRT.yN))
+    MPC_Q[0:18,0:18] = MPC_Q_big[0:18,0:18]
+    MPC_Q[0:18,18] = MPC_Q_big[0:18,19]
+    MPC_Q[18,0:18] = MPC_Q_big[19,0:18]
+    MPC_Q[18,18] = MPC_Q_big[19,19]
+    MPC_Q[18,18] = 1e3
     MPC_R = C.DMatrix(np.loadtxt('data/MPC_R.dat'))
     MPC_R = MPC_R[1:,1:]
-    S = C.DMatrix(20,20)
-    S[:18,:18] = MPC_Q
-    S[18:,18:] = MPC_R
-    SN = MPC_Q
+    S = C.DMatrix(mpcRT.S.shape[0],mpcRT.S.shape[1])
+    S[:19,:19] = MPC_Q
+    S[19:21,19:21] = MPC_R
+    S[21,21] = 1e-2
+    SN = terminalCost_matlab
 
     mpcRT.S = np.array(S,dtype=np.double)
     mpcRT.SN = np.array(SN,dtype=np.double)
@@ -72,7 +87,7 @@ if __name__=='__main__':
     for k in range(N):
         mpcRT.u[k,0] = 0.0
         mpcRT.u[k,1] = 0.0
-        mpcRT.u[k,2] = steadyState['motor_torque']
+        mpcRT.u[k,2] = steadyState['motor_torque']*1.5
         mpcRT.u[k,3] = 0.0
     for k in range(len(dae.xNames())):
         mpcRT.x0[k] = steadyState[dae.xNames()[k]]
@@ -81,27 +96,36 @@ if __name__=='__main__':
     mpcRT.initializeNodesByForwardSimulation()
     
     # Create a simulator
-    dt = 0.02
+    N_simsteps = 3
+    dt = dt_NMPC/N_simsteps
     sim = rawe.sim.Sim(dae,dt)
     # run a sim
     x = dict([(name,mpcRT.x0[k]) for k,name in enumerate(dae.xNames())])
-    Nsim = 800
+    Nsim = 5000
     xh = C.DMatrix(len(dae.xNames()),Nsim)
+    uh = C.DMatrix(len(dae.uNames()),Nsim)
     for k in range(Nsim):
         for i in range(len(dae.xNames())):
             mpcRT.x0[i] = x[dae.xNames()[i]]
         xh[:,k] = C.DMatrix(mpcRT.x0)
+        uh[:,k] = C.DMatrix(mpcRT.u[0,:])
         mpcRT.preparationStep()
         fbret = mpcRT.feedbackStep()
-        u = dict([(name,mpcRT.u[0,k]) for k,name in enumerate(dae.uNames())])
-        for i in range(np.int(dt_NMPC/dt)):
+        u = dict([(name,mpcRT.u[0,i]) for i,name in enumerate(dae.uNames())])
+        for i in range(N_simsteps):
             x = sim.step(x,u,{})
+        uh[:,k] = C.DMatrix(mpcRT.u[0,:])
+
     t = np.linspace(0,(Nsim-1)*dt_NMPC,Nsim)
     plt.figure(1)
-    plt.subplot(311)
+    plt.subplot(511)
     plt.plot(t,C.vec(xh[0,:]))
-    plt.subplot(312)
+    plt.subplot(512)
     plt.plot(t,C.vec(xh[1,:]))
-    plt.subplot(313)
+    plt.subplot(513)
     plt.plot(t,C.vec(xh[2,:]))
+    plt.subplot(514)
+    plt.plot(t,C.vec(xh[18,:]))
+    plt.subplot(515)
+    plt.plot(t,C.vec(uh[2,:]))
     plt.show()

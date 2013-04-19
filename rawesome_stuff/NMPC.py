@@ -4,7 +4,6 @@ import casadi as C
 def makeNmpc(dae,N,dt):
     from rawe.ocp import Ocp
     mpc = Ocp(dae, N=N, ts=dt)
-    mpc.constrain( mpc['motor_torque'], '==', 0 );
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
     mpc.constrain( mpc['aileron'], '<=', 32767/1.25e6 );
@@ -14,9 +13,11 @@ def makeNmpc(dae,N,dt):
     mpc.constrain( mpc['daileron'], '<=', 0.2 );
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
+    mpc.constrain( 0, '<=', mpc['motor_torque'] );
+    mpc.constrain( mpc['motor_torque'], '<=', 20 );
 
-    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e21', 'e31','e12', 'e22', 'e32','e13', 'e23', 'e33','w1','w2','w3']])
-    uref = C.veccat( [dae[n] for n in ['delevator','daileron']] )
+    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e21', 'e31','e12', 'e22', 'e32','e13', 'e23', 'e33','w1','w2','w3','ddelta']])
+    uref = C.veccat( [dae[n] for n in ['delevator','daileron','motor_torque']] )
 
     acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
