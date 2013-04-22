@@ -10,11 +10,8 @@ def cross(a,b):
                    a[0]*b[1]-a[1]*b[0]])
     return c
 
-def makeModel():
+def makeModel(dae,conf):
     print "creating model..."
-    from highwind_carousel_conf import conf
-    dae = rawe.models.carousel(conf)
-
     dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
     #ddp = C.vertcat([dae.ddt('dx'),dae.ddt('dy'),dae.ddt('dz')])
     #dw  = C.vertcat([dae.ddt('w1'),dae.ddt('w2'),dae.ddt('w3')])

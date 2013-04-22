@@ -5,6 +5,8 @@ import numpy as np
 from rawekite.carouselSteadyState import getSteadyState
 import rawe
 import NMPC
+import MHE
+import carouselModel
 
 if __name__=='__main__':
     plt.interactive(True)
@@ -12,9 +14,13 @@ if __name__=='__main__':
     from highwind_carousel_conf import conf
     conf['rArm'] = 1.085
     dae = rawe.models.carousel(conf)
+    dae = carouselModel.makeModel(dae,conf)
     N = 10
     dt_NMPC = 0.1
-    mpcRT = NMPC.makeNmpc(dae,N,dt_NMPC)
+    dt_MHE = 0.1
+    #mpcRT = NMPC.makeNmpc(dae,N,dt_NMPC)
+    mheRT = MHE.makeMhe(dae,N,dt_MHE)
+    assert(1==0)
 
     #Read the steady state and cost matrices
     steadyState = getSteadyState(dae,conf,2*C.pi,conf['rArm'])
@@ -101,7 +107,7 @@ if __name__=='__main__':
     sim = rawe.sim.Sim(dae,dt)
     # run a sim
     x = dict([(name,mpcRT.x0[k]) for k,name in enumerate(dae.xNames())])
-    Nsim = 5000
+    Nsim = 50
     xh = C.DMatrix(len(dae.xNames()),Nsim)
     uh = C.DMatrix(len(dae.uNames()),Nsim)
     for k in range(Nsim):
