@@ -4,9 +4,4 @@ CPPFLAGS_OROCOS+=-I..
 CPPFLAGS_OROCOS+=-I../soem_core
 CPPFLAGS_OROCOS+=-I../soem_master/include
 
-LDFLAGS_OROCOS+=-L../soem_master/lib
-LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/lowlevel/soem_master/lib
-LDFLAGS_OROCOS+=-lsoem_driver_factory
-
-: foreach *.cpp |> !cxx_orocos |>
-: *.o | ../soem_master/lib/libsoem_driver_factory.so |> !ld_orocos |> 
+: foreach *.cpp |> !cxx_orocos_plugin |>
