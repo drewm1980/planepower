@@ -22,6 +22,9 @@ using namespace RTT::base;
 using namespace RTT::os;
 using namespace std;
 
+namespace OCL
+{
+
 class SimpleTrajectoryGenerator
 	: public TaskContext
 {
@@ -83,5 +86,5 @@ private:
 //	OCL::logging::Category* logger;
 
 };
-
+} // namespace
 #endif // SIMPLE_TRAJECTORY_GENERATOR_HPP

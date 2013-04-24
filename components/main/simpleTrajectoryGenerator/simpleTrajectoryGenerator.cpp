@@ -7,6 +7,11 @@
 
 #include "simpleTrajectoryGenerator.hpp"
 
+ORO_CREATE_COMPONENT( OCL::SimpleTrajectoryGenerator )
+
+namespace OCL
+{
+
 //
 // Class methods
 //
@@ -130,6 +135,7 @@ bool SimpleTrajectoryGenerator::configureHook()
 	
 	refCounter++;
 	
+	log( Info ) << "Exiting configureHook with true" << endlog();
 	return true;
 }
 
@@ -238,4 +244,4 @@ void SimpleTrajectoryGenerator::printMatrix(string name, vector< vector< double 
 	}
 }
 
-ORO_CREATE_COMPONENT( SimpleTrajectoryGenerator )
+} // namespace

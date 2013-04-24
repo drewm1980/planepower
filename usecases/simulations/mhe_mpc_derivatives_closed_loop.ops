@@ -44,7 +44,7 @@ loadComponent("dynamicMPC","DynamicMPC")
 
 # Trajectory generator
 import("simpleTrajectoryGenerator")
-loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
+loadComponent("trajectoryGenerator","OCL::SimpleTrajectoryGenerator")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
