@@ -10,11 +10,8 @@ def cross(a,b):
                    a[0]*b[1]-a[1]*b[0]])
     return c
 
-def makeModel():
+def makeModel(dae,conf):
     print "creating model..."
-    from highwind_carousel_conf import conf
-    dae = rawe.models.carousel(conf)
-
     dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
     #ddp = C.vertcat([dae.ddt('dx'),dae.ddt('dy'),dae.ddt('dz')])
     #dw  = C.vertcat([dae.ddt('w1'),dae.ddt('w2'),dae.ddt('w3')])
@@ -56,9 +53,8 @@ def makeModel():
 
     rA = conf['rArm']
     g = conf['g']
-    #RIMU = conf['RIMU']
-    pIMU = C.ssym("pIMU",3,1)
-    RIMU = C.ssym("RIMU",3,3)
+    pIMU = C.DMatrix(np.loadtxt('../properties/IMU/pIMU.dat'))
+    RIMU = C.DMatrix(np.loadtxt('../properties/IMU/RIMU.dat'))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aShift = cross(dw,pIMU)
     dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)

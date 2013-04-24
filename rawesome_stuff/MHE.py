@@ -3,10 +3,8 @@ from rawe.ocp import Ocp
 import casadi as C
 import carouselModel
 
-if __name__=='__main__':
-    dae = carouselModel.makeModel()
-
-    mhe = Ocp(dae, N=10, ts=0.1)
+def makeMhe(dae,N,dt):
+    mhe = Ocp(dae, N=N, ts=dt)
 
     measurements = C.veccat( [dae[n] for n in ['marker positions','IMU acceleration','IMU angular velocity']])
     measurements = C.veccat( [measurements,
@@ -68,12 +66,12 @@ if __name__=='__main__':
 
     mhe.constrain(ConstDelta,'==',0, when='AT_END')
 
-    myoptions = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
+    acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                  ('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                  ('INTEGRATOR_TYPE','INT_IRK_GL2'),
-                 ('NUM_INTEGRATOR_STEPS','30'),
+                 ('NUM_INTEGRATOR_STEPS',str(40*N)),
                  ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
                  ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
                  ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
@@ -82,12 +80,21 @@ if __name__=='__main__':
                  ('SPARSE_QP_SOLUTION','CONDENSING'),
                  ('QP_SOLVER','QP_QPOASES'),
                  ('HOTSTART_QP','YES'),
-                 ('GENERATE_TEST_FILE','YES'),
-                 ('CG_USE_C99','YES'),
-                 ('PRINTLEVEL','HIGH'),
+                 #('GENERATE_TEST_FILE','YES'),
+                 #('CG_USE_C99','YES'),
+                 #('PRINTLEVEL','HIGH'),
                  ('CG_USE_VARIABLE_WEIGHTING_MATRIX','YES')]
 
 
 
-    options = {'CXX':'g++', 'CC':'gcc'}
-    mheRt = mhe.exportCode(options,qpSolver='QP_OASES')
+    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+    mheRT = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
+    return mheRT
+
+
+if __name__=='__main__':
+    from highwind_carousel_conf import conf
+    dae = rawe.models.carousel(conf)
+    dae = carouselModel.makeModel(dae,conf)
+    OcpRt = makeMhe(dae,10,0.1)
+

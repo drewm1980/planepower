@@ -14,7 +14,7 @@ export PLANEPOWER_ROOT
 # The following command sets a tup variable that seems
 # redundant with the above, but tup expands it to a relative path.
 PLANEPOWER_ROOT=$(TUP_CWD)
-RAWESOME_ROOT=$(PLANEPOWER_ROOT)/rawesome_stuff/rawesome
+RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
 
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
