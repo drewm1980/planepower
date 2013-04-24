@@ -1,0 +1,5 @@
+include_rules
+CPPFLAGS_OROCOS+=-I../../soem_core
+#CPPFLAGS_OROCOS+=-I..
+: foreach *.cpp |> !cxx_orocos_plugin |>
+: *.o |> !ld_orocos |> soem_plugin.so

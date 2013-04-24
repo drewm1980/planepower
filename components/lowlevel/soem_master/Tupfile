@@ -1,0 +1,11 @@
+include_rules
+CPPFLAGS_OROCOS+=-I../soem_core
+CPPFLAGS_OROCOS+=-Iinclude
+
+LDFLAGS_OROCOS+=-Llib
+LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/lowlevel/soem_master/lib
+LDFLAGS_OROCOS+=-lsoem_driver_factory
+
+: soem_master_component.cpp |> !cxx_orocos |>
+: soem_master_component.o | lib/libsoem_driver_factory.so |> !ld_orocos |> soem_master.so
+#: soem_master_component.o soem_driver_factory.o ../soem_core/*.o |> !ld_orocos |> soem_master.so
