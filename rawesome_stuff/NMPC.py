@@ -15,12 +15,12 @@ def makeNmpc(dae,N,dt,nSteps,iType):
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
     mpc.constrain( 0, '<=', mpc['motor_torque'] );
-    mpc.constrain( mpc['motor_torque'], '<=', 20 );
+    mpc.constrain( mpc['motor_torque'], '<=', 2000 );
 
     acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                ('QP_SOLVER','QP_QPOASES'),
-               ('HOTSTART_QP','NO'),
+               ('HOTSTART_QP','YES'),
                ('INTEGRATOR_TYPE',iType),
                ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
                ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
@@ -29,12 +29,7 @@ def makeNmpc(dae,N,dt,nSteps,iType):
                ('UNROLL_LINEAR_SOLVER','NO'),
                ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
                ('SPARSE_QP_SOLUTION','CONDENSING'),
-#               ('SPARSE_QP_SOLUTION','FULL_CONDENSING_U2'),
-#               ('AX_NUM_QP_ITERATIONS','30'),
                ('FIX_INITIAL_STATE','YES'),
-               ('GENERATE_TEST_FILE','YES'),
-               ('GENERATE_SIMULINK_INTERFACE','YES'),
-               ('GENERATE_MAKE_FILE','NO'),
                ('CG_USE_C99','YES')]
     
 

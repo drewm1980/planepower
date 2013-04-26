@@ -30,11 +30,14 @@ def dlqr(A, B, Q, R, N=None):
     
 def ComputeTerminalCost(integrator, xlin, ulin, Q, R, N=None): 
     
+#    x0 = [xlin[name] for name in xlin]
     integrator.x = xlin
     integrator.u = ulin
-    integrator.step()
+    x1 = integrator.step()
+#    print x1-x0
     A = integrator.dx1_dx0
     B = integrator.dx1_du
+#    integrator.getOutputs()
     
     K, P = dlqr(A, B, Q, R, N=None)
     
@@ -59,7 +62,7 @@ def GenerateReference(dae,conf,refP):
 def InitializeMPC(mpcrt,integrator,dae,conf,refP):
         
     xref, uref = GenerateReference(dae,conf,refP)
-    
+    print xref
     N = mpcrt.u.shape[0]
     Xref = [xref[name] for name in dae.xNames()]
     Uref = [uref[name] for name in dae.uNames()]
@@ -93,13 +96,14 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     Wae = 250.
     
     Q = [Wp]*3 + [Wdp]*3 + [We]*9 + [Ww]*3 + [Wr]*2 + [Wdelta]*3 + [Wae]*2
-    R = [1.0]*4
+    R = [1.0*1000000]*4
        
     mpcrt.S = np.diag( Q + R )*1e-2
     Q = np.diag( Q )*1e-2
     R = np.diag( R )*1e-2
     
-    K, P, A, B = ComputeTerminalCost(integrator, xref, uref, Q, R)
+#    K, P, A, B = ComputeTerminalCost(integrator, xref, uref, Q, R)
+    P = np.eye(Q.shape[0])*1
     mpcrt.SN = P
     
     mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
@@ -110,7 +114,7 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     
     xref, uref = GenerateReference(dae,conf,refP)
     
-    N = mpcrt.u.shape[0]
+    N = mhert.u.shape[0]
     Xref = [xref[name] for name in dae.xNames()]
     Uref = [uref[name] for name in dae.uNames()]
     Xref = np.array( [Xref]*(N+1) )
@@ -132,7 +136,8 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     
     # Set the covariance (temporary)
     mhert.S  = np.eye(mhert.y.shape[1])
-    mhert.SN = np.eye(mhert.yN.shape[0])
+    mhert.S[25:,25:] = np.eye(4)*1
+#    mhert.SN = np.eye(mhert.yN.shape[0])
     
     mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
     

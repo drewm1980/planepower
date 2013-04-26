@@ -78,8 +78,8 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
     acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
-                 ('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
-                 ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
+                 ('QP_SOLVER','QP_QPOASES'),
+                 ('HOTSTART_QP','YES'),
                  ('INTEGRATOR_TYPE',iType),
                  ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
                  ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
@@ -88,12 +88,9 @@ def makeMhe(dae,N,dt,nSteps,iType):
                  ('UNROLL_LINEAR_SOLVER','NO'),
                  ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
                  ('SPARSE_QP_SOLUTION','CONDENSING'),
-                 ('QP_SOLVER','QP_QPOASES'),
-                 ('HOTSTART_QP','YES'),
-                 #('GENERATE_TEST_FILE','YES'),
-                 #('CG_USE_C99','YES'),
-                 #('PRINTLEVEL','HIGH'),
-                 ('CG_USE_VARIABLE_WEIGHTING_MATRIX','NO')]
+                 ('FIX_INITIAL_STATE','NO'),
+                 ('CG_USE_VARIABLE_WEIGHTING_MATRIX','NO'),
+                 ('CG_USE_C99','YES')]
 
 
 
