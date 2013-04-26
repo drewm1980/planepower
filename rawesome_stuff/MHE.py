@@ -3,7 +3,7 @@ from rawe.ocp import Ocp
 import casadi as C
 import carouselModel
 
-def makeMhe(dae,N,dt):
+def makeMhe(dae,N,dt,nSteps,iType):
     mhe = Ocp(dae, N=N, ts=dt)
 
 #    measurements = C.veccat( [dae[n] for n in ['marker positions','IMU acceleration','IMU angular velocity']])
@@ -21,11 +21,11 @@ def makeMhe(dae,N,dt):
     xref = C.veccat( [mhe[n] for n in dae.xNames()])
     uref = C.veccat( [mhe[n] for n in dae.uNames()])
     
-    dae['measurements'] = C.veccat([xref,uref])
-    dae['measurementsN'] = xref
+#    dae['measurements'] = C.veccat([xref,uref])
+#    dae['measurementsN'] = xref
     
-    mhe.minimizeLsq(dae['measurements'])
-    mhe.minimizeLsqEndTerm(dae['measurementsN'])
+    mhe.minimizeLsq(C.veccat([xref,uref]))
+    mhe.minimizeLsqEndTerm(xref)
     
     e11 = dae['e11']
     e12 = dae['e12']
@@ -80,8 +80,8 @@ def makeMhe(dae,N,dt):
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                  ('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
-                 ('INTEGRATOR_TYPE','INT_IRK_GL2'),
-                 ('NUM_INTEGRATOR_STEPS',str(40*N)),
+                 ('INTEGRATOR_TYPE',iType),
+                 ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
                  ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
                  ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
                  ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),

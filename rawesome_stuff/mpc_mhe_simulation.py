@@ -20,20 +20,31 @@ dae = rawe.models.carousel(conf)
 N_mpc = 10  # Number of MPC control intervals
 N_mhe = 10  # Number of MHE control intervals
 Ts = 0.1    # Sampling time
+nSteps = 40 #Number of steps for the Rintegrator (also in MPC and MHE)
+iType = 'INT_IRK_GL2' # Rintegrator type
 Tf = 10.    # Simulation duration
 
 # Create the MPC class
-mpcRT = makeNmpc(dae,N=N_mpc,dt=Ts)
-mheRT = makeMhe(dae,N=N_mpc,dt=Ts)
-
-mpcLog = InitializeMPC(mpcRT,dae)
-mheLog = InitializeMHE(mheRT,dae)
+mpcRT = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
+mheRT = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 
 # Create a simulation class
 intOptions = {'type':'Idas', 'ts':Ts}
 sim, simLog = InitializeSim(dae,intOptions)
 
-mpcRT.x0 = np.array([1,0])
+# Generate a Rintegrator for linearizing the system
+from rawe.dae.rienIntegrator import RienIntegrator
+Rint = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
+
+# Reference parameters
+refP = {'r0':1.2,
+        'ddelta0':2*np.pi,
+        'z0':-0.1}
+            
+mpcLog = InitializeMPC(mpcRT,Rint,dae,conf,refP)
+mheLog = InitializeMHE(mheRT,dae,conf,refP)
+
+
 outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.squeeze(outs['measurements'])
 simLog.log(mpcRT.x0,new_y,[])

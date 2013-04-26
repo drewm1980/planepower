@@ -1,7 +1,7 @@
 import rawe
 import casadi as C
 
-def makeNmpc(dae,N,dt):
+def makeNmpc(dae,N,dt,nSteps,iType):
     from rawe.ocp import Ocp
     mpc = Ocp(dae, N=N, ts=dt)
     
@@ -21,8 +21,8 @@ def makeNmpc(dae,N,dt):
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                ('QP_SOLVER','QP_QPOASES'),
                ('HOTSTART_QP','NO'),
-               ('INTEGRATOR_TYPE','INT_IRK_GL2'),
-               ('NUM_INTEGRATOR_STEPS',str(40*N)),
+               ('INTEGRATOR_TYPE',iType),
+               ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
                ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
                ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
                ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),

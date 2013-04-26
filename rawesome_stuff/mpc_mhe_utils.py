@@ -12,23 +12,7 @@ import matplotlib.pyplot as plt
 import casadi as C
 import rawe
 
-#def LinearizeSystem(mpcrt,dae):
-#    raise Exception('not implemented yet')
-#    (ode, _) = dae.solveForXDotAndZ()
-#    
-#    odeValue = []
-#    for name in dae.xNames():
-#        odeValue.append(ode[name])
-#    
-#    Ode = C.SXFunction([dae.xVec(),dae.uVec()],[C.veccat(odeValue)])
-#    Ode.init()
-#    Afcn = Ode.jacobian(0)
-#    Afcn.init()
-#    Bfcn = Ode.jacobian(1)
-#    Bfcn.init()
-#    
-#    dae.Afcn = Afcn
-#    dae.Bfcn = Bfcn
+from rawekite.carouselSteadyState import getSteadyState
 
 
 def dlqr(A, B, Q, R, N=None):
@@ -44,30 +28,60 @@ def dlqr(A, B, Q, R, N=None):
     
     return K, P
     
-def ComputeTerminalCost(dae, xlin, ulin, Q, R, N=None): 
+def ComputeTerminalCost(integrator, xlin, ulin, Q, R, N=None): 
     
-#    dae.Afcn.init()
-#    dae.Bfcn.init()
-#    
-#    dae.Afcn.setInput(xlin,0)
-#    dae.Afcn.setInput(ulin,1)
-#    dae.Bfcn.setInput(xlin,0)
-#    dae.Bfcn.setInput(ulin,1)
-#    
-#    A = dae.Afcn.output()
-#    B = dae.Bfcn.output()
+    integrator.x = xlin
+    integrator.u = ulin
+    integrator.step()
+    A = integrator.dx1_dx0
+    B = integrator.dx1_du
     
-    _, P = dlqr(A, B, Q, R, N=None)
+    K, P = dlqr(A, B, Q, R, N=None)
     
-    return P
+    return K, P, A, B
+    
+def GenerateReference(dae,conf,refP):
+    
+    z0 = refP['z0']
+    r0 = refP['r0']
+    ddelta0 = refP['ddelta0']
+    steadyState, _ = getSteadyState(dae,conf,ddelta0,r0,z0)
+    
+    xref = {}
+    uref = {}
+    for name in dae.xNames():
+        xref[name] = steadyState[name]
+    for name in dae.uNames():
+        uref[name] = steadyState[name]
+    
+    return xref, uref
 
-
-def InitializeMPC(mpcrt,dae):
+def InitializeMPC(mpcrt,integrator,dae,conf,refP):
+        
+    xref, uref = GenerateReference(dae,conf,refP)
     
-#    xref, uref = GenerateReference(dae,refP)
+    N = mpcrt.u.shape[0]
+    Xref = [xref[name] for name in dae.xNames()]
+    Uref = [uref[name] for name in dae.uNames()]
+    Xref = np.array( [Xref]*(N+1) )
+    Uref = np.array( [Uref]*N     )
     
-    mpcrt.x = np.zeros(mpcrt.x.shape)
-    mpcrt.u = np.zeros(mpcrt.u.shape) 
+    ts = mpcrt._ts
+    # The only part that changes is cos(delta), sin(delta) 
+    CS = np.array([ [np.cos(k*ts*refP['ddelta0']), np.sin(k*ts*refP['ddelta0'])] for k in range(N+1) ])
+    for k,name in enumerate(dae.xNames()):
+        if name == 'cos_delta': Xref[:,k] = CS[:,0]
+        if name == 'sin_delta': Xref[:,k] = CS[:,1]
+    # Set the initial guess
+    mpcrt.x = Xref
+    mpcrt.u = Uref
+    
+    # Set the reference
+    mpcrt.y = np.append(Xref[:-1,:],Uref,axis=1)
+    mpcrt.yN = Xref[-1,:]
+    
+    # Set the initial state
+    mpcrt.x0 = Xref[0,:]
     
     # Define the weights
     Wp  = 25.
@@ -82,26 +96,43 @@ def InitializeMPC(mpcrt,dae):
     R = [1.0]*4
        
     mpcrt.S = np.diag( Q + R )*1e-2
-
-#    mpcrt.SN =
-#    P = ComputeTerminalCost()
+    Q = np.diag( Q )*1e-2
+    R = np.diag( R )*1e-2
     
-#    LinearizeSystem(mpcrt,dae)
-
+    K, P, A, B = ComputeTerminalCost(integrator, xref, uref, Q, R)
+    mpcrt.SN = P
+    
     mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
     
     return mpcLog
    
-def InitializeMHE(mhert,dae):
+def InitializeMHE(mhert,integrator,dae,conf,refP):
     
-    mhert.x = np.zeros(mhert.x.shape)
-    mhert.u = np.zeros(mhert.u.shape) 
-    mhert.y = np.zeros(mhert.y.shape)
-    mhert.y[:,0] += 1
-    mhert.yN = np.zeros(mhert.yN.shape)+1 
+    xref, uref = GenerateReference(dae,conf,refP)
     
-    mhert.S = np.eye(dae.xVec().shape[0]+dae.uVec().shape[0])
-#    mhert.SN[0,0] = 1.0#/(xRms)**2
+    N = mpcrt.u.shape[0]
+    Xref = [xref[name] for name in dae.xNames()]
+    Uref = [uref[name] for name in dae.uNames()]
+    Xref = np.array( [Xref]*(N+1) )
+    Uref = np.array( [Uref]*N     )
+    
+    ts = mhert._ts
+    # The only part that changes is cos(delta), sin(delta) 
+    CS = np.array([ [np.cos(k*ts*refP['ddelta0']), np.sin(k*ts*refP['ddelta0'])] for k in range(-N,1) ])
+    for k,name in enumerate(dae.xNames()):
+        if name == 'cos_delta': Xref[:,k] = CS[:,0]
+        if name == 'sin_delta': Xref[:,k] = CS[:,1]
+    # Set the initial guess
+    mhert.x = Xref
+    mhert.u = Uref
+    
+    # Set the measurements (temporary)
+    mhert.y = np.append(Xref[:-1,:],Uref,axis=1)
+    mhert.yN = Xref[-1,:]
+    
+    # Set the covariance (temporary)
+    mhert.S  = np.eye(mhert.y.shape[1])
+    mhert.SN = np.eye(mhert.yN.shape[0])
     
     mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
     
@@ -153,7 +184,10 @@ def InitializeSim(dae,intOptions):
     if intOptions['type'] == 'Idas':
         sim = rawe.sim.Sim(dae,Ts)
     elif intOptions['type'] == 'Rintegrator':
-        sim = rawe.dae.rienIntegrator(dae,ts=Ts, numIntegratorSteps=400, integratorType='INT_IRK_GL2')
+        from rawe.dae.rienIntegrator import RienIntegrator
+        nSteps = intOptions['numIntegratorSteps']
+        Type = intOptions['integratorType']
+        sim = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=Type)
     else:
         raise Exception('integrator not supported')
     
