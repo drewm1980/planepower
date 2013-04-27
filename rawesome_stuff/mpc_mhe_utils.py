@@ -30,11 +30,9 @@ def dlqr(A, B, Q, R, N=None):
     
 def ComputeTerminalCost(integrator, xlin, ulin, Q, R, N=None): 
     
-#    x0 = [xlin[name] for name in xlin]
     integrator.x = xlin
     integrator.u = ulin
-    x1 = integrator.step()
-#    print x1-x0
+    integrator.step()
     A = integrator.dx1_dx0
     B = integrator.dx1_du
 #    integrator.getOutputs()
@@ -103,7 +101,7 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     R = np.diag( R )*1e-2
     
 #    K, P, A, B = ComputeTerminalCost(integrator, xref, uref, Q, R)
-    P = np.eye(Q.shape[0])*1
+    P = np.eye(Q.shape[0])*10
     mpcrt.SN = P
     
     mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
@@ -143,19 +141,51 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     
     return mheLog
     
+def SimulateAndShift(mpcRT,mheRT,sim,mpcLog,mheLog,simLog):
+
+    mheLog.log(mheRT)    
+    mpcLog.log(mpcRT)
+    
+    # Get the measurement BEFORE simulating
+#    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
+#    new_y  = np.squeeze(outs['measurements'])
+    new_y = np.append(mpcRT.x[0,:],mpcRT.u[0,:]) + np.random.randn(29)*0.001
+    # Simulate the system
+    new_x = sim.step(mpcRT.x[0,:],mpcRT.u[0,:],{})
+    # Get the last measurement AFTER simulating
+    new_out = sim.getOutputs(new_x,mpcRT.u[0,:],{})
+#    new_yN = np.array([outs['measurementsN']])
+    new_yN = np.squeeze(new_x) + np.random.randn(25)*0.001
+    
+    simLog.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
+    
+    # shift
+    mpcRT.shift()
+    mheRT.shift(new_y=new_y,new_yN=new_yN)
+    
+    
 class SimLog(object):
     def __init__(self,dae,sim):
         self.xNames = dae.xNames()
+        self.outputNames = dae.outputNames()
 #        self.uNames = dae.uNames()
         self.Ts = sim._ts
-        self._log = {'x':[],'y':[],'yN':[]}
+        l=[]
+        for n in self.outputNames: l.append([])
+        self._log = {'x':[],'y':[],'yN':[],'outputs':dict(zip(self.outputNames,l))}
         
 #        self.log()
     
-    def log(self,new_x,new_y,new_yN):
-        self._log['x'].append(np.array(new_x))
-        self._log['y'].append(np.array(new_y))
-        self._log['yN'].append(np.array(new_yN))
+    def log(self,new_x=None,new_y=None,new_yN=None,new_out=None):
+        if new_x != None:
+            self._log['x'].append(np.array(new_x))
+        if new_y != None:
+            self._log['y'].append(np.array(new_y))
+        if new_yN != None:
+            self._log['yN'].append(np.array(new_yN))
+        if new_out != None:
+            for name in new_out.keys():
+                self._log['outputs'][name].append(np.array(new_out[name]))
         
     def _plot(self,names,title,style,when=0,showLegend=True):
         if isinstance(names,str):
@@ -171,6 +201,12 @@ class SimLog(object):
             if name in self.xNames:
                 index = self.xNames.index(name)
                 ys = np.squeeze(self._log['x'])[:,index]
+                ts = np.arange(len(ys))*self.Ts
+                plt.plot(ts,ys,style)
+                
+            if name in self.outputNames:
+                index = self.outputNames.index(name)
+                ys = np.squeeze(self._log['outputs'][name])
                 ts = np.arange(len(ys))*self.Ts
                 plt.plot(ts,ys,style)
 
@@ -227,7 +263,51 @@ def Fig_plot(names,title=None,style='',when=0,showLegend=True,what=[],mpcLog=Non
     if 'mhe' in what:
         if mheLog == None: raise Exception('you must provide a mhe log to plot its variables')
         N = mheLog._log['x'][0].shape[0]
-        mheLog._plot(names,None,'o',when=N-1,showLegend=True)
+        if not isinstance(names,list):
+            names = [names]
+        if names[0] in mheLog.xNames:
+            mheLog._plot(names,None,'o',when=N-1,showLegend=True)
+        elif names[0] in mheLog.uNames:
+            mheLog._plot(names,None,'o',when=N-2,showLegend=True)
+        
+def Fig_subplot(names,title=None,style='',when=0,showLegend=True,what=[],mpcLog=None,mheLog=None,simLog=None):
+    assert isinstance(what,list)
+    assert isinstance(names,list)
+    
+    fig = plt.figure()
+    
+    if title is None:
+        if isinstance(names,str):
+            title = names
+        else:
+            assert isinstance(names,list)
+            if len(names) == 1:
+                title = names[0]
+            else:
+                title = str(names)
+    fig.canvas.set_window_title(str(title))
+
+    plt.clf()
+    
+    n = len(names)
+    for k,name in enumerate(names):
+        plt.subplot(n,1,k+1)
+        if 'mpc' in what:
+            if mpcLog == None: raise Exception('you must provide a mpc log to plot its variables')
+            mpcLog._plot(name,None,'k',when='all',showLegend=True)
+        if 'sim' in what:
+            if simLog == None: raise Exception('you must provide a sim log to plot its variables')
+            simLog._plot(name,None,'',when=0,showLegend=True)
+        if 'mhe' in what:
+            if mheLog == None: raise Exception('you must provide a mhe log to plot its variables')
+            N = mheLog._log['x'][0].shape[0]
+            if not isinstance(name,list):
+                name = [name]
+            if name[0] in mheLog.xNames:
+                print 'here'
+                mheLog._plot(name,None,'o',when=N-1,showLegend=True)
+            elif name[0] in mheLog.uNames:
+                mheLog._plot(name,None,'o',when=N-2,showLegend=True)
         
         
     

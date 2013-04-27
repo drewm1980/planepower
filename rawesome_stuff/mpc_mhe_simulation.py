@@ -52,10 +52,11 @@ mheLog = InitializeMHE(mheRT,Rint,dae,conf,refP)
 #
 #assert(1==0)
 
-#outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
+new_out = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.append(mheRT.x[-2,:],mheRT.u[-1,:])
-simLog.log(mpcRT.x0,new_y,[])
+simLog.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
 
+# Simulation loop
 time = 0
 while time < Tf:
     
@@ -64,41 +65,31 @@ while time < Tf:
     if fbret != 0:
         raise Exception("MHE feedbackStep returned error code "+str(fbret))
     
-    mheLog.log(mheRT)
+    mpcRT.x0 = np.squeeze(mheRT.x[-1,:])
     
     mpcRT.preparationStep()
     fbret = mpcRT.feedbackStep()
     if fbret != 0:
         raise Exception("MPC feedbackStep returned error code "+str(fbret))
     
-    mpcLog.log(mpcRT)
-    
-    # Get the measurement BEFORE simulating
-#    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
-#    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(mpcRT.x[0,:],mpcRT.u[0,:])
-    # Simulate the system
-    new_x = sim.step(mpcRT.x[0,:],mpcRT.u[0,:],{})  
-    # Get the last measurement AFTER simulating
-#    outs = sim.getOutputs(new_x,mpcRT.u[0,:],{})
-#    new_yN = np.array([outs['measurementsN']])
-    new_yN = np.squeeze(new_x)
-    
-    simLog.log(new_x,new_y,new_yN)
-    
-    # Assign the new initial value and shift
-    mpcRT.x0 = np.squeeze(new_x)
-    mpcRT.shift()
-    mheRT.shift(new_y=new_y,new_yN=new_yN)
+    SimulateAndShift(mpcRT,mheRT,sim,mpcLog,mheLog,simLog)
     
     time += Ts
+    print time
 
 
 
 plt.ion()
 
-Fig_plot(['x','y','z'],what=['sim','mhe','mpc'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
-Fig_plot(['x','y','z'],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot(['w1','w2','w3'],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['r'],['dr'],['ddr']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+Fig_subplot([['c'],['cdot']],what=['sim','mhe'],simLog=simLog,mheLog=mheLog,mpcLog=mpcLog)
+
 
 #mpcLog.plot(['x','v'])
 
