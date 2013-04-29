@@ -1,6 +1,7 @@
 #!/usr/bin/env deployer
 
 #Import libraries
+import("soem_core")
 import("soem_master")
 import("soem_ebox")
 import("voltageController")

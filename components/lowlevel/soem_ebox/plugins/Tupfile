@@ -1,0 +1,6 @@
+include_rules
+LDFLAGS_OROCOS+=-L../../soem_master/lib
+LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/lowlevel/soem_master/lib
+LDFLAGS_OROCOS+=-lsoem_driver_factory
+
+: ../*.o | ../../soem_master/lib/libsoem_driver_factory.so |> !ld_orocos |> soem_ebox.so

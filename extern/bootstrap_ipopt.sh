@@ -10,8 +10,7 @@ fi
 (cd ipopt
 (cd ThirdParty/HSL
 if [ ! -d hsl ]; then
-	scp -r nonfree@moinette.esat.kuleuven.be:hsl/ .
-	mv hsl/*.f .
+	scp -r nonfree@moinette.esat.kuleuven.be:hsl/*.f .
 fi
 )
 for x in Blas Lapack Metis Mumps
@@ -20,7 +19,7 @@ do
 done
 mkdir -p build
 (cd build
-../configure --prefix=/usr/local --disable-shared ADD_FFLAGS=-fPIC ADD_CFLAGS=-fPIC ADD_CXXFLAGS=-fPIC
+../configure --prefix=/usr/local ADD_FFLAGS=-fPIC ADD_CFLAGS=-fPIC ADD_CXXFLAGS=-fPIC --with-blas=BUILD --with-lapack=BUILD
 make -j3
 make test
 sudo make install

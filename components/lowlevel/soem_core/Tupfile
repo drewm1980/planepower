@@ -1,0 +1,5 @@
+include_rules
+CFLAGS = -Wall -fPIC
+# We want symbols in here to be globally visible
+: foreach *.c |> !cc |>
+#: *.o |> !ld_orocos |> 
