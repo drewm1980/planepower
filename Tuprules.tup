@@ -3,6 +3,7 @@ CC = clang
 CXX = clang++
 CXXFLAGS += -Wall
 CXXFLAGS += -fPIC
+LDFLAGS += -Wl,-z,defs
 CFLAGS = $(CXXFLAGS)
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
@@ -31,9 +32,11 @@ export OROCOS_TARGET
 CPPFLAGS_OROCOS = $(CPPFLAGS)
 LDFLAGS_OROCOS = $(LDFLAGS)
 CXXFLAGS_OROCOS = $(CXXFLAGS)
+CXXFLAGS_OROCOS += -fno-strict-aliasing
 CFLAGS_OROCOS = $(CFLAGS)
-CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
+#CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
 CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)
+CXXFLAGS_OROCOS_PLUGIN += -fno-strict-aliasing
 
 CPPFLAGS_OROCOS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS_OROCOS += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`

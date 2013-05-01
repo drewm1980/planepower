@@ -1,3 +1,0 @@
-include_rules
-: plugin.cpp |> !cxx_orocos_plugin |>
-: ../*.o plugin.o |> !ld_orocos |> soem_core.so
