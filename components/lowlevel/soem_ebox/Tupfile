@@ -1,4 +1,6 @@
 include_rules
+CC = gcc
+CXX = g++
 CPPFLAGS_OROCOS+=-I.
 CPPFLAGS_OROCOS+=-I..
 CPPFLAGS_OROCOS+=-I../soem_core
