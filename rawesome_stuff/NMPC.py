@@ -1,9 +1,10 @@
 import rawe
 import casadi as C
 
-def makeNmpc(dae,N,dt):
+def makeNmpc(dae,N,dt,nSteps,iType):
     from rawe.ocp import Ocp
     mpc = Ocp(dae, N=N, ts=dt)
+    
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
     mpc.constrain( mpc['aileron'], '<=', 32767/1.25e6 );
@@ -14,30 +15,26 @@ def makeNmpc(dae,N,dt):
     mpc.constrain( -1, '<=', mpc['delevator'] );
     mpc.constrain( mpc['delevator'], '<=', 1 );
     mpc.constrain( 0, '<=', mpc['motor_torque'] );
-    mpc.constrain( mpc['motor_torque'], '<=', 20 );
-
-    xref = C.veccat( [dae[n] for n in ['x','y','z','dx','dy','dz','e11', 'e21', 'e31','e12', 'e22', 'e32','e13', 'e23', 'e33','w1','w2','w3','ddelta']])
-    uref = C.veccat( [dae[n] for n in ['delevator','daileron','motor_torque']] )
+    mpc.constrain( mpc['motor_torque'], '<=', 2000 );
 
     acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                ('QP_SOLVER','QP_QPOASES'),
-               ('HOTSTART_QP','NO'),
-               ('INTEGRATOR_TYPE','INT_IRK_GL2'),
-               ('NUM_INTEGRATOR_STEPS',str(40*N)),
+               ('HOTSTART_QP','YES'),
+               ('INTEGRATOR_TYPE',iType),
+               ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
                ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
                ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
                ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
                ('UNROLL_LINEAR_SOLVER','NO'),
                ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
                ('SPARSE_QP_SOLUTION','CONDENSING'),
-#               ('AX_NUM_QP_ITERATIONS','30'),
                ('FIX_INITIAL_STATE','YES'),
-               ('GENERATE_TEST_FILE','YES'),
-               ('GENERATE_SIMULINK_INTERFACE','YES'),
-               ('GENERATE_MAKE_FILE','NO'),
                ('CG_USE_C99','YES')]
+    
 
+    xref = C.veccat( [mpc[n] for n in dae.xNames()])
+    uref = C.veccat( [mpc[n] for n in dae.uNames()])
     mpc.minimizeLsq(C.veccat([xref,uref]))
     mpc.minimizeLsqEndTerm(xref)
 
