@@ -568,7 +568,7 @@ int ec_siiPDO(uint16 slave, ec_eepromPDOt* PDO, uint8 t)
 	if (eectl) ec_eeprom2pdi(slave); /* if eeprom control was previously pdi then restore */
 
     return (Size);
-}
+}
 /** Read all slave states in ec_slave. 
  * @return lowest state found
  */
