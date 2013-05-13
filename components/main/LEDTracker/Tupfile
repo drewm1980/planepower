@@ -6,9 +6,13 @@ LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
 
 : Tracer.cpp |> !cxx |>
 
-OBJS=BlobExtractor.o MedianFinder.o StereoPair.o Tracer.o
-
+OBJS=MedianFinder.o StereoPair.o Tracer.o
 : test_stereo_pair.cpp |> !cxx |>
-: test_stereo_pair.o | $(OJBS) |> $(CXX) $(OBJS) -o %o %f $(LDFLAGS) |> %B
+: test_stereo_pair.o | $(OBJS) |> $(CXX) $(OBJS) -o %o %f $(LDFLAGS) |> %B
+
+OBJS2=BlobExtractor.o MedianFinder.o StereoPair.o Tracer.o
+: test_stereo_pair_and_blob_extractor.cpp |> !cxx |>
+: test_stereo_pair_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
+
 
 : {objsforcomponent} |> !ld_orocos |> 

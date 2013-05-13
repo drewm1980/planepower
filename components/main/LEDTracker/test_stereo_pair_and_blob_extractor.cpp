@@ -11,7 +11,8 @@
 #include "cout.hpp"
 #include "BlobExtractor.hpp"
 
-#define VISUAL 0
+#define VERBOSE 1
+#define VISUAL 1
 #if VISUAL
 #include "Tracer.hpp"
 #endif
@@ -48,6 +49,28 @@ int main(int argc, char **argv)
 		sp.updateHook();
 		be1.extract_blobs(sp.right_frame_data);
 		be2.extract_blobs(sp.left_frame_data);
+#if VERBOSE
+		cout 
+			<< "         RED     GREEN   BLUE"  << endl
+			<< "         x   y   x   y   x   y"  << endl
+			<< "Frame 1: " 
+			<< be1.markerLocations.red.x << ' '
+			<< be1.markerLocations.red.y << ' '
+			<< be1.markerLocations.green.x  << ' '
+			<< be1.markerLocations.green.y << ' '
+			<< be1.markerLocations.blue.x  << ' '
+			<< be1.markerLocations.blue.y  << ' ' << endl
+			<< "Frame 2: " 
+			<< be2.markerLocations.red.x << ' '
+			<< be2.markerLocations.red.y << ' '
+			<< be2.markerLocations.green.x  << ' '
+			<< be2.markerLocations.green.y << ' '
+			<< be2.markerLocations.blue.x  << ' '
+			<< be2.markerLocations.blue.y  << ' ' << endl
+			<< endl;
+
+
+#endif
 #if VISUAL
 		tracer.update();
 #endif
