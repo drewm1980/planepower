@@ -1,4 +1,6 @@
 include_rules
 : foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp StereoPair.cpp |> !cxx_orocos |> {objsforcomponent}
 
+LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
+
 : {objsforcomponent} |> !ld_orocos |> 
