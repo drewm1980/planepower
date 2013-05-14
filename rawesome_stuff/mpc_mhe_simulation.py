@@ -33,8 +33,8 @@ intOptions = {'type':'Idas', 'ts':Ts}
 sim, simLog = InitializeSim(dae,intOptions)
 
 # Generate a Rintegrator for linearizing the system
-from rawe.dae.rienIntegrator import RienIntegrator
-Rint = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
+from rawe.dae import RtIntegrator
+Rint = RtIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
 
 # Reference parameters
 refP = {'r0':1.2,
