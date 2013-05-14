@@ -113,15 +113,23 @@ void Tracer::update(void)
 		}
 	}
 
-	// Make high saturation more obvious by making whole pixel turn white.
+	// Make high saturation more obvious by zebra striping saturated pixels.
 	uint8_t * sl = scanline.ptr<uchar>(0);
 	for(int x=0, xx=0; x<stereoPair->frame_w; x+=1, xx+=3)
 	{
 		if(sl[xx+0]==255 || sl[xx+1]==255 || sl[xx+2]==255)
 		{
-			sl[xx+0] = 255;
-			sl[xx+1] = 255;
-			sl[xx+2] = 255;
+			if (x%2)
+			{
+				sl[xx+0] = 255;
+				sl[xx+1] = 255;
+				sl[xx+2] = 255;
+			} else
+			{
+				sl[xx+0] = 0;
+				sl[xx+1] = 0;
+				sl[xx+2] = 0;
+			}
 		}
 	}
 
