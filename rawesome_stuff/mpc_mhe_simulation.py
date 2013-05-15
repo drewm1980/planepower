@@ -60,9 +60,9 @@ simLog.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
 time = 0
 while time < Tf:
     
-    print (mheRT.x[:-1,:]-mheRT.y[:,:25])
-    print (mheRT.u-mheRT.y[:,25:])
-    print (mheRT.x[-1,:]-mheRT.yN)
+#    print (mheRT.x[:-1,:]-mheRT.y[:,:25])
+#    print (mheRT.u-mheRT.y[:,25:])
+#    print (mheRT.x[-1,:]-mheRT.yN)
     
 #    np.savetxt('x.txt',mheRT.x)
 #    np.savetxt('u.txt',mheRT.u)
@@ -83,7 +83,7 @@ while time < Tf:
     fbret = mpcRT.feedbackStep()
     if fbret != 0:
         raise Exception("MPC feedbackStep returned error code "+str(fbret))
-    SimulateAndShift(mpcRT,mheRT,sim,simLog)
+    SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP)
     
     time += Ts
     print time
