@@ -1,0 +1,8 @@
+include_rules
+CC = gcc
+CXX = g++
+CFLAGS = -Wall -fPIC
+# We want symbols in here to be globally visible
+: foreach *.c |> !cc |>
+#: *.o |> !ld_orocos |> 
+: *.o |> !ld |> libsoem_core.so

@@ -1,20 +1,4 @@
-# libsoem_ebox-gnulinux.so
-# librtt-soem_ebox-typekit-gnulinux.so
-# libsoem_master-gnulinux.so
-# libsoem_driver_factory-gnulinux.so
-# libsoem_core.so
-# librtt-soem_ebox-ros-transport-gnulinux.so
-# libsoem_plugin-gnulinux.so
-
-#import("libsoem_ebox-gnulinux.so")
-#import("librtt-soem_ebox-typekit-gnulinux.so")
-#import("libsoem_master-gnulinux.so")
-#import("libsoem_driver_factory-gnulinux.so")
-#import("libsoem_core.so")
-#import("librtt-soem_ebox-ros-transport-gnulinux.so")
-#import("libsoem_plugin-gnulinux.so")
-
-import("soem")
-
-#import("soem_master")
-#deployer:import("soem_ebox")
+import("soem_core")
+import("soem_master")
+#import("soem_ebox")
+loadComponent("soemMaster","soem_master::SoemMasterComponent")

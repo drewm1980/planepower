@@ -1,4 +1,4 @@
 #!/bin/sh
-$MYOROCOSCOMPONENTS/usecases/common.sh
+#$PLANEPOWER_ROOT/usecases/common.sh
 
-rosrun ocl deployer-gnulinux -lerror -s mhe_mpc.ops
+deployer-gnulinux -lerror -s mhe_mpc.ops

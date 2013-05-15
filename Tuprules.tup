@@ -3,7 +3,7 @@ CC = clang
 CXX = clang++
 CXXFLAGS += -Wall
 CXXFLAGS += -fPIC
-CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
+LDFLAGS += -Wl,-z,defs
 CFLAGS = $(CXXFLAGS)
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
@@ -17,7 +17,7 @@ PLANEPOWER_ROOT=$(TUP_CWD)
 RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
 
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
-!cc = |> $(CC) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!cc = |> $(CC) $(CFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
 !ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
 
@@ -32,13 +32,18 @@ export OROCOS_TARGET
 CPPFLAGS_OROCOS = $(CPPFLAGS)
 LDFLAGS_OROCOS = $(LDFLAGS)
 CXXFLAGS_OROCOS = $(CXXFLAGS)
+CXXFLAGS_OROCOS += -fno-strict-aliasing
 CFLAGS_OROCOS = $(CFLAGS)
+#CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
+CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)
+CXXFLAGS_OROCOS_PLUGIN += -fno-strict-aliasing
 
 CPPFLAGS_OROCOS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS_OROCOS += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
 CXXFLAGS_OROCOS += -DRTT_COMPONENT
 
 !cxx_orocos = |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!cxx_orocos_plugin = |> $(CXX) $(CXXFLAGS_OROCOS_PLUGIN) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 !cc_orocos = |> $(CC) $(CFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 !ar_orocos = |> ar crs %o %f |>
 !ld_orocos = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> %d@(COMPONENT_NAME_MANGLING).so
@@ -46,6 +51,7 @@ CXXFLAGS_OROCOS += -DRTT_COMPONENT
 # Acado specific flags and rules
 CPPFLAGS_ACADO = $(CPPFLAGS)
 CXXFLAGS_ACADO = $(CXXFLAGS)
+CXXFLAGS_ACADO += -fvisibility=hidden -fvisibility-inlines-hidden
 CFLAGS_ACADO = $(CFLAGS)
 LDFLAGS_ACADO = $(LDFLAGS) 
 
