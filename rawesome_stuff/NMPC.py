@@ -28,7 +28,7 @@ def makeNmpc(dae,N,dt,nSteps,iType):
                ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
                ('UNROLL_LINEAR_SOLVER','NO'),
                ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
-               ('SPARSE_QP_SOLUTION','CONDENSING'),
+               ('SPARSE_QP_SOLUTION','FULL_CONDENSING'),
                ('FIX_INITIAL_STATE','YES'),
                ('CG_USE_C99','YES')]
     
@@ -46,4 +46,5 @@ if __name__=='__main__':
     from highwind_carousel_conf import conf
     dae = rawe.models.carousel(conf)
 
-    OcpRt = makeNmpc(dae,10,0.1)
+    mpcRt = makeNmpc(dae,10,0.1)
+    mheRt = makeMhe(dae,10,0.1)

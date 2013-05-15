@@ -6,10 +6,10 @@ Created on Wed Apr 24 15:19:57 2013
 """
 import numpy as np
 import scipy
-import copy
+#import copy
 import matplotlib.pyplot as plt
 
-import casadi as C
+#import casadi as C
 import rawe
 
 from rawekite.carouselSteadyState import getSteadyState
@@ -40,6 +40,77 @@ def ComputeTerminalCost(integrator, xlin, ulin, Q, R, N=None):
     K, P = dlqr(A, B, Q, R, N=None)
     
     return K, P, A, B
+    
+def UpdateArrivalCost(integrator, x, u, xL, yL, PL, VL, WL): 
+    ''' Arrival cost implementation.
+        Approximate the solution of:
+        min_{xL_,uL_,xL1_} ||  PL ( xL_-xL )         ||
+                           ||  VL ( yL-h(xL_,uL_) )  ||
+                           ||  WL wx                 ||
+                     s.t.  wx = xL1_ - f(xL_,uL_)
+        
+        Linearization (at the last MHE estimate x,u which is different from xL,uL):
+        f(xL_,uL_) ~= f(x,u) + df(x,u)/dx (xL_-x) + df(x,u)/du (uL_-u)
+                   ~= f(x,u) +         Xx (xL_-x) +         Xu (uL_-u)
+                   ~= f(x,u) - Xx x - Xu u + Xx xL_ + Xu uL_
+                   ~= x_tilde              + Xx xL_ + Xu uL_
+        h(xL_,uL_) ~= h(x,u) + dh(x,u)/dx (xL_-x) + dh(x,u)/du (uL_-u)
+                   ~= f(x,u) +         Hx (xL_-x) +         Hu (uL_-u)
+                   ~= h(x,u) - Hx x - Hu u + Hx xL_ + Hu uL_
+                   ~= h_tilde              + Hx xL_ + Hu uL_
+                   
+        Linearized problem:
+        min_{xL_,uL_,xL1_} ||  PL ( xL_ - xL )                          ||
+                           ||  VL ( yL - h_tilde - Hx xL_ - Hu uL_ )    ||
+                           ||  WL ( xL1_ - x_tilde - Xx xL_ - Xu uL_ )  ||
+        
+        Rewrite as:
+        min_{xL_,uL_,xL1_} ||  M ( xL_, uL_, xL1_ ) + res  ||
+        
+        After QR factorization of M:
+        min_{xL_,uL_,xL1_} ||  R ( xL_, uL_, xL1_ ) + rho  ||
+        '''
+    nx = x.shape[0]
+    nu = u.shape[0]
+    nV = VL.shape[0]
+    
+    integrator.x = x
+    integrator.u = u
+    out = integrator.getOutputs()
+#    h = np.squeeze(out['measurements'])
+    x1 = integrator.step()
+    Xx = integrator.dx1_dx0
+    Xu = integrator.dx1_du
+    
+    Hx = np.append(np.eye(nx),np.zeros((4,25)),axis=0)
+    Hu = np.append(np.zeros((25,4)),np.eye(nu),axis=0)
+    
+    x_tilde = x1 - np.dot(Xx,x) - np.dot(Xu,u)
+    h_tilde =  h - np.dot(Hx,x) - np.dot(Hu,u)
+    
+    res = np.bmat([ -np.dot(PL, xL),
+                     np.dot(VL, yL - h_tilde),
+                    -np.dot(WL, x_tilde) ])
+    res = np.squeeze(np.array(res))
+    
+    M = np.bmat([[             PL,  np.zeros((nx,nu)), np.zeros((nx,nx)) ],
+                 [ -np.dot(VL,Hx),     -np.dot(VL,Hu), np.zeros((nV,nx)) ],
+                 [ -np.dot(WL,Xx),     -np.dot(WL,Xu),                WL ]])
+    
+    Q, R = np.linalg.qr(M)
+    
+#    R1  = R[:nx+nu,:nx+nu]
+#    R12 = R[:nx+nu,nx+nu:]
+    R2  = R[nx+nu:,nx+nu:]
+    
+#    rho = np.linalg.solve(Q,res)
+    rho = np.squeeze(np.array(np.dot(Q.T,res)))
+    rho2 = rho[nx+nu:]
+    
+    PL1 = R2
+    xL1 = -np.linalg.solve(R2,rho2)
+    
+    return PL1, xL1
     
 def GenerateReference(dae,conf,refP):
     
@@ -104,10 +175,28 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     P = np.eye(Q.shape[0])*10
     mpcrt.SN = P
     
-    mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
+#    mpcrt.S  = np.eye(25+4)
+#    mpcrt.SN = np.eye(25)
     
-    return mpcLog
-   
+#    mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
+#    
+#    return mpcLog
+
+#blah
+#class MpcMhe(object):
+#    def __init__(self):
+#        blah
+#    def initializeMhe(self):
+#        raise Exception('you must override this')
+#        
+#class KiteMpcMhe(MpcMhe):
+#    def __init__(self,userdata):
+#        MpcMhe.__init__(self)
+#        self.myydata = userdata
+#        
+#    def initializeMhe(self):
+#        print self.userdata
+
 def InitializeMHE(mhert,integrator,dae,conf,refP):
     
     xref, uref = GenerateReference(dae,conf,refP)
@@ -124,6 +213,8 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     for k,name in enumerate(dae.xNames()):
         if name == 'cos_delta': Xref[:,k] = CS[:,0]
         if name == 'sin_delta': Xref[:,k] = CS[:,1]
+        
+    mhert.x0 = Xref[0,:]
     # Set the initial guess
     mhert.x = Xref
     mhert.u = Uref
@@ -135,27 +226,27 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     # Set the covariance (temporary)
     mhert.S  = np.eye(mhert.y.shape[1])
     mhert.S[25:,25:] = np.eye(4)*1
-#    mhert.SN = np.eye(mhert.yN.shape[0])
+    mhert.SN = np.eye(mhert.yN.shape[0])
     
-    mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
+#    mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
+#    
+#    return mheLog
     
-    return mheLog
-    
-def SimulateAndShift(mpcRT,mheRT,sim,mpcLog,mheLog,simLog):
+def SimulateAndShift(mpcRT,mheRT,sim,simLog):
 
-    mheLog.log(mheRT)    
-    mpcLog.log(mpcRT)
+    mheRT.log()    
+    mpcRT.log()
     
     # Get the measurement BEFORE simulating
 #    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 #    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(mpcRT.x[0,:],mpcRT.u[0,:]) + np.random.randn(29)*0.001
+    new_y = np.append(mpcRT.x[0,:],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
     # Simulate the system
     new_x = sim.step(mpcRT.x[0,:],mpcRT.u[0,:],{})
     # Get the last measurement AFTER simulating
     new_out = sim.getOutputs(new_x,mpcRT.u[0,:],{})
 #    new_yN = np.array([outs['measurementsN']])
-    new_yN = np.squeeze(new_x) + np.random.randn(25)*0.001
+    new_yN = np.squeeze(new_x) #+ np.random.randn(25)*0.001
     
     simLog.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
     
@@ -304,7 +395,6 @@ def Fig_subplot(names,title=None,style='',when=0,showLegend=True,what=[],mpcLog=
             if not isinstance(name,list):
                 name = [name]
             if name[0] in mheLog.xNames:
-                print 'here'
                 mheLog._plot(name,None,'o',when=N-1,showLegend=True)
             elif name[0] in mheLog.uNames:
                 mheLog._plot(name,None,'o',when=N-2,showLegend=True)

@@ -62,35 +62,31 @@ def makeMhe(dae,N,dt,nSteps,iType):
     Const = - r*r/2 + x*x/2 + y*y/2 + z*z/2
     dConst = dx*x + dy*y + dz*z
 
-    ConstDelta = cos_delta**2+sin_delta**2 - 1
+    ConstDelta = cos_delta**2 + sin_delta**2 - 1
 
-    mhe.constrain(ConstR1,'==',0, when='AT_END')
-    mhe.constrain(ConstR2,'==',0, when='AT_END')
-    mhe.constrain(ConstR3,'==',0, when='AT_END')
-    mhe.constrain(ConstR4,'==',0, when='AT_END')
-    mhe.constrain(ConstR5,'==',0, when='AT_END')
-    mhe.constrain(ConstR6,'==',0, when='AT_END')
-
-    mhe.constrain(Const,'==',0, when='AT_END')
-    mhe.constrain(dConst,'==',0, when='AT_END')
-
-    mhe.constrain(ConstDelta,'==',0, when='AT_END')
+#    mhe.constrain(ConstR1,'==',0, when='AT_END')
+#    mhe.constrain(ConstR2,'==',0, when='AT_END')
+#    mhe.constrain(ConstR3,'==',0, when='AT_END')
+#    mhe.constrain(ConstR4,'==',0, when='AT_END')
+#    mhe.constrain(ConstR5,'==',0, when='AT_END')
+#    mhe.constrain(ConstR6,'==',0, when='AT_END')
+#
+#    mhe.constrain(Const,'==',0, when='AT_END')
+#    mhe.constrain(dConst,'==',0, when='AT_END')
+#
+#    mhe.constrain(ConstDelta,'==',0, when='AT_END')
 
     acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
                  ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
                  ('QP_SOLVER','QP_QPOASES'),
-                 ('HOTSTART_QP','YES'),
+                 #('HOTSTART_QP','YES'),
                  ('INTEGRATOR_TYPE',iType),
                  ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
-                 ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
-                 ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
-                 ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
-                 ('UNROLL_LINEAR_SOLVER','NO'),
-                 ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
                  ('SPARSE_QP_SOLUTION','CONDENSING'),
                  ('FIX_INITIAL_STATE','NO'),
+#                 ('LEVENBERG_MARQUARDT', '1e-4'),
                  ('CG_USE_VARIABLE_WEIGHTING_MATRIX','NO'),
-                 ('CG_USE_C99','YES')]
+                 ]
 
 
 
