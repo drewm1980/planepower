@@ -74,8 +74,6 @@ protected:
 	std::vector< double > execControls;
 	/// Port which holds the execution time
 	RTT::OutputPort< double > portExecTime;
-	/// Executon time
-	double execTime;
 	
 	/// Name to listen for incoming connections on, either FQDN or IPv4 address.
 	std::string hostName;
