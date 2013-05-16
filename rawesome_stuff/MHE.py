@@ -90,8 +90,8 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
 
 
-#    cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    cgOpts = {'CXX':'clang++', 'CC':'clang'}
+    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+#    cgOpts = {'CXX':'clang++', 'CC':'clang'}
     mheRT = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
     return mheRT
 

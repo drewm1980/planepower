@@ -78,11 +78,6 @@ void BlobExtractor::find_single_led_singlepass(uint8_t * im, Point2d &p)
 		}
 	}
 
-	//cout <<endl;
-	//for(int i=0; i<frame_h; i++)
-		//cout << integrated_w[i];
-	//cout <<endl;
-
 	p.x = medianFinder_w->find_median(integrated_w);
 	p.y = medianFinder_h->find_median(integrated_h);
 	

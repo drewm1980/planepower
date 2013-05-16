@@ -15,6 +15,12 @@ from mpc_mhe_utils import *
 from highwind_carousel_conf import conf
 
 dae = rawe.models.carousel(conf)
+dae['ConstR1'] = dae['e11']*dae['e11'] + dae['e12']*dae['e12'] + dae['e13']*dae['e13'] - 1
+dae['ConstR2'] = dae['e11']*dae['e21'] + dae['e12']*dae['e22'] + dae['e13']*dae['e23']
+dae['ConstR3'] = dae['e11']*dae['e31'] + dae['e12']*dae['e32'] + dae['e13']*dae['e33']
+dae['ConstR4'] = dae['e21']*dae['e21'] + dae['e22']*dae['e22'] + dae['e23']*dae['e23'] - 1
+dae['ConstR5'] = dae['e21']*dae['e31'] + dae['e22']*dae['e32'] + dae['e23']*dae['e33']
+dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae['e33'] - 1
 
 # Simulation parameters
 N_mpc = 10  # Number of MPC control intervals
@@ -33,8 +39,8 @@ intOptions = {'type':'Idas', 'ts':Ts}
 sim, simLog = InitializeSim(dae,intOptions)
 
 # Generate a Rintegrator for linearizing the system
-from rawe.dae.rienIntegrator import RienIntegrator
-Rint = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
+from rawe.dae import RtIntegrator
+Rint = RtIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
 
 # Reference parameters
 refP = {'r0':1.2,
@@ -79,7 +85,7 @@ while time < Tf:
     
     mpcRT.preparationStep()
     mpcRT.feedbackStep()
-    
+
     SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP)
     
     time += Ts

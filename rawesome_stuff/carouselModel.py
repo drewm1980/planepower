@@ -57,8 +57,8 @@ def makeModel(dae,conf):
     RIMU = C.DMatrix(np.loadtxt('../properties/IMU/RIMU.dat'))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aShift = cross(dw,pIMU)
-    dae['IMU acceleration'] = C.mul(RIMU,ddpIMU+aShift)
-    dae['IMU angular velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
+    dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aShift)
+    dae['IMU_angular_velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
 
     camConf = {'PdatC1':C.DMatrix(np.loadtxt('../properties/cameras/PC1.dat')),
                'PdatC2':C.DMatrix(np.loadtxt('../properties/cameras/PC2.dat')),
@@ -67,6 +67,6 @@ def makeModel(dae,conf):
                'pos_marker_body1':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body1.dat')),
                'pos_marker_body2':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body2.dat')),
                'pos_marker_body3':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body3.dat'))}
-    dae['marker positions'] = camModel.fullCamModel(dae,camConf)
+    dae['marker_positions'] = camModel.fullCamModel(dae,camConf)
 
     return dae

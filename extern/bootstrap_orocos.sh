@@ -11,6 +11,9 @@ autoproj update
 autoproj fast-build
 )
 
+echo "Giving special rights to OROCOS deployer"
+sh ../components/lowlevel/soem_master/setcap.sh
+
 echo "Bootstrapping rttlua tab completion..."
 git clone git://gitorious.org/orocos-toolchain/rttlua_completion.git
 (
