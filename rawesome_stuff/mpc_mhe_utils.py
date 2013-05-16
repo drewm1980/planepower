@@ -455,6 +455,74 @@ def Fig_subplot(names,title=None,style='',when=0,showLegend=True,what=[],mpcLog=
                 mheLog._plot(name,None,'o',when=N-1,showLegend=True)
             elif name[0] in mheLog.uNames:
                 mheLog._plot(name,None,'o',when=N-2,showLegend=True)
+            else:
+                mheLog._plot(name,None,'o',showLegend=True)
         
+class Plotter(object):
+    def __init__(self,simLog,mheRT,mpcRT):
+        self._simLog = simLog
+        self._mheLog  = mheRT
+        self._mpcLog  = mpcRT
         
+    def _plot(self,name,title,what):
+        if 'mpc' in what:
+#            if self._mpcLog == None: raise Exception('you must provide a mpc log to plot its variables')
+            self._mpcLog._plot(name,title,'k',when='all',showLegend=True)
+        if 'sim' in what:
+#            if self._simLog == None: raise Exception('you must provide a sim log to plot its variables')
+            self._simLog._plot(name,title,'',when=0,showLegend=True)
+        if 'mhe' in what:
+#            if self._mheLog == None: raise Exception('you must provide a mhe log to plot its variables')
+            N = self._mheLog._log['x'][0].shape[0]
+            if not isinstance(name,list):
+                name = [name]
+            if name[0] in self._mheLog.xNames:
+                self._mheLog._plot(name,title,'o',when=N-1,showLegend=True)
+            elif name[0] in self._mheLog.uNames:
+                self._mheLog._plot(name,title,'o',when=N-2,showLegend=True)
+            else:
+                self._mheLog._plot(name,title,'o',showLegend=True)
+                
+    def plot(self,names,title=None,when=0,showLegend=True,what=[]):
+        assert isinstance(what,list)
+        assert isinstance(names,list)
+        
+        fig = plt.figure()
+        
+        if title is None:
+            if isinstance(names,str):
+                title = names
+            else:
+                assert isinstance(names,list)
+                if len(names) == 1:
+                    title = names[0]
+                else:
+                    title = str(names)
+        fig.canvas.set_window_title(str(title))
     
+        plt.clf()
+        self._plot(names,title,what)
+            
+    def subplot(self,names,title=None,when=0,showLegend=True,what=[]):
+        assert isinstance(what,list)
+        assert isinstance(names,list)
+        
+        fig = plt.figure()
+        
+        if title is None:
+            if isinstance(names,str):
+                title = names
+            else:
+                assert isinstance(names,list)
+                if len(names) == 1:
+                    title = names[0]
+                else:
+                    title = str(names)
+        fig.canvas.set_window_title(str(title))
+    
+        plt.clf()
+        
+        n = len(names)
+        for k,name in enumerate(names):
+            plt.subplot(n,1,k+1)
+            self._plot(name,title,what)
