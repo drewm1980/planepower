@@ -20,7 +20,7 @@ dae = rawe.models.carousel(conf)
 N_mpc = 10  # Number of MPC control intervals
 N_mhe = 10  # Number of MHE control intervals
 Ts = 0.1    # Sampling time
-nSteps = 40 #Number of steps for the Rintegrator (also in MPC and MHE)
+nSteps = 3 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 Tf = 1.2    # Simulation duration
 
@@ -72,17 +72,14 @@ while time < Tf:
 #    print (mheRT.x[-1,:]-mheRT.yN)
     
     mheRT.preparationStep()
-    fbret = mheRT.feedbackStep()
-    if fbret != 0:
-        raise Exception("MHE feedbackStep returned error code "+str(fbret))
+    mheRT.feedbackStep()
     
     mpcRT.x0 = mheRT.x[-1,:]
 #    mpcRT.x0 = mpcRT.x[0,:]
     
     mpcRT.preparationStep()
-    fbret = mpcRT.feedbackStep()
-    if fbret != 0:
-        raise Exception("MPC feedbackStep returned error code "+str(fbret))
+    mpcRT.feedbackStep()
+    
     SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP)
     
     time += Ts
@@ -91,15 +88,27 @@ while time < Tf:
 
 plt.ion()
 
-Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot(['w1','w2','w3'],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['r'],['dr'],['ddr']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-Fig_subplot([['c'],['cdot']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot(['w1','w2','w3'],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['r'],['dr'],['ddr']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['c'],['cdot']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
+#Fig_subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
 
+plotter = Plotter(simLog,mheRT,mpcRT)
+plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'])
+plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'])
+plotter.subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'])
+plotter.subplot(['w1','w2','w3'],what=['sim','mhe'])
+plotter.subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','mhe'])
+plotter.subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'])
+plotter.subplot([['r'],['dr'],['ddr']],what=['sim','mhe'])
+plotter.subplot([['c'],['cdot']],what=['sim','mhe'])
+plotter.subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'])
+plotter.plot(['kkt'],what=['mpc','mhe'])
 
 #mpcLog.plot(['x','v'],when='all')
 

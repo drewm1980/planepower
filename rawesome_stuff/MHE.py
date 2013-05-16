@@ -64,7 +64,7 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
     ConstDelta = cos_delta**2 + sin_delta**2 - 1
 
-    mhe.constrain(ConstR1,'==',0, when='AT_END')
+#    mhe.constrain(ConstR1,'==',0, when='AT_END')
 #    mhe.constrain(ConstR2,'==',0, when='AT_END')
 #    mhe.constrain(ConstR3,'==',0, when='AT_END')
 #    mhe.constrain(ConstR4,'==',0, when='AT_END')
