@@ -94,16 +94,6 @@ while time < Tf:
 
 plt.ion()
 
-#Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot(['w1','w2','w3'],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['r'],['dr'],['ddr']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['c'],['cdot']],what=['sim','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-#Fig_subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'],simLog=simLog,mheLog=mheRT,mpcLog=mpcRT)
-
 plotter = Plotter(simLog,mheRT,mpcRT)
 plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'])
 plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'])
@@ -115,6 +105,7 @@ plotter.subplot([['r'],['dr'],['ddr']],what=['sim','mhe'])
 plotter.subplot([['c'],['cdot']],what=['sim','mhe'])
 plotter.subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'])
 plotter.plot(['kkt'],what=['mpc','mhe'])
+plotter.plot(['ConstR1','ConstR2','ConstR3','ConstR4','ConstR5','ConstR6'],what=['sim','mhe'])
 
 #mpcLog.plot(['x','v'],when='all')
 
