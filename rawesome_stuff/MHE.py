@@ -64,16 +64,16 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
     ConstDelta = cos_delta**2 + sin_delta**2 - 1
 
-#    mhe.constrain(ConstR1,'==',0, when='AT_END')
+    mhe.constrain(ConstR1,'==',0, when='AT_END')
 #    mhe.constrain(ConstR2,'==',0, when='AT_END')
 #    mhe.constrain(ConstR3,'==',0, when='AT_END')
 #    mhe.constrain(ConstR4,'==',0, when='AT_END')
 #    mhe.constrain(ConstR5,'==',0, when='AT_END')
 #    mhe.constrain(ConstR6,'==',0, when='AT_END')
-#
-#    mhe.constrain(Const,'==',0, when='AT_END')
-#    mhe.constrain(dConst,'==',0, when='AT_END')
-#
+
+    mhe.constrain(Const,'==',0, when='AT_END')
+    mhe.constrain(dConst,'==',0, when='AT_END')
+
 #    mhe.constrain(ConstDelta,'==',0, when='AT_END')
 
     acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
@@ -90,7 +90,8 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
 
 
-    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+#    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+    cgOpts = {'CXX':'clang++', 'CC':'clang'}
     mheRT = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
     return mheRT
 

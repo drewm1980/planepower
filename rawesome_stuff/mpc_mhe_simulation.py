@@ -44,6 +44,13 @@ refP = {'r0':1.2,
 InitializeMPC(mpcRT,Rint,dae,conf,refP)
 InitializeMHE(mheRT,Rint,dae,conf,refP)
 
+#np.savetxt('x.txt',mheRT.x)
+#np.savetxt('u.txt',mheRT.u)
+#np.savetxt('y.txt',mheRT.y)
+#np.savetxt('yN.txt',mheRT.yN)
+#np.savetxt('S.txt',mheRT.S)
+#np.savetxt('SN.txt',mheRT.SN)
+
 #x2=Rint.step(x=mpcRT.x0,u=mpcRT.u[0,:])
 #x1=sim.step(mpcRT.x0,mpcRT.u[0,:],{})
 #print x1-mpcRT.x0
@@ -63,13 +70,6 @@ while time < Tf:
 #    print (mheRT.x[:-1,:]-mheRT.y[:,:25])
 #    print (mheRT.u-mheRT.y[:,25:])
 #    print (mheRT.x[-1,:]-mheRT.yN)
-    
-#    np.savetxt('x.txt',mheRT.x)
-#    np.savetxt('u.txt',mheRT.u)
-#    np.savetxt('y.txt',mheRT.y)
-#    np.savetxt('yN.txt',mheRT.yN)
-#    np.savetxt('S.txt',mheRT.S)
-#    np.savetxt('SN.txt',mheRT.SN)
     
     mheRT.preparationStep()
     fbret = mheRT.feedbackStep()
