@@ -128,7 +128,7 @@ def GenerateReference(dae,conf,refP):
     
     return xref, uref
 
-def InitializeMPC(mpcrt,integrator,dae,conf,refP):
+def InitializeMPC(mpcrt,Rint,dae,conf,refP):
         
     xref, uref = GenerateReference(dae,conf,refP)
     print xref
@@ -171,7 +171,20 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     Q = np.diag( Q )*1e-2
     R = np.diag( R )*1e-2
     
-#    K, P, A, B = ComputeTerminalCost(integrator, xref, uref, Q, R)
+    mpcrt.Q = Q
+    mpcrt.R = R
+    
+#    # Linearize the system at the reference
+#    nx = Rint.x.shape[0]
+#    Rint.x = mpcrt.yN
+#    Rint.u = mpcrt.y[-1,nx:]
+#    Rint.step()
+#    A = Rint.dx1_dx0
+#    B = Rint.dx1_du
+#    
+#    # Compute the LQR
+#    K,P = dlqr(A, B, Q, R, N=None)
+    
     P = np.eye(Q.shape[0])*10
     mpcrt.SN = P
     
@@ -232,7 +245,7 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
 #    
 #    return mheLog
     
-def SimulateAndShift(mpcRT,mheRT,sim,simLog):
+def SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP):
 
     mheRT.log()    
     mpcRT.log()
@@ -250,8 +263,52 @@ def SimulateAndShift(mpcRT,mheRT,sim,simLog):
     
     simLog.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
     
+    # Linearize the system at the reference
+    nx = Rint.x.shape[0]
+#    Rint.x = mpcRT.yN
+#    Rint.u = mpcRT.y[-1,nx:]
+#    Rint.step()
+#    A = Rint.dx1_dx0
+#    B = Rint.dx1_du
+#    Q = mpcRT.Q
+#    R = mpcRT.R
+#    # Compute the LQR
+#    K,P = dlqr(A, B, Q, R, N=None)
+    
+    xN = mpcRT.x[-1,:]
+#    uN = -np.dot(K,xN)
+    uN = mpcRT.y[-1,nx:]
+    Rint.x = xN
+    Rint.u = uN
+    Rint.step()
+    
+    new_xMPC = [Rint.x]
+    new_uMPC = [uN]
+    
+    cos_delta,sin_delta = mpcRT.y[1,nx-2:nx]
+    
+    delta0 = np.arctan2(sin_delta,cos_delta)
+    
+    xref, uref = GenerateReference(dae,conf,refP)
+    
+    N = mpcRT.u.shape[0]
+    Xref = [xref[name] for name in dae.xNames()]
+    Uref = [uref[name] for name in dae.uNames()]
+    Xref = np.array( [Xref]*(N+1) )
+    Uref = np.array( [Uref]*N     )
+    
+    ts = mpcRT._ts
+    # The only part that changes is cos(delta), sin(delta) 
+    CS = np.array([ [np.cos(k*ts*refP['ddelta0'] + delta0), np.sin(k*ts*refP['ddelta0'] + delta0)] for k in range(-N,1) ])
+    for k,name in enumerate(dae.xNames()):
+        if name == 'cos_delta': Xref[:,k] = CS[:,0]
+        if name == 'sin_delta': Xref[:,k] = CS[:,1]
+    
+    new_yMPC = np.append(Xref[-2,:],Uref[-1,:])
+    new_yNMPC = Xref[-1,:]
+        
     # shift
-    mpcRT.shift()
+    mpcRT.shift(new_x=new_xMPC,new_u=new_uMPC,new_y=new_yMPC,new_yN=new_yNMPC)
     mheRT.shift(new_y=new_y,new_yN=new_yN)
     
     
