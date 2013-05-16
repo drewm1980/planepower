@@ -1,305 +1,300 @@
 #include "mcuHandler.hpp"
-#include <ocl/Component.hpp>
-#include <rtt/marsh/Marshalling.hpp>
 
+#include <rtt/Logger.hpp>
+#include <rtt/Property.hpp>
+#include <rtt/os/TimeService.hpp>
+#include <rtt/Time.hpp>
+
+/// Packet tag filed
+#define TAG_CMD        			0xff
+/// Packet identifier for sending motor references.
+#define CMD_SET_MOTOR_REFS		0x40
+/// Packet identifier for receiving sensor data.
+#define CMD_GET_SENSOR_DATA		0x41
+/// Max motor reference value (+- max unsigned 16bit number).
 #define MAX_VALUE_MOTOR_REF 32767
-#define MAX_VALUE_AILERON_REF MAX_VALUE_MOTOR_REF
-#define MAX_VALUE_ELEVATOR_REF 20000
-//#define MAX_VALUE_ELEVATOR_REF MAX_VALUE_MOTOR_REF
-#define CONTROL_SCALE( Value ) \
-	(double) Value*1000.0
-// Conversion from integer to radians per second
+
+/// Conversion from integer to radians per second
 #define	IMU_GYRO_SCALE( Value ) \
 		(double)Value / 4.0 * 0.2 * 3.14159 / 180.0
-// Conversion from integer to m/s^2
+
+/// Conversion from integer to m/s^2
 #define IMU_ACCL_SCALE( Value ) \
 		(double)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
 
-ORO_CREATE_COMPONENT( McuHandler)
-
 using namespace std;
 using namespace RTT;
-using namespace Orocos;
+using namespace RTT::os;
 
-	 McuHandler::McuHandler(std::string name) :
-		RTT::TaskContext(name)
-	 {
+/// MCU handler error codes. ONLY for internal use!
+enum McuHandlerErrorCodes
+{
+	ERR_BAD_COMMAND_RESPONSE = 0,
+	ERR_TCP_SEND_FAIL,
+	ERR_TCP_RECV_FAIL,
+	ERR_BAD_CHECKSUM
+};
 
+McuHandler::McuHandler(std::string name)
+	: RTT::TaskContext( name )
+{
+	//
 	// Add ports
-	addEventPort("imuTrigger",_imuTrigger, boost::bind(&McuHandler::getIMUData,this) ).doc("Trigger the component to get an IMU measurement");
-	addPort("imuData",_imuData).doc("The IMU data: [omegax; omegay; omegaz; ax; ay; az]");
-	addEventPort("controlInputPort",_controlInputPort,boost::bind(&McuHandler::sendControls,this)).doc("Control input: motor1, motor2, motor3");
-	addPort("imuTimeStamp",_imuTimeStamp).doc("The IMU time stamp");
-	addPort("controlOutputPort",_controlOutputPort).doc("Control output: motor1, motor2, motor3");
-	addPort("controlTimeStamp",_controlTimeStamp);
-	addPort("imuAndControlPort",_imuAndControlPort);
+	//
+	addEventPort("trigger", portTrigger)
+		.doc("Trigger the component to get an IMU measurement");
+	addPort("imuData", portImuData)
+		.doc("The IMU data: [timestamp, omegax, omegay, omegaz, ax, ay, az]");
+	addPort("controls", portControls)
+		.doc("Port with control signals [ua1, ua2, ue].");
+	addPort("execTime", portExecTime)
+		.doc("Execution time of the component.");
 
-	U.resize(3,0.0);
-	U_sent.resize(3,0.0);
-	imuData.resize(6,0.0);
-	imuAndControl.resize(9,0.0);
-	imuTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+	//
+	// Prepare ports
+	//
+	imuData.resize(7, 0.0);
+	portImuData.setDataSample( imuData );
+	portImuData.write( imuData );
+	
+	controls.resize(3, 0.0);
+	execControls.resize(3, 0.0);
 
-
-	_imuData.setDataSample( imuData );
-	_imuData.write( imuData );
-	_imuTimeStamp.setDataSample( imuTimeStamp );
-	_imuTimeStamp.write( imuTimeStamp );
-	_controlOutputPort.setDataSample(U_sent);
-	_controlOutputPort.write(U_sent);	
-	_controlTimeStamp.setDataSample( imuTimeStamp );
-	_controlTimeStamp.write( imuTimeStamp );
-	_imuAndControlPort.setDataSample( imuAndControl );
-	_imuAndControlPort.write( imuAndControl );
-
+	//
 	// Add properties
-
-	addProperty("HostName",hostName).doc("Name to listen for incoming connections on (FQDN or IPv4)");
-	addProperty("HostPort",hostPort).doc("Port to listen on (1024-65535 inclusive)");
-	addProperty("ConnectionTimeout",connectionTimeout).doc("Timeout in seconds, when waiting for connection");
-	addProperty("ReadTimeout",readTimeout).doc("Timeout in seconds, when waiting for read");
-	addProperty("useExternalTrigger",useExternalTrigger).doc("Set to true of you want the component to be triggered automatically. Default value is false (meaning triggered by orocos)");
-	useExternalTrigger = false;
-
-	addOperation("sendMotorReferences",&McuHandler::SendMotorReferences,this);
-	}
+	//
+	addProperty("HostName", hostName)
+		.doc("Name to listen for incoming connections on (FQDN or IPv4)");
+	addProperty("HostPort", hostPort)
+		.doc("Port to listen on (1024-65535 inclusive)");
+	addProperty("ConnectionTimeout", connectionTimeout)
+		.doc("Timeout in seconds, when waiting for connection");
+	addProperty("ReadTimeout", readTimeout)
+		.doc("Timeout in seconds, when waiting for read");
+}
 	
-
-	McuHandler::~McuHandler()
-	{
-	}
-
-	bool McuHandler::configureHook()
-	{
+bool McuHandler::configureHook()
+{
 	return true;
-	}
+}
 
-	bool  McuHandler::startHook()
+bool McuHandler::startHook()
+{
+	if ((tcpSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 	{
-	if ( ( g_TCPSocket = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP ) ) < 0 )
-	{
-		printf("Failed to create socket");
+		log( Error ) << "Failed to create socket." << endlog();
 		return false;
 	}
-	// Construct the server sockaddr_in structure
-	memset( &echoserver, 0, sizeof( echoserver ) );			// Clear struct
-	echoserver.sin_family = AF_INET;						// Internet/IP
-	echoserver.sin_addr.s_addr =  inet_addr(hostName.c_str());	// IP address
-	echoserver.sin_port = htons( hostPort );	   // Server port
+	
+	// Clear struct
+	memset(&tcpEchoServer, 0, sizeof( tcpEchoServer ));
+	// Internet/IP
+	tcpEchoServer.sin_family = AF_INET;
+	// IP address
+	tcpEchoServer.sin_addr.s_addr = inet_addr(hostName.c_str());
+	// Server port
+	tcpEchoServer.sin_port = htons( hostPort );
 	// Establish connection
-	if ( connect( g_TCPSocket,
-		( struct sockaddr * ) &echoserver,
-		sizeof( echoserver ) ) < 0 )
+	if (connect(tcpSocket, (struct sockaddr *) &tcpEchoServer, sizeof( tcpEchoServer )) < 0)
 	{
-		printf("Failed to connect with server");
+		log( Error ) << "Failed to connect with the MCU." << endlog();
 		return false;
 	}
 
-	SendMotorReferences(0,0,0);
+	execControls[ 0 ] = 0.;
+	execControls[ 1 ] = 0.;
+	execControls[ 2 ] = 0.;
+	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
 
-		return true;
-	}
+	return true;
+}
 
-	void  McuHandler::updateHook()
-	{
-		if(!useExternalTrigger){
-			imuTimeStamp = RTT::os::TimeService::Instance()->getTicks();
-			ReceiveSensorData(&imuData);
-			_imuData.write(imuData);
-			_imuTimeStamp.write(imuTimeStamp);
-		}
-	}
-
-	void McuHandler::getIMUData(){
-		if(useExternalTrigger){
-//RTT::os::TimeService::ticks myticks = RTT::os::TimeService::Instance()->getTicks();
-			_imuTrigger.read(imuTimeStamp);
-//cout << "time it took from request: " << RTT::os::TimeService::Instance()->secondsSince(imuTimeStamp)*1000000.0<< " microseconds." << endl;
-			ReceiveSensorData(&imuData);
-			_imuTimeStamp.write((TIME_TYPE) imuTimeStamp);
-			_imuData.write(imuData);
-//cout << "time it took: " << RTT::os::TimeService::Instance()->ticksSince(myticks)/1000.0 << " microseconds." << endl;
-		} 
-	}
-
-	void McuHandler::sendControls(){
-		_controlInputPort.read(U);
-		SendMotorReferences((int) U[0], (int) U[1], (int) U[2] );
-	}
-
-	void  McuHandler::stopHook()
-	{
-	SendMotorReferences(0,0,0);
-	close( g_TCPSocket );
-	}
-
-	int McuHandler::SendMotorReferences( int m1_ref, int m2_ref, int m3_ref )
-	{
-//		if(m1_ref>MAX_VALUE_AILERON_REF){m1_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-//		if(m2_ref>MAX_VALUE_AILERON_REF){m2_ref = MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-//		if(m3_ref>MAX_VALUE_ELEVATOR_REF){m3_ref = MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
-//		if(m1_ref<-MAX_VALUE_AILERON_REF){m1_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-//		if(m2_ref<-MAX_VALUE_AILERON_REF){m2_ref = -MAX_VALUE_AILERON_REF;cout << "max reached" << endl;}
-//		if(m3_ref<-MAX_VALUE_ELEVATOR_REF){m3_ref = -MAX_VALUE_ELEVATOR_REF;cout << "el" << endl;}
-
-		//
-		// Prepare the request message
-		//
-		g_ucTransmitBuffer[ 0 ] = TAG_CMD;
-		g_ucTransmitBuffer[ 1 ] = 0x0A;
-		g_ucTransmitBuffer[ 2 ] = CMD_SET_MOTOR_REFS;
-
-		g_ucTransmitBuffer[ 3 ] = (short) m1_ref >> 8;
-		g_ucTransmitBuffer[ 4 ] = (short) m1_ref;
-		g_ucTransmitBuffer[ 5 ] = (short) m2_ref >> 8;
-		g_ucTransmitBuffer[ 6 ] = (short) m2_ref;
-		g_ucTransmitBuffer[ 7 ] = (short) m3_ref >> 8;
-		g_ucTransmitBuffer[ 8 ] = (short) m3_ref;
-
-		g_uiNumOfBytesToBeTransmitted = g_ucTransmitBuffer[ 1 ];
-		g_uiNumOfBytesToBeReceived = 0x04;
-
-		//
-		// Transmit the request and wait for the response
-		//
-		if ( EthernetTransmitReceive() != 0 )
-		{
-			printf( "Sending of the motor references failed\n" );		
-			return 1;
-		}
-		U_sent[0] = (double) m1_ref;
-		U_sent[1] = (double) m2_ref;
-		U_sent[2] = (double) m3_ref;
-		_imuTrigger.read(imuTimeStamp);
-		_controlOutputPort.write(U_sent);
-		_controlTimeStamp.write(imuTimeStamp);
-
-		imuAndControl[6] = m1_ref;
-		imuAndControl[7] = m2_ref;
-		imuAndControl[8] = m3_ref;
+void McuHandler::updateHook()
+{
+	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
 	
-		return 0;
-	}
-
-	int McuHandler::ReceiveSensorData( vector<double> *data )
-	{
-		//
-		// Prepare the request message
-		//
-		g_ucTransmitBuffer[ 0 ] = TAG_CMD;
-		g_ucTransmitBuffer[ 1 ] = 0x04;
-		g_ucTransmitBuffer[ 2 ] = CMD_GET_SENSOR_DATA;
-
-		g_uiNumOfBytesToBeTransmitted = g_ucTransmitBuffer[ 1 ];
-		g_uiNumOfBytesToBeReceived = 0x16;
-
-		//
-		// Transmit the request and wait for the response
-		//
-		if ( EthernetTransmitReceive() != 0 )
-		{
-			printf( "Sending the command for receiving the sensor data failed\n" );		
-			return 1;
-		}
-
-		//
-		// Process the response
-		//
-
-		if ( g_ucReceiveBuffer[ 2 ] !=  CMD_GET_SENSOR_DATA )
-		{
-			printf( "Bad command response!\n" );
-		} 
+	portTrigger.read( timeStamp );
 	
-		g_sIMUSensorData.XGyro = ( g_ucReceiveBuffer[ 3  ] << 8 ) + g_ucReceiveBuffer[ 4  ];
-		g_sIMUSensorData.YGyro = ( g_ucReceiveBuffer[ 5  ] << 8 ) + g_ucReceiveBuffer[ 6  ];
-		g_sIMUSensorData.ZGyro = ( g_ucReceiveBuffer[ 7  ] << 8 ) + g_ucReceiveBuffer[ 8  ];
-
-		g_sIMUSensorData.XAccl = ( g_ucReceiveBuffer[ 9  ] << 8 ) + g_ucReceiveBuffer[ 10 ];
-		g_sIMUSensorData.YAccl = ( g_ucReceiveBuffer[ 11 ] << 8 ) + g_ucReceiveBuffer[ 12 ];
-		g_sIMUSensorData.ZAccl = ( g_ucReceiveBuffer[ 13 ] << 8 ) + g_ucReceiveBuffer[ 14 ];
-
-		g_sIMUSensorData.XMagn = ( g_ucReceiveBuffer[ 15 ] << 8 ) + g_ucReceiveBuffer[ 16 ];
-		g_sIMUSensorData.YMagn = ( g_ucReceiveBuffer[ 17 ] << 8 ) + g_ucReceiveBuffer[ 18 ];
-		g_sIMUSensorData.ZMagn = ( g_ucReceiveBuffer[ 19 ] << 8 ) + g_ucReceiveBuffer[ 20 ];
-		
-		g_sIMUSensorDataDouble.XGyro = IMU_GYRO_SCALE( g_sIMUSensorData.XGyro );
-		g_sIMUSensorDataDouble.YGyro = IMU_GYRO_SCALE( g_sIMUSensorData.YGyro );
-		g_sIMUSensorDataDouble.ZGyro = IMU_GYRO_SCALE( g_sIMUSensorData.ZGyro );
-
-		g_sIMUSensorDataDouble.XAccl = IMU_ACCL_SCALE( g_sIMUSensorData.XAccl );
-		g_sIMUSensorDataDouble.YAccl = IMU_ACCL_SCALE( g_sIMUSensorData.YAccl );
-		g_sIMUSensorDataDouble.ZAccl = IMU_ACCL_SCALE( g_sIMUSensorData.ZAccl );
-		(*data)[0] = g_sIMUSensorDataDouble.XGyro;
-		(*data)[1] = g_sIMUSensorDataDouble.YGyro;
-		(*data)[2] = g_sIMUSensorDataDouble.ZGyro;
-		(*data)[3] = g_sIMUSensorDataDouble.XAccl;
-		(*data)[4] = g_sIMUSensorDataDouble.YAccl;
-		(*data)[5] = g_sIMUSensorDataDouble.ZAccl;
-		
-		imuAndControl[0] = g_sIMUSensorDataDouble.XGyro;
-		imuAndControl[1] = g_sIMUSensorDataDouble.YGyro;
-		imuAndControl[2] = g_sIMUSensorDataDouble.ZGyro;
-		imuAndControl[3] = g_sIMUSensorDataDouble.XAccl;
-		imuAndControl[4] = g_sIMUSensorDataDouble.YAccl;
-		imuAndControl[5] = g_sIMUSensorDataDouble.ZAccl;
-		_imuAndControlPort.write(imuAndControl);
-
-				//printf("x acceleration: %f \n", g_sIMUSensorDataDouble.XAccl);
-				//printf("y acceleration: %f \n", g_sIMUSensorDataDouble.YAccl);
-				//printf("z acceleration: %f \n", g_sIMUSensorDataDouble.ZAccl);
-		//printf("x rotation: %f \n", g_sIMUSensorDataDouble.XGyro);
-		//printf("y rotation: %f \n", g_sIMUSensorDataDouble.YGyro);
-		//printf("z rotation: %f \n", g_sIMUSensorDataDouble.ZGyro);
-		return 0;
-	}
-
-	int McuHandler::EthernetTransmitReceive( void )
-	{
-		static int i, j;
-		static unsigned long sum;
-		static long index;
-
-		// first calculate the checksum...
-		for( index = 0, sum = 0; index < ( g_uiNumOfBytesToBeTransmitted - 1 ); index++ )
-		{
-		sum -= g_ucTransmitBuffer[ index ];
-		}
-		g_ucTransmitBuffer[ g_uiNumOfBytesToBeTransmitted - 1 ] = sum;
-
-		// then send...
-		if ( send( g_TCPSocket, g_ucTransmitBuffer, g_uiNumOfBytesToBeTransmitted, 0 )
-			!= g_uiNumOfBytesToBeTransmitted )
-		{
-			printf( "TCP sending failed\n" );		
-			return 1;
-		}
-
-		// after that receive...
-		for ( i = 0; i < g_uiNumOfBytesToBeReceived; )
-		{
-			j = 0;
-
-			if ( ( j = recv( g_TCPSocket, g_ucReceiveBuffer, g_uiNumOfBytesToBeReceived, 0 ) ) < 1 )
-			{
-				return 1;
-				printf( "Failed to receive bytes from server\n" );
-			}
-
-			i += j;
-		}
-
-		// calculate the checksum...
-		for( index = 0, sum = 0; index < g_uiNumOfBytesToBeReceived; index++ )
-		{
-			sum += g_ucReceiveBuffer[ index ];
-		}
-		if ( ( sum & 0xFF ) != 0 )
-		{
-			printf( "Checksum of received data package is bad\n" );		
-			return 1;
-		}
+	if (portControls.read( controls ) == NewData)
+		copy(controls.begin(), controls.end(), execControls.begin());
 	
-		return 0;
+	receiveSensorData( imuData );
+	portImuData.write( imuData );
+	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
+	
+	portExecTime.write(
+		TimeService::Instance()->secondsSince( tickStart )
+	);
+}	
+	
+void McuHandler::stopHook()
+{
+	/// Try to send neutral references to all motors
+	sendMotorReferences(0., 0., 0.);
+	/// Close the socket
+	close( tcpSocket );
+}
+
+void McuHandler::cleanupHook()
+{}
+
+void McuHandler::errorHook()
+{
+	/// Try to send neutral references to all motors
+// 	sendMotorReferences(0., 0., 0.);
+	/// Close the socket
+	close( tcpSocket );
+	/// Now print the error
+	switch ( tcpStatus )
+	{
+		case ERR_BAD_COMMAND_RESPONSE:
+			log( Error ) << "Bad command response received." << endlog();
+			break;
+			
+		case ERR_TCP_RECV_FAIL:
+			log( Error ) << "Error experienced while receiving data from the MCU." << endlog();
+			break;
+			
+		case ERR_TCP_SEND_FAIL:
+			log( Error ) << "Error experienced while sending data to the MCU." << endlog();
+			break;
+			
+		case ERR_BAD_CHECKSUM:
+			log( Error ) << "Bad checksum of the received packet from the MCU." << endlog();
+			break;
+			
+		default:
+			log( Error ) << "Unknown bug." << endlog();
+	};
+}
+
+void McuHandler::sendMotorReferences(double ref1, double ref2,double ref3)
+{
+	//
+	// Clip the control values
+	//
+	if (ref1 > 1.0) ref1 = 1.0; if (ref1 < -1.0) ref1 = -1.0;
+	if (ref2 > 1.0) ref2 = 1.0; if (ref2 < -1.0) ref2 = -1.0;
+	if (ref3 > 1.0) ref3 = 1.0; if (ref3 < -1.0) ref3 = -1.0;
+	
+	//
+	// Scale controls
+	//
+	register short execRef1 = (short)(ref1 * MAX_VALUE_MOTOR_REF);
+	register short execRef2 = (short)(ref2 * MAX_VALUE_MOTOR_REF);
+	register short execRef3 = (short)(ref3 * MAX_VALUE_MOTOR_REF);
+
+	//
+	// Prepare the request message
+	//
+	transmitBuffer[ 0 ] = TAG_CMD;
+	transmitBuffer[ 1 ] = 0x0A;
+	transmitBuffer[ 2 ] = CMD_SET_MOTOR_REFS;
+
+	transmitBuffer[ 3 ] = (short) execRef1 >> 8;
+	transmitBuffer[ 4 ] = (short) execRef1;
+	transmitBuffer[ 5 ] = (short) execRef2 >> 8;
+	transmitBuffer[ 6 ] = (short) execRef2;
+	transmitBuffer[ 7 ] = (short) execRef3 >> 8;
+	transmitBuffer[ 8 ] = (short) execRef3;
+
+	numOfBytesToBeTransmitted = transmitBuffer[ 1 ];
+	numOfBytesToBeReceived = 0x04;
+	
+	//
+	// Send the message
+	//
+	ethernetTransmitReceive();
+}
+
+void  McuHandler::receiveSensorData(vector< double >& data)
+{
+	//
+	// Prepare the request message
+	//
+	transmitBuffer[ 0 ] = TAG_CMD;
+	transmitBuffer[ 1 ] = 0x04;
+	transmitBuffer[ 2 ] = CMD_GET_SENSOR_DATA;
+
+	numOfBytesToBeTransmitted = transmitBuffer[ 1 ];
+	numOfBytesToBeReceived = 0x16;
+	
+	//
+	// Send the message
+	//
+	ethernetTransmitReceive();
+
+	//
+	// Process the response
+	//
+	if (receiveBuffer[ 2 ] != CMD_GET_SENSOR_DATA)
+	{
+		tcpStatus = ERR_BAD_COMMAND_RESPONSE;
+		error();
+	}
+	
+	// Timestamp
+	data[ 0 ] = (double) TimeService::Instance()->getTicks();
+	// And now fill in the IMU data
+	data[ 1 ] = IMU_GYRO_SCALE(( receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]);
+	data[ 2 ] = IMU_GYRO_SCALE(( receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]);
+	data[ 3 ] = IMU_GYRO_SCALE(( receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]);
+
+	data[ 4 ] = IMU_ACCL_SCALE(( receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]);
+	data[ 5 ] = IMU_ACCL_SCALE(( receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]);
+	data[ 6 ] = IMU_ACCL_SCALE(( receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]);
+
+	// ATM, we do not use the magnetometer data
+// 	data[ 7 ] = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
+// 	data[ 8 ] = ( receiveBuffer[ 17 ] << 8 ) + receiveBuffer[ 18 ];
+// 	data[ 9 ] = ( receiveBuffer[ 19 ] << 8 ) + receiveBuffer[ 20 ];
+}
+
+void McuHandler::ethernetTransmitReceive( void )
+{
+	register int i, j;
+	register unsigned long sum;
+	register long index;
+
+	// first calculate the checksum...
+	for(index = 0, sum = 0; index < (numOfBytesToBeTransmitted - 1); index++)
+	{
+		sum -= transmitBuffer[ index ];
+	}
+	transmitBuffer[numOfBytesToBeTransmitted - 1] = sum;
+
+	// then send...
+	if (send(tcpSocket, transmitBuffer, numOfBytesToBeTransmitted, 0)
+		!= numOfBytesToBeTransmitted )
+	{
+		tcpStatus = ERR_TCP_SEND_FAIL;
+		error();
 	}
 
+	// after that receive...
+	for (i = 0; i < numOfBytesToBeReceived; )
+	{
+		j = 0;
+
+		if ((j = recv(tcpSocket, receiveBuffer, numOfBytesToBeReceived, 0)) < 1)
+		{
+			tcpStatus = ERR_TCP_RECV_FAIL;
+			error();
+		}
+
+		i += j;
+	}
+
+	// calculate the checksum...
+	for(index = 0, sum = 0; index < numOfBytesToBeReceived; index++)
+	{
+		sum += receiveBuffer[ index ];
+	}
+	if (( sum & 0xFF ) != 0)
+	{
+		tcpStatus = ERR_BAD_CHECKSUM;
+		error();
+	}
+}
+
+ORO_CREATE_COMPONENT( McuHandler )
