@@ -72,17 +72,13 @@ while time < Tf:
 #    print (mheRT.x[-1,:]-mheRT.yN)
     
     mheRT.preparationStep()
-    fbret = mheRT.feedbackStep()
-    if fbret != 0:
-        raise Exception("MHE feedbackStep returned error code "+str(fbret))
+    mheRT.feedbackStep()
     
     mpcRT.x0 = mheRT.x[-1,:]
 #    mpcRT.x0 = mpcRT.x[0,:]
     
     mpcRT.preparationStep()
-    fbret = mpcRT.feedbackStep()
-    if fbret != 0:
-        raise Exception("MPC feedbackStep returned error code "+str(fbret))
+    mpcRT.feedbackStep()
     SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP)
     
     time += Ts
