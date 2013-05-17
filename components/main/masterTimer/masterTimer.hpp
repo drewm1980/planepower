@@ -1,77 +1,69 @@
 #ifndef __MASTERTIMER__
 #define __MASTERTIMER__
 
-#include <fstream>
+#include <rtt/TaskContext.hpp>
+#include <rtt/Component.hpp>
+#include <rtt/Property.hpp>
+#include <rtt/Port.hpp>
+
 #include <stdint.h>
 
-#include <rtt/TaskContext.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
-#include <rtt/Port.hpp>
-#include <rtt/os/TimeService.hpp>
-#include <rtt/Time.hpp>
-
-#include <ocl/OCL.hpp>
-
-using std::ifstream;
-
-using namespace std;
-using namespace RTT;
-using namespace BFL;
-using namespace Orocos;
-using namespace KDL;
-
-//typedef RTT::os::TimeService::ticks TIME_TYPE;
+/// Time stamp type
 typedef uint64_t TIME_TYPE;
 
-namespace OCL
+/// Number of clocks other than master
+#define CLOCK_COUNT 3
+
+class MasterTimer : public RTT::TaskContext
 {
-    /**
-	 * See manifest.xml for description
-   */
-    class MasterTimer
-        : public TaskContext
-    {
-    protected:
-#define CLOCK_COUNT 3 // Number of clocks other than master
-		union{
-			double target_hz[CLOCK_COUNT];
-			struct {
-				double _imu_target_hz;
-				double _camera_target_hz;
-				double _controls_playback_target_hz;
-			};
+public:
+	/// Ctor
+	MasterTimer(std::string name);
+	/// Dtor
+	virtual ~MasterTimer()
+	{}
+
+	/// Configuration hook.
+	virtual bool configureHook( );
+	/// Start hook.
+	virtual bool startHook( );
+	/// Update hook.
+	virtual void updateHook( );
+	/// Stop hook.
+	virtual void stopHook( );
+	/// Cleanup hook.
+	virtual void cleanupHook( );
+	/// Error hook.
+	virtual void errorHook( );
+
+protected:
+	union
+	{
+		double target_hz[ CLOCK_COUNT ];
+		struct
+		{
+			double _imu_target_hz;
+			double _camera_target_hz;
+			double _controls_playback_target_hz;
 		};
-		int dividers[CLOCK_COUNT];
+	};
 
-        OutputPort<TIME_TYPE> _imuClock;
-        OutputPort<TIME_TYPE> _cameraClock;
-        OutputPort<TIME_TYPE> _controlsPlaybackClock;
-        OutputPort<TIME_TYPE> _masterClock;
-	OutputPort<TIME_TYPE> *portPointers[CLOCK_COUNT];
-	OutputPort<int>	_imuCameraRatio;
+	int dividers[ CLOCK_COUNT ];
 
-	InputPort<double> _deltaIn;
-	OutputPort<double> _deltaOut;
+	RTT::OutputPort<TIME_TYPE> _imuClock;
+	RTT::OutputPort<TIME_TYPE> _cameraClock;
+	RTT::OutputPort<TIME_TYPE> _controlsPlaybackClock;
+	RTT::OutputPort<TIME_TYPE> _masterClock;
+	RTT::OutputPort<TIME_TYPE> *portPointers[ CLOCK_COUNT ];
+	RTT::OutputPort<int>	_imuCameraRatio;
+
+	RTT::InputPort<double> _deltaIn;
+	RTT::OutputPort<double> _deltaOut;
 	double delta;
 
-    private:
-		uint64_t base_clock_index;
+private:
+	uint64_t base_clock_index;
 	TIME_TYPE myticks;
+};
 
-    public:
-        MasterTimer(std::string name);
-        ~MasterTimer();
-        bool        configureHook();
-        bool        startHook();
-        void        updateHook();
-        void        stopHook();
-        void        cleanUpHook();
-        
-    };
-}
 #endif // __MASTERTIMER__

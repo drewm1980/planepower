@@ -1,36 +1,43 @@
 #include "masterTimer.hpp"
-#include <ocl/Component.hpp>
 
-ORO_CREATE_COMPONENT( OCL::MasterTimer)
+#include <rtt/Logger.hpp>
+#include <rtt/os/TimeService.hpp>
+#include <rtt/Time.hpp>
 
 using namespace std;
 using namespace RTT;
-using namespace Orocos;
-using namespace BFL;
+using namespace RTT::os;
 
-namespace OCL
+MasterTimer::MasterTimer(string name)
+	: TaskContext( name )
 {
- MasterTimer::MasterTimer(std::string name)
-	 : TaskContext(name)
-{
+	//
 	// Add properties
-	properties()->addProperty( "imu_target_hz",_imu_target_hz )
+	//
+	addProperty( "imu_target_hz",_imu_target_hz )
 		.doc("The target measurement rate of the imu (Hz)");
-	properties()->addProperty( "camera_target_hz",_camera_target_hz )
+	addProperty( "camera_target_hz",_camera_target_hz )
 		.doc("The target framerate of the camera (Hz)");
-	properties()->addProperty( "controls_playback_target_hz",_controls_playback_target_hz )
+	addProperty( "controls_playback_target_hz",_controls_playback_target_hz )
 		.doc("The target framerate of the camera (Hz)");
 
+	//
 	// Add ports
-	addPort( "cameraClock",_cameraClock ).doc("The description of the port");
-	addPort( "imuClock",_imuClock ).doc("The description of the port");
-	addPort( "controlsPlaybackClock",_controlsPlaybackClock ).doc("The description of the port");
-	addPort("imuCameraRatio" , _imuCameraRatio).doc("The ratio of imu freq. on camera freq.");
+	//
+	addPort( "cameraClock",_cameraClock )
+		.doc("The description of the port");
+	addPort( "imuClock",_imuClock )
+		.doc("The description of the port");
+	addPort( "controlsPlaybackClock",_controlsPlaybackClock )
+		.doc("The description of the port");
+	addPort("imuCameraRatio" , _imuCameraRatio)
+		.doc("The ratio of imu freq. on camera freq.");
 
 	addPort("deltaIn",_deltaIn);
 	addPort("deltaOut",_deltaOut);
 
-	myticks = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+	// Get current time
+	myticks = TimeService::Instance()->getTicks();
 
 	_imuClock.setDataSample( myticks );
 	_imuClock.write( myticks );
@@ -48,13 +55,15 @@ namespace OCL
 	base_clock_index = 0;
 }
 
-MasterTimer::~MasterTimer()
-{
-}
 
-bool  MasterTimer::configureHook()
+bool MasterTimer::configureHook()
 {
-	assert(this->getActivity()->isPeriodic());
+	if (this->getActivity()->isPeriodic() == false)
+	{
+		log( Error ) << "This component must be periodic." << endlog();
+		return false;
+	}
+
 	double myperiod = this->getActivity()->getPeriod();
 
 	portPointers[0] = &_imuClock;
@@ -80,10 +89,11 @@ bool  MasterTimer::configureHook()
 			// The divider needs to be rounded up.
 			dividers[i] = ceil(temp_divider);
 		}
-		cout << "dividers[" << i << "] = " << dividers[i] << endl;
+		log( Info ) << "Master timer divider " << i << " = " 
+					<< dividers[ i ] << endlog();
 	}
 	// Write the ratio of IMU measurements on camera measurements on a port
-	_imuCameraRatio.write(dividers[1]/dividers[0]);
+	_imuCameraRatio.write(dividers[ 1 ] / dividers[ 0 ]);
 	return true;
 }
 
@@ -94,31 +104,34 @@ bool  MasterTimer::startHook()
 
 void  MasterTimer::updateHook()
 {
-	myticks = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+	// Get current time
+	myticks = TimeService::Instance()->getTicks();
 
-	for(int i=0; i<CLOCK_COUNT; i++)
+	for (int i = 0; i < CLOCK_COUNT; i++)
 	{
-		if(base_clock_index % dividers[i]==0)
+		if (base_clock_index % dividers[ i ]==0)
 		{
 			// Trigger event port i
-			if(i==1){//camera clock
+			if (i == 1)
+			{
+				// Camera clock
 				_deltaIn.read(delta);
 				_deltaOut.write(delta);
 			}
 			portPointers[i]->write(myticks);
 		}
 	}
-	_imuCameraRatio.write(dividers[1]/dividers[0]);
+	_imuCameraRatio.write(dividers[ 1 ] / dividers[ 0 ]);
 	base_clock_index++;
 }
 
 void  MasterTimer::stopHook()
-{
-}
+{}
 
-void  MasterTimer::cleanUpHook()
-{
-}
+void  MasterTimer::cleanupHook()
+{}
 
-}//namespace
+void  MasterTimer::errorHook()
+{}
 
+ORO_CREATE_COMPONENT( MasterTimer )
