@@ -86,6 +86,8 @@ protected:
 	unsigned readTimeout;
 	/// Sampling time of the component
 	double Ts;
+	/// RT mode indicator
+	bool rtMode;
 
 private:
 

@@ -12,7 +12,7 @@
 /// Packet identifier for receiving sensor data.
 #define CMD_GET_SENSOR_DATA		0x41
 /// Max motor reference value (+- max unsigned 16bit number).
-#define MAX_VALUE_MOTOR_REF 32767
+#define MAX_VALUE_MOTOR_REF 32767.0
 
 /// Conversion from integer to radians per second
 #define	IMU_GYRO_SCALE( Value ) \
@@ -29,7 +29,8 @@ using namespace RTT::os;
 /// MCU handler error codes. ONLY for internal use!
 enum McuHandlerErrorCodes
 {
-	ERR_BAD_COMMAND_RESPONSE = 0,
+	OK = 0,
+	ERR_BAD_COMMAND_RESPONSE,
 	ERR_TCP_SEND_FAIL,
 	ERR_TCP_RECV_FAIL,
 	ERR_BAD_CHECKSUM,
@@ -57,7 +58,7 @@ McuHandler::McuHandler(std::string name)
 	//
 
 	// This guy is supposed to be used only for debugging purposes
-	this->provides()->addOperation( "sendMotorReferences", &McuHandler::sendMotorReferences, this, OwnThread )
+	this->provides()->addOperation( "sendMotorReferences", &McuHandler::sendMotorReferences, this)
 		.doc( "MHE RTI feedback step." );
 
 	//
@@ -83,6 +84,9 @@ McuHandler::McuHandler(std::string name)
 		.doc("Timeout in seconds, when waiting for read");
 	addProperty("Ts", Ts)
 		.doc("Sampling time");
+	rtMode = false;
+	addProperty("rtMode", rtMode)
+		.doc("Real-time mode of the component.");
 }
 	
 bool McuHandler::configureHook()
@@ -124,52 +128,53 @@ bool McuHandler::startHook()
 void McuHandler::updateHook()
 {
 //	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
+	static unsigned runCnt = 0;
 	
 	portTrigger.read( timeStamp );
 	
-	if (portControls.read( controls ) == NewData)
-	{
-		if (controls.size() != 3)
-		{
-			tcpStatus = ERR_BAD_DATA_SIZE;
-			error();
-		}
-		copy(controls.begin(), controls.end(), execControls.begin());
-	}
+ 	if (portControls.read( controls ) == NewData && rtMode == true)
+ 	{
+		// In case we received new commands and we are in the real-time mode
+		// we can send new commands to the plane
+ 		if (controls.size() != 3)
+ 		{
+ 			tcpStatus = ERR_BAD_DATA_SIZE;
+ 			exception();
+ 		}
+ 		copy(controls.begin(), controls.end(), execControls.begin());
+		sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
+ 	}
 	
 	receiveSensorData( imuData );
 	portImuData.write( imuData );
-	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
 
 	double elapsedTime = TimeService::Instance()->secondsSince( timeStamp );
 	portExecTime.write( elapsedTime );
-	if (elapsedTime > Ts)
+
+	// This is a check for the real-time mode. In case we do not meet the
+	// deadline, abort.
+	if (runCnt > 5 && elapsedTime > Ts && rtMode == true)
 	{
 		tcpStatus = ERR_DEADLINE;
-		error();
+		exception();
 	}
+	else
+		++runCnt;
 }	
 	
 void McuHandler::stopHook()
 {
 	/// Try to send neutral references to all motors
-	sendMotorReferences(0., 0., 0.);
-	/// Close the socket
-	close( tcpSocket );
-}
-
-void McuHandler::cleanupHook()
-{}
-
-void McuHandler::errorHook()
-{
-	/// Try to send neutral references to all motors
-// 	sendMotorReferences(0., 0., 0.);
+	if (this->isRunning() == true) 
+		sendMotorReferences(0., 0., 0.);
 	/// Close the socket
 	close( tcpSocket );
 	/// Now print the error
 	switch ( tcpStatus )
 	{
+	case OK:
+		break;
+
 	case ERR_BAD_COMMAND_RESPONSE:
 		log( Error ) << "Bad command response received." << endlog();
 		break;
@@ -199,7 +204,13 @@ void McuHandler::errorHook()
 	};
 }
 
-void McuHandler::sendMotorReferences(double ref1, double ref2,double ref3)
+void McuHandler::cleanupHook()
+{}
+
+void McuHandler::errorHook()
+{}
+
+void McuHandler::sendMotorReferences(double ref1, double ref2, double ref3)
 {
 	//
 	// Clip the control values
@@ -222,12 +233,12 @@ void McuHandler::sendMotorReferences(double ref1, double ref2,double ref3)
 	transmitBuffer[ 1 ] = 0x0A;
 	transmitBuffer[ 2 ] = CMD_SET_MOTOR_REFS;
 
-	transmitBuffer[ 3 ] = (short) execRef1 >> 8;
-	transmitBuffer[ 4 ] = (short) execRef1;
-	transmitBuffer[ 5 ] = (short) execRef2 >> 8;
-	transmitBuffer[ 6 ] = (short) execRef2;
-	transmitBuffer[ 7 ] = (short) execRef3 >> 8;
-	transmitBuffer[ 8 ] = (short) execRef3;
+	transmitBuffer[ 3 ] = execRef1 >> 8;
+	transmitBuffer[ 4 ] = execRef1;
+	transmitBuffer[ 5 ] = execRef2 >> 8;
+	transmitBuffer[ 6 ] = execRef2;
+	transmitBuffer[ 7 ] = execRef3 >> 8;
+	transmitBuffer[ 8 ] = execRef3;
 
 	numOfBytesToBeTransmitted = transmitBuffer[ 1 ];
 	numOfBytesToBeReceived = 0x04;
@@ -261,19 +272,19 @@ void  McuHandler::receiveSensorData(vector< double >& data)
 	if (receiveBuffer[ 2 ] != CMD_GET_SENSOR_DATA)
 	{
 		tcpStatus = ERR_BAD_COMMAND_RESPONSE;
-		error();
+		exception();
 	}
 	
 	// Timestamp
 	data[ 0 ] = (double) TimeService::Instance()->getTicks();
 	// And now fill in the IMU data
-	data[ 1 ] = IMU_GYRO_SCALE(( receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]);
-	data[ 2 ] = IMU_GYRO_SCALE(( receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]);
-	data[ 3 ] = IMU_GYRO_SCALE(( receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]);
+	data[ 1 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
+	data[ 2 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
+	data[ 3 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]));
 
-	data[ 4 ] = IMU_ACCL_SCALE(( receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]);
-	data[ 5 ] = IMU_ACCL_SCALE(( receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]);
-	data[ 6 ] = IMU_ACCL_SCALE(( receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]);
+	data[ 4 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]));
+	data[ 5 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]));
+	data[ 6 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]));
 
 	// ATM, we do not use the magnetometer data
 // 	data[ 7 ] = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
@@ -287,6 +298,8 @@ void McuHandler::ethernetTransmitReceive( void )
 	unsigned long sum;
 	long index;
 
+	tcpStatus = OK;
+
 	// first calculate the checksum...
 	for(index = 0, sum = 0; index < (numOfBytesToBeTransmitted - 1); index++)
 	{
@@ -299,7 +312,7 @@ void McuHandler::ethernetTransmitReceive( void )
 		!= numOfBytesToBeTransmitted )
 	{
 		tcpStatus = ERR_TCP_SEND_FAIL;
-		error();
+		exception();
 	}
 
 	// after that receive...
@@ -310,7 +323,7 @@ void McuHandler::ethernetTransmitReceive( void )
 		if ((j = recv(tcpSocket, receiveBuffer, numOfBytesToBeReceived, 0)) < 1)
 		{
 			tcpStatus = ERR_TCP_RECV_FAIL;
-			error();
+			exception();
 		}
 
 		i += j;
@@ -324,7 +337,7 @@ void McuHandler::ethernetTransmitReceive( void )
 	if (( sum & 0xFF ) != 0)
 	{
 		tcpStatus = ERR_BAD_CHECKSUM;
-		error();
+		exception();
 	}
 }
 

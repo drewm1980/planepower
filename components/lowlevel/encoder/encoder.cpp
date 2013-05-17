@@ -15,6 +15,8 @@ using namespace RTT::os;
 #define GEAR_RATIO 32.8
 /// Number of pulses per revolution of the encoder
 #define PULSES_PER_REVOLUTION 4096.0
+/// PI
+#define PI 3.14159265358979323846264338327950288419716939937510
 
 Encoder::Encoder(std::string name)
 	: TaskContext( name )
@@ -77,6 +79,9 @@ bool  Encoder::configureHook()
 bool  Encoder::startHook()
 {
 	posOld = readEncoder( encoderPort );
+	posOld = readEncoder( encoderPort );
+	posOld = readEncoder( encoderPort );
+
 	omegaOld = 0.0;
 	timeStampOld = TimeService::Instance()->getTicks();
 	posAcc = 0.0;
@@ -86,6 +91,8 @@ bool  Encoder::startHook()
 
 void  Encoder::updateHook()
 {
+	static unsigned firstRun = 1;
+
 // 	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
 
 	// Read time stamp
@@ -94,6 +101,12 @@ void  Encoder::updateHook()
 	// Read new position and corresponding time-stamp
 	posNew = readEncoder( encoderPort );
 	timeStampNew = TimeService::Instance()->getTicks();
+
+	if ( firstRun )
+	{
+		firstRun = 0;
+		posOld = posNew;
+	}
 	
 	// Read elapsed time since the last position reading
 	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
@@ -103,12 +116,12 @@ void  Encoder::updateHook()
 	int posDelta = posNew - posOld;
 	
 	// Convert encoder ticks to real angle in radians and bound it to -pi.. pi
-	double posDeltaReal = (double)posDelta * 2.0 * M_PI / (GEAR_RATIO * PULSES_PER_REVOLUTION);
+	double posDeltaReal = (double)posDelta * 2.0 * PI / (GEAR_RATIO * PULSES_PER_REVOLUTION);
 	posAcc += posDeltaReal;
-	if (posAcc > M_PI)
-		posAcc -= 2.0 * M_PI;
-	else if (posAcc < M_PI)
-		posAcc += 2.0 * M_PI;
+	if (posAcc > PI)
+		posAcc -= 2.0 * PI;
+	else if (posAcc < -PI)
+		posAcc += 2.0 * PI;
 	
 	// Calculate angular velocity [rad/s]
 	omegaNew = posDeltaReal / elapsedTime;
@@ -122,7 +135,7 @@ void  Encoder::updateHook()
 	encoderData[ 3 ] = cos( -posAcc );
 	encoderData[ 4 ] = -omegaNew;
 	encoderData[ 5 ] = -omegaNew; 
-	encoderData[ 6 ] = -omegaNew * 2.0 * M_PI / 60.0;
+	encoderData[ 6 ] = -omegaNew / (2.0 * PI) * 60.0;
 	
 	// Output data to the port
 	portEncoderData.write( encoderData );
