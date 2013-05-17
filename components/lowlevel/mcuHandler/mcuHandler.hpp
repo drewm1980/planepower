@@ -46,6 +46,9 @@ public:
 	virtual void cleanupHook( );
 	/// Error hook.
 	virtual void errorHook( );
+
+	/// Method for sending the references. All input must be scaled to -1.. +1.
+	void sendMotorReferences(double ref1, double ref2, double ref3);
 	
 protected:
 	
@@ -54,8 +57,6 @@ protected:
 	void ethernetTransmitReceive( void );
 	/// Method for receiving sensor data. Data is NOT scaled, yet.
 	void receiveSensorData(std::vector< double >& data);
-	/// Method for sending the references. All input must be scaled to -1.. +1.
-	void sendMotorReferences(double ref1, double ref2, double ref3);
 	
 	/// Trigger the component to get IMU data if there is an event on this port.
 	RTT::InputPort< TIME_TYPE > portTrigger;
@@ -83,6 +84,10 @@ protected:
 	unsigned connectionTimeout;
 	/// Timeout in seconds, when waiting to read
 	unsigned readTimeout;
+	/// Sampling time of the component
+	double Ts;
+
+private:
 
 	long numOfBytesToBeReceived;
 	long numOfBytesToBeTransmitted;

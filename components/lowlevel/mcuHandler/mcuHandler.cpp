@@ -32,7 +32,9 @@ enum McuHandlerErrorCodes
 	ERR_BAD_COMMAND_RESPONSE = 0,
 	ERR_TCP_SEND_FAIL,
 	ERR_TCP_RECV_FAIL,
-	ERR_BAD_CHECKSUM
+	ERR_BAD_CHECKSUM,
+	ERR_BAD_DATA_SIZE,
+	ERR_DEADLINE
 };
 
 McuHandler::McuHandler(std::string name)
@@ -49,6 +51,14 @@ McuHandler::McuHandler(std::string name)
 		.doc("Port with control signals [ua1, ua2, ue].");
 	addPort("execTime", portExecTime)
 		.doc("Execution time of the component.");
+
+	//
+	// Add operations
+	//
+
+	// This guy is supposed to be used only for debugging purposes
+	this->provides()->addOperation( "sendMotorReferences", &McuHandler::sendMotorReferences, this, OwnThread )
+		.doc( "MHE RTI feedback step." );
 
 	//
 	// Prepare ports
@@ -71,6 +81,8 @@ McuHandler::McuHandler(std::string name)
 		.doc("Timeout in seconds, when waiting for connection");
 	addProperty("ReadTimeout", readTimeout)
 		.doc("Timeout in seconds, when waiting for read");
+	addProperty("Ts", Ts)
+		.doc("Sampling time");
 }
 	
 bool McuHandler::configureHook()
@@ -86,7 +98,7 @@ bool McuHandler::startHook()
 		return false;
 	}
 	
-	// Clear struct
+   	// Clear struct
 	memset(&tcpEchoServer, 0, sizeof( tcpEchoServer ));
 	// Internet/IP
 	tcpEchoServer.sin_family = AF_INET;
@@ -111,20 +123,31 @@ bool McuHandler::startHook()
 
 void McuHandler::updateHook()
 {
-	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
+//	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
 	
 	portTrigger.read( timeStamp );
 	
 	if (portControls.read( controls ) == NewData)
+	{
+		if (controls.size() != 3)
+		{
+			tcpStatus = ERR_BAD_DATA_SIZE;
+			error();
+		}
 		copy(controls.begin(), controls.end(), execControls.begin());
+	}
 	
 	receiveSensorData( imuData );
 	portImuData.write( imuData );
 	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
-	
-	portExecTime.write(
-		TimeService::Instance()->secondsSince( tickStart )
-	);
+
+	double elapsedTime = TimeService::Instance()->secondsSince( timeStamp );
+	portExecTime.write( elapsedTime );
+	if (elapsedTime > Ts)
+	{
+		tcpStatus = ERR_DEADLINE;
+		error();
+	}
 }	
 	
 void McuHandler::stopHook()
@@ -147,24 +170,32 @@ void McuHandler::errorHook()
 	/// Now print the error
 	switch ( tcpStatus )
 	{
-		case ERR_BAD_COMMAND_RESPONSE:
-			log( Error ) << "Bad command response received." << endlog();
-			break;
+	case ERR_BAD_COMMAND_RESPONSE:
+		log( Error ) << "Bad command response received." << endlog();
+		break;
 			
-		case ERR_TCP_RECV_FAIL:
-			log( Error ) << "Error experienced while receiving data from the MCU." << endlog();
-			break;
+	case ERR_TCP_RECV_FAIL:
+		log( Error ) << "Error experienced while receiving data from the MCU." << endlog();
+		break;
 			
-		case ERR_TCP_SEND_FAIL:
-			log( Error ) << "Error experienced while sending data to the MCU." << endlog();
-			break;
+	case ERR_TCP_SEND_FAIL:
+		log( Error ) << "Error experienced while sending data to the MCU." << endlog();
+		break;
 			
-		case ERR_BAD_CHECKSUM:
-			log( Error ) << "Bad checksum of the received packet from the MCU." << endlog();
-			break;
-			
-		default:
-			log( Error ) << "Unknown bug." << endlog();
+	case ERR_BAD_CHECKSUM:
+		log( Error ) << "Bad checksum of the received packet from the MCU." << endlog();
+		break;
+
+	case ERR_BAD_DATA_SIZE: 
+		log( Error ) << "Bad data size." << endlog();
+		break;
+
+	case ERR_DEADLINE: 
+		log( Error ) << "Exectuion time of this component is longer than the sampling time." << endlog();
+		break;
+
+	default:
+		log( Error ) << "Unknown bug." << endlog();
 	};
 }
 
@@ -173,16 +204,16 @@ void McuHandler::sendMotorReferences(double ref1, double ref2,double ref3)
 	//
 	// Clip the control values
 	//
-	if (ref1 > 1.0) ref1 = 1.0; if (ref1 < -1.0) ref1 = -1.0;
-	if (ref2 > 1.0) ref2 = 1.0; if (ref2 < -1.0) ref2 = -1.0;
-	if (ref3 > 1.0) ref3 = 1.0; if (ref3 < -1.0) ref3 = -1.0;
+	if (ref1 > 1.0) ref1 = 1.0; else if (ref1 < -1.0) ref1 = -1.0;
+	if (ref2 > 1.0) ref2 = 1.0; else if (ref2 < -1.0) ref2 = -1.0;
+	if (ref3 > 1.0) ref3 = 1.0; else if (ref3 < -1.0) ref3 = -1.0;
 	
 	//
 	// Scale controls
 	//
-	register short execRef1 = (short)(ref1 * MAX_VALUE_MOTOR_REF);
-	register short execRef2 = (short)(ref2 * MAX_VALUE_MOTOR_REF);
-	register short execRef3 = (short)(ref3 * MAX_VALUE_MOTOR_REF);
+	short execRef1 = (short)(ref1 * MAX_VALUE_MOTOR_REF);
+	short execRef2 = (short)(ref2 * MAX_VALUE_MOTOR_REF);
+	short execRef3 = (short)(ref3 * MAX_VALUE_MOTOR_REF);
 
 	//
 	// Prepare the request message
@@ -252,9 +283,9 @@ void  McuHandler::receiveSensorData(vector< double >& data)
 
 void McuHandler::ethernetTransmitReceive( void )
 {
-	register int i, j;
-	register unsigned long sum;
-	register long index;
+	int i, j;
+	unsigned long sum;
+	long index;
 
 	// first calculate the checksum...
 	for(index = 0, sum = 0; index < (numOfBytesToBeTransmitted - 1); index++)
