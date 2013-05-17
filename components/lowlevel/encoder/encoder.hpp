@@ -40,7 +40,7 @@ protected:
 	/// Trigger time stamp
 	TIME_TYPE triggerTimeStamp;
 	/// Output port for encoder data:
-	/// [timestamp, delta, sin_delta, cos_delta, omega, omega_filtered].
+	/// [timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].
 	RTT::OutputPort< std::vector< double > >	 portEncoderData;
 	/// Vector that holds measurements.
 	std::vector< double > encoderData;

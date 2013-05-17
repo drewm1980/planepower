@@ -90,7 +90,6 @@ void  Encoder::updateHook()
 
 	// Read time stamp
 	portTrigger.read( triggerTimeStamp );
-	encoderData[ 0 ] = (double)triggerTimeStamp;
 	
 	// Read new position and corresponding time-stamp
 	posNew = readEncoder( encoderPort );
@@ -99,7 +98,7 @@ void  Encoder::updateHook()
 	// Read elapsed time since the last position reading
 	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
 	
-	// Assuming that posOld, posNew and posDelta are 32bit signed numbers
+	// Knowing that posOld, posNew and posDelta are 32bit signed numbers
 	// (int's) there are no sign nor overflow problems.
 	int posDelta = posNew - posOld;
 	
@@ -117,12 +116,13 @@ void  Encoder::updateHook()
 	// TODO Apply first order filter to omegaNew
 	
 	// Invert the signs and fill in the output vector
+	encoderData[ 0 ] = timeStampNew;
 	encoderData[ 1 ] = -posAcc;
 	encoderData[ 2 ] = sin( -posAcc );
 	encoderData[ 3 ] = cos( -posAcc );
 	encoderData[ 4 ] = -omegaNew;
 	encoderData[ 5 ] = -omegaNew; 
-	encoderData[ 6 ] = -omegaNew * 2 * M_PI / 60.0;
+	encoderData[ 6 ] = -omegaNew * 2.0 * M_PI / 60.0;
 	
 	// Output data to the port
 	portEncoderData.write( encoderData );
@@ -134,7 +134,7 @@ void  Encoder::updateHook()
 	
 	// Output execution time of the component
 	portExecTime.write(
-		TimeService::Instance()->secondsSince( tickStart )
+		TimeService::Instance()->secondsSince( triggerTimeStamp )
 	);
 }
 
