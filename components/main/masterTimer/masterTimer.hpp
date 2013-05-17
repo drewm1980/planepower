@@ -10,10 +10,10 @@
 
 /// Time stamp type
 typedef uint64_t TIME_TYPE;
-
 /// Number of clocks other than master
 #define CLOCK_COUNT 3
 
+/// Master timer class
 class MasterTimer : public RTT::TaskContext
 {
 public:
@@ -37,6 +37,7 @@ public:
 	virtual void errorHook( );
 
 protected:
+	/// Union that holds all sampling times, inetrfaced via properties
 	union
 	{
 		double target_hz[ CLOCK_COUNT ];
@@ -48,17 +49,26 @@ protected:
 		};
 	};
 
+	/// Clock dividers
 	int dividers[ CLOCK_COUNT ];
-
+	/// IMU trigger timestamp
 	RTT::OutputPort<TIME_TYPE> _imuClock;
+	/// Camera trigger timestamp
 	RTT::OutputPort<TIME_TYPE> _cameraClock;
+	/// Controls trigger timestamp
 	RTT::OutputPort<TIME_TYPE> _controlsPlaybackClock;
+	/// Master clock timestamp
 	RTT::OutputPort<TIME_TYPE> _masterClock;
+	/// Array of port pointers
 	RTT::OutputPort<TIME_TYPE> *portPointers[ CLOCK_COUNT ];
+	/// IMU/Camera clock's ratio
 	RTT::OutputPort<int>	_imuCameraRatio;
-
+	
+	/// Mistery?
 	RTT::InputPort<double> _deltaIn;
+	/// Mistery?
 	RTT::OutputPort<double> _deltaOut;
+	/// Mistery?
 	double delta;
 
 private:

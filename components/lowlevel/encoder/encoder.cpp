@@ -86,7 +86,7 @@ bool  Encoder::startHook()
 
 void  Encoder::updateHook()
 {
-	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
+// 	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
 
 	// Read time stamp
 	portTrigger.read( triggerTimeStamp );
