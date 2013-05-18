@@ -17,16 +17,16 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #
 #    mhe.minimizeLsq(measurements)
 #    mhe.minimizeLsqEndTerm(measurements)
-    
+
     xref = C.veccat( [mhe[n] for n in dae.xNames()])
     uref = C.veccat( [mhe[n] for n in dae.uNames()])
-    
+
 #    dae['measurements'] = C.veccat([xref,uref])
 #    dae['measurementsN'] = xref
-    
+
     mhe.minimizeLsq(C.veccat([xref,uref]))
     mhe.minimizeLsqEndTerm(xref)
-    
+
 #    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
 #    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
 #    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
@@ -39,24 +39,30 @@ def makeMhe(dae,N,dt,nSteps,iType):
 
 #    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
 
-    acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
-                 ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
-                 ('QP_SOLVER','QP_QPOASES'),
-                 #('HOTSTART_QP','YES'),
-                 ('INTEGRATOR_TYPE',iType),
-                 ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
-                 ('SPARSE_QP_SOLUTION','CONDENSING'),
-                 ('FIX_INITIAL_STATE','NO'),
-#                 ('LEVENBERG_MARQUARDT', '1e-4'),
-                 ('CG_USE_VARIABLE_WEIGHTING_MATRIX','NO'),
-                 ]
 
+    intOpts = rawe.RtIntegratorOptions()
+    intOpts['INTEGRATOR_TYPE'] = iType
+    intOpts['NUM_INTEGRATOR_STEPS'] = nSteps
+    intOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
+    intOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
+    intOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
+    intOpts['UNROLL_LINEAR_SOLVER'] = False
+    intOpts['IMPLICIT_INTEGRATOR_MODE'] = 'IFTR'
 
+    ocpOpts = rawe.OcpExportOptions()
+    ocpOpts['HESSIAN_APPROXIMATION'] = 'GAUSS_NEWTON'
+    ocpOpts['DISCRETIZATION_TYPE'] = 'MULTIPLE_SHOOTING'
+    ocpOpts['QP_SOLVER'] = 'QP_QPOASES'
+    ocpOpts['SPARSE_QP_SOLUTION'] = 'CONDENSING'
+    ocpOpts['FIX_INITIAL_STATE'] = False
+    ocpOpts['CG_USE_C99'] = True
+#    ocpOpts['LEVENBERG_MARQUARDT'] = 1e-4
+#    ocpOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = False
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
 #    cgOpts = {'CXX':'clang++', 'CC':'clang'}
-    mheRT = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
-    return mheRT
+    mheRT = mhe.exportCode(codegenOptions=cgOpts,integratorOptions=intOpts,ocpOptions=ocpOpts)
+    return mheRT, intOpts
 
 
 if __name__=='__main__':
@@ -64,4 +70,3 @@ if __name__=='__main__':
     dae = rawe.models.carousel(conf)
     dae = carouselModel.makeModel(dae,conf)
     OcpRt = makeMhe(dae,10,0.1)
-
