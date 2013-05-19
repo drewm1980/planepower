@@ -265,9 +265,9 @@ def SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP):
     # Get the measurement BEFORE simulating
 #    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 #    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(mpcRT.x[0,:],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
+    new_y = np.append(simLog._log['x'][-1],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
     # Simulate the system
-    new_x = sim.step(mpcRT.x[0,:],mpcRT.u[0,:],{})
+    new_x = sim.step(simLog._log['x'][-1],mpcRT.u[0,:],{})
     # Get the last measurement AFTER simulating
     new_out = sim.getOutputs(new_x,mpcRT.u[0,:],{})
 #    new_yN = np.array([outs['measurementsN']])
@@ -385,10 +385,8 @@ def InitializeSim(dae,intOptions):
     if intOptions['type'] == 'Idas':
         sim = rawe.sim.Sim(dae,Ts)
     elif intOptions['type'] == 'Rintegrator':
-        from rawe.dae.rienIntegrator import RienIntegrator
-        nSteps = intOptions['numIntegratorSteps']
-        Type = intOptions['integratorType']
-        sim = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=Type)
+        intOpts = intOptions['intOpts']
+        sim = rawe.RtIntegrator(dae,ts=Ts, options=intOpts)
     else:
         raise Exception('integrator not supported')
     

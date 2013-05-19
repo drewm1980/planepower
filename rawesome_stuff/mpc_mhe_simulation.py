@@ -24,6 +24,7 @@ dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae[
 dae['Const'] = dae['x']*dae['x']/2 + dae['y']*dae['y']/2 + dae['z']*dae['z']/2 - \
                dae['r']*dae['r']/2
 dae['dConst'] = dae['dx']*dae['x'] + dae['dy']*dae['y'] + dae['dz']*dae['z']
+#dae['ConstDelta'] = dae['cos_delta']*dae['cos_delta'] + dae['sin_delta']*dae['sin_delta'] - 1
 dae['ConstDelta'] = dae['cos_delta']**2 + dae['sin_delta']**2 - 1
 
 # Simulation parameters
@@ -41,6 +42,7 @@ mheRT, _       = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 
 # Create a simulation class
 intOptions = {'type':'Idas', 'ts':Ts}
+#intOptions = {'type':'Rintegrator', 'ts':Ts, 'intOpts':intOpts}
 sim, simLog = InitializeSim(dae,intOptions)
 
 # Generate a Rintegrator for linearizing the system
