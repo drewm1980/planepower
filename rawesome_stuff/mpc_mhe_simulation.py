@@ -40,8 +40,8 @@ mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 mheRT, _       = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 
 # Create a simulation class
-intOptions = {'type':'Idas', 'ts':Ts}
-sim, simLog = InitializeSim(dae,intOptions)
+#sim, simLog = InitializeSim(dae,'Idas',Ts,intOpts)
+sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
 
 # Generate a Rintegrator for linearizing the system
 Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts)

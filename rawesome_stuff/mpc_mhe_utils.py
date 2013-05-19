@@ -378,17 +378,11 @@ class SimLog(object):
             plt.legend(legend)
         plt.grid()
     
-def InitializeSim(dae,intOptions):
-    
-    Ts = intOptions['ts']
-    
-    if intOptions['type'] == 'Idas':
-        sim = rawe.sim.Sim(dae,Ts)
-    elif intOptions['type'] == 'Rintegrator':
-        from rawe.dae.rienIntegrator import RienIntegrator
-        nSteps = intOptions['numIntegratorSteps']
-        Type = intOptions['integratorType']
-        sim = RienIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=Type)
+def InitializeSim(dae,intType,ts,intOpts):
+    if intType == 'Idas':
+        sim = rawe.sim.Sim(dae,ts)
+    elif intType == 'RtIntegrator':
+        sim = rawe.RtIntegrator(dae,ts=ts,options=intOpts)
     else:
         raise Exception('integrator not supported')
     
