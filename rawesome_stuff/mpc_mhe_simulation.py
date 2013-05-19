@@ -32,6 +32,7 @@ N_mhe = 10  # Number of MHE control intervals
 Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
+iType = 'INT_IRK_RIIA3' # Rintegrator type
 Tf = 1.2    # Simulation duration
 
 # Create the MPC class

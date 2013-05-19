@@ -41,7 +41,7 @@ def makeMhe(dae,N,dt,nSteps,iType):
     
     intOpts = rawe.RtIntegratorOptions()
     intOpts['INTEGRATOR_TYPE'] = iType
-    intOpts['NUM_INTEGRATOR_STEPS'] = nSteps*N
+    intOpts['NUM_INTEGRATOR_STEPS'] = nSteps
     intOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
     intOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
     intOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
