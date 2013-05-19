@@ -30,7 +30,7 @@ dae['ConstDelta'] = dae['cos_delta']**2 + dae['sin_delta']**2 - 1
 N_mpc = 10  # Number of MPC control intervals
 N_mhe = 10  # Number of MHE control intervals
 Ts = 0.1    # Sampling time
-nSteps = 3 #Number of steps for the Rintegrator (also in MPC and MHE)
+nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 Tf = 1.2    # Simulation duration
 
@@ -43,8 +43,8 @@ intOptions = {'type':'Idas', 'ts':Ts}
 sim, simLog = InitializeSim(dae,intOptions)
 
 # Generate a Rintegrator for linearizing the system
-from rawe.dae import RtIntegrator
-Rint = RtIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
+#from rawe.dae import rawe.RtIntegrator
+Rint = rawe.RtIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
 
 # Reference parameters
 refP = {'r0':1.2,

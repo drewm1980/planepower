@@ -128,7 +128,7 @@ def GenerateReference(dae,conf,refP):
     
     return xref, uref
 
-def InitializeMPC(mpcrt,Rint,dae,conf,refP):
+def InitializeMPC(mpcrt,integrator,dae,conf,refP):
         
     xref, uref = GenerateReference(dae,conf,refP)
     print xref
@@ -148,6 +148,12 @@ def InitializeMPC(mpcrt,Rint,dae,conf,refP):
     mpcrt.x = Xref
     mpcrt.u = Uref
     
+    for k in range(Xref.shape[0]-1):
+        integrator.x = Xref[k,:]
+        integrator.u = Uref[k,:]
+        integrator.step()
+        mpcrt.z[k,:] = integrator.z
+        
     # Set the reference
     mpcrt.y = np.append(Xref[:-1,:],Uref,axis=1)
     mpcrt.yN = Xref[-1,:]
@@ -231,6 +237,12 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     # Set the initial guess
     mhert.x = Xref
     mhert.u = Uref
+    
+    for k in range(Xref.shape[0]-1):
+        integrator.x = Xref[k,:]
+        integrator.u = Uref[k,:]
+        integrator.step()
+        mhert.z[k,:] = integrator.z
     
     # Set the measurements (temporary)
     mhert.y = np.append(Xref[:-1,:],Uref,axis=1)
