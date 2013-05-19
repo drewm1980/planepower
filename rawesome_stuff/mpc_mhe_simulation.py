@@ -35,16 +35,15 @@ iType = 'INT_IRK_GL2' # Rintegrator type
 Tf = 1.2    # Simulation duration
 
 # Create the MPC class
-mpcRT = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
-mheRT = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
+mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
+mheRT, _       = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 
 # Create a simulation class
 intOptions = {'type':'Idas', 'ts':Ts}
 sim, simLog = InitializeSim(dae,intOptions)
 
 # Generate a Rintegrator for linearizing the system
-#from rawe.dae import rawe.RtIntegrator
-Rint = rawe.RtIntegrator(dae,ts=Ts, numIntegratorSteps=nSteps, integratorType=iType)
+Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts)
 
 # Reference parameters
 refP = {'r0':1.2,

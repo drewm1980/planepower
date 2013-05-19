@@ -17,13 +17,13 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #
 #    mhe.minimizeLsq(measurements)
 #    mhe.minimizeLsqEndTerm(measurements)
-    
+
     xref = C.veccat( [mhe[n] for n in dae.xNames()])
     uref = C.veccat( [mhe[n] for n in dae.uNames()])
-    
+
 #    dae['measurements'] = C.veccat([xref,uref])
 #    dae['measurementsN'] = xref
-    
+
     mhe.minimizeLsq(C.veccat([xref,uref]))
     mhe.minimizeLsqEndTerm(xref)
     
@@ -60,11 +60,10 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #    ocpOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = False
 #    ocpOpts['CG_USE_C99'] = True
 
-
 #    cgOpts = {'CXX':'g++', 'CC':'gcc'}
     cgOpts = {'CXX':'clang++', 'CC':'clang'}
     mheRT = mhe.exportCode(codegenOptions=cgOpts,ocpOptions=ocpOpts,integratorOptions=intOpts)
-    return mheRT
+    return mheRT, intOpts
 
 
 if __name__=='__main__':
@@ -72,4 +71,3 @@ if __name__=='__main__':
     dae = rawe.models.carousel(conf)
     dae = carouselModel.makeModel(dae,conf)
     OcpRt = makeMhe(dae,10,0.1)
-
