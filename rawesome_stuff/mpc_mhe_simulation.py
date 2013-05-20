@@ -79,8 +79,8 @@ plotter.subplot([['aileron','elevator'],['daileron','delevator']],what=['sim','m
 plotter.subplot([['cos_delta','sin_delta'],['ddelta'],['motor_torque']],what=['sim','mhe'])
 plotter.subplot([['r'],['dr'],['ddr']],what=['sim','mhe'])
 plotter.subplot([['c'],['cdot']],what=['sim','mhe'])
-plotter.subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'])
-plotter.plot(['kkt'],what=['mpc','mhe'])
+plotter.subplot([['_kkt'],['_objective'],['_prep_time','_fb_time']],what=['mpc','mhe'])
+plotter.plot(['_kkt'],what=['mpc','mhe'])
 plotter.plot(['ConstR1','ConstR2','ConstR3','ConstR4','ConstR5','ConstR6'],what=['sim','mhe'])
 plotter.subplot([['c'],['cdot'],['ConstDelta']],what=['sim','mhe'])
 
