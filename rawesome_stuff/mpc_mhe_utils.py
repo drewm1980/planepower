@@ -260,30 +260,22 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     mheRT.log()    
     mpcRT.log()
     
+    new_u = mpcRT.u[0,:]
     # Get the measurement BEFORE simulating
 #    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 #    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(sim._log['x'][-1],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
+    new_y = np.append(sim._log['x'][-1],new_u) #+ np.random.randn(29)*0.001
     # Simulate the system
-    new_x = sim.step(sim._log['x'][-1],mpcRT.u[0,:],{})
+    new_x = sim.step(sim._log['x'][-1],new_u,{})
     # Get the last measurement AFTER simulating
-    new_out = sim.getOutputs(new_x,mpcRT.u[0,:],{})
+    new_out = sim.getOutputs(new_x,new_u,{})
 #    new_yN = np.array([outs['measurementsN']])
     new_yN = np.squeeze(new_x) #+ np.random.randn(25)*0.001
     
-    sim.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
+    sim.log(new_x=new_x,new_u=new_u,new_y=new_y,new_yN=new_yN,new_out=new_out)
     
     # Linearize the system at the reference
     nx = Rint.x.shape[0]
-#    Rint.x = mpcRT.yN
-#    Rint.u = mpcRT.y[-1,nx:]
-#    Rint.step()
-#    A = Rint.dx1_dx0
-#    B = Rint.dx1_du
-#    Q = mpcRT.Q
-#    R = mpcRT.R
-#    # Compute the LQR
-#    K,P = dlqr(A, B, Q, R, N=None)
     
     xN = mpcRT.x[-1,:]
 #    uN = -np.dot(K,xN)
@@ -318,8 +310,8 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     new_yNMPC = Xref[-1,:]
         
     # shift
+    mheRT.shift(new_x=[mpcRT.x[1,:]],new_u=[mpcRT.u[1,:]],new_y=new_y,new_yN=new_yN)
     mpcRT.shift(new_x=new_xMPC,new_u=new_uMPC,new_y=new_yMPC,new_yN=new_yNMPC)
-    mheRT.shift(new_y=new_y,new_yN=new_yN)
     
     
 def InitializeSim(dae,intType,ts,intOpts):
@@ -343,13 +335,10 @@ class Plotter(object):
         
     def _plot(self,name,title,what):
         if 'mpc' in what:
-#            if self._mpcLog == None: raise Exception('you must provide a mpc log to plot its variables')
             self._mpcLog._plot(name,title,'k',when='all',showLegend=True)
         if 'sim' in what:
-#            if self._simLog == None: raise Exception('you must provide a sim log to plot its variables')
             self._simLog._plot(name,title,'',when=0,showLegend=True)
         if 'mhe' in what:
-#            if self._mheLog == None: raise Exception('you must provide a mhe log to plot its variables')
             N = self._mheLog._log['x'][0].shape[0]
             if not isinstance(name,list):
                 name = [name]
