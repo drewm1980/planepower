@@ -275,7 +275,8 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     
     sim.log(new_x=new_x,new_u=new_u,new_y=new_y,new_yN=new_yN,new_out=new_out)
     mheRT.shift(new_x=[mpcRT.x[1,:]],new_u=[mpcRT.u[1,:]],new_y=new_y,new_yN=new_yN)
-    
+    print mpcRT.x
+    print mpcRT.u
     # Linearize the system at the reference
     nx = Rint.x.shape[0]
     
