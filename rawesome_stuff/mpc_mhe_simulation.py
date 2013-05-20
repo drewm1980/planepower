@@ -72,7 +72,6 @@ while time < Tf:
     mpcRT.feedbackStep()
 
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
-    mheRT.shiftStatesControls()
     
     time += Ts
     print "sim time:",time
