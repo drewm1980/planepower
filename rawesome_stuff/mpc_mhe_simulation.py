@@ -34,15 +34,15 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 1.2    # Simulation duration
+Tf = 10.    # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 mheRT, _       = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 
 # Create a simulation class
-#sim, simLog = InitializeSim(dae,'Idas',Ts,intOpts)
-sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
+sim = InitializeSim(dae,'Idas',Ts,intOpts)
+#sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
 
 # Generate a Rintegrator for linearizing the system
 Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts)
@@ -72,8 +72,8 @@ InitializeMHE(mheRT,Rint,dae,conf,refP)
 
 new_out = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.append(mheRT.x[-2,:],mheRT.u[-1,:])
-simLog.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
-
+sim.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
+#assert(1==0)
 # Simulation loop
 time = 0
 while time < Tf:
@@ -91,7 +91,7 @@ while time < Tf:
     mpcRT.preparationStep()
     mpcRT.feedbackStep()
 
-    SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP)
+    SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
     
     time += Ts
     print time
@@ -99,7 +99,7 @@ while time < Tf:
 
 plt.ion()
 
-plotter = Plotter(simLog,mheRT,mpcRT)
+plotter = Plotter(sim,mheRT,mpcRT)
 plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'])
 plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'])
 plotter.subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'])

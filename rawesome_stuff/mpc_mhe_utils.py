@@ -257,7 +257,7 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
 #    
 #    return mheLog
     
-def SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP):
+def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
 
     mheRT.log()    
     mpcRT.log()
@@ -265,15 +265,15 @@ def SimulateAndShift(mpcRT,mheRT,sim,simLog,Rint,dae,conf,refP):
     # Get the measurement BEFORE simulating
 #    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 #    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(simLog._log['x'][-1],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
+    new_y = np.append(sim._log['x'][-1],mpcRT.u[0,:]) #+ np.random.randn(29)*0.001
     # Simulate the system
-    new_x = sim.step(simLog._log['x'][-1],mpcRT.u[0,:],{})
+    new_x = sim.step(sim._log['x'][-1],mpcRT.u[0,:],{})
     # Get the last measurement AFTER simulating
     new_out = sim.getOutputs(new_x,mpcRT.u[0,:],{})
 #    new_yN = np.array([outs['measurementsN']])
     new_yN = np.squeeze(new_x) #+ np.random.randn(25)*0.001
     
-    simLog.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
+    sim.log(new_x=new_x,new_y=new_y,new_yN=new_yN,new_out=new_out)
     
     # Linearize the system at the reference
     nx = Rint.x.shape[0]
@@ -330,9 +330,9 @@ class SimLog(object):
         self.outputNames = dae.outputNames()
 #        self.uNames = dae.uNames()
         self.Ts = sim._ts
-        l=[]
-        for n in self.outputNames: l.append([])
-        self._log = {'x':[],'y':[],'yN':[],'outputs':dict(zip(self.outputNames,l))}
+        listOut=[]
+        for n in self.outputNames: listOut.append([])
+        self._log = {'x':[],'y':[],'yN':[],'outputs':dict(zip(self.outputNames,listOut))}
         
 #        self.log()
     
@@ -386,9 +386,9 @@ def InitializeSim(dae,intType,ts,intOpts):
     else:
         raise Exception('integrator not supported')
     
-    simLog = SimLog(dae,sim)
+#    simLog = SimLog(dae,sim)
     
-    return sim, simLog
+    return sim
     
 def Fig_plot(names,title=None,style='',when=0,showLegend=True,what=[],mpcLog=None,mheLog=None,simLog=None):
     assert isinstance(what,list)
