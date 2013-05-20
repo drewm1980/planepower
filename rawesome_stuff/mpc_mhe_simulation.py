@@ -23,7 +23,7 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 2.    # Simulation duration
+Tf = 2.0   # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
@@ -63,6 +63,7 @@ while time < Tf:
 
 
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
+    mheRT.shiftStatesControls()
     
     time += Ts
     print "sim time:",time
