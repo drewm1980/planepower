@@ -23,7 +23,7 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 1.   # Simulation duration
+Tf = 1.0   # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
@@ -70,10 +70,7 @@ while time < Tf:
 plt.ion()
 
 plotter = Plotter(sim,mheRT,mpcRT)
-mheRT.plot('daileron',when='all',style='o',offset=0)
-mheRT.plot('daileron',when='all',offset=0)
-plt.show()
-plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe','mpc'])
+
 plotter.subplot([['x','y','z'],['dx','dy','dz']],what=['sim','mhe'])
 plotter.subplot([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']],what=['sim','mhe'])
 plotter.subplot(['w1','w2','w3'],what=['sim','mhe'])
