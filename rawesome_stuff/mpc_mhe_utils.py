@@ -333,23 +333,32 @@ class Plotter(object):
         self._mheLog  = mheRT
         self._mpcLog  = mpcRT
         
-    def _plot(self,name,title,what):
+    def _plot(self,name,title,what,mheHorizon=False):
         if 'mpc' in what:
             self._mpcLog._plot(name,title,'k',when='all',showLegend=True)
         if 'sim' in what:
             self._simLog._plot(name,title,'',when=0,showLegend=True)
         if 'mhe' in what:
-            N = self._mheLog._log['x'][0].shape[0]
+            N = self._mheLog._log['x'][0].shape[0] - 1
             if not isinstance(name,list):
                 name = [name]
             if name[0] in self._mheLog.xNames():
-                self._mheLog._plot(name,title,'o',when=N-1,showLegend=True)
+                self._mheLog._plot(name,title,'o',when=N,showLegend=True)
+                if mheHorizon:
+                    print "plotting mhe horiz x"
+                    self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
             elif name[0] in self._mheLog.uNames():
-                self._mheLog._plot(name,title,'o',when=N-2,showLegend=True)
+                self._mheLog._plot(name,title,'o',when=N-1,showLegend=True)
+                if mheHorizon:
+                    print "plotting mhe horiz u"
+                    self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
             else:
                 self._mheLog._plot(name,title,'o',showLegend=True)
+                if mheHorizon:
+                    print "plotting mhe horiz other"
+                    self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
                 
-    def plot(self,names,title=None,when=0,showLegend=True,what=[]):
+    def plot(self,names,title=None,showLegend=True,mheHorizon=False,what=[]):
         assert isinstance(what,list)
         assert isinstance(names,list)
         
@@ -367,9 +376,9 @@ class Plotter(object):
         fig.canvas.set_window_title(str(title))
     
         plt.clf()
-        self._plot(names,title,what)
+        self._plot(names,title,what,mheHorizon=mheHorizon)
             
-    def subplot(self,names,title=None,when=0,showLegend=True,what=[]):
+    def subplot(self,names,title=None,showLegend=True,mheHorizon=False,what=[]):
         assert isinstance(what,list)
         assert isinstance(names,list)
         
@@ -391,4 +400,4 @@ class Plotter(object):
         n = len(names)
         for k,name in enumerate(names):
             plt.subplot(n,1,k+1)
-            self._plot(name,title,what)
+            self._plot(name,title,what,mheHorizon=mheHorizon)
