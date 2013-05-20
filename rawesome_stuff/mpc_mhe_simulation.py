@@ -16,6 +16,16 @@ import carouselModel
 
 dae = carouselModel.makeModel(conf)
 
+measNames  = ['marker_positions','IMU_angular_velocity','IMU_acceleration']
+measNames += ['r','cos_delta','sin_delta','aileron','elevator']
+measNames += ['daileron', 'delevator', 'motor_torque', 'ddr']
+
+endMeasNames  = ['IMU_angular_velocity']
+endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
+
+measNames = dae.xNames() + dae.uNames()
+endMeasNames = dae.xNames()
+
 # Simulation parameters
 N_mpc = 10  # Number of MPC control intervals
 N_mhe = 10  # Number of MHE control intervals
@@ -23,11 +33,11 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 1.0   # Simulation duration
+Tf = 2.0   # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
-mheRT, _       = makeMhe(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
+mheRT = makeMhe(dae,N=N_mpc,Ts=Ts,nSteps=nSteps,iType=iType,measNames=measNames,endMeasNames=endMeasNames)
 
 # Create a simulation class
 sim = InitializeSim(dae,'Idas',Ts,intOpts)
@@ -52,13 +62,14 @@ sim.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
 # Simulation loop
 time = 0
 while time < Tf:
-    
-    mheRT.preparationStep()
-    mheRT.feedbackStep()
+    for k in range(1):
+        mheRT.preparationStep()
+        mheRT.feedbackStep()
 
-#    mpcRT.x0 = mheRT.x[-1,:]
-#    mpcRT.preparationStep()
-#    mpcRT.feedbackStep()
+    mpcRT.x0 = mheRT.x[-1,:]
+    
+    mpcRT.preparationStep()
+    mpcRT.feedbackStep()
 
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
     mheRT.shiftStatesControls()
