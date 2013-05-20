@@ -242,13 +242,16 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
         integrator.step()
         mhert.z[k,:] = integrator.z
     
-    # Set the measurements (temporary)
-    mhert.y = np.append(Xref[:-1,:],Uref,axis=1)
-    mhert.yN = Xref[-1,:]
+    # Set the measurements
+    Yref = []
+    for k in range(Xref.shape[0]-1):
+        Yref.append(mhert.getY(Xref[k,:],Uref[k,:]))
+    mhert.y = np.array(Yref)
+    mhert.yN = mhert.getYN(Xref[-1,:])
     
     # Set the covariance (temporary)
     mhert.S  = np.eye(mhert.y.shape[1])
-    mhert.S[25:,25:] = np.eye(4)*1
+#    mhert.S[25:,25:] = np.eye(4)*1
     mhert.SN = np.eye(mhert.yN.shape[0])
     
 #    mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
@@ -261,18 +264,17 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     mpcRT.log()
     
     new_u = mpcRT.u[0,:]
-    # Get the measurement BEFORE simulating
-#    outs = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
-#    new_y  = np.squeeze(outs['measurements'])
-    new_y = np.append(sim._log['x'][-1],new_u) #+ np.random.randn(29)*0.001
+    # Get y BEFORE simulating
+    new_y = mheRT.getY(sim._log['x'][-1],new_u) #+ np.random.randn(29)*0.001
     # Simulate the system
     new_x = sim.step(sim._log['x'][-1],new_u,{})
     # Get the last measurement AFTER simulating
     new_out = sim.getOutputs(new_x,new_u,{})
 #    new_yN = np.array([outs['measurementsN']])
-    new_yN = np.squeeze(new_x) #+ np.random.randn(25)*0.001
+    new_yN = mheRT.getYN(new_x) #+ np.random.randn(25)*0.001
     
     sim.log(new_x=new_x,new_u=new_u,new_y=new_y,new_yN=new_yN,new_out=new_out)
+    mheRT.shift(new_x=[mpcRT.x[1,:]],new_u=[mpcRT.u[1,:]],new_y=new_y,new_yN=new_yN)
     
     # Linearize the system at the reference
     nx = Rint.x.shape[0]
@@ -310,7 +312,6 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     new_yNMPC = Xref[-1,:]
         
     # shift
-    mheRT.shift(new_x=[mpcRT.x[1,:]],new_u=[mpcRT.u[1,:]],new_y=new_y,new_yN=new_yN)
     mpcRT.shift(new_x=new_xMPC,new_u=new_uMPC,new_y=new_yMPC,new_yN=new_yNMPC)
     
     

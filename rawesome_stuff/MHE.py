@@ -1,10 +1,10 @@
 import rawe
-from rawe.ocp import Ocp
+from rawe.ocp.Ocp import Mhe
 import casadi as C
 import carouselModel
 
-def makeMhe(dae,N,dt,nSteps,iType):
-    mhe = Ocp(dae, N=N, ts=dt)
+def makeMhe(dae,N,Ts,nSteps,iType,measNames,endMeasNames):
+    mhe = Mhe(dae, N=N, ts=Ts, measNames=measNames, endMeasNames=endMeasNames)
 
 #    measurements = C.veccat( [dae[n] for n in ['marker positions','IMU acceleration','IMU angular velocity']])
 #    measurements = C.veccat( [measurements,
@@ -18,14 +18,16 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #    mhe.minimizeLsq(measurements)
 #    mhe.minimizeLsqEndTerm(measurements)
 
-    xref = C.veccat( [mhe[n] for n in dae.xNames()])
-    uref = C.veccat( [mhe[n] for n in dae.uNames()])
+#    xref = C.veccat( [mhe[n] for n in dae.xNames()])
+#    uref = C.veccat( [mhe[n] for n in dae.uNames()])
+#    yref  = C.veccat( [mhe[n] for n in measurements])
+#    yNref = C.veccat( [mhe[n] for n in measurementsEND])
 
 #    dae['measurements'] = C.veccat([xref,uref])
 #    dae['measurementsN'] = xref
 
-    mhe.minimizeLsq(C.veccat([xref,uref]))
-    mhe.minimizeLsqEndTerm(xref)
+#    mhe.minimizeLsq(yref)
+#    mhe.minimizeLsqEndTerm(yNref)
     
     mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
     mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
@@ -63,7 +65,11 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #    cgOpts = {'CXX':'g++', 'CC':'gcc'}
     cgOpts = {'CXX':'clang++', 'CC':'clang'}
     mheRT = mhe.exportCode(codegenOptions=cgOpts,ocpOptions=ocpOpts,integratorOptions=intOpts)
-    return mheRT, intOpts
+    
+#    RintMeas = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurements)
+#    RintMeasEnd = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurementsEND)
+    
+    return mheRT
 
 
 if __name__=='__main__':
