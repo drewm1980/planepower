@@ -21,7 +21,7 @@ dae['ConstR4'] = dae['e21']*dae['e21'] + dae['e22']*dae['e22'] + dae['e23']*dae[
 dae['ConstR5'] = dae['e21']*dae['e31'] + dae['e22']*dae['e32'] + dae['e23']*dae['e33']
 dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae['e33'] - 1
 #dae['ConstDelta'] = dae['cos_delta']*dae['cos_delta'] + dae['sin_delta']*dae['sin_delta'] - 1
-dae['ConstDelta'] = dae['cos_delta']**2 + dae['sin_delta']**2 - 1
+dae['ConstDelta'] = ( dae['cos_delta']**2 + dae['sin_delta']**2 - 1 )
 
 # Simulation parameters
 N_mpc = 10  # Number of MPC control intervals
@@ -41,7 +41,8 @@ sim = InitializeSim(dae,'Idas',Ts,intOpts)
 #sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
 
 # Generate a Rintegrator for linearizing the system
-Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts)
+Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=dae['ConstDelta'])
+
 
 # Reference parameters
 refP = {'r0':1.2,
@@ -51,34 +52,22 @@ refP = {'r0':1.2,
 InitializeMPC(mpcRT,Rint,dae,conf,refP)
 InitializeMHE(mheRT,Rint,dae,conf,refP)
 
-#x2=Rint.step(x=mpcRT.x0,u=mpcRT.u[0,:])
-#x1=sim.step(mpcRT.x0,mpcRT.u[0,:],{})
-#print x1-mpcRT.x0
-#print x2-mpcRT.x0
-#print x2-x1
-#
-#assert(1==0)
-
 new_out = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.append(mheRT.x[-2,:],mheRT.u[-1,:])
 sim.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
-#assert(1==0)
+
 # Simulation loop
 time = 0
 while time < Tf:
     
-#    print (mheRT.x[:-1,:]-mheRT.y[:,:25])
-#    print (mheRT.u-mheRT.y[:,25:])
-#    print (mheRT.x[-1,:]-mheRT.yN)
-
     mheRT.preparationStep()
     mheRT.feedbackStep()
-    
+
     mpcRT.x0 = mheRT.x[-1,:]
-#    mpcRT.x0 = mpcRT.x[0,:]
     
     mpcRT.preparationStep()
     mpcRT.feedbackStep()
+
 
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
     
