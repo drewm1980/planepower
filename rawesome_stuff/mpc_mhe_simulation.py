@@ -83,7 +83,7 @@ while time < Tf:
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
     
     time += Ts
-    print time
+    print "sim time:",time
 
 
 plt.ion()
