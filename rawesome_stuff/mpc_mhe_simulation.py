@@ -21,9 +21,10 @@ dae['ConstR3'] = dae['e11']*dae['e31'] + dae['e12']*dae['e32'] + dae['e13']*dae[
 dae['ConstR4'] = dae['e21']*dae['e21'] + dae['e22']*dae['e22'] + dae['e23']*dae['e23'] - 1
 dae['ConstR5'] = dae['e21']*dae['e31'] + dae['e22']*dae['e32'] + dae['e23']*dae['e33']
 dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae['e33'] - 1
-dae['Const'] = dae['x']*dae['x']/2 + dae['y']*dae['y']/2 + dae['z']*dae['z']/2 - \
-               dae['r']*dae['r']/2
-dae['dConst'] = dae['dx']*dae['x'] + dae['dy']*dae['y'] + dae['dz']*dae['z']
+#dae['Const'] = dae['x']*dae['x']/2 + dae['y']*dae['y']/2 + dae['z']*dae['z']/2 - \
+#               dae['r']*dae['r']/2
+#dae['dConst'] = dae['dx']*dae['x'] + dae['dy']*dae['y'] + dae['dz']*dae['z']
+
 #dae['ConstDelta'] = dae['cos_delta']*dae['cos_delta'] + dae['sin_delta']*dae['sin_delta'] - 1
 dae['ConstDelta'] = dae['cos_delta']**2 + dae['sin_delta']**2 - 1
 
@@ -34,7 +35,7 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 10.    # Simulation duration
+Tf = 2.    # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
@@ -111,7 +112,7 @@ plotter.subplot([['c'],['cdot']],what=['sim','mhe'])
 plotter.subplot([['kkt'],['objective'],['prep_time','fb_time']],what=['mpc','mhe'])
 plotter.plot(['kkt'],what=['mpc','mhe'])
 plotter.plot(['ConstR1','ConstR2','ConstR3','ConstR4','ConstR5','ConstR6'],what=['sim','mhe'])
-plotter.subplot([['Const'],['dConst'],['ConstDelta']],what=['sim','mhe'])
+plotter.subplot([['c'],['cdot'],['ConstDelta']],what=['sim','mhe'])
 
 #mpcLog.plot(['x','v'],when='all')
 

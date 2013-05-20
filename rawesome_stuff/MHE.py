@@ -34,8 +34,10 @@ def makeMhe(dae,N,dt,nSteps,iType):
     mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
     mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
 
-    mhe.constrain(mhe['Const'],'==',0, when='AT_END')
-    mhe.constrain(mhe['dConst'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['Const'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['dConst'],'==',0, when='AT_END')
+    mhe.constrain(mhe['c'],'==',0, when='AT_END')
+    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
 
     mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
     
