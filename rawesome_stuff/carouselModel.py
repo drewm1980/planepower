@@ -10,8 +10,9 @@ def cross(a,b):
                    a[0]*b[1]-a[1]*b[0]])
     return c
 
-def makeModel(dae,conf):
+def makeModel(conf):
     print "creating model..."
+    dae = rawe.models.carousel(conf)
     dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
     #ddp = C.vertcat([dae.ddt('dx'),dae.ddt('dy'),dae.ddt('dz')])
     #dw  = C.vertcat([dae.ddt('w1'),dae.ddt('w2'),dae.ddt('w3')])
@@ -68,5 +69,14 @@ def makeModel(dae,conf):
                'pos_marker_body2':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body2.dat')),
                'pos_marker_body3':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body3.dat'))}
     dae['marker_positions'] = camModel.fullCamModel(dae,camConf)
+
+    dae['ConstR1'] = dae['e11']*dae['e11'] + dae['e12']*dae['e12'] + dae['e13']*dae['e13'] - 1
+    dae['ConstR2'] = dae['e11']*dae['e21'] + dae['e12']*dae['e22'] + dae['e13']*dae['e23']
+    dae['ConstR3'] = dae['e11']*dae['e31'] + dae['e12']*dae['e32'] + dae['e13']*dae['e33']
+    dae['ConstR4'] = dae['e21']*dae['e21'] + dae['e22']*dae['e22'] + dae['e23']*dae['e23'] - 1
+    dae['ConstR5'] = dae['e21']*dae['e31'] + dae['e22']*dae['e32'] + dae['e23']*dae['e33']
+    dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae['e33'] - 1
+    #dae['ConstDelta'] = dae['cos_delta']*dae['cos_delta'] + dae['sin_delta']*dae['sin_delta'] - 1
+    dae['ConstDelta'] = ( dae['cos_delta']**2 + dae['sin_delta']**2 - 1 )
 
     return dae

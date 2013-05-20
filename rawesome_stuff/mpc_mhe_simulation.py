@@ -12,16 +12,9 @@ from MHE import makeMhe
 from mpc_mhe_utils import *
 
 from highwind_carousel_conf import conf
+import carouselModel
 
-dae = rawe.models.carousel(conf)
-dae['ConstR1'] = dae['e11']*dae['e11'] + dae['e12']*dae['e12'] + dae['e13']*dae['e13'] - 1
-dae['ConstR2'] = dae['e11']*dae['e21'] + dae['e12']*dae['e22'] + dae['e13']*dae['e23']
-dae['ConstR3'] = dae['e11']*dae['e31'] + dae['e12']*dae['e32'] + dae['e13']*dae['e33']
-dae['ConstR4'] = dae['e21']*dae['e21'] + dae['e22']*dae['e22'] + dae['e23']*dae['e23'] - 1
-dae['ConstR5'] = dae['e21']*dae['e31'] + dae['e22']*dae['e32'] + dae['e23']*dae['e33']
-dae['ConstR6'] = dae['e31']*dae['e31'] + dae['e32']*dae['e32'] + dae['e33']*dae['e33'] - 1
-#dae['ConstDelta'] = dae['cos_delta']*dae['cos_delta'] + dae['sin_delta']*dae['sin_delta'] - 1
-dae['ConstDelta'] = ( dae['cos_delta']**2 + dae['sin_delta']**2 - 1 )
+dae = carouselModel.makeModel(conf)
 
 # Simulation parameters
 N_mpc = 10  # Number of MPC control intervals

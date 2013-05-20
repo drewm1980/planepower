@@ -13,8 +13,7 @@ if __name__=='__main__':
     print "creating model"
     from highwind_carousel_conf import conf
     conf['rArm'] = 1.085
-    dae = rawe.models.carousel(conf)
-    dae = carouselModel.makeModel(dae,conf)
+    dae = carouselModel.makeModel(conf)
     N = 10
     dt_NMPC = 0.1
     dt_MHE = 0.1
