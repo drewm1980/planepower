@@ -27,19 +27,17 @@ def makeMhe(dae,N,dt,nSteps,iType):
     mhe.minimizeLsq(C.veccat([xref,uref]))
     mhe.minimizeLsqEndTerm(xref)
     
-    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
-
-#    mhe.constrain(mhe['Const'],'==',0, when='AT_END')
-#    mhe.constrain(mhe['dConst'],'==',0, when='AT_END')
-    mhe.constrain(mhe['c'],'==',0, when='AT_END')
-    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
-
-    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
+#
+#    mhe.constrain(mhe['c'],'==',0, when='AT_END')
+#    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
+#
+#    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
     
     intOpts = rawe.RtIntegratorOptions()
     intOpts['INTEGRATOR_TYPE'] = iType

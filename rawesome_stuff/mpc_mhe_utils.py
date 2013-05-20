@@ -171,7 +171,7 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     Wae = 250.
     
     Q = [Wp]*3 + [Wdp]*3 + [We]*9 + [Ww]*3 + [Wr]*2 + [Wdelta]*3 + [Wae]*2
-    R = [1.0*1000000]*4
+    R = [1.0*1e6]*4
        
     mpcrt.S = np.diag( Q + R )*1e-2
     Q = np.diag( Q )*1e-2
