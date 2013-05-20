@@ -214,7 +214,7 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
 #    def initializeMhe(self):
 #        print self.userdata
 
-def InitializeMHE(mhert,integrator,dae,conf,refP):
+def InitializeMHE(mhert,integrator,dae,conf,refP,Covariance):
     
     xref, uref = GenerateReference(dae,conf,refP)
     
@@ -250,9 +250,16 @@ def InitializeMHE(mhert,integrator,dae,conf,refP):
     mhert.yN = mhert.getYN(Xref[-1,:])
     
     # Set the covariance (temporary)
-    mhert.S  = np.eye(mhert.y.shape[1])
+    Cov = np.array([])
+    for name in mhert.measNames:
+        Cov = np.append( Cov, np.ones(dae[name].shape)*Covariance[name] )
+    CovEnd = np.array([])
+    for name in mhert.endMeasNames:
+        CovEnd = np.append( CovEnd, np.ones(dae[name].shape)*Covariance[name] )
+    
+    mhert.S  = np.diag(Cov)
 #    mhert.S[25:,25:] = np.eye(4)*1
-    mhert.SN = np.eye(mhert.yN.shape[0])
+    mhert.SN = np.diag(CovEnd)
     
 #    mheLog = rawe.ocp.ocprt.Logger(mhert,dae)
 #    
@@ -275,8 +282,7 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     
     sim.log(new_x=new_x,new_u=new_u,new_y=new_y,new_yN=new_yN,new_out=new_out)
     mheRT.shift(new_x=[mpcRT.x[1,:]],new_u=[mpcRT.u[1,:]],new_y=new_y,new_yN=new_yN)
-    print mpcRT.x
-    print mpcRT.u
+    
     # Linearize the system at the reference
     nx = Rint.x.shape[0]
     

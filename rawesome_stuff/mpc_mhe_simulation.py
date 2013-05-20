@@ -23,8 +23,20 @@ measNames += ['daileron', 'delevator', 'motor_torque', 'ddr']
 endMeasNames  = ['IMU_angular_velocity']
 endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
 
+Covariance = {'marker_positions':1e3,
+              'IMU_angular_velocity':1.,
+              'IMU_acceleration':10.,
+              'r':1.,
+              'cos_delta':1., 'sin_delta':1.,
+              'aileron':1e-2, 'elevator':1e-2,
+              'daileron':1e-4, 'delevator':1e-4,
+              'motor_torque':20.,
+              'ddr':1e-4}
+
 measNames = dae.xNames() + dae.uNames()
 endMeasNames = dae.xNames()
+for name in measNames:
+    Covariance[name] = 1.
 
 # Simulation parameters
 N_mpc = 10  # Number of MPC control intervals
@@ -33,7 +45,7 @@ Ts = 0.1    # Sampling time
 nSteps = 20 #Number of steps for the Rintegrator (also in MPC and MHE)
 iType = 'INT_IRK_GL2' # Rintegrator type
 iType = 'INT_IRK_RIIA3' # Rintegrator type
-Tf = 0.05   # Simulation duration
+Tf = 6.   # Simulation duration
 
 # Create the MPC class
 mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
@@ -53,7 +65,7 @@ refP = {'r0':1.2,
         'z0':-0.1}
             
 InitializeMPC(mpcRT,Rint,dae,conf,refP)
-InitializeMHE(mheRT,Rint,dae,conf,refP)
+InitializeMHE(mheRT,Rint,dae,conf,refP,Covariance)
 
 new_out = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.append(mheRT.x[-2,:],mheRT.u[-1,:])
