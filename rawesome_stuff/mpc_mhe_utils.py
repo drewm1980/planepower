@@ -353,17 +353,14 @@ class Plotter(object):
             if name[0] in self._mheLog.xNames():
                 self._mheLog._plot(name,title,'o',when=N,showLegend=True)
                 if mheHorizon:
-                    print "plotting mhe horiz x"
                     self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
             elif name[0] in self._mheLog.uNames():
                 self._mheLog._plot(name,title,'o',when=N-1,showLegend=True)
                 if mheHorizon:
-                    print "plotting mhe horiz u"
                     self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
             else:
                 self._mheLog._plot(name,title,'o',showLegend=True)
                 if mheHorizon:
-                    print "plotting mhe horiz other"
                     self._mheLog._plot(name,title,'',when='all',offset='mhe',showLegend=False)
                 
     def plot(self,names,title=None,showLegend=True,mheHorizon=False,what=[]):
