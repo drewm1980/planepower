@@ -353,9 +353,9 @@ class Plotter(object):
             N = self._mheLog._log['x'][0].shape[0]
             if not isinstance(name,list):
                 name = [name]
-            if name[0] in self._mheLog.xNames:
+            if name[0] in self._mheLog.xNames():
                 self._mheLog._plot(name,title,'o',when=N-1,showLegend=True)
-            elif name[0] in self._mheLog.uNames:
+            elif name[0] in self._mheLog.uNames():
                 self._mheLog._plot(name,title,'o',when=N-2,showLegend=True)
             else:
                 self._mheLog._plot(name,title,'o',showLegend=True)
