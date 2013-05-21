@@ -122,16 +122,16 @@ bool McuHandler::startHook()
 	execControls[ 2 ] = 0.;
 	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
 
+	upTimeCnt = 0;
+
 	return true;
 }
 
 void McuHandler::updateHook()
 {
 //	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
-	static unsigned runCnt = 0;
 	
-	portTrigger.read( timeStamp );
-	
+	portTrigger.read( triggerTimeStamp );
  	if (portControls.read( controls ) == NewData && rtMode == true)
  	{
 		// In case we received new commands and we are in the real-time mode
@@ -142,31 +142,36 @@ void McuHandler::updateHook()
  			exception();
  		}
  		copy(controls.begin(), controls.end(), execControls.begin());
+		
+		// Before calling the MCU operation, reset the tcpStatus flag.
+		tcpStatus = OK;
 		sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
  	}
 	
+	// Before calling the MCU operation, reset the tcpStatus flag.
+	tcpStatus = OK;
 	receiveSensorData( imuData );
 	portImuData.write( imuData );
 
-	double elapsedTime = TimeService::Instance()->secondsSince( timeStamp );
+	double elapsedTime = TimeService::Instance()->secondsSince( triggerTimeStamp );
 	portExecTime.write( elapsedTime );
 
 	// This is a check for the real-time mode. In case we do not meet the
 	// deadline, abort.
-	if (runCnt > 5 && elapsedTime > Ts && rtMode == true)
+	if (upTimeCnt > 5 && elapsedTime > Ts && rtMode == true)
 	{
 		tcpStatus = ERR_DEADLINE;
 		exception();
 	}
 	else
-		++runCnt;
+		++upTimeCnt;
 }	
 	
 void McuHandler::stopHook()
 {
 	/// Try to send neutral references to all motors
-	if (this->isRunning() == true) 
-		sendMotorReferences(0., 0., 0.);
+//	if (tcpStatus == OK && this->isRunning() == true) 
+	sendMotorReferences(0., 0., 0.);
 	/// Close the socket
 	close( tcpSocket );
 	/// Now print the error
@@ -298,29 +303,32 @@ void McuHandler::ethernetTransmitReceive( void )
 	unsigned long sum;
 	long index;
 
-	tcpStatus = OK;
+	// tcpStatus: exceptions are triggered only in case the current state is OK.
+	// This is implemented in such a way to be able to send last resort signal to the MCU
+	// to e.g. reset all position references to zero. In that case, we do not care to much
+	// about what is going to happen, but to try to do this actually.
 
-	// first calculate the checksum...
+	// First calculate the checksum...
 	for(index = 0, sum = 0; index < (numOfBytesToBeTransmitted - 1); index++)
 	{
 		sum -= transmitBuffer[ index ];
 	}
 	transmitBuffer[numOfBytesToBeTransmitted - 1] = sum;
 
-	// then send...
+	// Then send...
 	if (send(tcpSocket, transmitBuffer, numOfBytesToBeTransmitted, 0)
-		!= numOfBytesToBeTransmitted )
+		!= numOfBytesToBeTransmitted && tcpStatus == OK)
 	{
 		tcpStatus = ERR_TCP_SEND_FAIL;
 		exception();
 	}
 
-	// after that receive...
+	// After that receive...
 	for (i = 0; i < numOfBytesToBeReceived; )
 	{
 		j = 0;
 
-		if ((j = recv(tcpSocket, receiveBuffer, numOfBytesToBeReceived, 0)) < 1)
+		if ((j = recv(tcpSocket, receiveBuffer, numOfBytesToBeReceived, 0)) < 1 && tcpStatus == OK)
 		{
 			tcpStatus = ERR_TCP_RECV_FAIL;
 			exception();
@@ -329,12 +337,12 @@ void McuHandler::ethernetTransmitReceive( void )
 		i += j;
 	}
 
-	// calculate the checksum...
+	// Calculate the checksum...
 	for(index = 0, sum = 0; index < numOfBytesToBeReceived; index++)
 	{
 		sum += receiveBuffer[ index ];
 	}
-	if (( sum & 0xFF ) != 0)
+	if (( sum & 0xFF ) != 0 && tcpStatus == OK)
 	{
 		tcpStatus = ERR_BAD_CHECKSUM;
 		exception();

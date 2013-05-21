@@ -47,11 +47,10 @@ public:
 	/// Error hook.
 	virtual void errorHook( );
 
-	/// Method for sending the references. All input must be scaled to -1.. +1.
-	void sendMotorReferences(double ref1, double ref2, double ref3);
-	
 protected:
-	
+
+	/// Method for sending the references. All input must be scaled to -1.. +1.
+	void sendMotorReferences(double ref1, double ref2, double ref3);	
 	/// Method that communicates with the MCU. In case of ANY error, it triggers
 	/// the error hook.
 	void ethernetTransmitReceive( void );
@@ -61,7 +60,7 @@ protected:
 	/// Trigger the component to get IMU data if there is an event on this port.
 	RTT::InputPort< TIME_TYPE > portTrigger;
 	/// Time stamp of the input trigger.
-	TIME_TYPE timeStamp;
+	TIME_TYPE triggerTimeStamp;
 	/// Holder for the IMU data.
 	std::vector< double > imuData;
 	/// The data from the IMU: [timestamp omegax omegay omegaz ax ay az].
@@ -100,6 +99,8 @@ private:
 	int tcpSocket;
 	struct sockaddr_in tcpEchoServer;
 	int tcpStatus;
+
+	unsigned upTimeCnt;
 };
 
 #endif // __MCUHANDLER__
