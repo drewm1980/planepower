@@ -71,7 +71,7 @@ bool  Encoder::configureHook()
 		
 	return true;
 	
-	configureHookFail:
+configureHookFail:
 	
 	return false;
 }
@@ -79,11 +79,8 @@ bool  Encoder::configureHook()
 bool  Encoder::startHook()
 {
 	posOld = readEncoder( encoderPort );
-	posOld = readEncoder( encoderPort );
-	posOld = readEncoder( encoderPort );
-
-	omegaOld = 0.0;
 	timeStampOld = TimeService::Instance()->getTicks();
+	omegaOld = 0.0;
 	posAcc = 0.0;
 	
     return true;

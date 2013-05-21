@@ -41,18 +41,19 @@ protected:
 	TIME_TYPE triggerTimeStamp;
 	/// Output port for encoder data:
 	/// [timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].
-	RTT::OutputPort< std::vector< double > >	 portEncoderData;
+	RTT::OutputPort< std::vector< double > > portEncoderData;
 	/// Vector that holds measurements.
 	std::vector< double > encoderData;
 	/// Port which holds the execution time.
 	RTT::OutputPort< double > portExecTime;
 	
 	/// Operation caller for SOEM "readEncoder" function.
-	RTT::OperationCaller<int(unsigned int) >	readEncoder;
+	RTT::OperationCaller<int(unsigned int) > readEncoder;
 	
 	/// Encoder port, SOEM related.
 	unsigned encoderPort;
-	
+
+private:
 	TIME_TYPE timeStampOld, timeStampNew;
 	double elapsedTime;
 	int posOld, posNew;
