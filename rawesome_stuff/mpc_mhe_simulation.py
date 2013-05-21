@@ -85,15 +85,15 @@ iType = 'INT_IRK_RIIA3' # Rintegrator type
 Tf = 10.0   # Simulation duration
 
 # Create the MPC class
-mpcRT, intOpts = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
+mpcRT = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType)
 mheRT = makeMhe(dae,N=N_mpc,Ts=Ts,nSteps=nSteps,iType=iType,measNames=measNames,endMeasNames=endMeasNames)
 
 # Create a simulation class
-sim = InitializeSim(daeSim,'Idas',Ts,intOpts)
+sim = InitializeSim(daeSim,'Idas',Ts,mpcRT._integratorOptions)
 #sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
 
 # Generate a Rintegrator for linearizing the system
-Rint = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=dae['ConstDelta'])
+Rint = rawe.RtIntegrator(dae,ts=Ts, options=mpcRT._integratorOptions, measurements=dae['ConstDelta'])
 
 
 # Reference parameters

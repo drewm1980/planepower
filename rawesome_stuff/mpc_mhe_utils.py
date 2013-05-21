@@ -188,8 +188,8 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP,MPCweights):
 #    # Compute the LQR
 #    K,P = dlqr(A, B, Q, R, N=None)
     
-    P = np.eye(Q.shape[0])*10
-    mpcrt.SN = P
+#    P = np.eye(Q.shape[0])*10
+#    mpcrt.SN = P
     
 #    mpcrt.S  = np.eye(25+4)
 #    mpcrt.SN = np.eye(25)

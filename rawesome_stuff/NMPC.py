@@ -2,8 +2,8 @@ import rawe
 import casadi as C
 
 def makeNmpc(dae,N,dt,nSteps,iType):
-    from rawe.ocp import Ocp
-    mpc = Ocp(dae, N=N, ts=dt)
+    from rawe.ocp.Ocp import Mpc
+    mpc = Mpc(dae, N=N, ts=dt)
 
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
@@ -37,14 +37,14 @@ def makeNmpc(dae,N,dt,nSteps,iType):
     ocpOpts['FIX_INITIAL_STATE'] = True
 #    ocpOpts['CG_USE_C99'] = True
 
-    xref = C.veccat( [mpc[n] for n in dae.xNames()])
-    uref = C.veccat( [mpc[n] for n in dae.uNames()])
-    mpc.minimizeLsq(C.veccat([xref,uref]))
-    mpc.minimizeLsqEndTerm(xref)
+#    xref = C.veccat( [mpc[n] for n in dae.xNames()])
+#    uref = C.veccat( [mpc[n] for n in dae.uNames()])
+#    mpc.minimizeLsq(C.veccat([xref,uref]))
+#    mpc.minimizeLsqEndTerm(xref)
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
     mpcRT = mpc.exportCode(codegenOptions=cgOpts,integratorOptions=intOpts,ocpOptions=ocpOpts)
-    return mpcRT, intOpts
+    return mpcRT
 
 if __name__=='__main__':
     from highwind_carousel_conf import conf
