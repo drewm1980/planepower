@@ -7,14 +7,14 @@ import("voltageController")
  
 #Create components
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
-loadComponent("voltageController","OCL::VoltageController")
+loadComponent("voltageController","VoltageController")
  
 #Load properties
 soemMaster.ifname = "eth1"
  
 #Set activities
-setActivity("soemMaster",0.01,HighestPriority,ORO_SCHED_RT)
-setActivity("voltageController",0.01,HighestPriority,ORO_SCHED_RT)
+setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
+setActivity("voltageController", 0.01, LowestPriority, ORO_SCHED_RT)
 
 #Connect peers
 connectPeers("voltageController","soemMaster")
