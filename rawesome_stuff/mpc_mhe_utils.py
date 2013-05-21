@@ -126,10 +126,12 @@ def GenerateReference(dae,conf,refP):
     
     return xref, uref
 
-def InitializeMPC(mpcrt,integrator,dae,conf,refP):
+def InitializeMPC(mpcrt,integrator,dae,conf,refP,MPCweights):
         
     xref, uref = GenerateReference(dae,conf,refP)
-    print xref
+#    xref['x'] += 0.1
+#    xref['e11'] += 0.01
+    
     N = mpcrt.u.shape[0]
     Xref = [xref[name] for name in dae.xNames()]
     Uref = [uref[name] for name in dae.uNames()]
@@ -139,6 +141,7 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     ts = mpcrt._ts
     # The only part that changes is cos(delta), sin(delta) 
     CS = np.array([ [np.cos(k*ts*refP['ddelta0']), np.sin(k*ts*refP['ddelta0'])] for k in range(N+1) ])
+#    CS[0,0] += 0.1
     for k,name in enumerate(dae.xNames()):
         if name == 'cos_delta': Xref[:,k] = CS[:,0]
         if name == 'sin_delta': Xref[:,k] = CS[:,1]
@@ -159,21 +162,17 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
     # Set the initial state
     mpcrt.x0 = Xref[0,:]
     
-    # Define the weights
-    Wp  = 25.
-    Wdp = 25.
-    We  = 10.
-    Ww  = 0.1
-    Wr  = 100.
-    Wdelta = 100.
-    Wae = 250.
     
-    Q = [Wp]*3 + [Wdp]*3 + [We]*9 + [Ww]*3 + [Wr]*2 + [Wdelta]*3 + [Wae]*2
-    R = [1.0*1e6]*4
+    Q = []
+    R = []
+    for name in mpcrt._dae.xNames():
+        Q.append(MPCweights[name])
+    for name in mpcrt._dae.uNames():
+        R.append(MPCweights[name])
        
-    mpcrt.S = np.diag( Q + R )*1e-2
-    Q = np.diag( Q )*1e-2
-    R = np.diag( R )*1e-2
+    mpcrt.S = np.diag( Q + R )
+    Q = np.diag( Q )
+    R = np.diag( R )
     
     mpcrt.Q = Q
     mpcrt.R = R
@@ -217,6 +216,8 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP):
 def InitializeMHE(mhert,integrator,dae,conf,refP,Covariance):
     
     xref, uref = GenerateReference(dae,conf,refP)
+#    xref['x'] += 0.1
+#    xref['e11'] += 0.01
     
     N = mhert.u.shape[0]
     Xref = [xref[name] for name in dae.xNames()]
@@ -227,6 +228,7 @@ def InitializeMHE(mhert,integrator,dae,conf,refP,Covariance):
     ts = mhert._ts
     # The only part that changes is cos(delta), sin(delta) 
     CS = np.array([ [np.cos(k*ts*refP['ddelta0']), np.sin(k*ts*refP['ddelta0'])] for k in range(-N,1) ])
+#    CS[0,0] += 0.1
     for k,name in enumerate(dae.xNames()):
         if name == 'cos_delta': Xref[:,k] = CS[:,0]
         if name == 'sin_delta': Xref[:,k] = CS[:,1]
