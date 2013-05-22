@@ -1,7 +1,7 @@
 #include "protobufBridge.hpp"
 
-#include "../autogen/protoConverters.h"
-#include "../autogen/Carousel_dimensions.h"
+#include "protoConverters.h"
+#include "Carousel_dimensions.h"
 
 bool ProtobufBridge::configureHook()
 {
