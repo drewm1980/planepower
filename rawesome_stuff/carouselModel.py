@@ -11,7 +11,6 @@ def cross(a,b):
     return c
 
 def makeModel(conf):
-    print "creating model..."
     dae = rawe.models.carousel(conf)
     (xDotSol, zSol) = dae.solveForXDotAndZ()
     ddp = C.vertcat([xDotSol['dx'],xDotSol['dy'],xDotSol['dz']])
