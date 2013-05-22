@@ -177,26 +177,8 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP,MPCweights):
     mpcrt.Q = Q
     mpcrt.R = R
     
-#    # Linearize the system at the reference
-#    nx = Rint.x.shape[0]
-#    Rint.x = mpcrt.yN
-#    Rint.u = mpcrt.y[-1,nx:]
-#    Rint.step()
-#    A = Rint.dx1_dx0
-#    B = Rint.dx1_du
-#    
-#    # Compute the LQR
-#    K,P = dlqr(A, B, Q, R, N=None)
+#    mpcrt.computeLqr()
     
-#    P = np.eye(Q.shape[0])*10
-#    mpcrt.SN = P
-    
-#    mpcrt.S  = np.eye(25+4)
-#    mpcrt.SN = np.eye(25)
-    
-#    mpcLog = rawe.ocp.ocprt.Logger(mpcrt,dae)
-#    
-#    return mpcLog
 
 #blah
 #class MpcMhe(object):
@@ -319,7 +301,7 @@ def SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP):
     
     new_yMPC = np.append(Xref[-2,:],Uref[-1,:])
     new_yNMPC = Xref[-1,:]
-        
+    
     # shift
     mpcRT.shift(new_x=new_xMPC,new_u=new_uMPC,new_y=new_yMPC,new_yN=new_yNMPC)
     

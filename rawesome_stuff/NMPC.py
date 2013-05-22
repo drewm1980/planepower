@@ -1,9 +1,9 @@
 import rawe
 import casadi as C
 
-def makeNmpc(dae,N,dt,nSteps,iType):
+def makeNmpc(dae,N,dt,nSteps,iType,lqrDae):
     from rawe.ocp.Ocp import Mpc
-    mpc = Mpc(dae, N=N, ts=dt)
+    mpc = Mpc(dae, N=N, ts=dt, lqrDae=lqrDae)
 
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
