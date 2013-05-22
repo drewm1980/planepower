@@ -10,6 +10,7 @@
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
+using namespace soem_ebox;
 
 /// Gear ratio of the gearbox of the carousel
 #define GEAR_RATIO 32.8
@@ -24,8 +25,8 @@ Encoder::Encoder(std::string name)
 	//
 	// Add ports
 	//
-	addEventPort("trigger", portTrigger)
-		.doc("Trigger port for the component.");
+	addEventPort("eboxOut", portEboxOut)
+		.doc("EBOX encoder port");
 	addPort("encoderData", portEncoderData)
 		.doc(	"Output port for encoder data:"
 				"[timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].");
@@ -47,39 +48,17 @@ Encoder::Encoder(std::string name)
 
 bool  Encoder::configureHook()
 {
-	if (this->hasPeer("soemMaster") == false)
-	{
-		log( Error ) << "There is no peer" << "soemMaster" << endlog();
-		goto configureHookFail;
-	}
-	
-	if (this->getPeer("soemMaster")->provides()->hasService("Slave_1001") == false)
-	{
-		log( Error ) << "There is no service" << "Slave_1001" << endlog();
-		goto configureHookFail;
-	}
-	
-	if (this->getPeer("soemMaster")->provides()
-		->getService("Slave_1001")->provides()->hasOperation("readEncoder") == false)
-	{
-		log( Error ) << "There is no operation" << "readEncoder" << endlog();
-		goto configureHookFail;
-	}
-	
-	readEncoder = getPeer("soemMaster")->provides()
-		->getService("Slave_1001")->provides()->getOperation("readEncoder");
-		
+	// TODO If the encoder port is not connected, abort!
+
 	return true;
-	
-configureHookFail:
-	
-	return false;
 }
 
 bool  Encoder::startHook()
 {
-	posOld = readEncoder( encoderPort );
+	portEboxOut.read( eboxOut );
+	posOld = posNew = eboxOut.encoder[ encoderPort ];
 	timeStampOld = TimeService::Instance()->getTicks();
+
 	omegaOld = 0.0;
 	posAcc = 0.0;
 	
@@ -88,23 +67,14 @@ bool  Encoder::startHook()
 
 void  Encoder::updateHook()
 {
-	static unsigned firstRun = 1;
+	tickStart = TimeService::Instance()->getTicks();
 
-// 	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
-
-	// Read time stamp
-	portTrigger.read( triggerTimeStamp );
-	
 	// Read new position and corresponding time-stamp
-	posNew = readEncoder( encoderPort );
+	// TODO Encoder provides the time stamp, too
+	portEboxOut.read( eboxOut );
 	timeStampNew = TimeService::Instance()->getTicks();
-
-	if ( firstRun )
-	{
-		firstRun = 0;
-		posOld = posNew;
-	}
-	
+	posNew = eboxOut.encoder[ encoderPort ];
+		
 	// Read elapsed time since the last position reading
 	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
 	
@@ -145,7 +115,7 @@ void  Encoder::updateHook()
 	
 	// Output execution time of the component
 	portExecTime.write(
-		TimeService::Instance()->secondsSince( triggerTimeStamp )
+		TimeService::Instance()->secondsSince( tickStart )
 	);
 }
 

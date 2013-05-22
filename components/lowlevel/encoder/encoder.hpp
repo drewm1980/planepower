@@ -5,11 +5,12 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
-#include <rtt/Operation.hpp>
-#include <rtt/OperationCaller.hpp>
 
 #include <stdint.h>
 typedef uint64_t TIME_TYPE;
+
+// Include SOEM EBOX encoder header
+#include <soem_ebox/soem_ebox/EBOXOut.h>
 
 /// Encoder class
 class Encoder : public RTT::TaskContext
@@ -35,10 +36,10 @@ public:
 	virtual void errorHook( );
 	
 protected:
-	/// Input trigger port.
-	RTT::InputPort< TIME_TYPE > portTrigger;
-	/// Trigger time stamp
-	TIME_TYPE triggerTimeStamp;
+	/// EBOX encoder port
+	RTT::InputPort< soem_ebox::EBOXOut > portEboxOut;
+	/// EBOX encoder data
+	soem_ebox::EBOXOut eboxOut;
 	/// Output port for encoder data:
 	/// [timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].
 	RTT::OutputPort< std::vector< double > > portEncoderData;
@@ -47,14 +48,11 @@ protected:
 	/// Port which holds the execution time.
 	RTT::OutputPort< double > portExecTime;
 	
-	/// Operation caller for SOEM "readEncoder" function.
-	RTT::OperationCaller<int(unsigned int) > readEncoder;
-	
 	/// Encoder port, SOEM related.
 	unsigned encoderPort;
 
 private:
-	TIME_TYPE timeStampOld, timeStampNew;
+	TIME_TYPE timeStampOld, timeStampNew, tickStart;
 	double elapsedTime;
 	int32_t posOld, posNew, posDelta;
 	double posDeltaReal, posAcc;
