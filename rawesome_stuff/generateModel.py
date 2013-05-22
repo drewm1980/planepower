@@ -1,12 +1,15 @@
-import rawe.models.carousel
+import rawe
+import sys
+
+from highwind_carousel_conf import conf
+import carouselModel
 
 if __name__=='__main__':
-    from highwind_carousel_conf import conf
-    import carouselModel
-    dae = carouselModel.makeModel(conf)
-    autogenDir = 'autogen'
+    assert len(sys.argv) == 2, 'need to call generateModel.py with the properties directory'
+    dae = carouselModel.makeModel(conf,propertiesDir=sys.argv[1])
+
+    autogenDir = '.'
     topname = 'Carousel'
     mheHorizN = 10
     mpcHorizN = 10
-    rawe.utils.mkprotobufs.writeAll(dae, topname, autogenDir,
-                                    haskellDirs=['plot-ho-matic'], mheHorizN=10, mpcHorizN=10)
+    rawe.utils.mkprotobufs.writeAll(dae, topname, autogenDir, mheHorizN=10, mpcHorizN=10)

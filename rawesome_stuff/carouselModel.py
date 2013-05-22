@@ -2,6 +2,7 @@ import rawe
 import casadi as C
 import camModel
 import numpy as np
+import os
 
 import codegen_utils
 def cross(a,b):
@@ -10,7 +11,7 @@ def cross(a,b):
                    a[0]*b[1]-a[1]*b[0]])
     return c
 
-def makeModel(conf):
+def makeModel(conf,propertiesDir='../properties'):
     dae = rawe.models.carousel(conf)
     (xDotSol, zSol) = dae.solveForXDotAndZ()
     ddp = C.vertcat([xDotSol['dx'],xDotSol['dy'],xDotSol['dz']])
@@ -34,20 +35,20 @@ def makeModel(conf):
 
     rA = conf['rArm']
     g = conf['g']
-    pIMU = C.DMatrix(np.loadtxt('../properties/IMU/pIMU.dat'))
-    RIMU = C.DMatrix(np.loadtxt('../properties/IMU/RIMU.dat'))
+    pIMU = C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'IMU/pIMU.dat')))
+    RIMU = C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'IMU/RIMU.dat')))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aBridle = cross(dw,pIMU)
     dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aBridle)
     dae['IMU_angular_velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
 
-    camConf = {'PdatC1':C.DMatrix(np.loadtxt('../properties/cameras/PC1.dat')),
-               'PdatC2':C.DMatrix(np.loadtxt('../properties/cameras/PC2.dat')),
-               'RPC1':C.DMatrix(np.loadtxt('../properties/cameras/RPC1.dat')),
-               'RPC2':C.DMatrix(np.loadtxt('../properties/cameras/RPC2.dat')),
-               'pos_marker_body1':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body1.dat')),
-               'pos_marker_body2':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body2.dat')),
-               'pos_marker_body3':C.DMatrix(np.loadtxt('../properties/markers/pos_marker_body3.dat'))}
+    camConf = {'PdatC1':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/PC1.dat'))),
+               'PdatC2':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/PC2.dat'))),
+               'RPC1':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/RPC1.dat'))),
+               'RPC2':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/RPC2.dat'))),
+               'pos_marker_body1':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'markers/pos_marker_body1.dat'))),
+               'pos_marker_body2':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'markers/pos_marker_body2.dat'))),
+               'pos_marker_body3':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'markers/pos_marker_body3.dat')))}
     dae['marker_positions'] = camModel.fullCamModel(dae,camConf)
 
     dae['ConstR1'] = dae['e11']*dae['e11'] + dae['e12']*dae['e12'] + dae['e13']*dae['e13'] - 1
