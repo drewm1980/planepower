@@ -4,8 +4,8 @@
 #include <zmq.hpp>
 
 #include "zhelpers.hpp"
-#include "../autogen/Carousel.pb.h"
-#include "../autogen/Carousel_structs.h"
+#include "Carousel.pb.h"
+#include "Carousel_structs.h"
 
 using namespace std;
 
