@@ -3,6 +3,7 @@
 *.dat
 .DS_Store
 ._.DS_Store
+*.nc
 
 .tb_history
 orocos.log
