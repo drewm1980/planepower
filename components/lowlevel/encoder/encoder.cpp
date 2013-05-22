@@ -109,11 +109,12 @@ void  Encoder::updateHook()
 	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
 	
 	// Knowing that posOld, posNew and posDelta are 32bit signed numbers
-	// (int's) there are no sign nor overflow problems.
-	int posDelta = posNew - posOld;
+	// (int's) there are no sign nor overflow problems. Sign is inverted
+	// because of the agreed positive sign of the rotation of the carousel
+	posDelta = posOld - posNew;
 	
 	// Convert encoder ticks to real angle in radians and bound it to -pi.. pi
-	double posDeltaReal = (double)posDelta * 2.0 * PI / (GEAR_RATIO * PULSES_PER_REVOLUTION);
+	posDeltaReal = (double)posDelta * 2.0 * PI / GEAR_RATIO / PULSES_PER_REVOLUTION;
 	posAcc += posDeltaReal;
 	if (posAcc > PI)
 		posAcc -= 2.0 * PI;
@@ -127,12 +128,12 @@ void  Encoder::updateHook()
 	
 	// Invert the signs and fill in the output vector
 	encoderData[ 0 ] = timeStampNew;
-	encoderData[ 1 ] = -posAcc;
-	encoderData[ 2 ] = sin( -posAcc );
-	encoderData[ 3 ] = cos( -posAcc );
-	encoderData[ 4 ] = -omegaNew;
-	encoderData[ 5 ] = -omegaNew; 
-	encoderData[ 6 ] = -omegaNew / (2.0 * PI) * 60.0;
+	encoderData[ 1 ] = posAcc;
+	encoderData[ 2 ] = sin( posAcc );
+	encoderData[ 3 ] = cos( posAcc );
+	encoderData[ 4 ] = omegaNew;
+	encoderData[ 5 ] = omegaNew; 
+	encoderData[ 6 ] = omegaNew / (2.0 * PI) * 60.0;
 	
 	// Output data to the port
 	portEncoderData.write( encoderData );

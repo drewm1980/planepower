@@ -56,8 +56,8 @@ protected:
 private:
 	TIME_TYPE timeStampOld, timeStampNew;
 	double elapsedTime;
-	int posOld, posNew;
-	double posAcc;
+	int32_t posOld, posNew, posDelta;
+	double posDeltaReal, posAcc;
 	double omegaOld, omegaNew;
 };
 
