@@ -14,19 +14,24 @@ soemMaster.ifname = "eth1"
  
 #Set activities
 setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
+
+soemMaster.configure()
+soemMaster.start() 
+
 setActivity("voltageController", 0.01, LowestPriority, ORO_SCHED_RT)
 
+var ConnPolicy cp
+
 #Connect peers
-connectPeers("voltageController","soemMaster")
+# connectPeers("voltageController","soemMaster")
+connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
 
 # For testing only!!
 #import("segFaulter")
 #loadComponent("segFaulter","OCL::SegFaulter")
 #segFaulter.configure()
 #segFaulter.start()
- 
-soemMaster.configure()
-soemMaster.start() 
+
 voltageController.configure()
 voltageController.start()
 

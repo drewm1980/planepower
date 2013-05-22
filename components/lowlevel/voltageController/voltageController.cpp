@@ -5,6 +5,7 @@
 
 using namespace std;
 using namespace RTT;
+using namespace soem_ebox;
 
 /// Maximum voltage
 #define MAX_VOLTAGE 10.0
@@ -27,50 +28,41 @@ void voltage_controller_signal_handler(int signum)
 VoltageController::VoltageController(std::string name)
 	: TaskContext(name)
 {
-	addOperation("setVoltage", &VoltageController::setVoltage, this)
+	//
+	// Add ports
+	//
+	addPort("eboxAnalog", portEboxAnalog)
+		.doc("Port to be connected with EBOX analog port");
+
+	//
+	// Configure ports
+	//
+	portEboxAnalog.setDataSample( eboxAnalog );
+	portEboxAnalog.write( eboxAnalog  );
+
+	//
+	// Add operations
+	//
+	addOperation("setVoltage", &VoltageController::setVoltage, this, ClientThread)
 		.doc("Set voltage in a safe way")
 		.arg("channel", "The channel to write to (0 or 1)")
 		.arg("voltage", "The voltage to put on [channel] (between -10 and 10)");
 
+	//
+	// Configure fail-safe procedures
+	//
 	theVoltageController = this;
 	signal(SIGSEGV, voltage_controller_signal_handler);
 }
 
 bool  VoltageController::configureHook()
 {
-	if (this->hasPeer("soemMaster") == false)
-	{
-		log( Error ) << "There is no peer: soemMaster." << endlog();
-		goto configureHookFail;
-	}
-	
-	if (this->getPeer("soemMaster")->provides()
-		->hasService("Slave_1001") == false)
-	{
-		log( Error ) << "There is no service: Slave_1001." << endlog();
-		goto configureHookFail;
-	}
-
-	if (this->getPeer("soemMaster")->provides()
-		->getService("Slave_1001")->provides()->hasOperation("writeAnalog") == false)
-	{
-		log( Error ) << "There is no opration: writeAnalog." << endlog();
-		goto configureHookFail;
-	}
-	
-	writeAnalog = getPeer("soemMaster")->provides()
-		->getService("Slave_1001")->provides()->getOperation("writeAnalog");
-
 	actual_voltage[ 0 ] = 0.0;
 	actual_voltage[ 1 ] = 0.0;
 	reference_voltage[ 0 ] = 0.0;
 	reference_voltage[ 1 ] = 0.0;
     
 	return true;
-
-configureHookFail:
-
-	return false;
 }
 
 bool VoltageController::startHook()
@@ -108,8 +100,10 @@ void VoltageController::updateHook()
 			actual_voltage[channel] = reference_voltage[channel];
 		}
 		
-		writeAnalog(channel, actual_voltage[ channel ]);
+		eboxAnalog.analog[ channel ] = actual_voltage[ channel ];
+		// writeAnalog(channel, actual_voltage[ channel ]);
 	}
+	portEboxAnalog.write( eboxAnalog );	
 }
 
 void VoltageController::stopHook()

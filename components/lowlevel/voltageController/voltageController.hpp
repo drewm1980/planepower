@@ -4,9 +4,10 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/Property.hpp>
-#include <rtt/Operation.hpp>
-#include <rtt/OperationCaller.hpp>
 #include <rtt/Port.hpp>
+
+// Include the EBOX encoder class
+#include <soem_ebox/soem_ebox/EBOXAnalog.h>
 
 /// VoltageController class
 class VoltageController : public RTT::TaskContext
@@ -33,8 +34,10 @@ public:
 
 protected:
 
-	/// SOEM method for writing to analog outputs
-	RTT::OperationCaller<bool(unsigned int, double) > writeAnalog;
+	/// EBOX analog port
+	RTT::OutputPort< soem_ebox::EBOXAnalog  > portEboxAnalog;
+	/// EBOX analog port data
+	soem_ebox::EBOXAnalog eboxAnalog;
 	/// "Public" method for setting the voltage
   	bool setVoltage(int channel, double voltage);
 
