@@ -13,40 +13,21 @@ def cross(a,b):
 def makeModel(conf):
     print "creating model..."
     dae = rawe.models.carousel(conf)
-    dae['accel_magnitude'] = dae.ddt('dx')*dae.ddt('dx') + dae.ddt('dy')*dae.ddt('dy')
-    #ddp = C.vertcat([dae.ddt('dx'),dae.ddt('dy'),dae.ddt('dz')])
-    #dw  = C.vertcat([dae.ddt('w1'),dae.ddt('w2'),dae.ddt('w3')])
     (xDotSol, zSol) = dae.solveForXDotAndZ()
     ddp = C.vertcat([xDotSol['dx'],xDotSol['dy'],xDotSol['dz']])
     dw  = C.vertcat([xDotSol['w1'],xDotSol['w2'],xDotSol['w3']])
     x =   dae['x']
     y =   dae['y']
-    z =   dae['z']
 
     dx  =  dae['dx']
     dy  =  dae['dy']
-    dz  =  dae['dz']
 
     w1  =  dae['w1']
     w2  =  dae['w2']
     w3  =  dae['w3']
-    w = C.vertcat([w1,w2,w3])
     ddelta = dae['ddelta']
-    #dddelta = dae.ddt('ddelta')
     dddelta = xDotSol['ddelta']
-    r = dae['r']
-    dr = dae['dr']
-    e11 = dae['e11']
-    e12 = dae['e12']
-    e13 = dae['e13']
 
-    e21 = dae['e21']
-    e22 = dae['e22']
-    e23 = dae['e23']
-
-    e31 = dae['e31']
-    e32 = dae['e32']
-    e33 = dae['e33']
     R = C.veccat( [dae[n] for n in ['e11', 'e12', 'e13',
                                     'e21', 'e22', 'e23',
                                     'e31', 'e32', 'e33']]
@@ -57,8 +38,8 @@ def makeModel(conf):
     pIMU = C.DMatrix(np.loadtxt('../properties/IMU/pIMU.dat'))
     RIMU = C.DMatrix(np.loadtxt('../properties/IMU/RIMU.dat'))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
-    aShift = cross(dw,pIMU)
-    dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aShift)
+    aBridle = cross(dw,pIMU)
+    dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aBridle)
     dae['IMU_angular_velocity'] = C.mul(RIMU,C.vertcat([w1,w2,w3]))
 
     camConf = {'PdatC1':C.DMatrix(np.loadtxt('../properties/cameras/PC1.dat')),
