@@ -83,11 +83,15 @@ namespace OCL
 	void CameraTrigger::pull_trigger_high()
 	{
 		setBit(0,1);
+		setBit(1,1);
+		setBit(2,1);
 	}
 
 	void CameraTrigger::pull_trigger_low()
 	{
 		setBit(0,0);
+		setBit(1,0);
+		setBit(2,0);
 	}
 
 }//namespace
