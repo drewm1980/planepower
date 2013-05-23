@@ -11,7 +11,7 @@ export PYTHONPATH
 
 # compile everything
 : foreach *.cc | Carousel.pb.h |> $(CXX) $(CXXFLAGS) -c %f -o %o |> %B.o
-: foreach *.cpp | Carousel_structs.h protoConverters.h Carousel.pb.h |> $(CXX) $(CXXFLAGS) -c %f -o %o |> %B.o
+: foreach *.cpp | Carousel_dimensions.h Carousel_structs.h protoConverters.h Carousel.pb.h |> $(CXX) $(CXXFLAGS) -c %f -o %o |> %B.o
 
 
 #: *.o |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |> %d.so

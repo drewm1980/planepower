@@ -4,7 +4,6 @@ import camModel
 import numpy as np
 import os
 
-import codegen_utils
 def cross(a,b):
     c = C.vertcat([a[1]*b[2]-a[2]*b[1],
                    a[2]*b[0]-a[0]*b[2],
