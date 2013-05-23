@@ -37,11 +37,15 @@ private:
     string X_serialized;
 
     void toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u);
-
+    
 public:
     ProtobufBridge();
     ~ProtobufBridge();
     void sendMessage();
+
+    void setNumbers(const vector< double > &mheFullStateVector, const vector< double > & mheFullControlVector,const vector< double >& mpcFullStateVector ,   const vector< double >& mpcFullControlVector,    const vector< double >& measurementsPast,    const vector< double >& measurementsCurrent,    const vector< double >& referenceTrajectory,     const vector< double >& controlsApplied,    const vector< double >& debugVec);
+
+    
 };
 
 #endif // __PROTOBUFBRIDGE__
