@@ -2,6 +2,8 @@ include_rules
 LDFLAGS = -lzmq -lprotobuf 
 CXXFLAGS += -Wno-unused-function
 
+SWIGFLAGS= -I`python -c "import distutils.sysconfig; print distutils.sysconfig.get_python_inc()"`
+
 # generate the protobufs
 export PYTHONPATH
 : ../generateProtoGlue.py |> python -B ../generateProtoGlue.py ../../properties |> Carousel_dimensions.h Carousel.proto  Carousel_structs.h __init__.py  protoConverters.cpp  protoConverters.h  toCarouselProto.py
@@ -12,5 +14,8 @@ export PYTHONPATH
 # compile everything
 : foreach *.cc | Carousel.pb.h |> $(CXX) $(CXXFLAGS) -c %f -o %o |> %B.o
 : foreach *.cpp | Carousel_dimensions.h Carousel_structs.h protoConverters.h Carousel.pb.h |> $(CXX) $(CXXFLAGS) -c %f -o %o |> %B.o
+: protobufBridge.i protobufBridge.hpp |> swig2.0 -c++ -python protobufBridge.i |> protobufBridge_wrap.cxx protobufBridge.py
+: protobufBridge_wrap.cxx Carousel_structs.h Carousel.pb.h |> $(CXX) $(CXXFLAGS) $(SWIGFLAGS) -c protobufBridge_wrap.cxx -o protobufBridge_wrap.o -lstdc++ |> protobufBridge_wrap.o 
+: protobufBridge_wrap.o protobufBridge.o protoConverters.o Carousel.pb.o |> $(CXX) -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-z,relro  protoConverters.o protobufBridge.o Carousel.pb.o -Wl,-soname,_protobufBridge.so $(LDFLAGS) -o _protobufBridge.so protobufBridge_wrap.o |> _protobufBridge.so
 
 #: *.o |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |> %d.so
