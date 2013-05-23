@@ -50,13 +50,15 @@ protected:
 	
 	/// Encoder port, SOEM related.
 	unsigned encoderPort;
+	/// Sampling time of the component
+	double samplingFreq;
 
 private:
 	TIME_TYPE timeStampOld, timeStampNew, tickStart;
 	double elapsedTime;
 	int32_t posOld, posNew, posDelta;
 	double posDeltaReal, posAcc;
-	double omegaOld, omegaNew;
+	double omegaNew, omegaFiltNew, omegaFiltOld;
 };
 
 #endif // __ENCODER__

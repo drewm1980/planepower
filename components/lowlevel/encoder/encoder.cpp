@@ -19,6 +19,17 @@ using namespace soem_ebox;
 /// PI
 #define PI 3.14159265358979323846264338327950288419716939937510
 
+/// Cut-off Frequency of the filter
+#define DFILTER_FC 10.0
+
+/// Digital filter coefficient calculation
+#define DFILTER_K( fc, fs ) \
+	exp( -2.0 * M_PI * fc / fs )
+/// 1-order low-pass digital filter
+#define DFILTER( Output, OldOutput, Input, fc, fs ) \
+	Output = ( 1 - DFILTER_K(fc, fs) ) * Input + DFILTER_K(fc, fs) * OldOutput;
+
+
 Encoder::Encoder(std::string name)
 	: TaskContext( name )
 {
@@ -37,6 +48,7 @@ Encoder::Encoder(std::string name)
 	// Add properties
 	//
 	addProperty("encoderPort", encoderPort);
+	addProperty("samplingFreq", samplingFreq);
 
 	//
 	// Prepare ports
@@ -59,7 +71,7 @@ bool  Encoder::startHook()
 	posOld = posNew = eboxOut.encoder[ encoderPort ];
 	timeStampOld = TimeService::Instance()->getTicks();
 
-	omegaOld = 0.0;
+	omegaFiltNew = omegaFiltOld = 0.0;
 	posAcc = 0.0;
 	
     return true;
@@ -91,10 +103,9 @@ void  Encoder::updateHook()
 	else if (posAcc < -PI)
 		posAcc += 2.0 * PI;
 	
-	// Calculate angular velocity [rad/s]
+	// Calculate angular velocity [rad/s], and filter it through low-pass filter
 	omegaNew = posDeltaReal / elapsedTime;
-	
-	// TODO Apply first order filter to omegaNew
+	DFILTER(omegaFiltNew, omegaFiltOld, omegaNew, DFILTER_FC, samplingFreq);
 	
 	// Invert the signs and fill in the output vector
 	encoderData[ 0 ] = timeStampNew;
@@ -102,8 +113,8 @@ void  Encoder::updateHook()
 	encoderData[ 2 ] = sin( posAcc );
 	encoderData[ 3 ] = cos( posAcc );
 	encoderData[ 4 ] = omegaNew;
-	encoderData[ 5 ] = omegaNew; 
-	encoderData[ 6 ] = omegaNew / (2.0 * PI) * 60.0;
+	encoderData[ 5 ] = omegaFiltNew;
+	encoderData[ 6 ] = omegaFiltNew / (2.0 * PI) * 60.0;
 	
 	// Output data to the port
 	portEncoderData.write( encoderData );
@@ -111,7 +122,7 @@ void  Encoder::updateHook()
 	// Prepare for the next sampling time.
 	posOld = posNew;
 	timeStampOld = timeStampNew;
-	omegaOld = omegaNew;
+	omegaFiltOld = omegaFiltNew;
 	
 	// Output execution time of the component
 	portExecTime.write(
