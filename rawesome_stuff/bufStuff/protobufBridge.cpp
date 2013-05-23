@@ -161,9 +161,3 @@ void  ProtobufBridge::sendMessage()
     s_sendmore(*socket, "mhe-mpc");
     s_send(*socket, X_serialized);
 }
-
-void ProtobufBridge::toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u){
-    fromDifferentialStates(dae->mutable_differentialstates(), x);
-    if (u != NULL)
-        fromControls(dae->mutable_controls(), u);
-}

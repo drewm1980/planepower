@@ -22,8 +22,6 @@ private:
 
     string X_serialized;
 
-    void toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u);
-    
 public:
     ProtobufBridge();
     ~ProtobufBridge();
