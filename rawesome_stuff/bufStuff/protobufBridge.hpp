@@ -12,20 +12,6 @@ using namespace std;
 class ProtobufBridge
 {
 protected:
-    vector< double > mheFullStateVector;
-    vector< double > mheFullControlVector;
-
-    vector< double > mpcFullStateVector;
-    vector< double > mpcFullControlVector;
-
-    vector< double > measurementsPast;
-
-    vector< double > measurementsCurrent;
-
-    vector< double > referenceTrajectory;
-
-    vector< double > controlsApplied;
-
     vector< double > debugVec;
 
 private:
@@ -41,11 +27,20 @@ private:
 public:
     ProtobufBridge();
     ~ProtobufBridge();
+    void setMhe(const vector< double > &mheX,
+                const vector< double > &mheU,
+                const vector< double > &mheY,
+                const vector< double > &mheYN,
+                const double kkt, const double obj,
+                const double prepTime, const double fbTime);
+    void setMpc(const vector< double > &mpcX,
+                const vector< double > &mpcU,
+                const vector< double > &mpcX0,
+                const double kkt, const double obj,
+                const double prepTime, const double fbTime);
+    void setSimState(const vector< double > &X,
+                     const vector< double > &U);
     void sendMessage();
-
-    void setNumbers(const vector< double > &mheFullStateVector, const vector< double > & mheFullControlVector,const vector< double >& mpcFullStateVector ,   const vector< double >& mpcFullControlVector,    const vector< double >& measurementsPast,    const vector< double >& measurementsCurrent,    const vector< double >& referenceTrajectory,     const vector< double >& controlsApplied,    const vector< double >& debugVec);
-
-    
 };
 
 #endif // __PROTOBUFBRIDGE__

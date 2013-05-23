@@ -56,12 +56,12 @@ def makeMhe(dae):
     mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
 
     mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
-    
+
 #    cgOpts = {'CXX':'g++', 'CC':'gcc'}
     cgOpts = {'CXX':'clang++', 'CC':'clang'}
     mheRT = mhe.exportCode(codegenOptions=cgOpts,ocpOptions=mheOpts,integratorOptions=mheIntOpts)
-    
+
 #    RintMeas = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurements)
 #    RintMeasEnd = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurementsEND)
-    
+
     return mheRT

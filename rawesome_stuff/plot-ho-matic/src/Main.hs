@@ -34,7 +34,7 @@ main = do
 
   let zmqChan0 = "carousel trajectory"
       zmqChan1 = "carousel state"
-      zmqChan2 = "mhe mpc"
+      zmqChan2 = "mhe-mpc"
   (c0, write0) <- newChannel zmqChan0 $(makeAccessors ''CT.Trajectory)
   (c1, write1) <- newChannel zmqChan1 $(makeAccessors ''CD.Dae)
   (c2, write2) <- newChannel zmqChan2 $(makeAccessors ''MMH.MheMpcHorizons)

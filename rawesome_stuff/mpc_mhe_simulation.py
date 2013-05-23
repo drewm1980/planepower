@@ -10,6 +10,7 @@ import rawe
 import NMPC
 import MHE
 from mpc_mhe_utils import *
+from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
 from highwind_carousel_conf import conf
 import carouselModel
@@ -93,10 +94,10 @@ refP = {'r0':1.2,
 InitializeMPC(mpcRT,Rint,dae,conf,refP,MPCweights)
 InitializeMHE(mheRT,Rint,dae,conf,refP,Covariance)
 
-np.savetxt('A.txt',mpcRT._integratorLQR.dx1_dx0)
-np.savetxt('B.txt',mpcRT._integratorLQR.dx1_du)
-np.savetxt('Q.txt',mpcRT.Q)
-np.savetxt('R.txt',mpcRT.R)
+#np.savetxt('A.txt',mpcRT._integratorLQR.dx1_dx0)
+#np.savetxt('B.txt',mpcRT._integratorLQR.dx1_du)
+#np.savetxt('Q.txt',mpcRT.Q)
+#np.savetxt('R.txt',mpcRT.R)
 
 new_out = sim.getOutputs(mpcRT.x[0,:],mpcRT.u[0,:],{})
 new_y  = np.append(mheRT.x[-2,:],mheRT.u[-1,:])
@@ -104,15 +105,21 @@ sim.log(new_x=mpcRT.x0,new_y=new_y,new_out=new_out)
 
 # Simulation loop
 time = 0
+
+pbb = ProtobufBridge()
 while time < Tf:
-    for k in range(1):
-        mheRT.preparationStep()
-        mheRT.feedbackStep()
+    mheRT.preparationStep()
+    mheRT.feedbackStep()
 
     mpcRT.x0 = mheRT.x[-1,:]
     
     mpcRT.preparationStep()
     mpcRT.feedbackStep()
+
+    pbb.setMhe(mheRT)
+    pbb.setMpc(mpcRT)
+    pbb.setSimState(sim._log['x'][-1], mpcRT.u[0,:])
+    pbb.sendMessage()
 
     SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
     
