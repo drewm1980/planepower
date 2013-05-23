@@ -1,3 +1,0 @@
-PBDIR = ../../../bufStuff
-: $(PBDIR)/Carousel.proto | ../Carousel.hs |> mkdir Carousel; hprotoc -I$(PBDIR) --haskell_out=. Carousel.proto; rm Carousel.hs; mv Carousel/*.hs .; rmdir Carousel |> DifferentialStates.hs AlgebraicVars.hs Controls.hs Parameters.hs Outputs.hs Measurements.hs MeasurementsEnd.hs Dae.hs Trajectory.hs Debug.hs MheMpcHorizons.hs
-
