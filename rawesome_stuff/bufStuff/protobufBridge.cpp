@@ -3,8 +3,7 @@
 #include "protoConverters.h"
 #include "Carousel_dimensions.h"
 
-ProtobufBridge::ProtobufBridge()
-{
+ProtobufBridge::ProtobufBridge() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     debugVec.resize(10, 0.0);
@@ -16,31 +15,30 @@ ProtobufBridge::ProtobufBridge()
     mmh.clear_messages();
 //    mmh.clear_referencetrajectory();
     // setup MHE
-    for (int k=0; k<NUM_MHE_HORIZON+1; k++)
+    for (int k = 0; k < NUM_MHE_HORIZON+1; k++)
         mmh.mutable_mhe()->add_x();
-    for (int k=0; k<NUM_MHE_HORIZON; k++){
+    for (int k = 0; k < NUM_MHE_HORIZON; k++) {
         mmh.mutable_mhe()->add_u();
         mmh.mutable_mhe()->add_y();
     }
     // setup MPC
-    for (int k=0; k<NUM_MPC_HORIZON+1; k++)
+    for (int k = 0; k < NUM_MPC_HORIZON+1; k++)
         mmh.mutable_mpc()->add_x();
-    for (int k=0; k<NUM_MPC_HORIZON; k++)
+    for (int k = 0; k < NUM_MPC_HORIZON; k++)
         mmh.mutable_mpc()->add_u();
 //    for (int k=0; k<NUM_MPC_HORIZON+1; k++){
 //        mmh.add_referencetrajectory();
 //    }
 
     context = new zmq::context_t(1);
-    socket = new zmq::socket_t(*context,ZMQ_PUB);
+    socket = new zmq::socket_t(*context, ZMQ_PUB);
     socket->bind("tcp://*:5563");
 }
 
-ProtobufBridge::~ProtobufBridge()
-{
+ProtobufBridge::~ProtobufBridge() {
     delete socket;
     delete context;
-    google::protobuf::ShutdownProtobufLibrary(); // optional
+    google::protobuf::ShutdownProtobufLibrary();  // optional
 }
 
 void ProtobufBridge::setMhe(const vector< double > &X,
@@ -48,30 +46,29 @@ void ProtobufBridge::setMhe(const vector< double > &X,
                             const vector< double > &Y,
                             const vector< double > &YN,
                             const double kkt, const double obj,
-                            const double prepTime, const double fbTime)
-{
-    assert( X.size() == (NUM_MHE_HORIZON + 1) * NUM_DIFFSTATES );
-    assert( U.size() ==  NUM_MHE_HORIZON * NUM_CONTROLS );
+                            const double prepTime, const double fbTime) {
+    assert(X.size() == (NUM_MHE_HORIZON + 1) * NUM_DIFFSTATES);
+    assert(U.size() ==  NUM_MHE_HORIZON * NUM_CONTROLS);
 
-    assert(  Y.size() == NUM_MHE_HORIZON * NUM_MEASUREMENTS );
-    assert( YN.size() == NUM_MEASUREMENTS_END );
+    assert(Y.size() == NUM_MHE_HORIZON * NUM_MEASUREMENTS);
+    assert(YN.size() == NUM_MEASUREMENTS_END);
 
     Carousel::Mhe * mhe = mmh.mutable_mhe();
 
     // set x
-    for (int k=0; k<NUM_MHE_HORIZON+1; k++){
+    for (int k = 0; k < NUM_MHE_HORIZON+1; k++) {
         DifferentialStates * x = (DifferentialStates*) &(X[k*NUM_DIFFSTATES]);
         fromDifferentialStates(mhe->mutable_x(k), x);
-        if (k==NUM_MHE_HORIZON)
+        if (k == NUM_MHE_HORIZON)
             fromDifferentialStates(mmh.mutable_mhexn(), x);
     }
 
     // set u
-    for (int k=0; k<NUM_MHE_HORIZON; k++)
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
         fromControls(mhe->mutable_u(k), (Controls*) &(U[k*NUM_CONTROLS]));
 
     // set y
-    for (int k=0; k<NUM_MHE_HORIZON; k++)
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
         fromMeasurements(mhe->mutable_y(k), (Measurements*) &(Y[k*NUM_MEASUREMENTS]));
 
     // set yN
@@ -88,11 +85,10 @@ void ProtobufBridge::setMpc(const vector< double > &X,
                             const vector< double > &U,
                             const vector< double > &X0,
                             const double kkt, const double obj,
-                            const double prepTime, const double fbTime)
-{
-    assert( X.size() == (NUM_MPC_HORIZON + 1) * NUM_DIFFSTATES );
-    assert( U.size() ==  NUM_MPC_HORIZON * NUM_CONTROLS );
-    assert( X0.size() ==  NUM_DIFFSTATES );
+                            const double prepTime, const double fbTime) {
+    assert(X.size() == (NUM_MPC_HORIZON + 1) * NUM_DIFFSTATES);
+    assert(U.size() ==  NUM_MPC_HORIZON * NUM_CONTROLS);
+    assert(X0.size() ==  NUM_DIFFSTATES);
 
     Carousel::Mpc * mpc = mmh.mutable_mpc();
 
@@ -100,17 +96,17 @@ void ProtobufBridge::setMpc(const vector< double > &X,
     fromDifferentialStates(mpc->mutable_x0(), (DifferentialStates*) &(X0[0]));
 
     // set x
-    for (int k=0; k<NUM_MPC_HORIZON+1; k++){
+    for (int k = 0; k < NUM_MPC_HORIZON+1; k++) {
         DifferentialStates * x = (DifferentialStates*) &(X[k*NUM_DIFFSTATES]);
         fromDifferentialStates(mpc->mutable_x(k), x);
     }
 
     // set u
-    for (int k=0; k<NUM_MPC_HORIZON; k++){
+    for (int k = 0; k < NUM_MPC_HORIZON; k++) {
         Controls * u = (Controls*) &(U[k*NUM_CONTROLS]);
         fromControls(mpc->mutable_u(k), u);
         // set u0
-        if (k==0)
+        if (k == 0)
             fromControls(mmh.mutable_mpcu0(), u);
     }
 
@@ -131,17 +127,15 @@ void ProtobufBridge::setMpc(const vector< double > &X,
 }
 
 void ProtobufBridge::setSimState(const vector< double > &X,
-                                 const vector< double > &U)
-{
-    assert( X.size() ==  NUM_DIFFSTATES );
-    assert( U.size() ==  NUM_CONTROLS );
+                                 const vector< double > &U) {
+    assert(X.size() ==  NUM_DIFFSTATES);
+    assert(U.size() ==  NUM_CONTROLS);
     fromDifferentialStates(mmh.mutable_simx(), (DifferentialStates*) &(X[0]));
     fromControls(mmh.mutable_simu(), (Controls*) &(U[0]));
 }
 
 
-void  ProtobufBridge::sendMessage()
-{
+void  ProtobufBridge::sendMessage() {
     // set the debug vector
     mmh.mutable_debug()->set_d0(debugVec[0]);
     mmh.mutable_debug()->set_d1(debugVec[1]);
