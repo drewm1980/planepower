@@ -19,8 +19,9 @@ import qualified Text.ProtocolBuffers as PB
 
 --import qualified System.Remote.Monitoring as EKG
 
-import qualified Carousel.CarouselTrajectory as CT
-import qualified Carousel.CarouselState as CS
+import qualified Carousel.Trajectory as CT
+import qualified Carousel.Dae as CD
+import qualified Carousel.MheMpcHorizons as MMH
 
 import ParseArgs ( getip )
 import Plotter ( runPlotter, newChannel, makeAccessors )
@@ -31,13 +32,17 @@ main = do
   ip <- getip "plot-ho-matic" "tcp://localhost:5563"
   putStrLn $ "using ip \""++ip++"\""
 
-  let zeromqChannel = "carousel"
-  (c0, write0) <- newChannel zeromqChannel $(makeAccessors ''CT.CarouselTrajectory)
-  (c1, write1) <- newChannel zeromqChannel $(makeAccessors ''CS.CarouselState)
-  listenerTid0 <- CC.forkIO (sub ip write0 zeromqChannel)
-  listenerTid1 <- CC.forkIO (sub ip write1 zeromqChannel)
+  let zmqChan0 = "carousel trajectory"
+      zmqChan1 = "carousel state"
+      zmqChan2 = "mhe mpc"
+  (c0, write0) <- newChannel zmqChan0 $(makeAccessors ''CT.Trajectory)
+  (c1, write1) <- newChannel zmqChan1 $(makeAccessors ''CD.Dae)
+  (c2, write2) <- newChannel zmqChan2 $(makeAccessors ''MMH.MheMpcHorizons)
+  listenerTid0 <- CC.forkIO (sub ip write0 zmqChan0)
+  listenerTid1 <- CC.forkIO (sub ip write1 zmqChan1)
+  listenerTid2 <- CC.forkIO (sub ip write2 zmqChan2)
   
-  runPlotter [c0,c1] [listenerTid0,listenerTid1]
+  runPlotter [c0,c1,c2] [listenerTid0,listenerTid1,listenerTid2]
 
 withContext :: (ZMQ.Context -> IO a) -> IO a
 #if OSX

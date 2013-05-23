@@ -7,24 +7,19 @@ Created on Mon Apr 22 15:48:33 2013
 
 import rawe
 
-from NMPC import makeNmpc
-from MHE import makeMhe
+import NMPC
+import MHE
 from mpc_mhe_utils import *
 
 from highwind_carousel_conf import conf
 import carouselModel
 
+from common_conf import Ts
+
 conf['stabilize_invariants'] = False
 dae = carouselModel.makeModel(conf)
 conf['stabilize_invariants'] = True
 daeSim = carouselModel.makeModel(conf)
-
-measNames  = ['marker_positions','IMU_angular_velocity','IMU_acceleration']
-measNames += ['r','cos_delta','sin_delta','aileron','elevator']
-measNames += ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-
-endMeasNames  = ['IMU_angular_velocity']
-endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
 
 Covariance = {'marker_positions':1e3,
               'IMU_angular_velocity':1.,
@@ -38,13 +33,8 @@ Covariance = {'marker_positions':1e3,
               'dmotor_torque':1.,
               'dddr':1e-4}
 
-measNames0 = dae.xNames() + dae.uNames()
-endMeasNames0 = dae.xNames()
-for name in measNames0:
+for name in dae.xNames() + dae.uNames():
     Covariance[name] = 1.
-
-measNames = measNames0
-endMeasNames = endMeasNames0
 
 # Define the weights
 Wp  = 1e-1
@@ -80,21 +70,15 @@ MPCweights['dmotor_torque'] = Wdmt
 MPCweights['dddr'] = Wdddr
 MPCweights['daileron'] = MPCweights['delevator'] = Wdae
 
-# Simulation parameters
-N_mpc = 10  # Number of MPC control intervals
-N_mhe = 10  # Number of MHE control intervals
-Ts = 0.1    # Sampling time
-nSteps = 10 #Number of steps for the Rintegrator (also in MPC and MHE)
-iType = 'INT_IRK_GL2' # Rintegrator type
-#iType = 'INT_IRK_RIIA3' # Rintegrator type
+## Simulation parameters
 Tf = 20.0   # Simulation duration
 
 # Create the MPC class
-mpcRT = makeNmpc(dae,N=N_mpc,dt=Ts,nSteps=nSteps,iType=iType,lqrDae=daeSim)
-mheRT = makeMhe(dae,N=N_mpc,Ts=Ts,nSteps=nSteps,iType=iType,measNames=measNames,endMeasNames=endMeasNames)
+mpcRT = NMPC.makeNmpc(dae,lqrDae=daeSim)
+mheRT = MHE.makeMhe(dae)
 
 # Create a simulation class
-sim = InitializeSim(daeSim,'Idas',Ts,mpcRT._integratorOptions)
+sim = InitializeSim(daeSim,'Idas',Ts,NMPC.mpcIntOpts)
 #sim, simLog = InitializeSim(dae,'RtIntegrator',Ts,intOpts)
 
 # Generate a Rintegrator for linearizing the system

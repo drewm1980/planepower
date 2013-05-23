@@ -39,13 +39,9 @@ private:
     void toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u);
 
 public:
-    ProtobufBridge(string name);
+    ProtobufBridge();
     ~ProtobufBridge();
-    bool configureHook();
-    bool startHook();
-    void updateHook();
-    void stopHook();
-    void cleanUpHook();
+    void sendMessage();
 };
 
 #endif // __PROTOBUFBRIDGE__
