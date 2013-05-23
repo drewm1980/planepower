@@ -152,3 +152,15 @@ void ProtobufBridge::toDae(Carousel::Dae * dae, const DifferentialStates * x, co
     if (u != NULL)
         fromControls(dae->mutable_controls(), u);
 }
+
+void ProtobufBridge::setNumbers(const vector< double > &mheFullStateVector_, const vector< double > & mheFullControlVector_,const vector< double >& mpcFullStateVector_ ,   const vector< double >& mpcFullControlVector_,    const vector< double >& measurementsPast_,    const vector< double >& measurementsCurrent_,    const vector< double >& referenceTrajectory_,     const vector< double >& controlsApplied_,    const vector< double >& debugVec_) {
+  copy(mheFullStateVector_.begin(),mheFullStateVector_.end(),mheFullStateVector.begin());
+  copy(mheFullControlVector_.begin(),mheFullControlVector_.end(),mheFullControlVector.begin());
+  copy(mpcFullStateVector_.begin(),mpcFullStateVector_.end(),mpcFullStateVector.begin());
+  copy(mpcFullControlVector_.begin(),mpcFullControlVector_.end(),mpcFullControlVector.begin());
+  copy(measurementsPast_.begin(),measurementsPast_.end(),measurementsPast.begin());
+  copy(measurementsCurrent_.begin(),measurementsCurrent_.end(),measurementsCurrent.begin());
+  copy(referenceTrajectory_.begin(),referenceTrajectory_.end(),referenceTrajectory.begin());
+  copy(controlsApplied_.begin(),controlsApplied_.end(),controlsApplied.begin());
+  copy(debugVec_.begin(),debugVec_.end(),debugVec.begin());
+}
