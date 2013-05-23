@@ -3,7 +3,7 @@
 #include "protoConverters.h"
 #include "Carousel_dimensions.h"
 
-bool ProtobufBridge::configureHook()
+ProtobufBridge::ProtobufBridge()
 {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -35,21 +35,19 @@ bool ProtobufBridge::configureHook()
         mmh.add_referencetrajectory();
     }
 
-
     context = new zmq::context_t(1);
-
-    return true;
-}
-
-bool  ProtobufBridge::startHook()
-{
     socket = new zmq::socket_t(*context,ZMQ_PUB);
     socket->bind("tcp://*:5563");
-
-    return true;
 }
 
-void  ProtobufBridge::updateHook()
+ProtobufBridge::~ProtobufBridge()
+{
+    delete socket;
+    delete context;
+    google::protobuf::ShutdownProtobufLibrary(); // optional
+}
+
+void  ProtobufBridge::sendMessage()
 {
 //        portMheFullStateVector.read( mheFullStateVector );
 //        portMheFullControlVector.read( mheFullControlVector );
@@ -147,17 +145,6 @@ void  ProtobufBridge::updateHook()
     }
     s_sendmore(*socket, "mhe-mpc-horizons");
     s_send(*socket, X_serialized);
-}
-
-void  ProtobufBridge::stopHook()
-{
-    delete socket;
-}
-
-void  ProtobufBridge::cleanUpHook()
-{
-    delete context;
-    google::protobuf::ShutdownProtobufLibrary(); // optional
 }
 
 void ProtobufBridge::toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u){
