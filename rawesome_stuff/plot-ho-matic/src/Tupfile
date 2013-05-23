@@ -1,4 +1,4 @@
 PBDIR = ../../bufStuff
-#: $(PBDIR)/Carousel.proto |> hprotoc -I$(PBDIR) --haskell_out=. --include_imports Carousel.proto |> Carousel.hs
+: $(PBDIR)/Carousel.proto |> hprotoc -I$(PBDIR) --haskell_out=. Carousel.proto; rm Carousel/*.hs |> Carousel.hs
 
 # Carousel/DifferentialStates.hs Carousel/AlgebraicVars.hs Carousel/Controls.hs Carousel/Parameters.hs Carousel/Outputs.hs Carousel/Measurements.hs Carousel/MeasurementsEnd.hs Carousel/Dae.hs Carousel/Trajectory.hs Carousel/Debug.hs Carousel/MheMpcHorizons.hs
