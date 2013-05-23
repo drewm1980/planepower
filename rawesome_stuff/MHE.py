@@ -1,10 +1,10 @@
 import rawe
-from rawe.ocp import Ocp
+from rawe.ocp.Ocp import Mhe
 import casadi as C
 import carouselModel
 
-def makeMhe(dae,N,dt,nSteps,iType):
-    mhe = Ocp(dae, N=N, ts=dt)
+def makeMhe(dae,N,Ts,nSteps,iType,measNames,endMeasNames):
+    mhe = Mhe(dae, N=N, ts=Ts, measNames=measNames, endMeasNames=endMeasNames)
 
 #    measurements = C.veccat( [dae[n] for n in ['marker positions','IMU acceleration','IMU angular velocity']])
 #    measurements = C.veccat( [measurements,
@@ -17,85 +17,58 @@ def makeMhe(dae,N,dt,nSteps,iType):
 #
 #    mhe.minimizeLsq(measurements)
 #    mhe.minimizeLsqEndTerm(measurements)
-    
-    xref = C.veccat( [mhe[n] for n in dae.xNames()])
-    uref = C.veccat( [mhe[n] for n in dae.uNames()])
-    
+
+#    xref = C.veccat( [mhe[n] for n in dae.xNames()])
+#    uref = C.veccat( [mhe[n] for n in dae.uNames()])
+#    yref  = C.veccat( [mhe[n] for n in measurements])
+#    yNref = C.veccat( [mhe[n] for n in measurementsEND])
+
 #    dae['measurements'] = C.veccat([xref,uref])
 #    dae['measurementsN'] = xref
+
+#    mhe.minimizeLsq(yref)
+#    mhe.minimizeLsqEndTerm(yNref)
     
-    mhe.minimizeLsq(C.veccat([xref,uref]))
-    mhe.minimizeLsqEndTerm(xref)
+    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
+
+    mhe.constrain(mhe['c'],'==',0, when='AT_END')
+    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
+
+    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
     
-    e11 = dae['e11']
-    e12 = dae['e12']
-    e13 = dae['e13']
-
-    e21 = dae['e21']
-    e22 = dae['e22']
-    e23 = dae['e23']
-
-    e31 = dae['e31']
-    e32 = dae['e32']
-    e33 = dae['e33']
-
-    x = dae['x']
-    y = dae['y']
-    z = dae['z']
-
-    dx = dae['dx']
-    dy = dae['dy']
-    dz = dae['dz']
-
-    r = dae['r']
-
-    cos_delta = dae['cos_delta']
-    sin_delta = dae['sin_delta']
+    intOpts = rawe.RtIntegratorOptions()
+    intOpts['INTEGRATOR_TYPE'] = iType
+    intOpts['NUM_INTEGRATOR_STEPS'] = nSteps
+    intOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
+    intOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
+    intOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
+    intOpts['UNROLL_LINEAR_SOLVER'] = False
+    intOpts['IMPLICIT_INTEGRATOR_MODE'] = 'IFTR'
     
-    ConstR1 = e11*e11 + e12*e12 + e13*e13 - 1
-    ConstR2 = e11*e21 + e12*e22 + e13*e23
-    ConstR3 = e11*e31 + e12*e32 + e13*e33
-    ConstR4 = e21*e21 + e22*e22 + e23*e23 - 1
-    ConstR5 = e21*e31 + e22*e32 + e23*e33
-    ConstR6 = e31*e31 + e32*e32 + e33*e33 - 1
+    ocpOpts = rawe.OcpExportOptions()
+    ocpOpts['HESSIAN_APPROXIMATION'] = 'GAUSS_NEWTON'
+    ocpOpts['DISCRETIZATION_TYPE'] = 'MULTIPLE_SHOOTING'
+    ocpOpts['QP_SOLVER'] = 'QP_QPOASES'
+    ocpOpts['HOTSTART_QP'] = True
+    ocpOpts['SPARSE_QP_SOLUTION'] = 'CONDENSING'
+#   ocpOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING_U2'
+#   ocpOpts['MAX_NUM_QP_ITERATIONS'] = '30'
+    ocpOpts['FIX_INITIAL_STATE'] = False
+#    ocpOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = False
+#    ocpOpts['CG_USE_C99'] = True
 
-    Const = - r*r/2 + x*x/2 + y*y/2 + z*z/2
-    dConst = dx*x + dy*y + dz*z
-
-    ConstDelta = cos_delta**2+sin_delta**2 - 1
-
-    mhe.constrain(ConstR1,'==',0, when='AT_END')
-    mhe.constrain(ConstR2,'==',0, when='AT_END')
-    mhe.constrain(ConstR3,'==',0, when='AT_END')
-    mhe.constrain(ConstR4,'==',0, when='AT_END')
-    mhe.constrain(ConstR5,'==',0, when='AT_END')
-    mhe.constrain(ConstR6,'==',0, when='AT_END')
-
-    mhe.constrain(Const,'==',0, when='AT_END')
-    mhe.constrain(dConst,'==',0, when='AT_END')
-
-    mhe.constrain(ConstDelta,'==',0, when='AT_END')
-
-    acadoOpts = [('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
-                 ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
-                 ('QP_SOLVER','QP_QPOASES'),
-                 ('HOTSTART_QP','YES'),
-                 ('INTEGRATOR_TYPE',iType),
-                 ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
-                 ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
-                 ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
-                 ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
-                 ('UNROLL_LINEAR_SOLVER','NO'),
-                 ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
-                 ('SPARSE_QP_SOLUTION','CONDENSING'),
-                 ('FIX_INITIAL_STATE','NO'),
-                 ('CG_USE_VARIABLE_WEIGHTING_MATRIX','NO'),
-                 ('CG_USE_C99','YES')]
-
-
-
-    cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    mheRT = mhe.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
+#    cgOpts = {'CXX':'g++', 'CC':'gcc'}
+    cgOpts = {'CXX':'clang++', 'CC':'clang'}
+    mheRT = mhe.exportCode(codegenOptions=cgOpts,ocpOptions=ocpOpts,integratorOptions=intOpts)
+    
+#    RintMeas = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurements)
+#    RintMeasEnd = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurementsEND)
+    
     return mheRT
 
 
@@ -104,4 +77,3 @@ if __name__=='__main__':
     dae = rawe.models.carousel(conf)
     dae = carouselModel.makeModel(dae,conf)
     OcpRt = makeMhe(dae,10,0.1)
-
