@@ -70,6 +70,8 @@ soemMaster.ifname = "eth1"
 
 # Encoder
 encoder.encoderPort = 0;
+# Same as for SOEM
+encoder.samplingFreq = 1000;
 
 # Camera trigger
 
@@ -110,9 +112,9 @@ setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 
 #setActivity("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 
-setActivity("imuReporter", 0.0, LowestPiority, ORO_SCHED_RT)
-setActivity("cameraReporter", 0.0, LowestPiority, ORO_SCHED_RT)
-setActivity("encoderReporter", 0.0, LowestPiority, ORO_SCHED_RT)
+setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -120,17 +122,23 @@ setActivity("encoderReporter", 0.0, LowestPiority, ORO_SCHED_RT)
 #
 ################################################################################
 
-connectPeers("voltageController", "soemMaster")
 connectPeers("encoder", "soemMaster")
 connectPeers("cameraTrigger", "soemMaster")
 
 var ConnPolicy cp
 
 connect("masterTimer.imuClock","mcuHandler.trigger", cp)
-connect("masterTimer.cameraClock", "encoder.trigger", cp)
 connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cp)
 connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 #connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)
+
+# VERY special situation! I have to start SOEM master here, before I connect its
+# ports...
+soemMaster.configure()
+soemMaster.start()
+
+connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
+connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
 
 ################################################################################
 #
@@ -159,8 +167,8 @@ masterTimer.configure()
 mcuHandler.configure()
 mcuHandler.start()
 
-soemMaster.configure()
-soemMaster.start()
+#soemMaster.configure()
+#soemMaster.start()
 
 voltageController.configure()
 voltageController.start()
