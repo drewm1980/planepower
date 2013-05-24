@@ -14,7 +14,7 @@
 //#include <ocl/LoggingService.hpp>
 //#include <ocl/Category.hpp>
 
-#include "acado.h"
+#include "acado_common.h"
 
 //
 // Used namespaces

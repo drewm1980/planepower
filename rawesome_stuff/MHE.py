@@ -2,6 +2,7 @@ import rawe
 from rawe.ocp.Ocp import Mhe
 import casadi as C
 import carouselModel
+from highwind_carousel_conf import conf
 
 from common_conf import Ts
 
@@ -43,8 +44,10 @@ endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
 #
 #measNames += ['IMU_acceleration']
 
+def makeMhe(propertiesDir='../properties'):
+    conf['stabilize_invariants'] = False
+    dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
-def makeMhe(dae):
     mhe = Mhe(dae, N=mheHorizonN, ts=Ts, measNames=measNames, endMeasNames=endMeasNames)
 
     mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')

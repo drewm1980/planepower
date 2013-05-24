@@ -77,7 +77,7 @@ Tf = 500.0   # Simulation duration
 
 # Create the MPC class
 mpcRT = NMPC.makeNmpc(dae,lqrDae=daeSim)
-mheRT = MHE.makeMhe(dae)
+mheRT = MHE.makeMhe()
 
 # Reference parameters
 refP = {'r0':1.2,
