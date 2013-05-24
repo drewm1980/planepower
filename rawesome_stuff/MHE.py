@@ -38,8 +38,10 @@ endMeasNames  = ['IMU_angular_velocity']
 endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
 
 # full state feedback
-endMeasNames = ['x', 'y', 'z', 'e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33', 'dx', 'dy', 'dz', 'w1', 'w2', 'w3', 'ddelta', 'r', 'dr', 'aileron', 'elevator', 'motor_torque', 'ddr', 'cos_delta', 'sin_delta']
-measNames = endMeasNames + ['daileron', 'delevator', 'dmotor_torque', 'dddr']
+#endMeasNames = ['x', 'y', 'z', 'e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33', 'dx', 'dy', 'dz', 'w1', 'w2', 'w3', 'ddelta', 'r', 'dr', 'aileron', 'elevator', 'motor_torque', 'ddr', 'cos_delta', 'sin_delta']
+#measNames = endMeasNames + ['daileron', 'delevator', 'dmotor_torque', 'dddr']
+#
+#measNames += ['IMU_acceleration']
 
 
 def makeMhe(dae):

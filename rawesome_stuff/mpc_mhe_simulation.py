@@ -168,9 +168,12 @@ pbb = ProtobufBridge()
 log = []
 while time < Tf:
     # run MHE
-    for jj in range(5):
+    for jj in range(1):
         mheRT.preparationStep()
         mheRT.feedbackStep()
+#        print "preparation time:",mheRt.preparationTime,"\tfeedback time:",mheRt.feedbackTime
+#        print "mhe time:",(mheRT.preparationTime+mheRT.feedbackTime)
+
 
     # set mhe xN as mpc estimate
     mpcRT.x0 = mheRT.x[-1,:]
@@ -190,7 +193,7 @@ while time < Tf:
     pbb.setMhe(mheRT)
     pbb.setMpc(mpcRT)
     pbb.setSimState(sim.x, sim.z, sim.u, y_Nm1, yN, mheRT.computeOutputs(sim.x,sim.u))
-    log.append ( pbb.sendMessage() )
+    log.append( pbb.sendMessage() )
 
     # step the simulation
     print "sim time:",time,"mhe kkt:",mheRT.getKKT()
