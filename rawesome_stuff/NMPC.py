@@ -1,10 +1,35 @@
 import rawe
 import casadi as C
+from rawe.ocp.Ocp import Mpc
 
-def makeNmpc(dae,N,dt,nSteps,iType):
-    from rawe.ocp import Ocp
-    mpc = Ocp(dae, N=N, ts=dt)
-    
+import MHE
+from common_conf import Ts
+
+mpcHorizonN = MHE.mheHorizonN
+
+mpcIntOpts = rawe.RtIntegratorOptions()
+mpcIntOpts['INTEGRATOR_TYPE'] = MHE.mheIntOpts['INTEGRATOR_TYPE']
+mpcIntOpts['NUM_INTEGRATOR_STEPS'] = MHE.mheIntOpts['NUM_INTEGRATOR_STEPS']
+mpcIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
+mpcIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
+mpcIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
+mpcIntOpts['UNROLL_LINEAR_SOLVER'] = False
+mpcIntOpts['IMPLICIT_INTEGRATOR_MODE'] = 'IFTR'
+
+mpcOpts = rawe.OcpExportOptions()
+mpcOpts['HESSIAN_APPROXIMATION'] = 'GAUSS_NEWTON'
+mpcOpts['DISCRETIZATION_TYPE'] = 'MULTIPLE_SHOOTING'
+mpcOpts['QP_SOLVER'] = 'QP_QPOASES'
+mpcOpts['HOTSTART_QP'] = True
+mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING'
+#mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING_U2'
+#mpcOpts['MAX_NUM_QP_ITERATIONS'] = '30'
+mpcOpts['FIX_INITIAL_STATE'] = True
+#mpcOpts['CG_USE_C99'] = True
+
+def makeNmpc(dae,lqrDae):
+    mpc = Mpc(dae, N=mpcHorizonN, ts=Ts, lqrDae=lqrDae)
+
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
     mpc.constrain( mpc['aileron'], '<=', 32767/1.25e6 );
@@ -17,33 +42,12 @@ def makeNmpc(dae,N,dt,nSteps,iType):
     mpc.constrain( 0, '<=', mpc['motor_torque'] );
     mpc.constrain( mpc['motor_torque'], '<=', 2000 );
 
-    acadoOpts=[('HESSIAN_APPROXIMATION','GAUSS_NEWTON'),
-               ('DISCRETIZATION_TYPE','MULTIPLE_SHOOTING'),
-               ('QP_SOLVER','QP_QPOASES'),
-               ('HOTSTART_QP','YES'),
-               ('INTEGRATOR_TYPE',iType),
-               ('NUM_INTEGRATOR_STEPS',str(nSteps*N)),
-               ('IMPLICIT_INTEGRATOR_NUM_ITS','3'),
-               ('IMPLICIT_INTEGRATOR_NUM_ITS_INIT','0'),
-               ('LINEAR_ALGEBRA_SOLVER','HOUSEHOLDER_QR'),
-               ('UNROLL_LINEAR_SOLVER','NO'),
-               ('IMPLICIT_INTEGRATOR_MODE','IFTR'),
-               ('SPARSE_QP_SOLUTION','CONDENSING'),
-               ('FIX_INITIAL_STATE','YES'),
-               ('CG_USE_C99','YES')]
-    
 
-    xref = C.veccat( [mpc[n] for n in dae.xNames()])
-    uref = C.veccat( [mpc[n] for n in dae.uNames()])
-    mpc.minimizeLsq(C.veccat([xref,uref]))
-    mpc.minimizeLsqEndTerm(xref)
+#    xref = C.veccat( [mpc[n] for n in dae.xNames()])
+#    uref = C.veccat( [mpc[n] for n in dae.uNames()])
+#    mpc.minimizeLsq(C.veccat([xref,uref]))
+#    mpc.minimizeLsqEndTerm(xref)
 
     cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    mpcRT = mpc.exportCode(codegenOptions=cgOpts,acadoOptions=acadoOpts)
+    mpcRT = mpc.exportCode(codegenOptions=cgOpts,integratorOptions=mpcIntOpts,ocpOptions=mpcOpts)
     return mpcRT
-
-if __name__=='__main__':
-    from highwind_carousel_conf import conf
-    dae = rawe.models.carousel(conf)
-
-    OcpRt = makeNmpc(dae,10,0.1)
