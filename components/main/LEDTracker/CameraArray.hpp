@@ -74,6 +74,7 @@ class CameraArray
 		void        cleanUpHook();
 		int frame_w;
 		int frame_h;
+		int camera_count;
 		uint8_t *current_frame_data[CAMERA_COUNT]; 
 		uint64_t current_timestamp; // us
 };
