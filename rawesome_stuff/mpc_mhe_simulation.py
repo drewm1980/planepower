@@ -73,7 +73,7 @@ MPCweights['dddr'] = Wdddr
 MPCweights['daileron'] = MPCweights['delevator'] = Wdae
 
 ## Simulation parameters
-Tf = 500.0   # Simulation duration
+Tf = 50.0   # Simulation duration
 
 # Create the MPC class
 mpcRT = NMPC.makeNmpc(dae,lqrDae=daeSim)
@@ -168,10 +168,19 @@ pbb = ProtobufBridge()
 log = []
 while time < Tf:
     # run MHE
-    for jj in range(5):
+    mheIt = 0
+    while True:
+        mheIt += 1
+        
         mheRT.preparationStep()
         mheRT.feedbackStep()
 
+        print "MHE exec time: ", str(mheRT.preparationTime + mheRT.feedbackTime)
+        
+        if mheRT.getKKT() < 1e-2:
+            print "Time: ", time, "MHE its needed: ", mheIt
+            break
+            
     # set mhe xN as mpc estimate
     mpcRT.x0 = mheRT.x[-1,:]
     
@@ -185,6 +194,12 @@ while time < Tf:
     # first compute the new final full measurement
     y_Nm1 = mheRT.computeY(sim.x, sim.u)
     yN = mheRT.computeYN(sim.x)
+    y_Nm1 += numpy.random.random(y_Nm1.size)*0.01
+    yN += numpy.random.random(yN.size)*0.01
+
+    # first compute the new final full measurement
+#    y_Nm1 = mheRT.computeY(sim.x, sim.u)
+#    yN = mheRT.computeYN(sim.x)
 
     # send the protobuf and log the message
     pbb.setMhe(mheRT)

@@ -11,11 +11,11 @@ mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
 #mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_RIIA3'
 mheIntOpts['NUM_INTEGRATOR_STEPS'] = 4
-mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
-mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
-mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
-mheIntOpts['UNROLL_LINEAR_SOLVER'] = False
-mheIntOpts['IMPLICIT_INTEGRATOR_MODE'] = 'IFTR'
+#mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
+#mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
+#mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
+#mheIntOpts['UNROLL_LINEAR_SOLVER'] = False
+#mheIntOpts['IMPLICIT_INTEGRATOR_MODE'] = 'IFTR'
 
 mheOpts = rawe.OcpExportOptions()
 mheOpts['HESSIAN_APPROXIMATION'] = 'GAUSS_NEWTON'
@@ -38,8 +38,8 @@ endMeasNames  = ['IMU_angular_velocity']
 endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
 
 # full state feedback
-endMeasNames = ['x', 'y', 'z', 'e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33', 'dx', 'dy', 'dz', 'w1', 'w2', 'w3', 'ddelta', 'r', 'dr', 'aileron', 'elevator', 'motor_torque', 'ddr', 'cos_delta', 'sin_delta']
-measNames = endMeasNames + ['daileron', 'delevator', 'dmotor_torque', 'dddr']
+#endMeasNames = ['x', 'y', 'z', 'e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33', 'dx', 'dy', 'dz', 'w1', 'w2', 'w3', 'ddelta', 'r', 'dr', 'aileron', 'elevator', 'motor_torque', 'ddr', 'cos_delta', 'sin_delta']
+#measNames = endMeasNames + ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
 
 def makeMhe(dae):
