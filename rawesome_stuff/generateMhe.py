@@ -11,8 +11,13 @@ if __name__=='__main__':
     propsDir = sys.argv[1]
     mhert = MHE.makeMhe(propertiesDir=propsDir)
 
-    for filename in ['acado_common.h','ocp.so', os.path.join('qpoases','solver.hpp')]:
+    for filename in ['acado_common.h','ocp.so']:
         fullname = os.path.join(mhert._exportpath, filename)
+        assert os.path.isfile(fullname), fullname+' is not a file'
+        shutil.copy(fullname, filename)
+
+    for filename in ['solver.hpp']:
+        fullname = os.path.join(mhert._exportpath, 'qpoases', filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
 
