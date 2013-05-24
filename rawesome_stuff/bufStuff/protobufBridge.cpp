@@ -3,67 +3,171 @@
 #include "protoConverters.h"
 #include "Carousel_dimensions.h"
 
-ProtobufBridge::ProtobufBridge()
-{
+ProtobufBridge::ProtobufBridge() {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     debugVec.resize(10, 0.0);
 
-    mheFullStateVector.resize(   (NUM_MHE_HORIZON + 1) * NUM_DIFFSTATES, 0.0);
-    mheFullControlVector.resize(  NUM_MHE_HORIZON      * NUM_CONTROLS, 0.0);
+//    referenceTrajectory.resize( (NUM_MPC_HORIZON + 1) * (NUM_DIFFSTATES + NUM_CONTROLS), 0.0);
 
-    mpcFullStateVector.resize(   (NUM_MPC_HORIZON + 1) * NUM_DIFFSTATES, 0.0);
-    mpcFullControlVector.resize(  NUM_MPC_HORIZON      * NUM_CONTROLS, 0.0);
-
-    measurementsPast.resize( NUM_MHE_HORIZON * NUM_MEASUREMENTS, 0.0);
-    measurementsCurrent.resize(                NUM_MEASUREMENTS_END, 0.0);
-
-    referenceTrajectory.resize( (NUM_MPC_HORIZON + 1) * (NUM_DIFFSTATES + NUM_CONTROLS), 0.0);
-
-    controlsApplied.resize( NUM_CONTROLS );
-
-    mmh.clear_mhehorizon();
-    mmh.clear_mpchorizon();
-    mmh.clear_measurementshorizon();
-    mmh.clear_referencetrajectory();
-    for (int k=0; k<NUM_MHE_HORIZON+1; k++)
-        mmh.add_mhehorizon();
-    for (int k=0; k<NUM_MHE_HORIZON; k++)
-        mmh.add_measurementshorizon();
-    for (int k=0; k<NUM_MPC_HORIZON+1; k++){
-        mmh.add_mpchorizon();
-        mmh.add_referencetrajectory();
+    mmh.clear_mhe();
+    mmh.clear_mpc();
+    mmh.clear_messages();
+//    mmh.clear_referencetrajectory();
+    // setup MHE
+    for (int k = 0; k < NUM_MHE_HORIZON+1; k++)
+        mmh.mutable_mhe()->add_x();
+    for (int k = 0; k < NUM_MHE_HORIZON; k++) {
+        mmh.mutable_mhe()->add_u();
+        mmh.mutable_mhe()->add_y();
     }
+    // setup MPC
+    for (int k = 0; k < NUM_MPC_HORIZON+1; k++)
+        mmh.mutable_mpc()->add_x();
+    for (int k = 0; k < NUM_MPC_HORIZON; k++)
+        mmh.mutable_mpc()->add_u();
+//    for (int k=0; k<NUM_MPC_HORIZON+1; k++){
+//        mmh.add_referencetrajectory();
+//    }
 
     context = new zmq::context_t(1);
-    socket = new zmq::socket_t(*context,ZMQ_PUB);
+    socket = new zmq::socket_t(*context, ZMQ_PUB);
     socket->bind("tcp://*:5563");
 }
 
-ProtobufBridge::~ProtobufBridge()
-{
+ProtobufBridge::~ProtobufBridge() {
     delete socket;
     delete context;
-    google::protobuf::ShutdownProtobufLibrary(); // optional
+    google::protobuf::ShutdownProtobufLibrary();  // optional
 }
 
-void  ProtobufBridge::sendMessage()
-{
-//        portMheFullStateVector.read( mheFullStateVector );
-//        portMheFullControlVector.read( mheFullControlVector );
-//
-//        portMpcFullStateVector.read( mpcFullStateVector );
-//        portMpcFullControlVector.read( mpcFullControlVector );
-//
-//        portMeasurementsPast.read( measurementsPast );
-//        portMeasurementsCurrent.read( measurementsCurrent );
-//
-//        portReferenceTrajectory.read( referenceTrajectory );
-//
-//        portControlsApplied.read( controlsApplied );
-//
-//        portDebugVec.read( debugVec );
+void ProtobufBridge::setMhe(const vector< double > &X,
+                            const vector< double > &U,
+                            const vector< double > &Y,
+                            const vector< double > &YN,
+                            const double kkt, const double obj,
+                            const double prepTime, const double fbTime) {
+    assert(X.size() == (NUM_MHE_HORIZON + 1) * NUM_DIFFSTATES);
+    assert(U.size() ==  NUM_MHE_HORIZON * NUM_CONTROLS);
 
+    assert(Y.size() == NUM_MHE_HORIZON * NUM_MEASUREMENTS);
+    assert(YN.size() == NUM_MEASUREMENTS_END);
+
+    Carousel::Mhe * mhe = mmh.mutable_mhe();
+
+    // set x
+    for (int k = 0; k < NUM_MHE_HORIZON+1; k++) {
+        DifferentialStates * x = (DifferentialStates*) &(X[k*NUM_DIFFSTATES]);
+        fromDifferentialStates(mhe->mutable_x(k), x);
+        if (k == NUM_MHE_HORIZON)
+            fromDifferentialStates(mmh.mutable_mhexn(), x);
+    }
+
+    // set u
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
+        fromControls(mhe->mutable_u(k), (Controls*) &(U[k*NUM_CONTROLS]));
+
+    // set y
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
+        fromMeasurements(mhe->mutable_y(k), (Measurements*) &(Y[k*NUM_MEASUREMENTS]));
+
+    // set yN
+    fromMeasurementsEnd(mhe->mutable_yn(), (MeasurementsEnd*) &(YN[0]));
+
+    // set stats
+    mhe->set_kkt(kkt);
+    mhe->set_objective(obj);
+    mhe->set_preptime(prepTime);
+    mhe->set_fbtime(fbTime);
+}
+
+void ProtobufBridge::setMheExpectedMeas(const vector< double > &Y_OF_X,
+                                        const vector< double > &YN_OF_XN) {
+    assert(Y_OF_X.size() == NUM_MHE_HORIZON * NUM_MEASUREMENTS);
+    assert(YN_OF_XN.size() == NUM_MEASUREMENTS_END);
+
+    Carousel::Mhe * mhe = mmh.mutable_mhe();
+    if (0 == mhe->y_of_x_size())
+        for (int k = 0; k < NUM_MHE_HORIZON; k++)
+            mhe->add_y_of_x();
+
+    // set y_of_x
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
+        fromMeasurements(mhe->mutable_y_of_x(k), (Measurements*) &(Y_OF_X[k*NUM_MEASUREMENTS]));
+
+    // set yN_of_xN
+    fromMeasurementsEnd(mhe->mutable_yn_of_xn(), (MeasurementsEnd*) &(YN_OF_XN[0]));
+
+}
+
+void ProtobufBridge::setMpc(const vector< double > &X,
+                            const vector< double > &U,
+                            const vector< double > &X0,
+                            const double kkt, const double obj,
+                            const double prepTime, const double fbTime) {
+    assert(X.size() == (NUM_MPC_HORIZON + 1) * NUM_DIFFSTATES);
+    assert(U.size() ==  NUM_MPC_HORIZON * NUM_CONTROLS);
+    assert(X0.size() ==  NUM_DIFFSTATES);
+
+    Carousel::Mpc * mpc = mmh.mutable_mpc();
+
+    // set x0
+    fromDifferentialStates(mpc->mutable_x0(), (DifferentialStates*) &(X0[0]));
+
+    // set x
+    for (int k = 0; k < NUM_MPC_HORIZON+1; k++) {
+        DifferentialStates * x = (DifferentialStates*) &(X[k*NUM_DIFFSTATES]);
+        fromDifferentialStates(mpc->mutable_x(k), x);
+    }
+
+    // set u
+    for (int k = 0; k < NUM_MPC_HORIZON; k++) {
+        Controls * u = (Controls*) &(U[k*NUM_CONTROLS]);
+        fromControls(mpc->mutable_u(k), u);
+        // set u0
+        if (k == 0)
+            fromControls(mmh.mutable_mpcu0(), u);
+    }
+
+    // set stats
+    mpc->set_kkt(kkt);
+    mpc->set_objective(obj);
+    mpc->set_preptime(prepTime);
+    mpc->set_fbtime(fbTime);
+
+    // set reference trajectory
+//    toDae(mmh.mutable_referencetrajectory(0), x, u); // off by one so that it lines up with mpc
+//        for (int k=0; k<NUM_MPC_HORIZON; k++){
+//            x = (DifferentialStates*) &(referenceTrajectory[k*(NUM_DIFFSTATES+NUM_CONTROLS)]);
+//            u = (Controls*)   &(referenceTrajectory[k*(NUM_DIFFSTATES+NUM_CONTROLS)+NUM_DIFFSTATES]);
+//            dae = mmh.mutable_referencetrajectory(k+1); // off by one so that it lines up with mpc
+//            toDae(dae, x, u);
+//        }
+}
+
+void ProtobufBridge::setSimState(const vector< double > &X,
+                                 const vector< double > &Z,
+                                 const vector< double > &U,
+                                 const vector< double > &Y,
+                                 const vector< double > &YN,
+                                 const vector< double > &outs) {
+    assert(X.size() ==  NUM_DIFFSTATES);
+    assert(Z.size() ==  NUM_ALGVARS);
+    assert(U.size() ==  NUM_CONTROLS);
+    assert(Y.size() ==  NUM_MEASUREMENTS);
+    assert(YN.size() ==  NUM_MEASUREMENTS_END);
+    assert(outs.size() ==  NUM_OUTPUTS);
+    Carousel::Sim * sim = mmh.mutable_sim();
+    fromDifferentialStates(sim->mutable_x(), (DifferentialStates*) &(X[0]));
+    fromAlgebraicVars(sim->mutable_z(), (AlgebraicVars*) &(Z[0]));
+    fromControls(sim->mutable_u(), (Controls*) &(U[0]));
+    fromMeasurements(sim->mutable_y(), (Measurements*) &(Y[0]));
+    fromMeasurementsEnd(sim->mutable_yn(), (MeasurementsEnd*) &(YN[0]));
+    fromOutputs(sim->mutable_outs(), (Outputs*) &(outs[0]));
+}
+
+
+void  ProtobufBridge::sendMessage() {
     // set the debug vector
     mmh.mutable_debug()->set_d0(debugVec[0]);
     mmh.mutable_debug()->set_d1(debugVec[1]);
@@ -76,79 +180,10 @@ void  ProtobufBridge::sendMessage()
     mmh.mutable_debug()->set_d8(debugVec[8]);
     mmh.mutable_debug()->set_d9(debugVec[9]);
 
-    // set the controls applied
-    //mmh.mutable_controlsapplied()->set_urright(controlsApplied[0]);
-    //mmh.mutable_controlsapplied()->set_urleft(controlsApplied[1]);
-    //mmh.mutable_controlsapplied()->set_up(controlsApplied[2]);
+    // pack the string
+    assert ( true == mmh.SerializeToString(&packedMsg) );
 
-    Carousel::Dae *dae;
-
-    // write the "current state" field
-    DifferentialStates * x = (DifferentialStates*) &(mheFullStateVector[NUM_MHE_HORIZON*NUM_DIFFSTATES]);
-    Controls * u = (Controls*)   &(mpcFullControlVector[0]);
-    toDae(mmh.mutable_currentstate(), x, u);
-
-    // set reference trajectory
-    toDae(mmh.mutable_referencetrajectory(0), x, u); // off by one so that it lines up with mpc
-//        for (int k=0; k<NUM_MPC_HORIZON; k++){
-//            x = (DifferentialStates*) &(referenceTrajectory[k*(NUM_DIFFSTATES+NUM_CONTROLS)]);
-//            u = (Controls*)   &(referenceTrajectory[k*(NUM_DIFFSTATES+NUM_CONTROLS)+NUM_DIFFSTATES]);
-//            dae = mmh.mutable_referencetrajectory(k+1); // off by one so that it lines up with mpc
-//            toDae(dae, x, u);
-//        }
-
-    // set mhe horizon
-    for (int k=0; k<NUM_MHE_HORIZON+1; k++){
-        x = (DifferentialStates*) &(mheFullStateVector[k*NUM_DIFFSTATES]);
-        u = (Controls*)   &(mheFullControlVector[k*NUM_CONTROLS]);
-        dae = mmh.mutable_mhehorizon(k);
-        if (k<NUM_MHE_HORIZON)
-            toDae(dae, x, u);
-        else
-            toDae(dae, x, NULL);
-    }
-
-    // set mpc horizon
-    for (int k=0; k<NUM_MPC_HORIZON+1; k++){
-        x = (DifferentialStates*) &(mpcFullStateVector[k*NUM_DIFFSTATES]);
-        u = (Controls*)   &(mpcFullControlVector[k*NUM_CONTROLS]);
-        dae = mmh.mutable_mpchorizon(k);
-        if (k<NUM_MPC_HORIZON )
-            toDae(dae, x, u);
-        else
-            toDae(dae, x, NULL);
-    }
-
-    // set measurement horizon
-    // 0 through (NUM_MHE_HORIZON-1) are measurementsPast, X and U
-    for (int k=0; k<NUM_MHE_HORIZON; k++){
-        fromMeasurements(mmh.mutable_measurementshorizon(k),
-                         (Measurements*)&(measurementsPast[k*NUM_MEASUREMENTS]));
-    }
-    //// NUM_MHE_HORIZON is measurementsCurrent, X only
-    //fromMeasurements((mmh.mutable_measurementshorizon(NUM_MHE_HORIZON))->mutable_measurementsend(),
-    //                     (MeasurementsEnd*)&(measurementsCurrent[0]));
-
-    // set current measurement
-    fromMeasurementsEnd(mmh.mutable_measurementsend(),
-                        (MeasurementsEnd*)&(measurementsCurrent[0]));
-    // measurementsLastLatest uses measurementsPast[0], X and U
-    //fromMeasurements(mmh.mutable_measurementslastlatest()->mutable_measurementsx(),
-    //                     (Measurements*)&(measurementsPast[0*NUM_MEASUREMENTS*(NUM_MHE_HORIZON-1)]));
-    //fromMeasurementsUVec(mmh.mutable_measurementslastlatest()->mutable_measurementsu(),
-    //                     (MeasurementsUVec*)&(measurementsPast[0*NUM_MEASUREMENTS*(NUM_MHE_HORIZON-1)+NUM_MEASUREMENTS_END]));
-
-
-    if (!mmh.SerializeToString(&X_serialized)) {
-        cerr << "Failed to serialize mmh." << endl;
-        return;
-    }
-    s_sendmore(*socket, "mhe-mpc-horizons");
-    s_send(*socket, X_serialized);
-}
-
-void ProtobufBridge::toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u){
-    fromDifferentialStates(dae->mutable_differentialstates(), x);
-    if (u != NULL)
-        fromControls(dae->mutable_controls(), u);
+    // send
+    s_sendmore(*socket, "mhe-mpc");
+    s_send(*socket, packedMsg);
 }

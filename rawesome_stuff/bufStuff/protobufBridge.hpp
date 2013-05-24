@@ -12,20 +12,6 @@ using namespace std;
 class ProtobufBridge
 {
 protected:
-    vector< double > mheFullStateVector;
-    vector< double > mheFullControlVector;
-
-    vector< double > mpcFullStateVector;
-    vector< double > mpcFullControlVector;
-
-    vector< double > measurementsPast;
-
-    vector< double > measurementsCurrent;
-
-    vector< double > referenceTrajectory;
-
-    vector< double > controlsApplied;
-
     vector< double > debugVec;
 
 private:
@@ -34,14 +20,31 @@ private:
     zmq::context_t *context;
     zmq::socket_t *socket;
 
-    string X_serialized;
-
-    void toDae(Carousel::Dae * dae, const DifferentialStates * x, const Controls * u);
-
 public:
     ProtobufBridge();
     ~ProtobufBridge();
+    void setMhe(const vector< double > &mheX,
+                const vector< double > &mheU,
+                const vector< double > &mheY,
+                const vector< double > &mheYN,
+                const double kkt, const double obj,
+                const double prepTime, const double fbTime);
+    void setMpc(const vector< double > &mpcX,
+                const vector< double > &mpcU,
+                const vector< double > &mpcX0,
+                const double kkt, const double obj,
+                const double prepTime, const double fbTime);
+    void setSimState(const vector< double > &X,
+                     const vector< double > &Z,
+                     const vector< double > &U,
+                     const vector< double > &Y,
+                     const vector< double > &YN,
+                     const vector< double > &outs);
+    void setMheExpectedMeas(const vector< double > &Y_OF_X,
+                            const vector< double > &YN_OF_XN);
     void sendMessage();
+
+    string packedMsg;
 };
 
 #endif // __PROTOBUFBRIDGE__
