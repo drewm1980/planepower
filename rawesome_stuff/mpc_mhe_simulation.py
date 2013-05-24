@@ -198,10 +198,6 @@ while time < Tf:
     y_Nm1 += numpy.random.random(y_Nm1.size)*0.01
     yN += numpy.random.random(yN.size)*0.01
 
-    # first compute the new final full measurement
-#    y_Nm1 = mheRT.computeY(sim.x, sim.u)
-#    yN = mheRT.computeYN(sim.x)
-
     # send the protobuf and log the message
     pbb.setMhe(mheRT)
     pbb.setMpc(mpcRT)
