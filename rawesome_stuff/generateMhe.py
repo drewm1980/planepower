@@ -2,6 +2,7 @@ import sys
 import os
 import shutil
 
+import rawe
 import MHE
 
 if __name__=='__main__':
@@ -14,3 +15,8 @@ if __name__=='__main__':
         fullname = os.path.join(mhert._exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
+
+    structs = rawe.utils.mkprotobufs.writeStructs(mhert._dae, 'MHE', mhert.yNames, mhert.yNNames)
+    f = open('mhe_structs.h','w')
+    f.write(structs)
+    f.close()

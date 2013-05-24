@@ -4,7 +4,7 @@ include_rules
 propsdir = $(PLANEPOWER_ROOT)/properties
 export PYTHONPATH
 genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateMhe.py
-: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.so solver.hpp
+: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.so solver.hpp mhe_structs.h
 
 #EXPORTED_CODE = $(PLANEPOWER_ROOT)/acado_codegen/mhe/exported_code
 #CPPFLAGS_OROCOS += -I$(EXPORTED_CODE)
