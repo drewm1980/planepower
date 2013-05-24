@@ -148,10 +148,10 @@ void  ProtobufBridge::sendMessage() {
     mmh.mutable_debug()->set_d8(debugVec[8]);
     mmh.mutable_debug()->set_d9(debugVec[9]);
 
-    if (!mmh.SerializeToString(&X_serialized)) {
-        cerr << "Failed to serialize mmh." << endl;
-        return;
-    }
+    // pack the string
+    assert ( true == mmh.SerializeToString(&packedMsg) );
+
+    // send
     s_sendmore(*socket, "mhe-mpc");
-    s_send(*socket, X_serialized);
+    s_send(*socket, packedMsg);
 }

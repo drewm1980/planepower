@@ -20,8 +20,6 @@ private:
     zmq::context_t *context;
     zmq::socket_t *socket;
 
-    string X_serialized;
-
 public:
     ProtobufBridge();
     ~ProtobufBridge();
@@ -39,6 +37,8 @@ public:
     void setSimState(const vector< double > &X,
                      const vector< double > &U);
     void sendMessage();
+
+    string packedMsg;
 };
 
 #endif // __PROTOBUFBRIDGE__

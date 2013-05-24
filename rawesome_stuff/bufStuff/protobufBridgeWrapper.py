@@ -29,3 +29,4 @@ class ProtobufBridge(object):
 
     def sendMessage(self):
         self._pbb.sendMessage()
+        return self._pbb.packedMsg
