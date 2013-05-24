@@ -77,7 +77,7 @@ Tf = 50.0   # Simulation duration
 
 # Create the MPC class
 mpcRT = NMPC.makeNmpc(dae,lqrDae=daeSim)
-mheRT = MHE.makeMhe(dae)
+mheRT = MHE.makeMhe()
 
 # Reference parameters
 refP = {'r0':1.2,
@@ -168,6 +168,7 @@ pbb = ProtobufBridge()
 log = []
 while time < Tf:
     # run MHE
+
     mheIt = 0
     while True:
         mheIt += 1
@@ -205,7 +206,7 @@ while time < Tf:
     pbb.setMhe(mheRT)
     pbb.setMpc(mpcRT)
     pbb.setSimState(sim.x, sim.z, sim.u, y_Nm1, yN, mheRT.computeOutputs(sim.x,sim.u))
-    log.append ( pbb.sendMessage() )
+    log.append( pbb.sendMessage() )
 
     # step the simulation
     print "sim time:",time,"mhe kkt:",mheRT.getKKT()
