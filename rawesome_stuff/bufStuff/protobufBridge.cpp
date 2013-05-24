@@ -81,6 +81,25 @@ void ProtobufBridge::setMhe(const vector< double > &X,
     mhe->set_fbtime(fbTime);
 }
 
+void ProtobufBridge::setMheExpectedMeas(const vector< double > &Y_OF_X,
+                                        const vector< double > &YN_OF_XN) {
+    assert(Y_OF_X.size() == NUM_MHE_HORIZON * NUM_MEASUREMENTS);
+    assert(YN_OF_XN.size() == NUM_MEASUREMENTS_END);
+
+    Carousel::Mhe * mhe = mmh.mutable_mhe();
+    if (0 == mhe->y_of_x_size())
+        for (int k = 0; k < NUM_MHE_HORIZON; k++)
+            mhe->add_y_of_x();
+
+    // set y_of_x
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
+        fromMeasurements(mhe->mutable_y_of_x(k), (Measurements*) &(Y_OF_X[k*NUM_MEASUREMENTS]));
+
+    // set yN_of_xN
+    fromMeasurementsEnd(mhe->mutable_yn_of_xn(), (MeasurementsEnd*) &(YN_OF_XN[0]));
+
+}
+
 void ProtobufBridge::setMpc(const vector< double > &X,
                             const vector< double > &U,
                             const vector< double > &X0,
@@ -127,11 +146,24 @@ void ProtobufBridge::setMpc(const vector< double > &X,
 }
 
 void ProtobufBridge::setSimState(const vector< double > &X,
-                                 const vector< double > &U) {
+                                 const vector< double > &Z,
+                                 const vector< double > &U,
+                                 const vector< double > &Y,
+                                 const vector< double > &YN,
+                                 const vector< double > &outs) {
     assert(X.size() ==  NUM_DIFFSTATES);
+    assert(Z.size() ==  NUM_ALGVARS);
     assert(U.size() ==  NUM_CONTROLS);
-    fromDifferentialStates(mmh.mutable_simx(), (DifferentialStates*) &(X[0]));
-    fromControls(mmh.mutable_simu(), (Controls*) &(U[0]));
+    assert(Y.size() ==  NUM_MEASUREMENTS);
+    assert(YN.size() ==  NUM_MEASUREMENTS_END);
+    assert(outs.size() ==  NUM_OUTPUTS);
+    Carousel::Sim * sim = mmh.mutable_sim();
+    fromDifferentialStates(sim->mutable_x(), (DifferentialStates*) &(X[0]));
+    fromAlgebraicVars(sim->mutable_z(), (AlgebraicVars*) &(Z[0]));
+    fromControls(sim->mutable_u(), (Controls*) &(U[0]));
+    fromMeasurements(sim->mutable_y(), (Measurements*) &(Y[0]));
+    fromMeasurementsEnd(sim->mutable_yn(), (MeasurementsEnd*) &(YN[0]));
+    fromOutputs(sim->mutable_outs(), (Outputs*) &(outs[0]));
 }
 
 

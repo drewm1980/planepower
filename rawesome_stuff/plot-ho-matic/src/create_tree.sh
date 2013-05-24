@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-names="DifferentialStates AlgebraicVars Controls Parameters Outputs Measurements MeasurementsEnd Dae Trajectory Debug MheMpcHorizons Mhe Mpc"
+names="DifferentialStates AlgebraicVars Controls Parameters Outputs Measurements MeasurementsEnd Dae Trajectory Debug MheMpcHorizons Mhe Mpc Sim"
 #ln -sf ../Carousel/Carousel.hs CarouselRealFiles/Carousel.hs
 ln -sf CarouselRealFiles/Carousel.hs Carousel.hs
 mkdir -p Carousel

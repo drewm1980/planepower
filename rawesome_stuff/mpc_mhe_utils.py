@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 
 import rawe
 
-from rawekite.carouselSteadyState import getSteadyState
-
 
 def dlqr(A, B, Q, R, N=None):
     
@@ -110,21 +108,12 @@ def UpdateArrivalCost(integrator, x, u, xL, yL, PL, VL, WL):
     
     return PL1, xL1
     
-def GenerateReference(dae,conf,refP):
-    
-    z0 = refP['z0']
-    r0 = refP['r0']
-    ddelta0 = refP['ddelta0']
-    steadyState, _ = getSteadyState(dae,conf,ddelta0,r0,z0)
-    
-    xref = {}
-    uref = {}
-    for name in dae.xNames():
-        xref[name] = steadyState[name]
-    for name in dae.uNames():
-        uref[name] = steadyState[name]
-    
-    return xref, uref
+#def generateReference(dae,conf,refP):
+#    z0 = refP['z0']
+#    r0 = refP['r0']
+#    ddelta0 = refP['ddelta0']
+#    steadyState, _ = getSteadyState(dae,conf,ddelta0,r0,z0)
+#    return steadyState
 
 def InitializeMPC(mpcrt,integrator,dae,conf,refP,MPCweights):
         
@@ -179,22 +168,6 @@ def InitializeMPC(mpcrt,integrator,dae,conf,refP,MPCweights):
     
 #    mpcrt.computeLqr()
     
-
-#blah
-#class MpcMhe(object):
-#    def __init__(self):
-#        blah
-#    def initializeMhe(self):
-#        raise Exception('you must override this')
-#        
-#class KiteMpcMhe(MpcMhe):
-#    def __init__(self,userdata):
-#        MpcMhe.__init__(self)
-#        self.myydata = userdata
-#        
-#    def initializeMhe(self):
-#        print self.userdata
-
 def InitializeMHE(mhert,integrator,dae,conf,refP,Covariance):
     
     xref, uref = GenerateReference(dae,conf,refP)

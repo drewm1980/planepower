@@ -35,7 +35,13 @@ public:
                 const double kkt, const double obj,
                 const double prepTime, const double fbTime);
     void setSimState(const vector< double > &X,
-                     const vector< double > &U);
+                     const vector< double > &Z,
+                     const vector< double > &U,
+                     const vector< double > &Y,
+                     const vector< double > &YN,
+                     const vector< double > &outs);
+    void setMheExpectedMeas(const vector< double > &Y_OF_X,
+                            const vector< double > &YN_OF_XN);
     void sendMessage();
 
     string packedMsg;
