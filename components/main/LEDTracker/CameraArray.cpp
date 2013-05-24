@@ -60,6 +60,7 @@ CameraArray::CameraArray(bool useExternalTrigger)
 		err=dc1394_video_set_mode(cameras[i], VIDEO_MODE);
 		frame_w=FRAME_W;
 		frame_h=FRAME_H;
+		camera_count = CAMERA_COUNT;
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
 		if(_useExternalTrigger)
