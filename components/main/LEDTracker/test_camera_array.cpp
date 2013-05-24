@@ -10,9 +10,9 @@
 #include "CameraArray.hpp"
 #include "cout.hpp"
 
-#define VISUAL 0
+#define VISUAL 1
 #if VISUAL
-#include "Tracer.hpp"
+#include "MultiViewer.hpp"
 #endif
 
 using namespace std;
@@ -35,14 +35,14 @@ int main(int argc, char **argv)
 	signal(SIGINT,cleanup);
 
 #if VISUAL
-	Tracer tracer(&cameraArray);	
+	MultiViewer mv(&cameraArray);	
 #endif
 
 	while(1)
 	{
 		cameraArray.updateHook();
 #if VISUAL
-		tracer.update();
+		mv.update();
 #endif
 	}
 	cleanup(0);

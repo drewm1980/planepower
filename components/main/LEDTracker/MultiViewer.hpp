@@ -6,19 +6,29 @@
 
 #include <opencv2/opencv.hpp>
 
+const int render_scale_factor = 1;
+
 class MultiViewer
 {
 	protected:
 	private:
 		CameraArray *cameraArray;
-		BlobExtractor *blobExtractors[CAMERA_COUNT];
+		BlobExtractor **blobExtractors;
 
 		int frame_h;
 		int frame_w;
 		int camera_count;
 
-		cv::Mat concatenated; // concatenated version of our frames
-		cv::Mat debayered; // (concatenated and) debayered version of frame being processed.
+		int concatenated_h;
+		int concatenated_w;
+		int resized_h;
+		int resized_w;
+		int rotated_h;
+		int rotated_w;
+		cv::Mat concatenated; // Concatenated vertically 
+		cv::Mat resized; // Scaled down if necessary
+		cv::Mat transposed; // Transpose as first step to rotating
+		cv::Mat rotated; // Rotated 90 Degrees
 	
 	public:
 		void init(CameraArray *ca, BlobExtractor **be1);
