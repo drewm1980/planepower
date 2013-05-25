@@ -11,7 +11,7 @@ if __name__=='__main__':
     propsDir = sys.argv[1]
     mhert = MHE.makeMhe(propertiesDir=propsDir)
 
-    for filename in ['acado_common.h','ocp.so']:
+    for filename in ['acado_common.h','ocp.o']:
         fullname = os.path.join(mhert._exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
@@ -24,4 +24,8 @@ if __name__=='__main__':
     structs = rawe.utils.mkprotobufs.writeStructs(mhert._dae, 'MHE', mhert.yNames, mhert.yNNames)
     f = open('mhe_structs.h','w')
     f.write(structs)
+    f.close()
+
+    f = open('whereami.txt','w')
+    f.write(mhert._exportpath+'\n')
     f.close()

@@ -4,4 +4,4 @@ include_rules
 propsdir = $(PLANEPOWER_ROOT)/properties
 export PYTHONPATH
 genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateMhe.py
-: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.so solver.hpp mhe_structs.h
+: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.o solver.hpp mhe_structs.h whereami.txt
