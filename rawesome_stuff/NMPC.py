@@ -28,10 +28,10 @@ mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING'
 mpcOpts['FIX_INITIAL_STATE'] = True
 #mpcOpts['CG_USE_C99'] = True
 
-def makeNmpc(lqrDae, propertiesDir='../properties'):
+def makeNmpc(propertiesDir='../properties'):
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
-    mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts, lqrDae=lqrDae)
+    mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)
 
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
@@ -50,6 +50,6 @@ def makeNmpc(lqrDae, propertiesDir='../properties'):
 def makeNmpcRT(lqrDae, propertiesDir='../properties', cgOptions = None):
     if cgOptions is None:
         cgOptions = {'CXX':'g++', 'CC':'gcc'}
-    mpc = makeNmpc(lqrDae, propertiesDir=propertiesDir)
+    mpc = makeNmpc(propertiesDir=propertiesDir)
     return rawe.MpcRT(mpc, lqrDae, ocpOptions=mpcOpts,
                       integratorOptions=mpcIntOpts, codegenOptions=cgOptions)
