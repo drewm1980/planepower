@@ -76,8 +76,8 @@ MPCweights['daileron'] = MPCweights['delevator'] = Wdae
 Tf = 50.0   # Simulation duration
 
 # Create the MPC class
-mpcRT = NMPC.makeNmpc(dae,lqrDae=daeSim)
-mheRT = MHE.makeMhe()
+mheRT = MHE.makeMheRT()
+mpcRT = NMPC.makeNmpcRT(daeSim)
 
 # Reference parameters
 refP = {'r0':1.2,
@@ -114,17 +114,17 @@ for k,name in enumerate(dae.uNames()):
     mheRT.u[:,k] = steadyState[name]
 
 # expected measurements
-for k in range(mheRT.getN()):
+for k in range(mheRT.ocp.N):
     mheRT.y[k,:] = mheRT.computeY(mheRT.x[k,:], mheRT.u[k,:])
 mheRT.yN = mheRT.computeYN(mheRT.x[-1,:])
 
 # weights
 Cov = np.array([])
-for name in mheRT.yNames:
+for name in mheRT.ocp.yNames:
     Cov = numpy.append( Cov, numpy.ones(dae[name].shape)*Covariance[name] )
 mheRT.S  = numpy.diag(1.0/Cov)
 Cov = np.array([])
-for name in mheRT.yNNames:
+for name in mheRT.ocp.yNNames:
     Cov = numpy.append( Cov, numpy.ones(dae[name].shape)*Covariance[name] )
 mheRT.SN  = numpy.diag(1.0/Cov)
 
