@@ -1,9 +1,10 @@
-import rawe
 import casadi as C
-from rawe.ocp.Ocp import Mpc
+import rawe
 
 import MHE
 from common_conf import Ts
+from highwind_carousel_conf import conf
+import carouselModel
 
 mpcHorizonN = MHE.mheHorizonN
 
@@ -27,8 +28,10 @@ mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING'
 mpcOpts['FIX_INITIAL_STATE'] = True
 #mpcOpts['CG_USE_C99'] = True
 
-def makeNmpc(dae,lqrDae):
-    mpc = Mpc(dae, N=mpcHorizonN, ts=Ts, lqrDae=lqrDae)
+def makeNmpc(propertiesDir='../properties'):
+    conf['stabilize_invariants'] = False
+    dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
+    mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)
 
     mpc.constrain( mpc['ddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
@@ -42,12 +45,11 @@ def makeNmpc(dae,lqrDae):
     mpc.constrain( 0, '<=', mpc['motor_torque'] );
     mpc.constrain( mpc['motor_torque'], '<=', 2000 );
 
+    return mpc
 
-#    xref = C.veccat( [mpc[n] for n in dae.xNames()])
-#    uref = C.veccat( [mpc[n] for n in dae.uNames()])
-#    mpc.minimizeLsq(C.veccat([xref,uref]))
-#    mpc.minimizeLsqEndTerm(xref)
-
-    cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    mpcRT = mpc.exportCode(codegenOptions=cgOpts,integratorOptions=mpcIntOpts,ocpOptions=mpcOpts)
-    return mpcRT
+def makeNmpcRT(lqrDae, propertiesDir='../properties', cgOptions = None):
+    if cgOptions is None:
+        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+    mpc = makeNmpc(propertiesDir=propertiesDir)
+    return rawe.MpcRT(mpc, lqrDae, ocpOptions=mpcOpts,
+                      integratorOptions=mpcIntOpts, codegenOptions=cgOptions)

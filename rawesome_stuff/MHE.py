@@ -1,9 +1,8 @@
-import rawe
-from rawe.ocp.Ocp import Mhe
 import casadi as C
+import rawe
+
 import carouselModel
 from highwind_carousel_conf import conf
-
 from common_conf import Ts
 
 mheHorizonN = 10
@@ -48,7 +47,7 @@ def makeMhe(propertiesDir='../properties'):
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
-    mhe = Mhe(dae, N=mheHorizonN, ts=Ts, measNames=measNames, endMeasNames=endMeasNames)
+    mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yNames=measNames, yNNames=endMeasNames)
 
     mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
     mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
@@ -62,11 +61,10 @@ def makeMhe(propertiesDir='../properties'):
 
     mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
 
-#    cgOpts = {'CXX':'g++', 'CC':'gcc'}
-    cgOpts = {'CXX':'clang++', 'CC':'clang'}
-    mheRT = mhe.exportCode(codegenOptions=cgOpts,ocpOptions=mheOpts,integratorOptions=mheIntOpts)
+    return mhe
 
-#    RintMeas = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurements)
-#    RintMeasEnd = rawe.RtIntegrator(dae,ts=Ts, options=intOpts, measurements=measurementsEND)
-
-    return mheRT
+def makeMheRT(propertiesDir='../properties', cgOptions = None):
+    if cgOptions is None:
+        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+    mhe = makeMhe(propertiesDir=propertiesDir)
+    return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
