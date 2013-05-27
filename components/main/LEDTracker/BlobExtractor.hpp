@@ -11,20 +11,24 @@
 #include "types.hpp"
 #include "MedianFinder.hpp"
 
-// This class extracts colored blobs from a bayer coded image.
-// May call malloc first time it's used, so re-use it.
+// This class extracts colored blobs from RGB8 codede images.
+// Calls malloc a bunch of times in initialization, so re-use it.
 class BlobExtractor
 {
 	protected:
 	private:
 
-		int* integrated_w;
-		int* integrated_h;
+		// These are integrated versions of the binary masks for
+		// pixels that passed the color thresholds.
+		// In otherwords, they are histograms of image coordinates
+		// of pixels that pass the color threshold checks.
+		int* integrated_w_r;
+		int* integrated_w_g;
+		int* integrated_w_b;
 
-		cv::Mat bgr;
-		cv::Mat r_mask;
-		cv::Mat g_mask;
-		cv::Mat b_mask;
+		int* integrated_h_r;
+		int* integrated_h_g;
+		int* integrated_h_b;
 
 		uint8_t compare_colors(uint8_t r1, 
 				uint8_t g1,
@@ -33,11 +37,16 @@ class BlobExtractor
 				uint8_t g2,
 				uint8_t b2);
 
-		MedianFinder *medianFinder_w, *medianFinder_h;
+		MedianFinder *medianFinder_w_r;
+		MedianFinder *medianFinder_w_g;
+		MedianFinder *medianFinder_w_b;
+
+		MedianFinder *medianFinder_h_r;
+		MedianFinder *medianFinder_h_g;
+		MedianFinder *medianFinder_h_b;
 		
-		// Find a single led in a single channel image
-		void find_single_led_singlepass(uint8_t * im, cv::Point2d &p);
-		void find_single_led_singlepass(const cv::Mat& m, cv::Point2d &p);
+		// Find the 3 LED's in an rgb image
+		void find_leds(uint8_t * im, MarkerLocations &ml);
 
 	public:
 
@@ -47,13 +56,10 @@ class BlobExtractor
 		int frame_w;
 		int frame_h;
 
-		MarkerLocations markerLocations;
-
-		// Extract a red, a green, and a blue blob from a bayer coded image.
 		// Coordinates are traditional image coordinates: u increases to the right along scaline,
 		// v increases as you go down rows in the image.
-		void extract_blobs(const cv::Mat & bayer);
-		void extract_blobs(uint8_t *bayer);
+		MarkerLocations markerLocations;
+
 };
 
 #endif
