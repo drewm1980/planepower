@@ -207,6 +207,10 @@ void McuHandler::stopHook()
 	default:
 		log( Error ) << "Unknown bug." << endlog();
 	};
+
+	// Recover component if there was an exception
+	if (this->inException() == true)
+		recover();
 }
 
 void McuHandler::cleanupHook()
