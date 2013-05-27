@@ -8,7 +8,7 @@
 #include "types.hpp"
 #include "cout.hpp"
 
-#define VERBOSE 0
+#define VERBOSE 1
 
 ORO_CREATE_COMPONENT( OCL::LEDTracker)
 
@@ -105,9 +105,10 @@ void  LEDTracker::updateHook()
 		blobExtractors[i] -> find_leds(cameraArray->current_frame_data[i]);
 	}
 	computationCompleteTimeStamp = RTT::os::TimeService::Instance()->getTicks();
-	double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
+	//double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
+	double computationTime = (computationCompleteTimeStamp - frameArrivalTimeStamp)*1e-9; // sec
 #if VERBOSE
-	//COUT << "Total computation time was: " << computationTime*1.0e3/trials << "ms" << ENDL;
+	COUT << "Total computation time was: " << computationTime*1.0e3 << "ms" << ENDL;
 #endif
 	_compTime.write(computationTime*1.0e3);
 

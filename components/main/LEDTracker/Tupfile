@@ -1,14 +1,11 @@
 include_rules
 : foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp CameraArray.cpp |> !cxx_orocos |> {objsforcomponent}
 
+CXXFLAGS += -ggdb
 LDFLAGS += `pkg-config --libs opencv` -ldc1394
 LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
 
 #: Tracer.cpp |> !cxx |>
-
-#OBJS2=BlobExtractor.o MedianFinder.o StereoPair.o Tracer.o
-#: test_stereo_pair_and_blob_extractor.cpp |> !cxx |>
-#: test_stereo_pair_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
 
 : gamma.cpp |> !cxx |>
 : MultiViewer.cpp |> !cxx |>
@@ -16,6 +13,10 @@ LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
 OBJS3=CameraArray.o gamma.o MultiViewer.o
 : test_camera_array.cpp |> !cxx |>
 : test_camera_array.o | $(OBJS3) |> $(CXX) $(OBJS3) -o %o %f $(LDFLAGS) |> %B
+
+OBJS2=BlobExtractor.o MedianFinder.o CameraArray.o MultiViewer.o gamma.o
+: test_camera_array_and_blob_extractor.cpp |> !cxx |>
+: test_camera_array_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
 
 
 : {objsforcomponent} |> !ld_orocos |> 

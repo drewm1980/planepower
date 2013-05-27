@@ -24,6 +24,8 @@ BlobExtractor::BlobExtractor(int w, int h)
 	integrated_h_r = (int*) malloc(h*sizeof(int));
 	integrated_h_g = (int*) malloc(h*sizeof(int));
 	integrated_h_b = (int*) malloc(h*sizeof(int));
+
+	renderFrame = NULL;
 }
 BlobExtractor::~BlobExtractor()
 {
@@ -41,7 +43,7 @@ BlobExtractor::~BlobExtractor()
 	free(integrated_h_b);
 }
 
-uint8_t BlobExtractor::compare_colors(uint8_t r1, 
+bool BlobExtractor::compare_colors(uint8_t r1, 
 		uint8_t g1,
 		uint8_t b1,
 		uint8_t r2,
@@ -63,7 +65,7 @@ uint8_t BlobExtractor::compare_colors(uint8_t r1,
 	const float color_dot_product_threshold2 = color_dot_product_threshold
 		        *color_dot_product_threshold;
 
-	return 255*(uint8_t)(i1*i2*color_dot_product_threshold2 < dot*dot);
+	return (i1*i2*color_dot_product_threshold2 < dot*dot);
 }
 
 void BlobExtractor::find_leds(uint8_t * im)
@@ -87,28 +89,34 @@ void BlobExtractor::find_leds(uint8_t * im)
 			uint8_t b1 = pp[2];	
 
 			// Apply the color thresholds to our pixel
-			uint8_t is_r = compare_colors(r1,g1,b1,1,0,0);
-			uint8_t is_g = compare_colors(r1,g1,b1,0,1,0);
-			uint8_t is_b = compare_colors(r1,g1,b1,0,0,1);
+			bool is_r = compare_colors(r1,g1,b1,1,0,0);
+			bool is_g = compare_colors(r1,g1,b1,0,1,0);
+			bool is_b = compare_colors(r1,g1,b1,0,0,1);
 
-			if (is_r + is_g + is_b == 1)
+			// Increment the number of pixels marked red in this row, column
+			if ( is_r ) 
 			{
-				if ( is_r ) 
-				{
-					integrated_w_r[x] += 1;
-					integrated_h_r[y] += 1;
-				}
-				if ( is_g ) 
-				{
-					integrated_w_g[x] += 1;
-					integrated_h_g[y] += 1;
-				}
-				if ( is_b ) 
-				{
-					integrated_w_b[x] += 1;
-					integrated_h_b[y] += 1;
-				}
+				integrated_w_r[x] += 1;
+				integrated_h_r[y] += 1;
 			}
+			if ( is_g ) 
+			{
+				integrated_w_g[x] += 1;
+				integrated_h_g[y] += 1;
+			}
+			if ( is_b ) 
+			{
+				integrated_w_b[x] += 1;
+				integrated_h_b[y] += 1;
+			}
+
+			if (ENABLE_RENDERING && renderFrame != NULL) 
+			{
+				renderFrame[y*frame_w*3 + x*3 + 0] = 255*is_r;
+				renderFrame[y*frame_w*3 + x*3 + 1] = 255*is_g;
+				renderFrame[y*frame_w*3 + x*3 + 2] = 255*is_b;
+			}
+
 			pp += 3 * sizeof(uint8_t);
 		}
 	}
