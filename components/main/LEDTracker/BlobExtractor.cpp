@@ -66,7 +66,7 @@ uint8_t BlobExtractor::compare_colors(uint8_t r1,
 	return 255*(uint8_t)(i1*i2*color_dot_product_threshold2 < dot*dot);
 }
 
-void BlobExtractor::find_leds(uint8_t * im, MarkerLocations &ml)
+void BlobExtractor::find_leds(uint8_t * im)
 {
 	memset(integrated_w_r, 0, frame_w*sizeof(int));
 	memset(integrated_w_g, 0, frame_w*sizeof(int));
@@ -82,28 +82,28 @@ void BlobExtractor::find_leds(uint8_t * im, MarkerLocations &ml)
 		// Iterate over columns
 		for(int x=0; x<frame_w; x++)
 		{
-			r1 = pp[0];	
-			g1 = pp[1];	
-			b1 = pp[2];	
+			uint8_t r1 = pp[0];	
+			uint8_t g1 = pp[1];	
+			uint8_t b1 = pp[2];	
 
 			// Apply the color thresholds to our pixel
-			uint8_t is_r = compare_colors(r1,g1,b2,1,0,0);
-			uint8_t is_g = compare_colors(r1,g1,b2,0,1,0);
-			uint8_t is_b = compare_colors(r1,g1,b2,0,0,1);
+			uint8_t is_r = compare_colors(r1,g1,b1,1,0,0);
+			uint8_t is_g = compare_colors(r1,g1,b1,0,1,0);
+			uint8_t is_b = compare_colors(r1,g1,b1,0,0,1);
 
 			if (is_r + is_g + is_b == 1)
 			{
-				if is_r 
+				if ( is_r ) 
 				{
 					integrated_w_r[x] += 1;
 					integrated_h_r[y] += 1;
 				}
-				if is_g 
+				if ( is_g ) 
 				{
 					integrated_w_g[x] += 1;
 					integrated_h_g[y] += 1;
 				}
-				if is_b 
+				if ( is_b ) 
 				{
 					integrated_w_b[x] += 1;
 					integrated_h_b[y] += 1;
@@ -113,12 +113,12 @@ void BlobExtractor::find_leds(uint8_t * im, MarkerLocations &ml)
 		}
 	}
 
-	ml.rx = medianFinder_w_r->find_median(integrated_w_r);
-	ml.ry = medianFinder_h_r->find_median(integrated_h_r);
-	ml.gx = medianFinder_w_g->find_median(integrated_w_g);
-	ml.gy = medianFinder_h_g->find_median(integrated_h_g);
-	ml.bx = medianFinder_w_b->find_median(integrated_w_b);
-	ml.by = medianFinder_h_b->find_median(integrated_h_b);
+	markerLocations.rx = medianFinder_w_r->find_median(integrated_w_r);
+	markerLocations.ry = medianFinder_h_r->find_median(integrated_h_r);
+	markerLocations.gx = medianFinder_w_g->find_median(integrated_w_g);
+	markerLocations.gy = medianFinder_h_g->find_median(integrated_h_g);
+	markerLocations.bx = medianFinder_w_b->find_median(integrated_w_b);
+	markerLocations.by = medianFinder_h_b->find_median(integrated_h_b);
 	
 }
 

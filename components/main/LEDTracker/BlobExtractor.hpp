@@ -11,6 +11,8 @@
 #include "types.hpp"
 #include "MedianFinder.hpp"
 
+#define LED_COUNT 3
+
 // This class extracts colored blobs from RGB8 codede images.
 // Calls malloc a bunch of times in initialization, so re-use it.
 class BlobExtractor
@@ -45,9 +47,6 @@ class BlobExtractor
 		MedianFinder *medianFinder_h_g;
 		MedianFinder *medianFinder_h_b;
 		
-		// Find the 3 LED's in an rgb image
-		void find_leds(uint8_t * im, MarkerLocations &ml);
-
 	public:
 
 		BlobExtractor(int w, int h);
@@ -55,6 +54,11 @@ class BlobExtractor
 
 		int frame_w;
 		int frame_h;
+		
+		// Find the 3 LED's in an rgb image.
+		// The results go in the markerLocations member variable.
+		void find_leds(uint8_t * im);
+
 
 		// Coordinates are traditional image coordinates: u increases to the right along scaline,
 		// v increases as you go down rows in the image.
