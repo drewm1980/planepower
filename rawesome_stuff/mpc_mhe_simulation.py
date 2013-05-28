@@ -190,7 +190,7 @@ while time < Tf:
     #mpcRT.feedbackStep()
 
     # set the next control
-    sim.u = mpcRT.u[-1,:]
+    sim.u = mpcRT.u[0,:]
 
     # first compute the new final full measurement
     y_Nm1 = mheRT.computeY(sim.x, sim.u)
