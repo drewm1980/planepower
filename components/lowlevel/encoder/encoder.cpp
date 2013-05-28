@@ -60,7 +60,11 @@ Encoder::Encoder(std::string name)
 
 bool  Encoder::configureHook()
 {
-	// TODO If the encoder port is not connected, abort!
+	if (eboxOut.connected() == false)
+	{
+		log( Error ) << "Encoder port is not connected" << endlog();
+		return false;
+	}
 
 	return true;
 }
