@@ -1,4 +1,6 @@
-conf = {'g': 9.81,  #  gravitational constant #  [ m /s^2]
+def getConf():
+    return \
+       {'g': 9.81,  #  gravitational constant #  [ m /s^2]
         'rho': 1.23,  #  density of the air #  [ kg/m^3]
 	'alpha0deg': 0,
 	#ROLL DAMPING
