@@ -10,7 +10,6 @@ import rawe
 
 import NMPC
 import MHE
-from mpc_mhe_utils import *
 from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
 from highwind_carousel_conf import getConf
@@ -78,12 +77,12 @@ Tf = 500.0   # Simulation duration
 
 # Reference parameters
 refP = {'r0':1.2,
-        'ddelta0':2*np.pi,
+        'ddelta0':2*numpy.pi,
         'z0':-0.1}
 
 # utility function
 def getDeltaRange(delta0, kRange):
-    return np.array([delta0 + k*Ts*refP['ddelta0'] for k in kRange])
+    return numpy.array([delta0 + k*Ts*refP['ddelta0'] for k in kRange])
 def getDeltaRangeMhe(delta0):
     return getDeltaRange(delta0, range(-MHE.mheHorizonN, 1))
 def getDeltaRangeMpc(delta0):
@@ -102,9 +101,9 @@ sim.p = steadyState
 for k,name in enumerate(mheRT.ocp.dae.xNames()):
     mheRT.x[:,k] = steadyState[name]
     if name == 'sin_delta':
-        mheRT.x[:,k] = np.sin(getDeltaRangeMhe(0))
+        mheRT.x[:,k] = numpy.sin(getDeltaRangeMhe(0))
     if name == 'cos_delta':
-        mheRT.x[:,k] = np.cos(getDeltaRangeMhe(0))
+        mheRT.x[:,k] = numpy.cos(getDeltaRangeMhe(0))
 for k,name in enumerate(mheRT.ocp.dae.zNames()):
     mheRT.z[:,k] = steadyState[name]
 for k,name in enumerate(mheRT.ocp.dae.uNames()):
@@ -116,11 +115,11 @@ for k in range(mheRT.ocp.N):
 mheRT.yN = mheRT.computeYN(mheRT.x[-1,:])
 
 # weights
-Weight_ = np.array([])
+Weight_ = numpy.array([])
 for name in mheRT.ocp.yNames:
     Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
 mheRT.S  = numpy.diag(Weight_)
-Weight_ = np.array([])
+Weight_ = numpy.array([])
 for name in mheRT.ocp.yNNames:
     Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
 mheRT.SN  = numpy.diag(Weight_)
@@ -131,9 +130,9 @@ mheRT.SN  = numpy.diag(Weight_)
 for k,name in enumerate(mpcRT.ocp.dae.xNames()):
     mpcRT.x[:,k] = steadyState[name]
     if name == 'sin_delta':
-        mpcRT.x[:,k] = np.sin(getDeltaRangeMpc(0))
+        mpcRT.x[:,k] = numpy.sin(getDeltaRangeMpc(0))
     if name == 'cos_delta':
-        mpcRT.x[:,k] = np.cos(getDeltaRangeMpc(0))
+        mpcRT.x[:,k] = numpy.cos(getDeltaRangeMpc(0))
 for k,name in enumerate(mpcRT.ocp.dae.zNames()):
     mpcRT.z[:,k] = steadyState[name]
 for k,name in enumerate(mpcRT.ocp.dae.uNames()):
@@ -153,9 +152,9 @@ for name in mpcRT.ocp.dae.xNames():
     Q.append(MPCweights[name])
 for name in mpcRT.ocp.dae.uNames():
     R.append(MPCweights[name])
-mpcRT.S = np.diag( Q + R )
-mpcRT.Q = np.diag( Q )
-mpcRT.R = np.diag( R )
+mpcRT.S = numpy.diag( Q + R )
+mpcRT.Q = numpy.diag( Q )
+mpcRT.R = numpy.diag( R )
 
 
 # Simulation loop
