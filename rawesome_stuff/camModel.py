@@ -56,8 +56,8 @@ def fullCamModel(dae,conf):
     PC2[2,2] = 1.0
     p = C.vertcat([dae['x'],dae['y'],dae['z']])
     R = C.veccat( [dae[n] for n in ['e11', 'e12', 'e13',
-                                        'e21', 'e22', 'e23',
-                                        'e31', 'e32', 'e33']]
+                                    'e21', 'e22', 'e23',
+                                    'e31', 'e32', 'e33']]
                       ).reshape((3,3))
     uv_all = C.vertcat([C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body1)) ,\
                         C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body2)) ,\
