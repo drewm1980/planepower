@@ -25,7 +25,9 @@ BlobExtractor::BlobExtractor(int w, int h)
 	integrated_h_g = (int*) malloc(h*sizeof(int));
 	integrated_h_b = (int*) malloc(h*sizeof(int));
 
+#if ENABLE_RENDERING
 	renderFrame = NULL;
+#endif
 }
 BlobExtractor::~BlobExtractor()
 {
@@ -110,12 +112,11 @@ void BlobExtractor::find_leds(uint8_t * im)
 				integrated_h_b[y] += 1;
 			}
 
-			if (ENABLE_RENDERING && renderFrame != NULL) 
-			{
-				renderFrame[y*frame_w*3 + x*3 + 0] = 255*is_r;
-				renderFrame[y*frame_w*3 + x*3 + 1] = 255*is_g;
-				renderFrame[y*frame_w*3 + x*3 + 2] = 255*is_b;
-			}
+#if ENABLE_RENDERING
+			renderFrame[y*frame_w*3 + x*3 + 0] = 255*is_r;
+			renderFrame[y*frame_w*3 + x*3 + 1] = 255*is_g;
+			renderFrame[y*frame_w*3 + x*3 + 2] = 255*is_b;
+#endif
 
 			pp += 3 * sizeof(uint8_t);
 		}

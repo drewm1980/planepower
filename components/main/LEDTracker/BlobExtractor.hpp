@@ -13,7 +13,9 @@
 
 #define LED_COUNT 3
 
-#define ENABLE_RENDERING 1
+#ifndef ENABLE_RENDERING
+#define ENABLE_RENDERING 0
+#endif
 
 // This class extracts colored blobs from RGB8 codede images.
 // Calls malloc a bunch of times in initialization, so re-use it.
@@ -65,7 +67,10 @@ class BlobExtractor
 		// v increases as you go down rows in the image.
 		MarkerLocations markerLocations;
 
+#if ENABLE_RENDERING
 		uint8_t * renderFrame;
+#endif
+
 };
 
 #endif

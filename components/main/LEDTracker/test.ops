@@ -1,12 +1,14 @@
 #!/usr/bin/env deployer
 
 #Import libraries
+import("masterTimer")
 import("cameraTrigger")
 import("soem_master")
 import("soem_ebox")
 import("LEDTracker")
  
 #Create components
+loadComponent("masterTimer","OCL::MasterTimer")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("cameraTrigger","OCL::CameraTrigger")
 loadComponent("LEDTracker","OCL::LEDTracker")
@@ -16,17 +18,23 @@ LEDTracker.useExternalTrigger = true
 #loadService("LEDTracker","marshalling")
 #LEDTracker.marshalling.loadProperties("../../../properties/LEDTracker/LEDTracker.cpf")
 
-#Set activities
-setActivity("LEDTracker",0.00,HighestPriority,ORO_SCHED_RT)
-#setActivity("LEDTracker",0.05,HighestPriority,ORO_SCHED_RT)
-#setActivity("LEDTracker",0.1,HighestPriority,ORO_SCHED_RT) 
 
-var double base_hz = 5;
-setActivity("cameraTrigger",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
-setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz
+
+setActivity("LEDTracker",0.00,HighestPriority,ORO_SCHED_RT)
+setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
+setActivity("cameraTrigger",0.0,HighestPriority,ORO_SCHED_RT)
 soemMaster.ifname = "eth1"
+setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+
 
 connectPeers("cameraTrigger","soemMaster")
+var ConnPolicy cp
+connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
+connect("masterTimer.cameraClock","cameraTrigger.Trigger",cp)
+#connect("masterTimer.cameraClock","protobuf.portTrigger",cp)
 
 soemMaster.configure()
 soemMaster.start()
@@ -36,3 +44,5 @@ cameraTrigger.start()
 
 LEDTracker.configure()
 LEDTracker.start()
+
+masterTimer.start()

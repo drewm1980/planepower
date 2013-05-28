@@ -47,7 +47,9 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	}
 	COUT << "Successfully connected to all cameras..." << ENDL;
 
-	for(unsigned int i=0; i < CAMERA_COUNT; i++) {
+	// Set up trigger mode on all cameras
+	for(unsigned int i=0; i < CAMERA_COUNT; i++) 
+	{
 		err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
@@ -104,7 +106,7 @@ CameraArray::CameraArray(bool useExternalTrigger)
 		current_frame[i] = NULL;
 	}
 
-	transfer_time = frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
+	transfer_time = CAMERA_COUNT*frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
 	if (VIDEO_MODE==DC1394_VIDEO_MODE_800x600_RGB8) transfer_time *= 3.0f;  // Three channels
 	COUT << "Based on bus speed, transfer time should be " << transfer_time*1e3 << "ms" << ENDL;
 	period = 1.0 / f_fps; // sec
@@ -114,6 +116,8 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	for(unsigned int i=0; i<CAMERA_COUNT; i++)
 	{
 		// Set shutter (exposure time)
+		//exposure_time = .00003;
+		exposure_time = .0001;
 		err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_SHUTTER, exposure_time);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 

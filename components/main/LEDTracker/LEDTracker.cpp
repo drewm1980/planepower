@@ -8,7 +8,7 @@
 #include "types.hpp"
 #include "cout.hpp"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 ORO_CREATE_COMPONENT( OCL::LEDTracker)
 

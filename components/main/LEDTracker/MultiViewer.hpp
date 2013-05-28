@@ -4,6 +4,10 @@
 #include "CameraArray.hpp"
 #include "BlobExtractor.hpp"
 
+#ifndef ENABLE_RENDERING
+#define ENABLE_RENDERING 0
+#endif
+
 #include <opencv2/opencv.hpp>
 
 const int render_scale_factor = 1;
@@ -34,13 +38,15 @@ class MultiViewer
 		cv::Mat rotated; // Rotated 90 Degrees
 
 	public:
+		
+#if ENABLE_RENDERING
 		// Similar to above, but for compositing the masks.
 		cv::Mat concatenated_masks; // Concatenated vertically 
 		cv::Mat resized_masks; // Scaled down if necessary
 		cv::Mat transposed_masks; // Transpose as first step to rotating
 		cv::Mat rotated_masks; // Rotated 90 Degrees
-
 		uint8_t *renderFrames[CAMERA_COUNT];
+#endif
 
 		void init(CameraArray *ca, BlobExtractor **bes);
 		MultiViewer(CameraArray *ca, BlobExtractor **bes);
