@@ -8,3 +8,5 @@
 
 .tb_history
 orocos.log
+
+*.deb
