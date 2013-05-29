@@ -11,7 +11,10 @@ if __name__=='__main__':
     propsDir = sys.argv[1]
 
     nmpc = NMPC.makeNmpc(propertiesDir=propsDir)
-    cgOptions= {'CXX':'clang++', 'CC':'clang','hideSymbols':True}
+    cgOptions= {'CXX':'clang++', 'CC':'clang',
+                'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                'CFLAGS':'-O3 -fPIC -finline-functions',
+                'hideSymbols':True}
     exportpath =  nmpc.exportCode(NMPC.mpcOpts, NMPC.mpcIntOpts, cgOptions, {})
 
     for filename in ['acado_common.h','ocp.o']:

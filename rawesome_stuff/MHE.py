@@ -2,7 +2,7 @@ import casadi as C
 import rawe
 
 import carouselModel
-from highwind_carousel_conf import conf
+from highwind_carousel_conf import getConf
 from common_conf import Ts
 
 mheHorizonN = 10
@@ -29,21 +29,15 @@ mheOpts['FIX_INITIAL_STATE'] = False
 #mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = False
 #mheOpts['CG_USE_C99'] = True
 
-# normal measurements
-measNames = ['marker_positions','IMU_angular_velocity','IMU_acceleration']
-measNames += ['r','dr','ddr','cos_delta','sin_delta','aileron','elevator']
+# measurements
+measNames = ['marker_positions','cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
 measNames += ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-
-endMeasNames  = ['IMU_angular_velocity']
-endMeasNames += ['r','cos_delta','sin_delta','aileron','elevator']
-
-# full state feedback
-#endMeasNames = ['x', 'y', 'z', 'e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33', 'dx', 'dy', 'dz', 'w1', 'w2', 'w3', 'ddelta', 'r', 'dr', 'aileron', 'elevator', 'motor_torque', 'ddr', 'cos_delta', 'sin_delta']
-#measNames = endMeasNames + ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-#
-#measNames += ['IMU_acceleration']
+measNames += ['aileron','elevator']
+endMeasNames = ['cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
+endMeasNames += ['aileron','elevator']
 
 def makeMhe(propertiesDir='../properties'):
+    conf = getConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
@@ -65,6 +59,8 @@ def makeMhe(propertiesDir='../properties'):
 
 def makeMheRT(propertiesDir='../properties', cgOptions = None):
     if cgOptions is None:
-        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+        cgOptions= {'CXX':'clang++', 'CC':'clang',
+                    'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                    'CFLAGS':'-O3 -fPIC -finline-functions'}
     mhe = makeMhe(propertiesDir=propertiesDir)
     return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)

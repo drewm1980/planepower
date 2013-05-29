@@ -5,39 +5,38 @@ Created on Mon Apr 22 15:48:33 2013
 
 @author: mzanon
 """
-
 import numpy
 import rawe
 
 import NMPC
 import MHE
-from mpc_mhe_utils import *
 from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
-from highwind_carousel_conf import conf
+from highwind_carousel_conf import getConf
 import carouselModel
 from rawekite.carouselSteadyState import getSteadyState
 
 from common_conf import Ts
 
-conf['stabilize_invariants'] = False
-dae = carouselModel.makeModel(conf)
+conf = getConf()
 conf['stabilize_invariants'] = True
 daeSim = carouselModel.makeModel(conf)
 
-Covariance = {'marker_positions':1e3,
-              'IMU_angular_velocity':1.,
-              'IMU_acceleration':10.,
-              'r':1.,
-              'cos_delta':1., 'sin_delta':1.,
-              'aileron':1e-2, 'elevator':1e-2,
-              'daileron':1e-4, 'delevator':1e-4,
-              'motor_torque':20.,
-              'ddr':1e-4,
-              'dmotor_torque':1.,
-              'dddr':1e-4}
-for name in dae.xNames() + dae.uNames():
-    Covariance[name] = 1.
+# Create the MPC class
+mheRT = MHE.makeMheRT()
+mpcRT = NMPC.makeNmpcRT(daeSim)
+
+mheSigmas = {'cos_delta':1.0, 'sin_delta':1.0,
+             'IMU_angular_velocity':16.0,
+             'IMU_acceleration':100.0,
+             'marker_positions':1e3,
+             'r':1.0,
+             'aileron':0.05,
+             'elevator':0.05,
+             'daileron':10.0,
+             'dmotor_torque':10.0,
+             'delevator':10.0,
+             'dddr':10.0}
 
 # Define the weights
 Wp  = 1e-1
@@ -74,27 +73,23 @@ MPCweights['dddr'] = Wdddr
 MPCweights['daileron'] = MPCweights['delevator'] = Wdae
 
 ## Simulation parameters
-Tf = 50.0   # Simulation duration
-
-# Create the MPC class
-mheRT = MHE.makeMheRT()
-mpcRT = NMPC.makeNmpcRT(daeSim)
+Tf = 500.0   # Simulation duration
 
 # Reference parameters
 refP = {'r0':1.2,
-        'ddelta0':2*np.pi,
+        'ddelta0':2*numpy.pi,
         'z0':-0.1}
 
 # utility function
 def getDeltaRange(delta0, kRange):
-    return np.array([delta0 + k*Ts*refP['ddelta0'] for k in kRange])
+    return numpy.array([delta0 + k*Ts*refP['ddelta0'] for k in kRange])
 def getDeltaRangeMhe(delta0):
     return getDeltaRange(delta0, range(-MHE.mheHorizonN, 1))
 def getDeltaRangeMpc(delta0):
     return getDeltaRange(delta0, range(0, NMPC.mpcHorizonN + 1))
 
 # Create a sim and initalize it
-sim = rawe.RtIntegrator(daeSim,ts=Ts,options=NMPC.mpcIntOpts)
+sim = rawe.RtIntegrator(daeSim, ts=Ts, options=MHE.mheIntOpts)
 steadyState,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'], refP['z0'])
 sim.x = steadyState
 sim.z = steadyState
@@ -103,15 +98,15 @@ sim.p = steadyState
 
 ####### initialize MHE #########
 # x/z/u
-for k,name in enumerate(dae.xNames()):
+for k,name in enumerate(mheRT.ocp.dae.xNames()):
     mheRT.x[:,k] = steadyState[name]
     if name == 'sin_delta':
-        mheRT.x[:,k] = np.sin(getDeltaRangeMhe(0))
+        mheRT.x[:,k] = numpy.sin(getDeltaRangeMhe(0))
     if name == 'cos_delta':
-        mheRT.x[:,k] = np.cos(getDeltaRangeMhe(0))
-for k,name in enumerate(dae.zNames()):
+        mheRT.x[:,k] = numpy.cos(getDeltaRangeMhe(0))
+for k,name in enumerate(mheRT.ocp.dae.zNames()):
     mheRT.z[:,k] = steadyState[name]
-for k,name in enumerate(dae.uNames()):
+for k,name in enumerate(mheRT.ocp.dae.uNames()):
     mheRT.u[:,k] = steadyState[name]
 
 # expected measurements
@@ -120,27 +115,27 @@ for k in range(mheRT.ocp.N):
 mheRT.yN = mheRT.computeYN(mheRT.x[-1,:])
 
 # weights
-Cov = np.array([])
+Weight_ = numpy.array([])
 for name in mheRT.ocp.yNames:
-    Cov = numpy.append( Cov, numpy.ones(dae[name].shape)*Covariance[name] )
-mheRT.S  = numpy.diag(1.0/Cov)
-Cov = np.array([])
+    Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
+mheRT.S  = numpy.diag(Weight_)
+Weight_ = numpy.array([])
 for name in mheRT.ocp.yNNames:
-    Cov = numpy.append( Cov, numpy.ones(dae[name].shape)*Covariance[name] )
-mheRT.SN  = numpy.diag(1.0/Cov)
+    Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
+mheRT.SN  = numpy.diag(Weight_)
 
 
 ####### initialize MPC #########
 # x/z/u
-for k,name in enumerate(dae.xNames()):
+for k,name in enumerate(mpcRT.ocp.dae.xNames()):
     mpcRT.x[:,k] = steadyState[name]
     if name == 'sin_delta':
-        mpcRT.x[:,k] = np.sin(getDeltaRangeMpc(0))
+        mpcRT.x[:,k] = numpy.sin(getDeltaRangeMpc(0))
     if name == 'cos_delta':
-        mpcRT.x[:,k] = np.cos(getDeltaRangeMpc(0))
-for k,name in enumerate(dae.zNames()):
+        mpcRT.x[:,k] = numpy.cos(getDeltaRangeMpc(0))
+for k,name in enumerate(mpcRT.ocp.dae.zNames()):
     mpcRT.z[:,k] = steadyState[name]
-for k,name in enumerate(dae.uNames()):
+for k,name in enumerate(mpcRT.ocp.dae.uNames()):
     mpcRT.u[:,k] = steadyState[name]
 
 # x0
@@ -153,13 +148,13 @@ mpcRT.yN = mpcRT.x[1,:]
 # weights
 Q = []
 R = []
-for name in dae.xNames():
+for name in mpcRT.ocp.dae.xNames():
     Q.append(MPCweights[name])
-for name in dae.uNames():
+for name in mpcRT.ocp.dae.uNames():
     R.append(MPCweights[name])
-mpcRT.S = np.diag( Q + R )
-mpcRT.Q = np.diag( Q )
-mpcRT.R = np.diag( R )
+mpcRT.S = numpy.diag( Q + R )
+mpcRT.Q = numpy.diag( Q )
+mpcRT.R = numpy.diag( R )
 
 
 # Simulation loop
@@ -169,20 +164,14 @@ pbb = ProtobufBridge()
 log = []
 while time < Tf:
     # run MHE
-
     mheIt = 0
     while True:
-        mheIt += 1
-        
         mheRT.preparationStep()
         mheRT.feedbackStep()
-
-        print "MHE exec time: ", str(mheRT.preparationTime + mheRT.feedbackTime)
-        
+        mheIt += 1
         if mheRT.getKKT() < 1e-2:
-            print "Time: ", time, "MHE its needed: ", mheIt
             break
-            
+
     # set mhe xN as mpc estimate
     mpcRT.x0 = mheRT.x[-1,:]
     
@@ -191,13 +180,11 @@ while time < Tf:
     #mpcRT.feedbackStep()
 
     # set the next control
-    sim.u = mpcRT.u[-1,:]
+    sim.u = mpcRT.u[0,:]
 
     # first compute the new final full measurement
     y_Nm1 = mheRT.computeY(sim.x, sim.u)
     yN = mheRT.computeYN(sim.x)
-    y_Nm1 += numpy.random.random(y_Nm1.size)*0.01
-    yN += numpy.random.random(yN.size)*0.01
 
     # send the protobuf and log the message
     pbb.setMhe(mheRT)
@@ -206,14 +193,29 @@ while time < Tf:
     log.append( pbb.sendMessage() )
 
     # step the simulation
-    print "sim time:",time,"mhe kkt:",mheRT.getKKT()
+    print "sim time: %5.1f,  mhe kkt: %.4e,  mhe iters: %2d,  mhe time: %.2e" % \
+        (time, mheRT.getKKT(), mheIt, mheRT.preparationTime+mheRT.feedbackTime)
     sim.step()
 
     # first compute the final partial measurement
-    mheRT.simpleShiftXZU()
-    mheRT.simpleShiftReference(y_Nm1, mheRT.computeYN(sim.x))
+    mheRT.shiftXZU()
 
-#    SimulateAndShift(mpcRT,mheRT,sim,Rint,dae,conf,refP)
+    # sensor measurements
+    yN = mheRT.computeYN(sim.x)
+
+#    # add noise to y_N
+#    yN += numpy.concatenate(\
+#         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.01
+#          for name in mheRT.ocp.yNNames])
+#
+#    # add noise to y_Nm1
+#    y_Nm1 += numpy.concatenate(\
+#         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.01
+#          for name in mheRT.ocp.yNames])
+
+    # shift reference
+    mheRT.simpleShiftReference(y_Nm1, yN)
+
     time += Ts
 
 import sys; sys.exit()

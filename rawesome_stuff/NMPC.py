@@ -3,7 +3,7 @@ import rawe
 
 import MHE
 from common_conf import Ts
-from highwind_carousel_conf import conf
+from highwind_carousel_conf import getConf
 import carouselModel
 
 mpcHorizonN = MHE.mheHorizonN
@@ -29,6 +29,7 @@ mpcOpts['FIX_INITIAL_STATE'] = True
 #mpcOpts['CG_USE_C99'] = True
 
 def makeNmpc(propertiesDir='../properties'):
+    conf = getConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
     mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)
@@ -49,7 +50,9 @@ def makeNmpc(propertiesDir='../properties'):
 
 def makeNmpcRT(lqrDae, propertiesDir='../properties', cgOptions = None):
     if cgOptions is None:
-        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+        cgOptions= {'CXX':'clang++', 'CC':'clang',
+                    'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                    'CFLAGS':'-O3 -fPIC -finline-functions'}
     mpc = makeNmpc(propertiesDir=propertiesDir)
     return rawe.MpcRT(mpc, lqrDae, ocpOptions=mpcOpts,
                       integratorOptions=mpcIntOpts, codegenOptions=cgOptions)
