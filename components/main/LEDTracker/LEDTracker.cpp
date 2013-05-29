@@ -10,16 +10,14 @@
 
 #define VERBOSE 0
 
-ORO_CREATE_COMPONENT( OCL::LEDTracker)
+ORO_CREATE_COMPONENT( LEDTracker)
 
 using namespace std;
 using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
-namespace OCL {
-
-LEDTracker::LEDTracker(std::string name) : TaskContext(name)
+LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
 {
 	attributes()->addAttribute( "useExternalTrigger", _useExternalTrigger);
 	_useExternalTrigger.set(false); // Default Value
@@ -182,5 +180,4 @@ void  LEDTracker::cleanUpHook()
 	}
 }
 
-}//namespace
 
