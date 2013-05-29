@@ -8,7 +8,7 @@ import("LEDTracker")
  
 loadComponent("masterTimer","MasterTimer")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
-loadComponent("cameraTrigger","OCL::CameraTrigger")
+loadComponent("cameraTrigger","CameraTrigger")
 loadComponent("LEDTracker","LEDTracker")
 LEDTracker.useExternalTrigger = true
 
