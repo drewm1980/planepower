@@ -11,7 +11,7 @@
 #define TRIGGER_ACTIVE_HIGH 0
 #define FRAME_BUFFER_DEPTH 4
 
-#define CAMERA_COUNT 3 // Set this manually to the number of cameras
+#define CAMERA_COUNT 2 // Set this manually to the number of cameras
 
 #if 0
 #define VIDEO_MODE DC1394_VIDEO_MODE_1600x1200_MONO8

@@ -116,8 +116,22 @@ void  LEDTracker::updateHook()
 	for(int i=0; i<CAMERA_COUNT; i++)
 	{
 		MarkerLocations * src = &(blobExtractors[i]->markerLocations);	
-		MarkerLocations * dst = (MarkerLocations*) &(markerPositions[0]);
+		MarkerLocations * dst = ((MarkerLocations*) &(markerPositions[0])) + i;
 		*dst = *src;
+	}
+
+	// Rescale the pixel data.
+	// Note!!!! whatever you do, make sure this is appropriate for the
+	// camera calibration files you're using, or your camera measurement
+	// function will be broken!!!
+	if(cameraArray->frame_w == 800)
+	{
+		for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
+		{
+			if( ! isnan(markerPositions[i])){ 
+				markerPositions[i] *= 2; // Match old camera resolution until we redo geometric calibration
+			} 
+		}
 	}
 	
 	// If a Marker was not detected properly,
