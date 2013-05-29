@@ -5,7 +5,7 @@ import("soem_master")
 import("soem_ebox")
  
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
-loadComponent("cameraTrigger","OCL::CameraTrigger")
+loadComponent("cameraTrigger","CameraTrigger")
  
 var double base_hz = 10;
 setActivity("cameraTrigger",1.0/base_hz,HighestPriority,ORO_SCHED_RT)

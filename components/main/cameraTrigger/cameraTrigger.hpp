@@ -1,6 +1,7 @@
-#ifndef __CAMERATRIGGERTEST__
-#define __CAMERATRIGGERTEST__
+#ifndef __CAMERATRIGGER__
+#define __CAMERATRIGGER__
 
+#include <stdint.h>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
@@ -21,39 +22,32 @@ using namespace RTT;
 using namespace BFL;
 using namespace Orocos;
 using namespace KDL;
-#include <stdint.h>
+
 typedef uint64_t TIME_TYPE;
 
 #define TRIGGER_ACTIVE_HIGH 0
 
-namespace OCL
+class CameraTrigger
+: public TaskContext
 {
-
-    /// CameraTrigger class
-    /**
-	 * See manifest.xml for description
-    */
-    class CameraTrigger
-        : public TaskContext
-    {
-    protected:
+	protected:
 		OperationCaller<bool(unsigned int, bool)>setBit;
 		void pull_trigger_high();
 		void pull_trigger_low();
 		InputPort<TIME_TYPE>	_Trigger;
 		OutputPort<TIME_TYPE>	_TriggerTriggeredTime; // Mainly for debugging
 		OutputPort<TIME_TYPE>	_TriggerResetTime; // Mainly for debugging
-    private:
+	private:
 		TIME_TYPE tempTime;
 
-    public:
-        CameraTrigger(std::string name);
-        ~CameraTrigger();
-        bool        configureHook();
-        bool        startHook();
-        void        updateHook();
-        void        stopHook();
-        void        cleanUpHook();
-    };
-}
-#endif // __CAMERATRIGGERTEST__
+	public:
+		CameraTrigger(std::string name);
+		~CameraTrigger();
+		bool        configureHook();
+		bool        startHook();
+		void        updateHook();
+		void        stopHook();
+		void        cleanUpHook();
+};
+
+#endif
