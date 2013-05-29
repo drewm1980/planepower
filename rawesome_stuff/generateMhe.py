@@ -11,7 +11,10 @@ if __name__=='__main__':
     propsDir = sys.argv[1]
 
     mhe = MHE.makeMhe(propertiesDir=propsDir)
-    cgOptions= {'CXX':'clang++', 'CC':'clang','hideSymbols':True}
+    cgOptions= {'CXX':'clang++', 'CC':'clang',
+                'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                'CFLAGS':'-O3 -fPIC -finline-functions',
+                'hideSymbols':True}
     exportpath =  mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
 
     for filename in ['acado_common.h','ocp.o']:

@@ -50,7 +50,9 @@ def makeNmpc(propertiesDir='../properties'):
 
 def makeNmpcRT(lqrDae, propertiesDir='../properties', cgOptions = None):
     if cgOptions is None:
-        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+        cgOptions= {'CXX':'clang++', 'CC':'clang',
+                    'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                    'CFLAGS':'-O3 -fPIC -finline-functions'}
     mpc = makeNmpc(propertiesDir=propertiesDir)
     return rawe.MpcRT(mpc, lqrDae, ocpOptions=mpcOpts,
                       integratorOptions=mpcIntOpts, codegenOptions=cgOptions)

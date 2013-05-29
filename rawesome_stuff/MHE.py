@@ -59,6 +59,8 @@ def makeMhe(propertiesDir='../properties'):
 
 def makeMheRT(propertiesDir='../properties', cgOptions = None):
     if cgOptions is None:
-        cgOptions = {'CXX':'g++', 'CC':'gcc'}
+        cgOptions= {'CXX':'clang++', 'CC':'clang',
+                    'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                    'CFLAGS':'-O3 -fPIC -finline-functions'}
     mhe = makeMhe(propertiesDir=propertiesDir)
     return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
