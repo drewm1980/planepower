@@ -6,10 +6,10 @@ import("soem_master")
 import("soem_ebox")
 import("LEDTracker")
  
-loadComponent("masterTimer","OCL::MasterTimer")
+loadComponent("masterTimer","MasterTimer")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("cameraTrigger","OCL::CameraTrigger")
-loadComponent("LEDTracker","OCL::LEDTracker")
+loadComponent("LEDTracker","LEDTracker")
 LEDTracker.useExternalTrigger = true
 
 loadService("masterTimer", "marshalling")
