@@ -9,7 +9,7 @@ using namespace RTT;
 using namespace RTT::os;
 
 MasterTimer::MasterTimer(string name)
-	: TaskContext( name )
+	: TaskContext(name, PreOperational)
 {
 	//
 	// Add properties
