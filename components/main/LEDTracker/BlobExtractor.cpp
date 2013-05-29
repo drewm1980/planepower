@@ -18,12 +18,12 @@ BlobExtractor::BlobExtractor(int w, int h)
 	medianFinder_h_r = new MedianFinder(h);
 	medianFinder_h_g = new MedianFinder(h);
 	medianFinder_h_b = new MedianFinder(h);
-	integrated_w_r = (int*) malloc(w*sizeof(int));
-	integrated_w_g = (int*) malloc(w*sizeof(int));
-	integrated_w_b = (int*) malloc(w*sizeof(int));
-	integrated_h_r = (int*) malloc(h*sizeof(int));
-	integrated_h_g = (int*) malloc(h*sizeof(int));
-	integrated_h_b = (int*) malloc(h*sizeof(int));
+	integrated_w_r = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_w_g = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_w_b = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_h_r = (uint32_t*) malloc(h*sizeof(uint32_t));
+	integrated_h_g = (uint32_t*) malloc(h*sizeof(uint32_t));
+	integrated_h_b = (uint32_t*) malloc(h*sizeof(uint32_t));
 
 #if ENABLE_RENDERING
 	renderFrame = NULL;
@@ -62,7 +62,7 @@ bool BlobExtractor::compare_colors(uint8_t r1,
 
 	// The compiler should be smart enough to reduce this at compile time:
 	const float PI = 3.1415;
-	const float color_angle_threshold = 20.0f * PI/180.0f; // Radians
+	const float color_angle_threshold = 30.0f * PI/180.0f; // Radians
 	const float color_dot_product_threshold = cosf(color_angle_threshold); // unitless thresh on cosine of the color angle
 	const float color_dot_product_threshold2 = color_dot_product_threshold
 		        *color_dot_product_threshold;
@@ -72,12 +72,12 @@ bool BlobExtractor::compare_colors(uint8_t r1,
 
 void BlobExtractor::find_leds(uint8_t * im)
 {
-	memset(integrated_w_r, 0, frame_w*sizeof(int));
-	memset(integrated_w_g, 0, frame_w*sizeof(int));
-	memset(integrated_w_b, 0, frame_w*sizeof(int));
-	memset(integrated_h_r, 0, frame_h*sizeof(int));
-	memset(integrated_h_g, 0, frame_h*sizeof(int));
-	memset(integrated_h_b, 0, frame_h*sizeof(int));
+	memset(integrated_w_r, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_w_g, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_w_b, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_h_r, 0, frame_h*sizeof(uint32_t));
+	memset(integrated_h_g, 0, frame_h*sizeof(uint32_t));
+	memset(integrated_h_b, 0, frame_h*sizeof(uint32_t));
 	
 	// Iterate over rows
 	uint8_t * pp = im;

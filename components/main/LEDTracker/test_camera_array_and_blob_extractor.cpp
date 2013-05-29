@@ -81,6 +81,8 @@ int main(int argc, char **argv)
 #if VISUAL
 		mv.update();
 #endif
+
+		cameraArray.sync_camera_parameters();
 	}
 	cleanup(0);
 }

@@ -111,7 +111,7 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	COUT << "Based on bus speed, transfer time should be " << transfer_time*1e3 << "ms" << ENDL;
 	period = 1.0 / f_fps; // sec
 
-	lock_camera_parameters();
+	sync_camera_parameters();
 
 	// Print settings for first camera
 #if VERBOSE
@@ -123,24 +123,12 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	COUT << "(CameraArray) constructor finished" << ENDL;
 }
 
-void CameraArray::lock_camera_parameters()
+void CameraArray::sync_camera_parameters()
 {
-	// Get all of the settings from first camera
-	//float brightness;
-	//float exposure;
-	//float sharpness;
-	//float balance;
-	//float hue;
-	//float saturation;
-	//float gamma;
-	//float shutter;
-	//float gain;
-	//float temperature;
-
 	const int feature_count = 4;
 	dc1394feature_t features[feature_count] = {
+		DC1394_FEATURE_SHUTTER			,   // MUST KEEP THIS THE FIRST ONE for proper measurement of shutter!
 		DC1394_FEATURE_BRIGHTNESS		, 
-		DC1394_FEATURE_SHUTTER			, 
 		DC1394_FEATURE_GAIN				, 
 		DC1394_FEATURE_TEMPERATURE		};
 
@@ -203,7 +191,9 @@ void CameraArray::lock_camera_parameters()
 			}
 		}
 	}
-	// Write settings to the other cameras
+	shutter = feature_absolute_values[0];
+
+	// Write the stored settings from the first camera to the other cameras
 	for(unsigned int i=1; i<camera_count; i++)
 	{
 		for(int f=0; f<feature_count; f++)

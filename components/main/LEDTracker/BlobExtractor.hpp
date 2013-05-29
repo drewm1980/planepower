@@ -28,13 +28,13 @@ class BlobExtractor
 		// pixels that passed the color thresholds.
 		// In otherwords, they are histograms of image coordinates
 		// of pixels that pass the color threshold checks.
-		int* integrated_w_r;
-		int* integrated_w_g;
-		int* integrated_w_b;
+		uint32_t* integrated_w_r;
+		uint32_t* integrated_w_g;
+		uint32_t* integrated_w_b;
 
-		int* integrated_h_r;
-		int* integrated_h_g;
-		int* integrated_h_b;
+		uint32_t* integrated_h_r;
+		uint32_t* integrated_h_g;
+		uint32_t* integrated_h_b;
 
 		bool compare_colors(uint8_t r1, 
 				uint8_t g1,

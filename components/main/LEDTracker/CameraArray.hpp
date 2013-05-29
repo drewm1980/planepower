@@ -46,7 +46,6 @@ class CameraArray
 		dc1394camera_t *cameras[CAMERA_COUNT];
 		dc1394video_frame_t *current_frame[CAMERA_COUNT];
 		dc1394video_mode_t res;
-		void lock_camera_parameters();
 
 		float f_fps; // hz
 		float period; // sec
@@ -78,6 +77,8 @@ class CameraArray
 
 		uint8_t *current_frame_data[CAMERA_COUNT]; 
 		uint64_t current_timestamp; // us
+
+		void sync_camera_parameters();
 };
 
 #endif
