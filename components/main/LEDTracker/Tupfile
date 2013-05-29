@@ -1,4 +1,7 @@
 include_rules
+
+CXXFLAGS_OROCOS += -O3
+CXXFLAGS_OROCOS += -msse3
 : foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp CameraArray.cpp |> !cxx_orocos |> {objsforcomponent}
 
 : test_blob_extractor.cpp |> !cxx |>

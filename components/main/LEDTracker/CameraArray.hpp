@@ -11,7 +11,7 @@
 #define TRIGGER_ACTIVE_HIGH 0
 #define FRAME_BUFFER_DEPTH 4
 
-#define CAMERA_COUNT 3 // It is a hard error to NOT have this many cameras.
+#define CAMERA_COUNT 3 // Set this manually to the number of cameras
 
 #if 0
 #define VIDEO_MODE DC1394_VIDEO_MODE_1600x1200_MONO8
@@ -33,8 +33,6 @@
 #define GUIDS {LEFT_GUID,CENTER_GUID,RIGHT_GUID}
 #endif
 
-#define EXPOSURE_TIME_AT_STARTUP .003f
-
 /**
  * This class configures and captures images from multiple firewire cameras.
  */
@@ -48,12 +46,12 @@ class CameraArray
 		dc1394camera_t *cameras[CAMERA_COUNT];
 		dc1394video_frame_t *current_frame[CAMERA_COUNT];
 		dc1394video_mode_t res;
+		void lock_camera_parameters();
 
 		float f_fps; // hz
 		float period; // sec
 
 		uint64_t guids[CAMERA_COUNT];
-		float exposure_time; // Also called "shutter" in some interfaces.  (sec)
 		float transfer_time; // Expected time to transer a complete set of frames over the ieee1394 bus (sec)
 
 		uint64_t last_frame_timestamps[CAMERA_COUNT]; // Timestamps of the last frame arrival (usec)
@@ -75,6 +73,9 @@ class CameraArray
 		int frame_w;
 		int frame_h;
 		int camera_count;
+
+		float shutter; // Also called "exposure_time" in some interfaces.  (sec)
+
 		uint8_t *current_frame_data[CAMERA_COUNT]; 
 		uint64_t current_timestamp; // us
 };

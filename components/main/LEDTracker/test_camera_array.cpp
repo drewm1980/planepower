@@ -38,8 +38,11 @@ int main(int argc, char **argv)
 	MultiViewer mv(&cameraArray);	
 #endif
 
+	int i=0;
 	while(1)
 	{
+		i++;
+		cout << "Displaying frame " << i << endl;
 		cameraArray.updateHook();
 #if VISUAL
 		mv.update();

@@ -1,23 +1,16 @@
 #!/usr/bin/env deployer
 
-#Import libraries
 import("masterTimer")
 import("cameraTrigger")
 import("soem_master")
 import("soem_ebox")
 import("LEDTracker")
  
-#Create components
 loadComponent("masterTimer","OCL::MasterTimer")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("cameraTrigger","OCL::CameraTrigger")
 loadComponent("LEDTracker","OCL::LEDTracker")
 LEDTracker.useExternalTrigger = true
-
-#Load properties
-#loadService("LEDTracker","marshalling")
-#LEDTracker.marshalling.loadProperties("../../../properties/LEDTracker/LEDTracker.cpf")
-
 
 loadService("masterTimer", "marshalling")
 masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
@@ -29,12 +22,10 @@ setActivity("cameraTrigger",0.0,HighestPriority,ORO_SCHED_RT)
 soemMaster.ifname = "eth1"
 setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
 
-
 connectPeers("cameraTrigger","soemMaster")
 var ConnPolicy cp
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
 connect("masterTimer.cameraClock","cameraTrigger.Trigger",cp)
-#connect("masterTimer.cameraClock","protobuf.portTrigger",cp)
 
 soemMaster.configure()
 soemMaster.start()
@@ -45,4 +36,5 @@ cameraTrigger.start()
 LEDTracker.configure()
 LEDTracker.start()
 
+masterTimer.configure()
 masterTimer.start()
