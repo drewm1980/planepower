@@ -12,17 +12,17 @@
 
 #include <ocl/OCL.hpp>
 
-#include "StereoPair.hpp"
+#include "CameraArray.hpp"
 #include "BlobExtractor.hpp"
+
+#define MARKER_NOT_DETECTED_VALUE -1000.0
 
 #include <fstream>
 using std::ifstream;
 
 using namespace std;
 using namespace RTT;
-using namespace BFL;
 using namespace Orocos;
-using namespace KDL;
 typedef uint64_t TIME_TYPE;
 
 namespace OCL
@@ -53,12 +53,16 @@ namespace OCL
 			OutputPort<double> _deltaOut;
 			double delta;
 
+			int frame_w, frame_h;
+
 		private:
-			StereoPair *stereoPair;
-			BlobExtractor *blobExtractor1;
-			BlobExtractor *blobExtractor2;
-			std::vector<double>	markerPositions;
-			vector<double>		markerPositionsAndCovariance;
+			CameraArray *cameraArray;
+			BlobExtractor *blobExtractors[CAMERA_COUNT];
+
+			// These are staging areas for the ports
+			vector<double>	markerPositions;
+			vector<double>	markerPositionsAndCovariance;
+
 			double			sigma_marker;
 			TIME_TYPE		tempTime;
 			

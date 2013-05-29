@@ -43,4 +43,3 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build/expe
 # instead of the stock version.
 #export PATH=$PLANEPOWER_ROOT/tools:$PATH
 
-# source $PLANEPOWER_ROOT/.eprompt

@@ -2,14 +2,6 @@
 
 echo "Bootstrapping CasADi..."
 (
-cd casadi
-mkdir -p build
-(
-cd build
-rm CMakeCache.txt
-cmake ..
-make -j4
-make python
-sudo make install_python
-)
+scp nonfree@moinette:casadi/tested/casadi_latest_amd64.deb .
+sudo dpkg -i casadi_latest_amd64.deb
 )

@@ -1,18 +1,30 @@
 include_rules
-: foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp StereoPair.cpp |> !cxx_orocos |> {objsforcomponent}
 
+CXXFLAGS_OROCOS += -O3
+CXXFLAGS_OROCOS += -msse3
+: foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp CameraArray.cpp |> !cxx_orocos |> {objsforcomponent}
+
+: test_blob_extractor.cpp |> !cxx |>
+: test_blob_extractor.o BlobExtractor.o MedianFinder.o |> $(CXX) %f -o %o |> test_blob_extractor
+
+
+CXXFLAGS += -ggdb
 LDFLAGS += `pkg-config --libs opencv` -ldc1394
 LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
 
-: Tracer.cpp |> !cxx |>
-
-OBJS=MedianFinder.o StereoPair.o Tracer.o
-: test_stereo_pair.cpp |> !cxx |>
-: test_stereo_pair.o | $(OBJS) |> $(CXX) $(OBJS) -o %o %f $(LDFLAGS) |> %B
-
-OBJS2=BlobExtractor.o MedianFinder.o StereoPair.o Tracer.o
-: test_stereo_pair_and_blob_extractor.cpp |> !cxx |>
-: test_stereo_pair_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
-
-
 : {objsforcomponent} |> !ld_orocos |> 
+
+: gamma.cpp |> !cxx |>
+: MultiViewer.cpp |> !cxx |>
+
+OBJS3=CameraArray.o gamma.o MultiViewer.o
+: test_camera_array.cpp |> !cxx |>
+: test_camera_array.o | $(OBJS3) |> $(CXX) $(OBJS3) -o %o %f $(LDFLAGS) |> %B
+
+# For this we compile in extra stuff that slows the extractor down a bit,
+# but that enables rendering masks.
+: foreach BlobExtractor.cpp MultiViewer.cpp |> $(CXX) $(CXXFLAGS_OROCOS) -DENABLE_RENDERING $(CPPFLAGS_OROCOS) -c %f -o %o |> %B_renderable.o
+OBJS2=BlobExtractor_renderable.o MultiViewer_renderable.o CameraArray.o MedianFinder.o gamma.o
+: test_camera_array_and_blob_extractor.cpp |> $(CXX) $(CXXFLAGS_OROCOS) -DENABLE_RENDERING $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+: test_camera_array_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
+

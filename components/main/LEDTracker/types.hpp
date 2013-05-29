@@ -12,10 +12,23 @@ struct cameraSpecs
 
 struct MarkerLocations
 {
-	cv::Point2d red;
-	cv::Point2d green;
-	cv::Point2d blue;
+	union{
+		//struct{
+			//cv::Point2d red;
+			//cv::Point2d green;
+			//cv::Point2d blue;
+		//};
+		struct{
+			double rx;
+			double ry;
+			double gx;
+			double gy;
+			double bx;
+			double by;
+		};
+	};
 };
+
 
 
 #endif

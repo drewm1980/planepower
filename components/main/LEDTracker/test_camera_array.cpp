@@ -7,18 +7,18 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include "StereoPair.hpp"
+#include "CameraArray.hpp"
 #include "cout.hpp"
 
 #define VISUAL 1
 #if VISUAL
-#include "Tracer.hpp"
+#include "MultiViewer.hpp"
 #endif
 
 using namespace std;
 using std::ifstream;
 
-StereoPair *p_t;
+CameraArray *p_t;
 void cleanup(int s)
 {
 	COUT << "Caught SIGINT.  Cleaning up cameras before exiting." << ENDL;
@@ -29,20 +29,23 @@ void cleanup(int s)
 
 int main(int argc, char **argv) 
 {
-	StereoPair stereoPair(false); // False for internal trigger
-	p_t = &stereoPair;
-	stereoPair.startHook();
+	CameraArray cameraArray(false); // False for internal trigger
+	p_t = &cameraArray;
+	cameraArray.startHook();
 	signal(SIGINT,cleanup);
 
 #if VISUAL
-	Tracer tracer(&stereoPair);	
+	MultiViewer mv(&cameraArray);	
 #endif
 
+	int i=0;
 	while(1)
 	{
-		stereoPair.updateHook();
+		i++;
+		cout << "Displaying frame " << i << endl;
+		cameraArray.updateHook();
 #if VISUAL
-		tracer.update();
+		mv.update();
 #endif
 	}
 	cleanup(0);

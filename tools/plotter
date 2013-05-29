@@ -6,7 +6,7 @@
 # Our DNS is fucked up... pull carousl ip address from /etc/hosts
 ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f1`
 
-CMD="$PLANEPOWER_ROOT/rawesome_stuff/rawesome/plot-ho-matic/dist/build/plot-ho-matic/plot-ho-matic --ip tcp://$ip:5563"
+CMD="$PLANEPOWER_ROOT/rawesome_stuff/plot-ho-matic/dist/build/plot-ho-matic/plot-ho-matic --ip tcp://$ip:5563"
 
 echo $0: running $CMD...
 $CMD &disown
