@@ -42,7 +42,9 @@ def generateSimpleCode(F,
     proto='%s %s(%s, %s)'%(outputtype,fname,instring,outstring)
     declaration = dir1 + proto + dir2 + ';\n'
     definition=proto + '\n{\n' + body + '}\n'
-    code=warnstring+'\n\n'+docstring+'\n'+declaration+definition
+    sq_inline = "inline double sq(double x){return x*x;}\n"
+    sign_inline = "inline double sign(double x){ return x<0 ? -1 : x>0 ? 1 : x;}\n"
+    code=warnstring+'\n'+sq_inline+sign_inline+'\n'+docstring+'\n'+declaration+definition
 
     import os
     f = open(filename,'wb');
