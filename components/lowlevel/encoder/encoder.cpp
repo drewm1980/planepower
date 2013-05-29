@@ -31,7 +31,7 @@ using namespace soem_ebox;
 
 
 Encoder::Encoder(std::string name)
-	: TaskContext( name )
+	: TaskContext(name, PreOperational)
 {
 	//
 	// Add ports

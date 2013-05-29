@@ -26,7 +26,7 @@ void voltage_controller_signal_handler(int signum)
 }
 
 VoltageController::VoltageController(std::string name)
-	: TaskContext(name)
+	: TaskContext(name, PreOperational)
 {
 	//
 	// Add ports

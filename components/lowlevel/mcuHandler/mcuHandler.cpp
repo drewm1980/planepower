@@ -39,7 +39,7 @@ enum McuHandlerErrorCodes
 };
 
 McuHandler::McuHandler(std::string name)
-	: RTT::TaskContext( name )
+	: RTT::TaskContext(name, PreOperational)
 {
 	//
 	// Add ports
