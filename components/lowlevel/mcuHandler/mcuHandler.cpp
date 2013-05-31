@@ -22,6 +22,9 @@
 #define IMU_ACCL_SCALE( Value ) \
 		(double)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
 
+/// Maximum number of transmission errors before we stop the component
+#define MAX_ERRORS_ALLOWED 5
+
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
@@ -129,9 +132,11 @@ bool McuHandler::startHook()
 
 void McuHandler::updateHook()
 {
-//	TimeService::ticks tickStart = TimeService::Instance()->getTicks();
-	
-	portTrigger.read( triggerTimeStamp );
+	if (getPeriod() == 0.0)
+		portTrigger.read( triggerTimeStamp );
+	else
+		triggerTimeStamp = TimeService::Instance()->getTicks();
+
  	if (portControls.read( controls ) == NewData && rtMode == true)
  	{
 		// In case we received new commands and we are in the real-time mode
@@ -158,13 +163,13 @@ void McuHandler::updateHook()
 
 	// This is a check for the real-time mode. In case we do not meet the
 	// deadline, abort.
-	if (upTimeCnt > 5 && elapsedTime > Ts && rtMode == true)
+	if (rtMode == true && elapsedTime > Ts && (++upTimeCnt > MAX_ERRORS_ALLOWED))
 	{
 		tcpStatus = ERR_DEADLINE;
 		exception();
 	}
 	else
-		++upTimeCnt;
+		upTimeCnt = 0;
 }	
 	
 void McuHandler::stopHook()
@@ -285,7 +290,11 @@ void  McuHandler::receiveSensorData(vector< double >& data)
 	}
 	
 	// Timestamp
-	data[ 0 ] = (double) TimeService::Instance()->getTicks();
+	// V1
+//	data[ 0 ] = (double) TimeService::Instance()->getTicks();
+	// V2
+	data[ 0 ] = triggerTimeStamp;
+	
 	// And now fill in the IMU data
 	data[ 1 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
 	data[ 2 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
@@ -306,6 +315,7 @@ void McuHandler::ethernetTransmitReceive( void )
 	int i, j;
 	unsigned long sum;
 	long index;
+	static unsigned numErrors = 0;
 
 	// tcpStatus: exceptions are triggered only in case the current state is OK.
 	// This is implemented in such a way to be able to send last resort signal to the MCU
@@ -346,11 +356,13 @@ void McuHandler::ethernetTransmitReceive( void )
 	{
 		sum += receiveBuffer[ index ];
 	}
-	if (( sum & 0xFF ) != 0 && tcpStatus == OK)
+	if (( sum & 0xFF ) != 0 && tcpStatus == OK && (++numErrors > MAX_ERRORS_ALLOWED))
 	{
 		tcpStatus = ERR_BAD_CHECKSUM;
 		exception();
 	}
+	else
+		numErrors = 0; 
 }
 
 ORO_CREATE_COMPONENT( McuHandler )

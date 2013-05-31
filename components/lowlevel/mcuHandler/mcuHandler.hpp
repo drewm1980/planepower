@@ -59,7 +59,8 @@ protected:
 	
 	/// Trigger the component to get IMU data if there is an event on this port.
 	RTT::InputPort< TIME_TYPE > portTrigger;
-	/// Time stamp of the input trigger.
+	/// Time stamp of the input trigger. Used in the case when IMU component
+	/// is triggered externally.
 	TIME_TYPE triggerTimeStamp;
 	/// Holder for the IMU data.
 	std::vector< double > imuData;
