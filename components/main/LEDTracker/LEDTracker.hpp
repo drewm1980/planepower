@@ -51,6 +51,9 @@ class LEDTracker : public TaskContext
 		OutputPort<double> _deltaOut;
 		double delta;
 
+	OutputPort< vector< double > > portTimeStamps;
+	vector< double > timeStamps;
+
 		int frame_w, frame_h;
 
 	private:

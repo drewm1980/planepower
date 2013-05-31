@@ -22,6 +22,9 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
 	attributes()->addAttribute( "useExternalTrigger", _useExternalTrigger);
 	_useExternalTrigger.set(false); // Default Value
 
+	addPort("timeStamps", portTimeStamps)
+		.doc("Time stamps: [trigger frameArrival compDone exit]");
+
 	addPort( "markerPositions",_markerPositions ).doc("Pixel Locations of the markers");
 	addPort( "markerPositionsAndCovariance",_markerPositionsAndCovariance ).doc("Pixel locatoins and weights");
 	addPort("triggerTimeStampIn",_triggerTimeStampIn);
@@ -42,6 +45,9 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
 	sigma_marker = 1e3;
 
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+	timeStamps.resize(4, 0.0);
+	portTimeStamps.setDataSample( timeStamps );
 
 	_markerPositions.setDataSample( markerPositions );
 	_markerPositions.write( markerPositions );
@@ -85,7 +91,10 @@ void  LEDTracker::updateHook()
 {
 	// This blocks until a frame arrives from all cameras
 	cameraArray->updateHook();
-	_triggerTimeStampIn.read(triggerTimeStamp); // The timestamp the camera was triggered for the current frame.
+
+	// The timestamp the camera was triggered for the current frame.
+	while(_triggerTimeStampIn.read(triggerTimeStamp) == NewData); 
+//	_triggerTimeStampIn.read(triggerTimeStamp);
 
 	_deltaIn.read(delta);
 
@@ -148,10 +157,18 @@ void  LEDTracker::updateHook()
 	}
 
 	_triggerTimeStampOut.write(triggerTimeStamp);
+	_deltaOut.write(delta);
+
 	_markerPositions.write(markerPositions);
 	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
 
-	_deltaOut.write(delta);
+	timeStamps[ 0 ] = (double) triggerTimeStamp;
+	timeStamps[ 1 ] = (double) frameArrivalTimeStamp;
+	timeStamps[ 2 ] = (double) computationCompleteTimeStamp;
+	timeStamps[ 3 ] = (double) RTT::os::TimeService::Instance()->getTicks();
+
+	portTimeStamps.write( timeStamps );
+
 	// Tell orocos to re-trigger this component immediately after
 	// it is done updating output ports, so that it can start waiting
 	// for the next frame arrival
