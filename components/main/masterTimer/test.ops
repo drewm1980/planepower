@@ -4,7 +4,7 @@
 import("masterTimer")
  
 #Create components
-loadComponent("masterTimer","OCL::MasterTimer")
+loadComponent("masterTimer","MasterTimer")
  
 #Load properties
 loadService("masterTimer","marshalling")
