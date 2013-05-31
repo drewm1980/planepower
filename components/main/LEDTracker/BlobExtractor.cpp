@@ -4,13 +4,25 @@
 #include "MedianFinder.hpp"
 #include "types.hpp"
 
-using namespace std;
-using namespace cv;
+// Only needed for debayering:
+#include <opencv2/opencv.hpp>
 
-BlobExtractor::BlobExtractor(int w, int h)
+using namespace std;
+
+void debayer_frame(uint8_t* src, uint8_t* dst, int frame_w, int frame_h)
+{
+using namespace cv;
+	Mat srcmat(frame_h, frame_w, CV_8UC(1),src);
+	Mat dstmat(frame_h, frame_w, CV_8UC(3),dst);
+	//cvtColor(srcmat, dstmat, CV_BayerBG2BGR);
+	cvtColor(srcmat, dstmat, CV_BayerBG2RGB);
+}
+
+BlobExtractor::BlobExtractor(int w, int h, bool source_is_bayer_coded)
 {
 	frame_w = w;
 	frame_h = h;
+	this->source_is_bayer_coded = source_is_bayer_coded;
 
 	medianFinder_w_r = new MedianFinder(w);
 	medianFinder_w_g = new MedianFinder(w);
@@ -24,6 +36,12 @@ BlobExtractor::BlobExtractor(int w, int h)
 	integrated_h_r = (uint32_t*) malloc(h*sizeof(uint32_t));
 	integrated_h_g = (uint32_t*) malloc(h*sizeof(uint32_t));
 	integrated_h_b = (uint32_t*) malloc(h*sizeof(uint32_t));
+
+	if(source_is_bayer_coded)
+	{
+		debayered_frame_bgr = (uint8_t*) malloc(h*w*3*sizeof(uint8_t));
+		debayered_frame_rgb = (uint8_t*) malloc(h*w*3*sizeof(uint8_t));
+	}
 
 #if ENABLE_RENDERING
 	renderFrame = NULL;
@@ -43,6 +61,11 @@ BlobExtractor::~BlobExtractor()
 	free(integrated_h_r);
 	free(integrated_h_g);
 	free(integrated_h_b);
+	if(source_is_bayer_coded)
+	{
+		free(debayered_frame_rgb);
+		free(debayered_frame_bgr);
+	}
 }
 
 bool BlobExtractor::compare_colors(uint8_t r1, 
@@ -78,6 +101,12 @@ void BlobExtractor::find_leds(uint8_t * im)
 	memset(integrated_h_r, 0, frame_h*sizeof(uint32_t));
 	memset(integrated_h_g, 0, frame_h*sizeof(uint32_t));
 	memset(integrated_h_b, 0, frame_h*sizeof(uint32_t));
+
+	if(source_is_bayer_coded)
+	{
+		debayer_frame(im, debayered_frame_rgb, frame_w, frame_h);
+		im = debayered_frame_rgb;
+	}
 	
 	// Iterate over rows
 	uint8_t * pp = im;

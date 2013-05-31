@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	int frame_h = 600;
 
 	cout << "Instantating BlobExtractor" << endl;
-	be = new BlobExtractor(frame_w,frame_h);
+	be = new BlobExtractor(frame_w,frame_h,false);
 	uint8_t * frame_data = (uint8_t *) calloc(frame_w*frame_h*3,sizeof(uint8_t));
 
 	cout << "Drawing some boxes..." << endl;

@@ -36,6 +36,10 @@ class BlobExtractor
 		uint32_t* integrated_h_g;
 		uint32_t* integrated_h_b;
 
+		bool source_is_bayer_coded;
+		uint8_t* debayered_frame_rgb;
+		uint8_t* debayered_frame_bgr;
+
 		bool compare_colors(uint8_t r1, 
 				uint8_t g1,
 				uint8_t b1,
@@ -53,7 +57,7 @@ class BlobExtractor
 		
 	public:
 
-		BlobExtractor(int w, int h);
+		BlobExtractor(int w, int h, bool source_is_bayer_coded);
 		~BlobExtractor();
 
 		int frame_w;

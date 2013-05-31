@@ -13,14 +13,16 @@
 
 #define CAMERA_COUNT 2 // Set this manually to the number of cameras
 
-#if 0
+#if 1
 #define VIDEO_MODE DC1394_VIDEO_MODE_1600x1200_MONO8
 #define FRAME_W 1600
 #define FRAME_H 1200
+#define NEED_TO_DEBAYER true
 #else
 #define VIDEO_MODE DC1394_VIDEO_MODE_800x600_RGB8
 #define FRAME_W 800
 #define FRAME_H 600
+#define NEED_TO_DEBAYER false
 #endif
 
 #define RIGHT_GUID 0xb09d0100a98977

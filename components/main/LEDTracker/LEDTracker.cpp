@@ -76,7 +76,7 @@ bool  LEDTracker::configureHook()
 	frame_h = cameraArray->frame_h;
 	for(int i=0; i<CAMERA_COUNT; i++)
 	{
-		blobExtractors[i] = new BlobExtractor(frame_w, frame_h);
+		blobExtractors[i] = new BlobExtractor(frame_w, frame_h, NEED_TO_DEBAYER);
 	}
 	return true;
 }
