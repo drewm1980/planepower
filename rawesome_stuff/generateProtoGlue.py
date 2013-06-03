@@ -17,5 +17,5 @@ if __name__=='__main__':
     rawe.utils.mkprotobufs.writeAll(dae, topname, autogenDir,
                                     mheHorizN=MHE.mheHorizonN,
                                     mpcHorizN=NMPC.mpcHorizonN,
-                                    measurements=MHE.measNames,
-                                    measurementsEnd=MHE.endMeasNames)
+                                    measurementsX=MHE.measX,
+                                    measurementsU=MHE.measU)
