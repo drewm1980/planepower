@@ -17,13 +17,17 @@ class ProtobufBridge(object):
                          mheRT.preparationTime,
                          mheRT.feedbackTime)
         # compute expected measurements as fcn of x/u
-        (N, ny) = mheRT.y.shape
-        y_of_x = numpy.zeros( (N, ny) )
+        N = mheRT.ocp.N
+        nyx = mheRT.ocp.yx.numel()
+        nyu = mheRT.ocp.yu.numel()
+        yx_of_x = numpy.zeros( (N+1, nyx) )
+        yu_of_u = numpy.zeros( (N, nyu) )
+        for k in range(N+1):
+            yx_of_x[k,:] = mheRT.computeYX(mheRT.x[k,:])
         for k in range(N):
-            y_of_x[k,:] = mheRT.computeY(mheRT.x[k,:], mheRT.u[k,:])
-        yN_of_xN = mheRT.computeYN(mheRT.x[-1,:])
-        self._pbb.setMheExpectedMeas(DVector(y_of_x.flatten()),
-                                     DVector(yN_of_xN))
+            yu_of_u[k,:] = mheRT.computeYU(mheRT.u[k,:])
+        self._pbb.setMheExpectedMeas(DVector(yx_of_x.flatten()),
+                                     DVector(yu_of_u.flatten()))
 
     def setMpc(self,mpcRT):
         self._pbb.setMpc(DVector(mpcRT.x.flatten()),

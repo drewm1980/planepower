@@ -12,7 +12,7 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 executable plot-ho-matic
-  hs-source-dirs:    src
+  hs-source-dirs:    src ../autogenHs
   main-is:           Main.hs
 --  other-modules:
   build-depends:     base >= 4.5.0 && < 4.7,

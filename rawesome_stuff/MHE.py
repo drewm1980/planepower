@@ -30,18 +30,17 @@ mheOpts['FIX_INITIAL_STATE'] = False
 #mheOpts['CG_USE_C99'] = True
 
 # measurements
-measNames = ['marker_positions','cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
-measNames += ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-measNames += ['aileron','elevator']
-endMeasNames = ['cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
-endMeasNames += ['aileron','elevator']
+measX = ['marker_positions','cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
+measX += ['aileron','elevator']
+
+measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
 def makeMhe(propertiesDir='../properties'):
     conf = getConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
-    mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yNames=measNames, yNNames=endMeasNames)
+    mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yxNames=measX, yuNames=measU)
 
     mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
     mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')

@@ -6,6 +6,7 @@ Created on Mon Apr 22 15:48:33 2013
 @author: mzanon
 """
 import numpy
+import time
 import rawe
 
 import NMPC
@@ -111,16 +112,17 @@ for k,name in enumerate(mheRT.ocp.dae.uNames()):
 
 # expected measurements
 for k in range(mheRT.ocp.N):
-    mheRT.y[k,:] = mheRT.computeY(mheRT.x[k,:], mheRT.u[k,:])
-mheRT.yN = mheRT.computeYN(mheRT.x[-1,:])
+    mheRT.y[k,:] = numpy.concatenate((mheRT.computeYX(mheRT.x[k,:]),
+                                      mheRT.computeYU(mheRT.u[k,:])))
+mheRT.yN = mheRT.computeYX(mheRT.x[-1,:])
 
 # weights
 Weight_ = numpy.array([])
-for name in mheRT.ocp.yNames:
+for name in mheRT.ocp.yxNames+mheRT.ocp.yuNames:
     Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
 mheRT.S  = numpy.diag(Weight_)
 Weight_ = numpy.array([])
-for name in mheRT.ocp.yNNames:
+for name in mheRT.ocp.yxNames:
     Weight_ = numpy.append( Weight_, numpy.ones(mheRT.ocp.dae[name].shape)*(1.0/mheSigmas[name]**2) )
 mheRT.SN  = numpy.diag(Weight_)
 
@@ -153,16 +155,15 @@ for name in mpcRT.ocp.dae.xNames():
 for name in mpcRT.ocp.dae.uNames():
     R.append(MPCweights[name])
 mpcRT.S = numpy.diag( Q + R )
-mpcRT.Q = numpy.diag( Q )
-mpcRT.R = numpy.diag( R )
-
+########mpcRT.Q = numpy.diag( Q )
+########mpcRT.R = numpy.diag( R )
 
 # Simulation loop
-time = 0
+current_time = 0
 
 pbb = ProtobufBridge()
 log = []
-while time < Tf:
+while current_time < Tf:
     # run MHE
     mheIt = 0
     while True:
@@ -183,25 +184,28 @@ while time < Tf:
     sim.u = mpcRT.u[0,:]
 
     # first compute the new final full measurement
-    y_Nm1 = mheRT.computeY(sim.x, sim.u)
-    yN = mheRT.computeYN(sim.x)
+    yxNsim = mheRT.computeYX(sim.x)
+    yuNsim = mheRT.computeYU(sim.u)
 
     # send the protobuf and log the message
     pbb.setMhe(mheRT)
     pbb.setMpc(mpcRT)
-    pbb.setSimState(sim.x, sim.z, sim.u, y_Nm1, yN, mheRT.computeOutputs(sim.x,sim.u))
+    pbb.setSimState(sim.x, sim.z, sim.u, yxNsim, yuNsim, mheRT.computeOutputs(sim.x,sim.u))
     log.append( pbb.sendMessage() )
 
     # step the simulation
-    print "sim time: %5.1f,  mhe kkt: %.4e,  mhe iters: %2d,  mhe time: %.2e" % \
-        (time, mheRT.getKKT(), mheIt, mheRT.preparationTime+mheRT.feedbackTime)
+    print "sim time: %6.2f   mhe kkt: %.4e   mhe iters: %2d   mhe time: %.2e" % \
+        (current_time, mheRT.getKKT(), mheIt, mheRT.preparationTime+mheRT.feedbackTime)
     sim.step()
+#    time.sleep(Ts)
 
     # first compute the final partial measurement
     mheRT.shiftXZU()
+    mpcRT.shiftXZU()
 
     # sensor measurements
-    yN = mheRT.computeYN(sim.x)
+    yN = mheRT.computeYX(sim.x)
+    y_Nm1 = numpy.concatenate((yxNsim, yuNsim))
 
 #    # add noise to y_N
 #    yN += numpy.concatenate(\
@@ -216,7 +220,7 @@ while time < Tf:
     # shift reference
     mheRT.simpleShiftReference(y_Nm1, yN)
 
-    time += Ts
+    current_time += Ts
 
 import sys; sys.exit()
 plt.ion()

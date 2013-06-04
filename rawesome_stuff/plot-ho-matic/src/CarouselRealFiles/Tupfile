@@ -1,7 +1,0 @@
-.gitignore
-
-names=DifferentialStates.hs AlgebraicVars.hs Controls.hs Parameters.hs Outputs.hs Measurements.hs MeasurementsEnd.hs Dae.hs Trajectory.hs Debug.hs MheMpcHorizons.hs Mhe.hs Mpc.hs Sim.hs
-
-PBDIR = ../../../bufStuff
-: $(PBDIR)/Carousel.proto |> hprotoc -I$(PBDIR) --haskell_out=.. --include_imports Carousel.proto |> Carousel.hs $(names)
-
