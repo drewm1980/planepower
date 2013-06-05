@@ -35,6 +35,7 @@ measX += ['aileron','elevator']
 
 measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
+
 def makeMhe(propertiesDir='../properties'):
     conf = getConf()
     conf['stabilize_invariants'] = False
@@ -42,17 +43,17 @@ def makeMhe(propertiesDir='../properties'):
 
     mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yxNames=measX, yuNames=measU)
 
-    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_START')
 
-    mhe.constrain(mhe['c'],'==',0, when='AT_END')
-    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
+    mhe.constrain(mhe['c'],'==',0, when='AT_START')
+    mhe.constrain(mhe['cdot'],'==',0, when='AT_START')
 
-    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_START')
 
     return mhe
 
