@@ -34,7 +34,7 @@ def makeNmpc(propertiesDir='../properties'):
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
     mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)
 
-    mpc.constrain( mpc['ddr'], '==', 0 );
+    mpc.constrain( mpc['dddr'], '==', 0 );
     mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
     mpc.constrain( mpc['aileron'], '<=', 32767/1.25e6 );
     mpc.constrain( -32767/2e5, '<=', mpc['elevator'] );
