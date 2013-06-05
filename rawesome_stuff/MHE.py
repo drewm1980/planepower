@@ -5,12 +5,12 @@ import carouselModel
 from highwind_carousel_conf import getConf
 from common_conf import Ts
 
-mheHorizonN = 10
+mheHorizonN = 20
 
 mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
 #mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_RIIA3'
-mheIntOpts['NUM_INTEGRATOR_STEPS'] = 4
+mheIntOpts['NUM_INTEGRATOR_STEPS'] = 20
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
 #mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'

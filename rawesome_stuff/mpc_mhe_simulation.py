@@ -33,38 +33,38 @@ mheSigmas = {'cos_delta':1.0, 'sin_delta':1.0,
              'dddr':10.0}
 
 # Define the weights
-Wp  = 1e-1
-Wdp = 1e-1
-We  = 1.
-Ww  = 1.
-Wr  = 1.
+Wp  = 1.0
+Wdp = 1.0
+We  = 1.0
+Ww  = 1.0
+Wr  = 0.1
 Wdr  = Wr
-Wdelta = 1e2
+Wdelta = 1.0
 Wddelta = Wdelta
-Wae = 1e2
-Wddr = 1.
+Wae = 0.1
+Wddr = 0.1
 Wmt = 1e-1
 
-Wdmt = 1.
-Wdddr = 1.
-Wdae = 1.
+Wdmt = 1.0
+Wdddr = 1.0
+Wdae = 1.0
 
-MPCweights = {}
-for name in ['x','y','z']: MPCweights[name] = Wp
-for name in ['dx','dy','dz']: MPCweights[name] = Wdp
-for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: MPCweights[name] = We
-for name in ['w1','w2','w3']: MPCweights[name] = Ww
-MPCweights['r'] = Wr
-MPCweights['dr'] = Wdr
-MPCweights['ddr'] = Wddr
-MPCweights['cos_delta'] = MPCweights['sin_delta'] = Wdelta
-MPCweights['ddelta'] = Wddelta
-MPCweights['motor_torque'] = Wmt
-MPCweights['aileron'] = MPCweights['elevator'] = Wae
+mpcSigmas = {}
+for name in ['x','y','z']: mpcSigmas[name] = Wp
+for name in ['dx','dy','dz']: mpcSigmas[name] = Wdp
+for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = We
+for name in ['w1','w2','w3']: mpcSigmas[name] = Ww
+mpcSigmas['r'] = Wr
+mpcSigmas['dr'] = Wdr
+mpcSigmas['ddr'] = Wddr
+mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = Wdelta
+mpcSigmas['ddelta'] = Wddelta
+mpcSigmas['motor_torque'] = Wmt
+mpcSigmas['aileron'] = mpcSigmas['elevator'] = Wae
 
-MPCweights['dmotor_torque'] = Wdmt
-MPCweights['dddr'] = Wdddr
-MPCweights['daileron'] = MPCweights['delevator'] = Wdae
+mpcSigmas['dmotor_torque'] = Wdmt
+mpcSigmas['dddr'] = Wdddr
+mpcSigmas['daileron'] = mpcSigmas['delevator'] = Wdae
 
 ## Simulation parameters
 Tf = 500.0   # Simulation duration
@@ -132,24 +132,42 @@ for k,name in enumerate(mpcRT.ocp.dae.zNames()):
     mpcRT.z[:,k] = steadyState[name]
 for k,name in enumerate(mpcRT.ocp.dae.uNames()):
     mpcRT.u[:,k] = steadyState[name]
-
 # x0
 mpcRT.x0 = mpcRT.x[0,:]
 
 # reference
-mpcRT.y = numpy.hstack((mpcRT.x[:-1,:], mpcRT.u))
-mpcRT.yN = mpcRT.x[1,:]
+def setMpcReference(delta):
+    nx = len(mpcRT.ocp.dae.xNames())
+    for k,name in enumerate(mpcRT.ocp.dae.xNames()):
+        if name == 'sin_delta':
+            yall = numpy.sin(getDeltaRangeMpc(delta))
+            y = yall[:-1]
+            yn = yall[-1]
+        elif name == 'cos_delta':
+            yall = numpy.cos(getDeltaRangeMpc(delta))
+            y = yall[:-1]
+            yn = yall[-1]
+        else:
+            y = steadyState[name]
+            yn = y
+        mpcRT.y[:,k] = y
+        mpcRT.yN[k] = yn
+    for k,name in enumerate(mpcRT.ocp.dae.uNames()):
+        mpcRT.y[:,k+nx] = steadyState[name]
+setMpcReference(0)
 
 # weights
 Q = []
 R = []
 for name in mpcRT.ocp.dae.xNames():
-    Q.append(MPCweights[name])
+    Q.append(1.0/mpcSigmas[name]**2)
 for name in mpcRT.ocp.dae.uNames():
-    R.append(MPCweights[name])
+    R.append(1.0/mpcSigmas[name]**2)
 mpcRT.S = numpy.diag( Q + R )
+mpcRT.SN = numpy.diag( Q )
 ########mpcRT.Q = numpy.diag( Q )
 ########mpcRT.R = numpy.diag( R )
+
 
 # Simulation loop
 current_time = 0
@@ -163,15 +181,26 @@ while current_time < Tf:
         mheRT.preparationStep()
         mheRT.feedbackStep()
         mheIt += 1
-        if mheRT.getKKT() < 1e-2:
+        if mheRT.getKKT() < 1e-9:
             break
+        assert mheIt < 100, "mhe took too may iterations"
 
     # set mhe xN as mpc estimate
     mpcRT.x0 = mheRT.x[-1,:]
-    
+#    mpcRT.x0 = sim.x
+
+    # set mpc reference
+    setMpcReference(current_time*refP['ddelta0'])
+
     # run MPC
-    #mpcRT.preparationStep()
-    #mpcRT.feedbackStep()
+    mpcIt = 0
+    while True:
+        mpcRT.preparationStep()
+        mpcRT.feedbackStep()
+        mpcIt += 1
+        if mpcRT.getKKT() < 1e0:
+            break
+        assert mpcIt < 100, "mpc took too may iterations"
 
     # set the next control
     sim.u = mpcRT.u[0,:]
@@ -187,8 +216,10 @@ while current_time < Tf:
     log.append( pbb.sendMessage() )
 
     # step the simulation
-    print "sim time: %6.2f   mhe kkt: %.4e   mhe iters: %2d   mhe time: %.2e" % \
-        (current_time, mheRT.getKKT(), mheIt, mheRT.preparationTime+mheRT.feedbackTime)
+    print "sim time: %6.2f | mhe {kkt: %.4e, iter: %2d, time: %.2e} | mpc {kkt: %.4e, iter: %2d, time: %.2e }" \
+        % (current_time,
+           mheRT.getKKT(), mheIt, mheRT.preparationTime + mheRT.feedbackTime,
+           mpcRT.getKKT(), mpcIt, mpcRT.preparationTime + mpcRT.feedbackTime)
     sim.step()
 #    time.sleep(Ts)
 
