@@ -28,6 +28,8 @@ class ProtobufBridge(object):
             yu_of_u[k,:] = mheRT.computeYU(mheRT.u[k,:])
         self._pbb.setMheExpectedMeas(DVector(yx_of_x.flatten()),
                                      DVector(yu_of_u.flatten()))
+        outs = numpy.concatenate([mheRT.computeOutputs(mheRT.x[k,:],mheRT.u[k,:]) for k in range(N)])
+        self._pbb.setMheOutputs(DVector(outs.flatten()))
 
     def setMpc(self,mpcRT):
         self._pbb.setMpc(DVector(mpcRT.x.flatten()),
@@ -39,6 +41,10 @@ class ProtobufBridge(object):
                          mpcRT.getObjective(),
                          mpcRT.preparationTime,
                          mpcRT.feedbackTime)
+
+        N = mpcRT.ocp.N
+        outs = numpy.concatenate([mpcRT.computeOutputs(mpcRT.x[k,:],mpcRT.u[k,:]) for k in range(N)])
+        self._pbb.setMpcOutputs(DVector(outs.flatten()))
 
     def setSimState(self, x, z, u, y, yn, outs):
         self._pbb.setSimState(DVector(x.flatten()),

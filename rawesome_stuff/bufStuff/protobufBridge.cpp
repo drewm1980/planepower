@@ -189,6 +189,32 @@ void ProtobufBridge::setSimState(const vector< double > &X,
 }
 
 
+void ProtobufBridge::setMpcOutputs(const vector< double > &OUTS) {
+    assert(OUTS.size() == NUM_OUTPUTS * NUM_MPC_HORIZON );
+
+    Carousel::Mpc * mpc = mmh.mutable_mpc();
+    if (0 == mpc->outs_of_xu_size())
+        for (int k = 0; k < NUM_MPC_HORIZON; k++)
+            mpc->add_outs_of_xu();
+
+    for (int k = 0; k < NUM_MPC_HORIZON; k++)
+        fromOutputs(mpc->mutable_outs_of_xu(k), (Outputs*) &(OUTS[k*NUM_OUTPUTS]));
+}
+
+void ProtobufBridge::setMheOutputs(const vector< double > &OUTS) {
+    assert(OUTS.size() == NUM_OUTPUTS * NUM_MHE_HORIZON );
+
+    Carousel::Mhe * mhe = mmh.mutable_mhe();
+    if (0 == mhe->outs_of_xu_size())
+        for (int k = 0; k < NUM_MHE_HORIZON; k++)
+            mhe->add_outs_of_xu();
+
+    for (int k = 0; k < NUM_MHE_HORIZON; k++)
+        fromOutputs(mhe->mutable_outs_of_xu(k), (Outputs*) &(OUTS[k*NUM_OUTPUTS]));
+}
+
+
+
 void  ProtobufBridge::sendMessage() {
     // set the debug vector
     mmh.mutable_debug()->set_d0(debugVec[0]);

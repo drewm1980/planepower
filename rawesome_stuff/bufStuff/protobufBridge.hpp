@@ -44,6 +44,8 @@ public:
                      const vector< double > &outs);
     void setMheExpectedMeas(const vector< double > &YX_OF_X,
                             const vector< double > &YU_OF_U);
+    void setMpcOutputs(const vector< double > &OUTS);
+    void setMheOutputs(const vector< double > &OUTS);
     void sendMessage();
 
     string packedMsg;
