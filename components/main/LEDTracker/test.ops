@@ -17,8 +17,8 @@ masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
 var double base_hz = masterTimer.imu_target_hz
 
 setActivity("LEDTracker",0.00,HighestPriority,ORO_SCHED_RT)
-#setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
-setActivity("cameraTrigger", .05 ,HighestPriority,ORO_SCHED_RT)
+setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
+setActivity("cameraTrigger", 0.0, HighestPriority,ORO_SCHED_RT)
 soemMaster.ifname = "eth1"
 setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
 
