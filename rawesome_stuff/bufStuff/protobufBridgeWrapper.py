@@ -33,6 +33,8 @@ class ProtobufBridge(object):
         self._pbb.setMpc(DVector(mpcRT.x.flatten()),
                          DVector(mpcRT.u.flatten()),
                          DVector(mpcRT.x0.flatten()),
+                         DVector(mpcRT.y.flatten()),
+                         DVector(mpcRT.yN.flatten()),
                          mpcRT.getKKT(),
                          mpcRT.getObjective(),
                          mpcRT.preparationTime,
