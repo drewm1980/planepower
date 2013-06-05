@@ -4,19 +4,7 @@
 #include "MedianFinder.hpp"
 #include "types.hpp"
 
-// Only needed for debayering:
-#include <opencv2/opencv.hpp>
-
-using namespace std;
-
-void debayer_frame(uint8_t* src, uint8_t* dst, int frame_w, int frame_h)
-{
-using namespace cv;
-	Mat srcmat(frame_h, frame_w, CV_8UC(1),src);
-	Mat dstmat(frame_h, frame_w, CV_8UC(3),dst);
-	//cvtColor(srcmat, dstmat, CV_BayerBG2BGR);
-	cvtColor(srcmat, dstmat, CV_BayerBG2RGB);
-}
+#include "debayer.hpp"
 
 BlobExtractor::BlobExtractor(int w, int h, bool source_is_bayer_coded)
 {
@@ -39,7 +27,6 @@ BlobExtractor::BlobExtractor(int w, int h, bool source_is_bayer_coded)
 
 	if(source_is_bayer_coded)
 	{
-		debayered_frame_bgr = (uint8_t*) malloc(h*w*3*sizeof(uint8_t));
 		debayered_frame_rgb = (uint8_t*) malloc(h*w*3*sizeof(uint8_t));
 	}
 
@@ -64,7 +51,6 @@ BlobExtractor::~BlobExtractor()
 	if(source_is_bayer_coded)
 	{
 		free(debayered_frame_rgb);
-		free(debayered_frame_bgr);
 	}
 }
 
@@ -77,7 +63,7 @@ bool BlobExtractor::compare_colors(uint8_t r1,
 {
 	if(r1==0 && g1==0 && b1==0) return 0; 
 	uint32_t i1 = r1*r1 + g1*g1 + b1*b1; // levels^2
-	const uint32_t intensity_threshold = 32;
+	const uint32_t intensity_threshold = 15;
 	if(i1<intensity_threshold*intensity_threshold) return 0;
 
 	uint32_t i2 = r2*r2 + g2*g2 + b2*b2; // levels^2

@@ -8,6 +8,8 @@
 #include "cout.hpp"
 #include "gamma.hpp"
 
+#include "debayer.hpp"
+
 using namespace std;
 using namespace cv;
 
@@ -84,7 +86,12 @@ void MultiViewer::update(void)
 	{
 		// Into the first frame, composite the original images
 		uint8_t * src = cameraArray->current_frame_data[i];
-		memcpy(dest,src,image_bytes);
+		if(NEED_TO_DEBAYER)
+		{
+			debayer_frame(src, dest, frame_w, frame_h);
+		} else {
+			memcpy(dest,src,image_bytes);
+		}
 		dest += image_bytes;
 
 		if (blobExtractors != NULL)
