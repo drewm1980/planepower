@@ -29,16 +29,17 @@ import MultiCarousel ( State(..), NiceKite(..), runMultiCarousel )
 import qualified Carousel.MheMpcHorizons as MMH
 import qualified Carousel.Mhe as Mhe
 import qualified Carousel.Mpc as Mpc
+import qualified Carousel.Sim as Sim
 import qualified Carousel.DifferentialStates as CX
 
-toNice :: CX.DifferentialStates -> NiceKite
-toNice daeX = NiceKite { nk_xyz = xyz
+toNice :: Maybe Double -> CX.DifferentialStates -> NiceKite
+toNice delta0 daeX = NiceKite { nk_xyz = xyz
                        , nk_q'n'b = q'n'b
                        , nk_r'n0'a0 = r'n0'a0
                        , nk_r'n0't0 = r'n0't0
                        , nk_lineAlpha = 0.2 -- realToFrac $ fromMaybe 1 (CS.lineTransparency cs)
                        , nk_kiteAlpha = 1 -- realToFrac $ fromMaybe 1 (CS.kiteTransparency cs)
-                       , nk_visSpan = 1 -- fromMaybe 1 (CS.visSpan cs)
+                       , nk_visSpan = 0.5 -- fromMaybe 1 (CS.visSpan cs)
                        }
   where
 --    daeX = PD.differentialStates dae
@@ -62,7 +63,9 @@ toNice daeX = NiceKite { nk_xyz = xyz
     e32 = CX.e32 daeX
     e33 = CX.e33 daeX
     
-    delta = atan2 (CX.sin_delta daeX) (CX.cos_delta daeX)
+    delta' = atan2 (CX.sin_delta daeX) (CX.cos_delta daeX)
+    delta = case delta0 of Nothing -> delta'
+                           Just delta0' -> delta' - delta0'
 
     q'nwu'ned = Quat 0 1 0 0
 
@@ -90,8 +93,13 @@ toState mmh = State (mpckites ++ mhekites) messages
     shiftZ :: Double -> NiceKite -> NiceKite
     shiftZ dz nk = nk {nk_xyz = Xyz 0 0 dz + (nk_xyz nk)}
     messages = map uToString $ toList $ MMH.messages mmh
-    mpckites = map toNice $ toList $ Mpc.x $ MMH.mpc mmh
-    mhekites = map (shiftZ 1 . toNice) $ toList $ Mhe.x $ MMH.mhe mmh
+    mpckites = map (toNice delta0) $ toList $ Mpc.x $ MMH.mpc mmh
+    mhekites = map (shiftZ 1 . (toNice delta0)) $ toList $ Mhe.x $ MMH.mhe mmh
+
+    delta0 = do
+      sim <- MMH.sim mmh
+      let simX = Sim.x sim
+      return $ atan2 (CX.sin_delta simX) (CX.cos_delta simX)
 
 main :: IO ()
 main = runMultiCarousel "mhe-mpc" toState
