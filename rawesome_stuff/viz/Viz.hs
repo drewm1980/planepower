@@ -34,13 +34,13 @@ import qualified Carousel.DifferentialStates as CX
 
 toNice :: Maybe Double -> CX.DifferentialStates -> NiceKite
 toNice delta0 daeX = NiceKite { nk_xyz = xyz
-                       , nk_q'n'b = q'n'b
-                       , nk_r'n0'a0 = r'n0'a0
-                       , nk_r'n0't0 = r'n0't0
-                       , nk_lineAlpha = 0.2 -- realToFrac $ fromMaybe 1 (CS.lineTransparency cs)
-                       , nk_kiteAlpha = 1 -- realToFrac $ fromMaybe 1 (CS.kiteTransparency cs)
-                       , nk_visSpan = 0.5 -- fromMaybe 1 (CS.visSpan cs)
-                       }
+                              , nk_q'n'b = q'n'b
+                              , nk_r'n0'a0 = r'n0'a0
+                              , nk_r'n0't0 = r'n0't0
+                              , nk_lineAlpha = 1 -- realToFrac $ fromMaybe 1 (CS.lineTransparency cs)
+                              , nk_kiteAlpha = 1 -- realToFrac $ fromMaybe 1 (CS.kiteTransparency cs)
+                              , nk_visSpan = 0.5 -- fromMaybe 1 (CS.visSpan cs)
+                              }
   where
 --    daeX = PD.differentialStates dae
 --    daeZ = PD.algebraicVars dae
@@ -79,7 +79,7 @@ toNice delta0 daeX = NiceKite { nk_xyz = xyz
     q'n'b = q'n'a * q'a'b
     q'n'aNWU = q'n'a * q'nwu'ned
 
-    rArm = Xyz 0 0 0 -- CS.rArm
+    rArm = Xyz 1.2 0 0 -- CS.rArm
     xyzArm = rArm + Xyz x y z
     xyz = rotVecByQuatB2A q'n'aNWU xyzArm
 

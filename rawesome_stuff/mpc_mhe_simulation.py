@@ -23,7 +23,7 @@ mpcRT = NMPC.makeNmpcRT(daeSim)
 mheSigmas = {'cos_delta':1e-1, 'sin_delta':1e-1,
              'IMU_angular_velocity':1.0,
              'IMU_acceleration':10.0,
-             'marker_positions':1e3,
+             'marker_positions':1e2,
              'r':1e-1,
              'aileron':1e-2,
              'elevator':1e-2,
@@ -154,7 +154,7 @@ for name in mpcRT.ocp.dae.xNames():
 for name in mpcRT.ocp.dae.uNames():
     R.append(mpcWeights[name])
 mpcRT.S = numpy.diag( Q + R )
-mpcRT.SN = numpy.diag( Q )
+mpcRT.SN = numpy.diag( Q )*10
 ########mpcRT.Q = numpy.diag( Q )
 ########mpcRT.R = numpy.diag( R )
 
@@ -172,13 +172,14 @@ while current_time < Tf:
         mheRT.preparationStep()
         mheRT.feedbackStep()
         mheIt += 1
+        break
         if mheRT.getKKT() < 1e-9:
             break
         assert mheIt < 100, "mhe took too may iterations"
 
     # set mhe xN as mpc estimate
     mpcRT.x0 = mheRT.x[-1,:]
-#    mpcRT.x0 = sim.x
+#    mpcRT.x0 = sim.x # perfect estimation
 
     # set mpc reference
     if round(current_time / 5.0) % 2 == 0:
@@ -192,6 +193,7 @@ while current_time < Tf:
         mpcRT.preparationStep()
         mpcRT.feedbackStep()
         mpcIt += 1
+        break
         if mpcRT.getKKT() < 1e0:
             break
         assert mpcIt < 100, "mpc took too may iterations"
@@ -218,7 +220,7 @@ while current_time < Tf:
 #    time.sleep(Ts)
 
     # first compute the final partial measurement
-    mheRT.shiftXZU()
+    mheRT.shiftXZU(strategy='copy', xEnd=mpcRT.x[1,:], uEnd=mpcRT.u[0,:])
     mpcRT.shiftXZU()
 
     # sensor measurements

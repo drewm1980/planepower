@@ -6,7 +6,7 @@ from common_conf import Ts
 from highwind_carousel_conf import getConf
 import carouselModel
 
-mpcHorizonN = MHE.mheHorizonN
+mpcHorizonN = 15
 
 mpcIntOpts = rawe.RtIntegratorOptions()
 mpcIntOpts['INTEGRATOR_TYPE'] = MHE.mheIntOpts['INTEGRATOR_TYPE']
