@@ -126,7 +126,7 @@ for k,name in enumerate(mpcRT.ocp.dae.uNames()):
 mpcRT.x0 = mpcRT.x[0,:]
 
 # reference
-def setMpcReference(delta):
+def setMpcReference(delta,state):
     nx = len(mpcRT.ocp.dae.xNames())
     for k,name in enumerate(mpcRT.ocp.dae.xNames()):
         if name == 'sin_delta':
@@ -138,13 +138,13 @@ def setMpcReference(delta):
             y = yall[:-1]
             yn = yall[-1]
         else:
-            y = steadyState[name]
+            y = state[name]
             yn = y
         mpcRT.y[:,k] = y
         mpcRT.yN[k] = yn
     for k,name in enumerate(mpcRT.ocp.dae.uNames()):
-        mpcRT.y[:,k+nx] = steadyState[name]
-setMpcReference(0)
+        mpcRT.y[:,k+nx] = state[name]
+setMpcReference(0,steadyState)
 
 # weights
 Q = []
@@ -164,6 +164,7 @@ current_time = 0
 
 pbb = ProtobufBridge()
 log = []
+steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3, 1+refP['z0'])
 while current_time < Tf:
     # run MHE
     mheIt = 0
@@ -180,7 +181,10 @@ while current_time < Tf:
 #    mpcRT.x0 = sim.x
 
     # set mpc reference
-    setMpcReference(current_time*refP['ddelta0'])
+    if round(current_time / 5.0) % 2 == 0:
+        setMpcReference(current_time*refP['ddelta0'], steadyState)
+    else:
+        setMpcReference(current_time*refP['ddelta0'], steadyState2)
 
     # run MPC
     mpcIt = 0
