@@ -20,51 +20,41 @@ daeSim = carouselModel.makeModel(conf)
 mheRT = MHE.makeMheRT()
 mpcRT = NMPC.makeNmpcRT(daeSim)
 
-mheSigmas = {'cos_delta':1.0, 'sin_delta':1.0,
-             'IMU_angular_velocity':16.0,
-             'IMU_acceleration':100.0,
+mheSigmas = {'cos_delta':1e-1, 'sin_delta':1e-1,
+             'IMU_angular_velocity':1.0,
+             'IMU_acceleration':10.0,
              'marker_positions':1e3,
-             'r':1.0,
-             'aileron':0.05,
-             'elevator':0.05,
-             'daileron':10.0,
-             'dmotor_torque':10.0,
-             'delevator':10.0,
-             'dddr':10.0}
+             'r':1e-1,
+             'aileron':1e-2,
+             'elevator':1e-2,
+             'daileron':1e-4,
+             'dmotor_torque':1e-4,
+             'delevator':1e-4,
+             'dddr':1e-4}
 
 # Define the weights
-Wp  = 1.0
-Wdp = 1.0
-We  = 1.0
-Ww  = 1.0
-Wr  = 0.1
-Wdr  = Wr
-Wdelta = 1.0
-Wddelta = Wdelta
-Wae = 0.1
-Wddr = 0.1
-Wmt = 1e-1
-
-Wdmt = 1.0
-Wdddr = 1.0
-Wdae = 1.0
-
 mpcSigmas = {}
-for name in ['x','y','z']: mpcSigmas[name] = Wp
-for name in ['dx','dy','dz']: mpcSigmas[name] = Wdp
-for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = We
-for name in ['w1','w2','w3']: mpcSigmas[name] = Ww
-mpcSigmas['r'] = Wr
-mpcSigmas['dr'] = Wdr
-mpcSigmas['ddr'] = Wddr
-mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = Wdelta
-mpcSigmas['ddelta'] = Wddelta
-mpcSigmas['motor_torque'] = Wmt
-mpcSigmas['aileron'] = mpcSigmas['elevator'] = Wae
+for name in ['x','y','z']: mpcSigmas[name] = 1.0
+for name in ['dx','dy','dz']: mpcSigmas[name] = 1.0
+for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = 1.0
+for name in ['w1','w2','w3']: mpcSigmas[name] = 1.0
+mpcSigmas['r'] = 1.0
+mpcSigmas['dr'] = 1.0
+mpcSigmas['ddr'] = 1.0
+mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = 1.0
+mpcSigmas['ddelta'] = 1.0
+mpcSigmas['motor_torque'] = 1e1
+mpcSigmas['aileron'] = mpcSigmas['elevator'] = 1e-2
 
-mpcSigmas['dmotor_torque'] = Wdmt
-mpcSigmas['dddr'] = Wdddr
-mpcSigmas['daileron'] = mpcSigmas['delevator'] = Wdae
+mpcSigmas['dmotor_torque'] = 1.0
+mpcSigmas['dddr'] = 1.0
+mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1.0
+
+mpcWeights = {}
+for name in mpcSigmas:
+    mpcWeights[name] = 1.0/mpcSigmas[name]**2
+for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
+for name in ['dx','dy','dz']: mpcWeights[name] *= 1e-1
 
 ## Simulation parameters
 Tf = 500.0   # Simulation duration
@@ -160,9 +150,9 @@ setMpcReference(0)
 Q = []
 R = []
 for name in mpcRT.ocp.dae.xNames():
-    Q.append(1.0/mpcSigmas[name]**2)
+    Q.append(mpcWeights[name])
 for name in mpcRT.ocp.dae.uNames():
-    R.append(1.0/mpcSigmas[name]**2)
+    R.append(mpcWeights[name])
 mpcRT.S = numpy.diag( Q + R )
 mpcRT.SN = numpy.diag( Q )
 ########mpcRT.Q = numpy.diag( Q )
@@ -231,15 +221,15 @@ while current_time < Tf:
     yN = mheRT.computeYX(sim.x)
     y_Nm1 = numpy.concatenate((yxNsim, yuNsim))
 
-#    # add noise to y_N
-#    yN += numpy.concatenate(\
-#         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.01
-#          for name in mheRT.ocp.yNNames])
-#
-#    # add noise to y_Nm1
-#    y_Nm1 += numpy.concatenate(\
-#         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.01
-#          for name in mheRT.ocp.yNames])
+    # add noise to y_N
+    yN += numpy.concatenate(\
+         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.03
+          for name in mheRT.ocp.yxNames])
+
+    # add noise to y_Nm1
+    y_Nm1 += numpy.concatenate(\
+         [numpy.random.randn(mheRT.ocp.dae[name].size())*mheSigmas[name]*0.03
+          for name in mheRT.ocp.yxNames+mheRT.ocp.yuNames])
 
     # shift reference
     mheRT.simpleShiftReference(y_Nm1, yN)

@@ -88,7 +88,7 @@ toNice delta0 daeX = NiceKite { nk_xyz = xyz
     r'n0't0 = xyz + (rotVecByQuatB2A q'n'b $ Xyz 0 0 (-zt))
 
 toState :: MMH.MheMpcHorizons -> State
-toState mmh = State (mpckites ++ mhekites) messages
+toState mmh = State (mpckites ++ mhekites ++ simKite) messages
   where
     shiftZ :: Double -> NiceKite -> NiceKite
     shiftZ dz nk = nk {nk_xyz = Xyz 0 0 dz + (nk_xyz nk)}
@@ -96,10 +96,12 @@ toState mmh = State (mpckites ++ mhekites) messages
     mpckites = map (toNice delta0) $ toList $ Mpc.x $ MMH.mpc mmh
     mhekites = map (shiftZ 1 . (toNice delta0)) $ toList $ Mhe.x $ MMH.mhe mmh
 
-    delta0 = do
-      sim <- MMH.sim mmh
-      let simX = Sim.x sim
-      return $ atan2 (CX.sin_delta simX) (CX.cos_delta simX)
+    (delta0,simKite) = case MMH.sim mmh of
+      Nothing -> (Nothing, [])
+      Just sim -> (Just $ atan2 (CX.sin_delta simX) (CX.cos_delta simX), [simKite'])
+        where
+          simX = Sim.x sim
+          simKite' = shiftZ (-1) $ toNice delta0 $ simX
 
 main :: IO ()
 main = runMultiCarousel "mhe-mpc" toState
