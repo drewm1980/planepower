@@ -27,7 +27,7 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
 
 	addPort( "markerPositions",_markerPositions ).doc("Pixel Locations of the markers");
 	addPort( "markerPositionsAndCovariance",_markerPositionsAndCovariance ).doc("Pixel locatoins and weights");
-	addEventPort("triggerTimeStampIn",_triggerTimeStampIn);
+	addPort("triggerTimeStampIn",_triggerTimeStampIn);
 	addPort("triggerTimeStampOut",_triggerTimeStampOut);
 
 	addPort("compTime",_compTime);
@@ -89,17 +89,11 @@ bool  LEDTracker::startHook()
 
 void  LEDTracker::updateHook()
 {
-	// At entry we should have just been woken up by the same event port
-	// that woke up the cameraTrigger.
-
-	// Read the timestamp from the eventPort
-	if(_triggerTimeStampIn.read(triggerTimeStamp) != NewData) return 0; 
-
 	// This blocks until a frame arrives from all cameras
 	cameraArray->updateHook();
 
 	// The timestamp the camera was triggered for the current frame.
-	//while(_triggerTimeStampIn.read(triggerTimeStamp) == NewData); 
+	while(_triggerTimeStampIn.read(triggerTimeStamp) == NewData); 
 //	_triggerTimeStampIn.read(triggerTimeStamp);
 
 	_deltaIn.read(delta);
@@ -178,7 +172,7 @@ void  LEDTracker::updateHook()
 	// Tell orocos to re-trigger this component immediately after
 	// it is done updating output ports, so that it can start waiting
 	// for the next frame arrival
-	//this->getActivity()->trigger();
+	this->getActivity()->trigger();
 }
 
 void  LEDTracker::stopHook()
