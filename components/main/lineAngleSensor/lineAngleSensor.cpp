@@ -19,12 +19,20 @@ LineAngleSensor::LineAngleSensor(std::string name):TaskContext(name,PreOperation
 	addPort("EboxRequestTime",_TriggerOut).doc("Timestamp before reading from Ebox"); 
 	addPort("EboxReplyTime",_TriggerOut).doc("Timestamp after reading from Ebox"); 
 	addPort("voltages",_voltages).doc("voltages in units from Ebox (V?)"); 
+	addPort("timeStamps", portTimeStamps)
+		.doc("Time stamps: [trigger EboxRequest EboxReply]");
+	
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
-
 	_TriggerOut.setDataSample( tempTime );
 	_TriggerOut.write( tempTime );
-	voltages.push_back(0.0);
-	voltages.push_back(0.0);
+	_EboxRequestTime.setDataSample( tempTime );
+	_EboxRequestTime.write( tempTime );
+	_EboxReplyTime.setDataSample( tempTime );
+	_EboxReplyTime.write( tempTime );
+	for(int i=0; i<2; i++) voltages.push_back(0.0);
+	for(int i=0; i<3; i++) timeStamps.push_back((double)tempTime);
+	portTimeStamps.setDataSample(timeStamps);
+	portTimeStamps.write(timeStamps);
 	_voltages.setDataSample(voltages);
 	_voltages.write(voltages);
 }
@@ -52,16 +60,22 @@ bool  LineAngleSensor::startHook()
 
 void  LineAngleSensor::updateHook()
 {
-	_TriggerIn.read(tempTime);
-	_TriggerOut.write(tempTime);
+	TIME_TYPE trigger;
+	_TriggerIn.read(trigger);
+	_TriggerOut.write(trigger);
 
-	tempTime = RTT::os::TimeService::Instance()->getTicks();
-	_EboxRequestTime.write(tempTime);
+	TIME_TYPE EboxRequest = RTT::os::TimeService::Instance()->getTicks();
+	_EboxRequestTime.write(EboxRequest);
 
 	for(int i=0; i<2; i++) voltages[i]=readAnalog(i);
 
-	tempTime = RTT::os::TimeService::Instance()->getTicks();
-	_EboxReplyTime.write(tempTime);
+	TIME_TYPE EboxReply = RTT::os::TimeService::Instance()->getTicks();
+	_EboxReplyTime.write(EboxReply);
+
+	timeStamps[ 0 ] = (double) trigger;
+	timeStamps[ 1 ] = (double) EboxRequest;
+	timeStamps[ 2 ] = (double) EboxReply;
+	portTimeStamps.write(timeStamps);
 
 	_voltages.write(voltages);
 }

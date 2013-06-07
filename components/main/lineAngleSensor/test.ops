@@ -7,7 +7,7 @@ import("soem_ebox")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("lineAngleSensor","LineAngleSensor")
  
-var double base_hz = 10;
+var double base_hz = 100;
 setActivity("lineAngleSensor",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
 setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
 soemMaster.ifname = "eth1"

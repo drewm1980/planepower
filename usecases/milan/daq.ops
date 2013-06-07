@@ -49,6 +49,10 @@ loadComponent("encoder", "Encoder")
 import("cameraTrigger")
 loadComponent("cameraTrigger","CameraTrigger")
 
+# Line Angle Sensor
+import("lineAngleSensor")
+loadComponent("lineAngleSensor","LineAngleSensor")
+
 # LEDTracker
 import("LEDTracker")
 loadComponent("LEDTracker","LEDTracker")
@@ -61,6 +65,7 @@ loadComponent("LEDTracker","LEDTracker")
 loadComponent("imuReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
 loadComponent("encoderReporter", "OCL::NetcdfReporting")
+loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
 
 ################################################################################
 #
@@ -111,6 +116,9 @@ cameraReporter.ReportOnlyNewData = false
 encoderReporter.ReportFile = "encoderData.nc"
 encoderReporter.ReportPolicy = rp
 encoderReporter.ReportOnlyNewData = false
+lineAngleReporter.ReportFile = "angleData.nc"
+lineAngleReporter.ReportPolicy = rp
+lineAngleReporter.ReportOnlyNewData = false
 
 ################################################################################
 #
@@ -133,6 +141,8 @@ setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
 
 setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
 
+setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
+
 setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 
 #setActivity("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
@@ -140,6 +150,7 @@ setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 ################################################################################
 #
@@ -149,6 +160,7 @@ setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 connectPeers("encoder", "soemMaster")
 connectPeers("cameraTrigger", "soemMaster")
+connectPeers("lineAngleSensor", "soemMaster")
 
 var ConnPolicy cp
 
@@ -159,6 +171,7 @@ cpLT.size = 5
 # connect("masterTimer.imuClock","mcuHandler.trigger", cp)
 connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpLT)
 connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
+connect("masterTimer.cameraClock", "lineAngleSensor.TriggerIn", cp)
 #connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)
 
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
@@ -181,6 +194,9 @@ cameraReporter.reportPort("LEDTracker", "markerPositionsAndCovariance")
 connectPeers("encoderReporter", "encoder")
 encoderReporter.reportComponent( "encoder" )
 
+connectPeers("lineAngleReporter", "lineAngleSensor")
+lineAngleReporter.reportComponent( "lineAngleSensor" )
+
 ################################################################################
 #
 # Configure and start components
@@ -202,6 +218,9 @@ encoder.start()
 cameraTrigger.configure()
 cameraTrigger.start()
 
+lineAngleSensor.configure()
+lineAngleSensor.start()
+
 LEDTracker.configure()
 LEDTracker.start()
 
@@ -213,6 +232,9 @@ cameraReporter.start()
 
 encoderReporter.configure()
 encoderReporter.start()
+
+lineAngleReporter.configure()
+lineAngleReporter.start()
 
 # Now, when all other components are started, start the master timer component.
 masterTimer.start()

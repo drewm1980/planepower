@@ -33,6 +33,8 @@ class LineAngleSensor
 		OutputPort<TIME_TYPE>	_EboxRequestTime;
 		OutputPort<TIME_TYPE>	_EboxReplyTime;
 		OutputPort<vector<double> >		_voltages;
+		OutputPort< vector< double > > portTimeStamps;
+		vector< double > timeStamps;
 
 	private:
 		TIME_TYPE tempTime;
