@@ -39,7 +39,7 @@ mpcSigmas = {}
 for name in ['x','y','z']: mpcSigmas[name] = 1.0
 for name in ['dx','dy','dz']: mpcSigmas[name] = 1.0
 for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = 1.0
-for name in ['w1','w2','w3']: mpcSigmas[name] = 1.0
+for name in ['w_bn_b_x','w_bn_b_y','w_bn_b_z']: mpcSigmas[name] = 1.0
 mpcSigmas['r'] = 1.0
 mpcSigmas['dr'] = 1.0
 mpcSigmas['ddr'] = 1.0
@@ -64,7 +64,7 @@ Tf = 500.0   # Simulation duration
 # Reference parameters
 refP = {'r0':1.2,
         'ddelta0':2*numpy.pi,
-        'z0':-0.1}
+        'z0':0.1}
 
 # utility function
 def getDeltaRange(delta0, kRange):
@@ -166,7 +166,7 @@ current_time = 0
 
 pbb = ProtobufBridge()
 log = []
-steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3, 1+refP['z0'])
+steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3, refP['z0']-0.5)
 while current_time < Tf:
     # run MHE
     mheIt = 0
@@ -219,7 +219,7 @@ while current_time < Tf:
            mheRT.getKKT(), mheIt, mheRT.preparationTime + mheRT.feedbackTime,
            mpcRT.getKKT(), mpcIt, mpcRT.preparationTime + mpcRT.feedbackTime)
     sim.step()
-#    time.sleep(Ts)
+    #time.sleep(Ts)
 
     # first compute the final partial measurement
     mheRT.shiftXZU(strategy='copy', xEnd=mpcRT.x[1,:], uEnd=mpcRT.u[0,:])

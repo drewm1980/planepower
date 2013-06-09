@@ -63,29 +63,25 @@ toNice delta0 daeX = NiceKite { nk_xyz = xyz
     e32 = CX.e32 daeX
     e33 = CX.e33 daeX
     
-    delta' = atan2 (CX.sin_delta daeX) (CX.cos_delta daeX)
+    delta' = atan2 (-(CX.sin_delta daeX)) (CX.cos_delta daeX)
     delta = case delta0 of Nothing -> delta'
                            Just delta0' -> delta' - delta0'
 
-    q'nwu'ned = Quat 0 1 0 0
-
     q'n'a = Quat (cos(0.5*delta)) 0 0 (sin(-0.5*delta))
 
-    q'aNWU'bNWU = quatOfDcm $ fromLists [ [e11, e12, e13]
-                                        , [e21, e22, e23]
-                                        , [e31, e32, e33]
-                                        ]
-    q'a'b = q'nwu'ned * q'aNWU'bNWU * q'nwu'ned
+    q'a'b = quatOfDcm $ fromLists [ [e11, e12, e13]
+                                  , [e21, e22, e23]
+                                  , [e31, e32, e33]
+                                  ]
     q'n'b = q'n'a * q'a'b
-    q'n'aNWU = q'n'a * q'nwu'ned
 
     rArm = Xyz 1.2 0 0 -- CS.rArm
     xyzArm = rArm + Xyz x y z
-    xyz = rotVecByQuatB2A q'n'aNWU xyzArm
+    xyz = rotVecByQuatB2A q'n'a xyzArm
 
     zt = 0 --CS.zt cs
     r'n0'a0 = rotVecByQuatB2A q'n'a rArm
-    r'n0't0 = xyz + (rotVecByQuatB2A q'n'b $ Xyz 0 0 (-zt))
+    r'n0't0 = xyz + (rotVecByQuatB2A q'n'b $ Xyz 0 0 zt)
 
 toState :: MMH.MheMpcHorizons -> State
 toState mmh = State (mpckites ++ mhekites ++ simKite) messages
@@ -98,7 +94,7 @@ toState mmh = State (mpckites ++ mhekites ++ simKite) messages
 
     (delta0,simKite) = case MMH.sim mmh of
       Nothing -> (Nothing, [])
-      Just sim -> (Just $ atan2 (CX.sin_delta simX) (CX.cos_delta simX), [simKite'])
+      Just sim -> (Just $ atan2 (-(CX.sin_delta simX)) (CX.cos_delta simX), [simKite'])
         where
           simX = Sim.x sim
           simKite' = shiftZ (-1) $ toNice delta0 $ simX
