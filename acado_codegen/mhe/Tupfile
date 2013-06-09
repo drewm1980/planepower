@@ -1,7 +1,0 @@
-include_rules
-
-CPPFLAGS_ACADO += -I..
-
-: mhe_codegen.cpp |> !cxx_acado |> mhe_codegen.o
-: mhe_codegen.o |> !ld_acado |> mhe_codegen
-

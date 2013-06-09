@@ -13,7 +13,7 @@ class MedianFinder
 		MedianFinder(int new_n);
 		~MedianFinder();
 		// Given a histogram of values, find the median.  Returns nan if input vector is zero.
-		float find_median(int *a);
+		float find_median(uint32_t *a);
 };
 
 #endif

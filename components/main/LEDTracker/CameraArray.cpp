@@ -47,7 +47,9 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	}
 	COUT << "Successfully connected to all cameras..." << ENDL;
 
-	for(unsigned int i=0; i < CAMERA_COUNT; i++) {
+	// Set up trigger and transmission mode on all cameras
+	for(unsigned int i=0; i < CAMERA_COUNT; i++) 
+	{
 		err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
 		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 
@@ -104,27 +106,12 @@ CameraArray::CameraArray(bool useExternalTrigger)
 		current_frame[i] = NULL;
 	}
 
-	transfer_time = frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
+	transfer_time = CAMERA_COUNT*frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
 	if (VIDEO_MODE==DC1394_VIDEO_MODE_800x600_RGB8) transfer_time *= 3.0f;  // Three channels
 	COUT << "Based on bus speed, transfer time should be " << transfer_time*1e3 << "ms" << ENDL;
 	period = 1.0 / f_fps; // sec
 
-	// Set all of the camera settings at startup.  
-	// This will hopefully insulate against the cameras loosing their values.
-	for(unsigned int i=0; i<CAMERA_COUNT; i++)
-	{
-		// Set shutter (exposure time)
-		err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_SHUTTER, exposure_time);
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-		//// Set up brightness
-		//err = dc1394_feature_set_mode(cameras[i], DC1394_FEATURE_BRIGHTNESS, DC1394_FEATURE_MODE_MANUAL)
-		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-		//// Set up Exposure
-		//err = dc1394_feature_set_mode(cameras[i], DC1394_FEATURE_EXPOSURE, DC1394_FEATURE_MODE_MANUAL)
-		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-	}
+	sync_camera_parameters();
 
 	// Print settings for first camera
 #if VERBOSE
@@ -134,6 +121,145 @@ CameraArray::CameraArray(bool useExternalTrigger)
 #endif
 
 	COUT << "(CameraArray) constructor finished" << ENDL;
+}
+
+void CameraArray::sync_camera_parameters()
+{
+	const int feature_count = 4;
+	dc1394feature_t features[feature_count] = {
+		DC1394_FEATURE_SHUTTER			,   // MUST KEEP THIS THE FIRST ONE for proper measurement of shutter!
+		DC1394_FEATURE_BRIGHTNESS		, 
+		DC1394_FEATURE_GAIN				, 
+		DC1394_FEATURE_TEMPERATURE		};
+
+	float feature_absolute_values[feature_count];
+	uint32_t feature_values[feature_count];
+
+	const int features_to_disable_count = 6;
+	dc1394feature_t features_to_disable[features_to_disable_count] = {
+		DC1394_FEATURE_EXPOSURE			, 
+		DC1394_FEATURE_SHARPNESS		, 
+		DC1394_FEATURE_WHITE_BALANCE	, 
+		DC1394_FEATURE_HUE				, 
+		DC1394_FEATURE_SATURATION		, 
+		DC1394_FEATURE_GAMMA			};
+	
+
+	// Some stuff, like exposure, should just be turned off!
+	// Set everything to manual, with absolute control if possible
+	for(unsigned int i=0; i<CAMERA_COUNT; i++)
+	{
+		for(int f=0; f<features_to_disable_count; f++)
+		{
+			err = dc1394_feature_set_power(cameras[i], features_to_disable[f], DC1394_OFF);
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		}
+	}
+
+	// Set everything to manual, with absolute control if possible
+	for(unsigned int i=0; i<CAMERA_COUNT; i++)
+	{
+		for(int f=0; f<feature_count; f++)
+		{
+			err = dc1394_feature_set_mode(cameras[i], features[f], DC1394_FEATURE_MODE_MANUAL);
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			dc1394bool_t has_absolute_control;
+			err =  dc1394_feature_has_absolute_control(cameras[i], features[f], &has_absolute_control);
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			if(has_absolute_control)
+			{
+				err = dc1394_feature_set_absolute_control(cameras[i], features[f], DC1394_ON);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			}
+		}
+	}
+	// Get settings from first camera
+	for(unsigned int i=0; i<1; i++)
+	{
+		for(int f=0; f<feature_count; f++)
+		{
+			dc1394bool_t has_absolute_control;
+			err =  dc1394_feature_has_absolute_control(cameras[i], features[f], &has_absolute_control);
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			if(has_absolute_control)
+			{
+				err = dc1394_feature_get_absolute_value(cameras[i], features[f], &feature_absolute_values[f]);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			} else {
+				err = dc1394_feature_get_value(cameras[i], features[f], &feature_values[f]);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			}
+		}
+	}
+	shutter = feature_absolute_values[0];
+
+	// Write the stored settings from the first camera to the other cameras
+	for(unsigned int i=1; i<camera_count; i++)
+	{
+		for(int f=0; f<feature_count; f++)
+		{
+			dc1394bool_t has_absolute_control;
+			err =  dc1394_feature_has_absolute_control(cameras[i], features[f], &has_absolute_control);
+			if(has_absolute_control)
+			{
+				err = dc1394_feature_set_absolute_value(cameras[i], features[f], feature_absolute_values[f]);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			} else {
+				err = dc1394_feature_set_value(cameras[i], features[f], feature_values[f]);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			}
+		}
+	}
+
+   /* err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_BRIGHTNESS		, &brightness);*/
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_EXPOSURE			, &exposure);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_SHARPNESS		, &sharpness);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_WHITE_BALANCE	, &balance);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_HUE				, &hue);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_SATURATION		, &saturation);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_GAMMA			, &gamma);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_SHUTTER			, &shutter);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_GAIN				, &gain);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+	//err = dc1394_feature_get_absolute_value(cameras[0], DC1394_FEATURE_TEMPERATURE		, &temperature);
+	//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+
+	//// Apply settings from the first camera to the rest of the cameras
+	//for(unsigned int i=1; i<CAMERA_COUNT; i++)
+	//{
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_BRIGHTNESS		, brightness);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_EXPOSURE			, exposure);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_SHARPNESS		, sharpness);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_WHITE_BALANCE	, balance);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_HUE				, hue);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_SATURATION		, saturation);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_GAMMA			, gamma);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_SHUTTER			, shutter);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_GAIN				, gain);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		//err = dc1394_feature_set_absolute_value(cameras[i], DC1394_FEATURE_TEMPERATURE		, temperature);
+		//if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+
+
+	//}
+
+
 }
 
 CameraArray::~CameraArray()
@@ -203,7 +329,7 @@ void CameraArray::tweak_frame_arrival_times()
 		<< ENDL;
 #endif
 	uint64_t arrival_timestamp = max(current_frame_timestamps[0], current_frame_timestamps[1]);
-	current_frame_timestamp_tweaked = (uint64_t)(arrival_timestamp - transfer_time*1e6 - exposure_time/2.0f*1e6);
+	current_frame_timestamp_tweaked = (uint64_t)(arrival_timestamp - transfer_time*1e6 - shutter/2.0f*1e6);
 }
 
 void  CameraArray::updateHook()

@@ -17,14 +17,13 @@ done
 tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
-#source $PLANEPOWER_ROOT/extern/acado/build/acado_env.sh
-#source $PLANEPOWER_ROOT/extern/acado_private/testing/mvukov/mhe_export/mhe_export_env.sh
-
 source $PLANEPOWER_ROOT/extern/orocos/env.sh
+
 export LUA_PATH=";;;$PLANEPOWER_ROOT/extern/orocos/ocl/lua/modules/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
 alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
+
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/lowlevel
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/main
 
@@ -37,8 +36,11 @@ else
 	echo			installed rawesome repo in a non-standard place
 fi
 export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
+
+# TODO ACADO related (next two lines) stuff should be optional, same as for rawesome. 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build/experimental/mvukov/ocg2
+
 # This makes sure the highwind version of deployer is found
 # instead of the stock version.
 #export PATH=$PLANEPOWER_ROOT/tools:$PATH

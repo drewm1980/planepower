@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 22 15:48:33 2013
+
+@author: mzanon
+"""
 import numpy
 import time
 import rawe

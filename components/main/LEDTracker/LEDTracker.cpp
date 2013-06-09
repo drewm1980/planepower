@@ -6,24 +6,24 @@
 #include <rtt/Time.hpp>
 
 #include "types.hpp"
-//#include "blob_extractors.hpp"
 #include "cout.hpp"
 
 #define VERBOSE 0
 
-ORO_CREATE_COMPONENT( OCL::LEDTracker)
+ORO_CREATE_COMPONENT( LEDTracker)
 
 using namespace std;
 using namespace RTT;
 using namespace Orocos;
 using namespace BFL;
 
-namespace OCL {
-
-LEDTracker::LEDTracker(std::string name) : TaskContext(name)
+LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
 {
 	attributes()->addAttribute( "useExternalTrigger", _useExternalTrigger);
 	_useExternalTrigger.set(false); // Default Value
+
+	addPort("timeStamps", portTimeStamps)
+		.doc("Time stamps: [trigger frameArrival compDone exit]");
 
 	addPort( "markerPositions",_markerPositions ).doc("Pixel Locations of the markers");
 	addPort( "markerPositionsAndCovariance",_markerPositionsAndCovariance ).doc("Pixel locatoins and weights");
@@ -38,13 +38,16 @@ LEDTracker::LEDTracker(std::string name) : TaskContext(name)
 	addPort("deltaIn",_deltaIn);
 	addPort("deltaOut",_deltaOut);
 
-	markerPositions.resize(12,0.0);
-	markerPositionsAndCovariance.resize(24,0.0);
+	markerPositions.resize(CAMERA_COUNT*LED_COUNT*2,0.0);
+	markerPositionsAndCovariance.resize(CAMERA_COUNT*LED_COUNT*2*2,0.0);
 
 	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements. Default = 1e3");
 	sigma_marker = 1e3;
 
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
+
+	timeStamps.resize(4, 0.0);
+	portTimeStamps.setDataSample( timeStamps );
 
 	_markerPositions.setDataSample( markerPositions );
 	_markerPositions.write( markerPositions );
@@ -68,23 +71,30 @@ LEDTracker::~LEDTracker()
 
 bool  LEDTracker::configureHook()
 {
-	stereoPair = new StereoPair(_useExternalTrigger.get());
-	blobExtractor1 = new BlobExtractor(stereoPair->frame_w, stereoPair->frame_h);
-	blobExtractor2 = new BlobExtractor(stereoPair->frame_w, stereoPair->frame_h);
+	cameraArray = new CameraArray(_useExternalTrigger.get());
+	frame_w = cameraArray->frame_w;
+	frame_h = cameraArray->frame_h;
+	for(int i=0; i<CAMERA_COUNT; i++)
+	{
+		blobExtractors[i] = new BlobExtractor(frame_w, frame_h, NEED_TO_DEBAYER);
+	}
 	return true;
 }
 
 bool  LEDTracker::startHook()
 {
-	stereoPair->startHook();
+	cameraArray->startHook();
 	return true;
 }
 
 void  LEDTracker::updateHook()
 {
-	// This blocks until a frame arrives
-	stereoPair->updateHook();
-	_triggerTimeStampIn.read(triggerTimeStamp); // The timestamp the camera was triggered for the current frame.
+	// This blocks until a frame arrives from all cameras
+	cameraArray->updateHook();
+
+	// The timestamp the camera was triggered for the current frame.
+	while(_triggerTimeStampIn.read(triggerTimeStamp) == NewData); 
+//	_triggerTimeStampIn.read(triggerTimeStamp);
 
 	_deltaIn.read(delta);
 
@@ -95,101 +105,96 @@ void  LEDTracker::updateHook()
 	COUT << "Transfer time was: " << transferTime*1e3 << "ms" << ENDL;
 #endif
 
-	// This blocks until computation is complete
 	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Refresh timestamp, in case PRINTF took time.
-	blobExtractor1->extract_blobs(stereoPair->right_frame_data);
-	blobExtractor2->extract_blobs(stereoPair->left_frame_data);
-	computationCompleteTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time 
-	//double computationTime = (computationCompleteTimeStamp - tempTime)*1e-9; // sec
-	double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
+	// Note, this ~could trivially be done in parallel!
+	for(int i=0; i<CAMERA_COUNT; i++)
+	{
+		blobExtractors[i] -> find_leds(cameraArray->current_frame_data[i]);
+	}
+	computationCompleteTimeStamp = RTT::os::TimeService::Instance()->getTicks();
+	//double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
+	double computationTime = (computationCompleteTimeStamp - frameArrivalTimeStamp)*1e-9; // sec
 #if VERBOSE
-	//COUT << "Total computation time was: " << computationTime*1.0e3/trials << "ms" << ENDL;
+	COUT << "Total computation time was: " << computationTime*1.0e3 << "ms" << ENDL;
 #endif
 	_compTime.write(computationTime*1.0e3);
-	
-#if 0 //VERBOSE
-	COUT 
-		<< blobExtractor1->markerLocations.red.x << ' '
-		<< blobExtractor1->markerLocations.red.y << ' '
-		<< blobExtractor1->markerLocations.green.x << ' '
-		<< blobExtractor1->markerLocations.green.y << ' '
-		<< blobExtractor1->markerLocations.blue.x << ' '
-		<< blobExtractor1->markerLocations.blue.y << ' ' 
-		<< blobExtractor2->markerLocations.red.x << ' '
-		<< blobExtractor2->markerLocations.red.y << ' '
-		<< blobExtractor2->markerLocations.green.x << ' '
-		<< blobExtractor2->markerLocations.green.y << ' '
-		<< blobExtractor2->markerLocations.blue.x << ' '
-		<< blobExtractor2->markerLocations.blue.y << ' '
-	<< ENDL;
-#endif
 
-	markerPositions[0] = blobExtractor1->markerLocations.red.x;
-	markerPositions[1] = blobExtractor1->markerLocations.red.y;
-	markerPositions[2] = blobExtractor1->markerLocations.green.x;
-	markerPositions[3] = blobExtractor1->markerLocations.green.y;
-	markerPositions[4] = blobExtractor1->markerLocations.blue.x;
-	markerPositions[5] = blobExtractor1->markerLocations.blue.y;
-	markerPositions[6] = blobExtractor2->markerLocations.red.x;
-	markerPositions[7] = blobExtractor2->markerLocations.red.y;
-	markerPositions[8] = blobExtractor2->markerLocations.green.x;
-	markerPositions[9] = blobExtractor2->markerLocations.green.y;
-	markerPositions[10] = blobExtractor2->markerLocations.blue.x;
-	markerPositions[11] = blobExtractor2->markerLocations.blue.y;
-	for(unsigned int i=0; i<12; i++)
+	// Copy marker location data from the extractors into our staging area.
+	for(int i=0; i<CAMERA_COUNT; i++)
 	{
-		if(isnan(markerPositions[i])){ // Marker was not detected properly.. Put a random value and puth the weight to 0
-			markerPositionsAndCovariance[i] = -1000.0;
-			markerPositionsAndCovariance[i+12] = 0.0;
+		MarkerLocations * src = &(blobExtractors[i]->markerLocations);	
+		MarkerLocations * dst = ((MarkerLocations*) &(markerPositions[0])) + i;
+		*dst = *src;
+	}
+
+	// Rescale the pixel data.
+	// Note!!!! whatever you do, make sure this is appropriate for the
+	// camera calibration files you're using, or your camera measurement
+	// function will be broken!!!
+	if(cameraArray->frame_w == 800)
+	{
+		for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
+		{
+			if( ! isnan(markerPositions[i])){ 
+				markerPositions[i] *= 2; // Match old camera resolution until we redo geometric calibration
+			} 
+		}
+	}
+	
+	// If a Marker was not detected properly,
+	// put an arbitrary value and set the weight to 0
+	// otherwise, set the weight properly
+	for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
+	{
+		if(isnan(markerPositions[i])){ 
+			markerPositionsAndCovariance[i] = MARKER_NOT_DETECTED_VALUE;
+			markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 0.0;
 		}
 		else{
-		markerPositionsAndCovariance[i] = markerPositions[i];
-		markerPositionsAndCovariance[i+12] = 1.0/(sigma_marker*sigma_marker);
+			markerPositionsAndCovariance[i] = markerPositions[i];
+			markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 1.0/(sigma_marker*sigma_marker);
 		}
 	}
 
-	//markerPositions[0] = 250;
-	//markerPositions[1] = 675;
-	//markerPositions[2] = 613;
-	//markerPositions[3] = 810;
-	//markerPositions[4] = 468;
-	//markerPositions[5] = 420;
-	//markerPositions[6] = 253;
-	//markerPositions[7] = 633;
-	//markerPositions[8] = 609;
-	//markerPositions[9] = 782;
-	//markerPositions[10] = 413;
-	//markerPositions[11] = 343;
-
 	_triggerTimeStampOut.write(triggerTimeStamp);
+	_deltaOut.write(delta);
+
 	_markerPositions.write(markerPositions);
 	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
 
-	_deltaOut.write(delta);
+	timeStamps[ 0 ] = (double) triggerTimeStamp;
+	timeStamps[ 1 ] = (double) frameArrivalTimeStamp;
+	timeStamps[ 2 ] = (double) computationCompleteTimeStamp;
+	timeStamps[ 3 ] = (double) RTT::os::TimeService::Instance()->getTicks();
+
+	portTimeStamps.write( timeStamps );
+
 	// Tell orocos to re-trigger this component immediately after
-	// it is done updating output ports
+	// it is done updating output ports, so that it can start waiting
+	// for the next frame arrival
 	this->getActivity()->trigger();
 }
 
 void  LEDTracker::stopHook()
 {
-	for(unsigned int i=0; i<12; i++)
+	for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
 	{
-		markerPositionsAndCovariance[i] = -1000.0;
-		markerPositionsAndCovariance[i+12] = 0.0; 
+		markerPositionsAndCovariance[i] = MARKER_NOT_DETECTED_VALUE;
+		markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 0.0; 
 	}
 	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
 
-	stereoPair->stopHook();
+	cameraArray->stopHook();
 }
 
 void  LEDTracker::cleanUpHook()
 {
-	stereoPair->cleanUpHook();
-	delete stereoPair;
-	delete blobExtractor1;
-	delete blobExtractor2;
+	cameraArray->cleanUpHook();
+	delete cameraArray;
+	for(int i=0; i<CAMERA_COUNT; i++)
+	{
+		delete blobExtractors[i];
+	}
 }
 
-}//namespace
 

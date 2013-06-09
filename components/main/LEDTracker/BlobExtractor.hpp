@@ -11,49 +11,69 @@
 #include "types.hpp"
 #include "MedianFinder.hpp"
 
-// This class extracts colored blobs from a bayer coded image.
-// May call malloc first time it's used, so re-use it.
+#define LED_COUNT 3
+
+#ifndef ENABLE_RENDERING
+#define ENABLE_RENDERING 0
+#endif
+
+// This class extracts colored blobs from RGB8 codede images.
+// Calls malloc a bunch of times in initialization, so re-use it.
 class BlobExtractor
 {
 	protected:
 	private:
 
-		int* integrated_w;
-		int* integrated_h;
+		// These are integrated versions of the binary masks for
+		// pixels that passed the color thresholds.
+		// In otherwords, they are histograms of image coordinates
+		// of pixels that pass the color threshold checks.
+		uint32_t* integrated_w_r;
+		uint32_t* integrated_w_g;
+		uint32_t* integrated_w_b;
 
-		cv::Mat bgr;
-		cv::Mat r_mask;
-		cv::Mat g_mask;
-		cv::Mat b_mask;
+		uint32_t* integrated_h_r;
+		uint32_t* integrated_h_g;
+		uint32_t* integrated_h_b;
 
-		uint8_t compare_colors(uint8_t r1, 
+		bool source_is_bayer_coded;
+		uint8_t* debayered_frame_rgb;
+
+		bool compare_colors(uint8_t r1, 
 				uint8_t g1,
 				uint8_t b1,
 				uint8_t r2,
 				uint8_t g2,
 				uint8_t b2);
 
-		MedianFinder *medianFinder_w, *medianFinder_h;
-		
-		// Find a single led in a single channel image
-		void find_single_led_singlepass(uint8_t * im, cv::Point2d &p);
-		void find_single_led_singlepass(const cv::Mat& m, cv::Point2d &p);
+		MedianFinder *medianFinder_w_r;
+		MedianFinder *medianFinder_w_g;
+		MedianFinder *medianFinder_w_b;
 
+		MedianFinder *medianFinder_h_r;
+		MedianFinder *medianFinder_h_g;
+		MedianFinder *medianFinder_h_b;
+		
 	public:
 
-		BlobExtractor(int w, int h);
+		BlobExtractor(int w, int h, bool source_is_bayer_coded);
 		~BlobExtractor();
 
 		int frame_w;
 		int frame_h;
+		
+		// Find the 3 LED's in an rgb image.
+		// The results go in the markerLocations member variable.
+		void find_leds(uint8_t * im);
 
-		MarkerLocations markerLocations;
-
-		// Extract a red, a green, and a blue blob from a bayer coded image.
 		// Coordinates are traditional image coordinates: u increases to the right along scaline,
 		// v increases as you go down rows in the image.
-		void extract_blobs(const cv::Mat & bayer);
-		void extract_blobs(uint8_t *bayer);
+		MarkerLocations markerLocations;
+
+#if ENABLE_RENDERING
+		uint8_t * renderFrame;
+#endif
+
 };
 
 #endif

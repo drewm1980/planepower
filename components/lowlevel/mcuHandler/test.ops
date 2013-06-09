@@ -6,23 +6,25 @@ import("masterTimer")
 
 #Create components
 loadComponent("mcuHandler","McuHandler")
-loadComponent("masterTimer","OCL::MasterTimer")
+loadComponent("masterTimer","MasterTimer")
 
 #Load properties
 loadService("mcuHandler","marshalling")
 mcuHandler.marshalling.loadProperties("../../../properties/tcp.cpf")
-mcuHandler.useExternalTrigger = true
+mcuHandler.Ts = 1.0 / 500.0
+mcuHandler.rtMode = true
+
 loadService("masterTimer","marshalling")
 masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
 
 #Set activities
-setActivity("mcuHandler",0,HighestPriority,ORO_SCHED_RT)
+setActivity("mcuHandler", 0, HighestPriority, ORO_SCHED_RT)
 var double base_hz = masterTimer.imu_target_hz;
-setActivity("masterTimer",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
 
 #Connect ports
 var ConnPolicy cp
-connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
+connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
 
 
 mcuHandler.configure()
@@ -30,16 +32,14 @@ mcuHandler.start()
 masterTimer.configure()
 masterTimer.start()
 
-loadComponent("reporter","OCL::FileReporting")
-setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+loadComponent("reporter","OCL::NetcdfReporting")
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
-connectPeers("reporter","mcuHandler")
-
-reporter.reportPort("mcuHandler","imuTimeStamp")
-reporter.reportPort("mcuHandler","imuData")
+connectPeers("reporter", "mcuHandler")
+reporter.reportComponent("mcuHandler")
  
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "data.dat"
+reporter.ReportFile = "imuTest.dat"
  
 reporter.configure()
-#reporter.start()
+reporter.start()

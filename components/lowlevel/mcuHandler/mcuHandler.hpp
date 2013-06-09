@@ -1,148 +1,107 @@
 #ifndef __MCUHANDLER__
 #define __MCUHANDLER__
 
+#include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
+#include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
-#include <rtt/os/TimeService.hpp>
 
-#include <ocl/OCL.hpp>
+#include <vector>
 #include <string>
-#include <fstream>
-#include <stdio.h>
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-using std::ifstream;
-
-#include <math.h>
-#include <iostream>
-#include <vector>
 #include <unistd.h>
-
-#include <fstream>
-using namespace RTT;
-using namespace std;
-
-#define RECEIVE_BUFFER_SIZE		64
-#define TRANSMIT_BUFFER_SIZE	64
-
-#define TAG_CMD        			0xff
-
-#define CMD_SET_MOTOR_REFS		0x40
-#define CMD_GET_SENSOR_DATA		0x41
 #include <stdint.h>
+
+/// Define the time-stamp type
 typedef uint64_t TIME_TYPE;
 
-    /// McuHandler class
-    /**
-    This class simulates the free motion of a ball attached to a pendulum.
-    The pendulum motion is executed in the x=0 plane of the pendulum reference
-    frame. The state of the ball in the pendulum plane is given by
-    [theta,omega,alpha]. The position of the ball in the world frame is given by
-    [x,y,z].
-    The pendulum reference frame wrt to the world reference frame gives the pose
-    of the pendulum motion plane wrt to the world.
-    */
-    class McuHandler : public RTT::TaskContext
-    {
+/// Size of the receive buffer
+#define RECEIVE_BUFFER_SIZE	64
+/// Size of the transmit buffer
+#define TRANSMIT_BUFFER_SIZE	64
+
+/// McuHandler class
+class McuHandler : public RTT::TaskContext
+{
+public:
+	/// Ctor
+	McuHandler(std::string name);
+	
+	/// Dtor
+	virtual ~McuHandler()
+	{}
+	
+	/// Configuration hook.
+	virtual bool configureHook( );
+	/// Start hook.
+	virtual bool startHook( );
+	/// Update hook.
+	virtual void updateHook( );
+	/// Stop hook.
+	virtual void stopHook( );
+	/// Cleanup hook.
+	virtual void cleanupHook( );
+	/// Error hook.
+	virtual void errorHook( );
+
 protected:
-	// DATA INTERFACE
 
-	// *** OUTPUTS ***
-
-	/// the last read data
-	InputPort<TIME_TYPE>					_imuTrigger;		// Trigger the component to get IMU data if there is an event on this port
-	vector<double>						imuData;		// Holder for the IMU data
-	OutputPort<vector<double> >				_imuData;		// The data from the IMU: [timestamp omegax omegay omegaz ax ay az]
-	TIME_TYPE						imuTimeStamp;
-	OutputPort<TIME_TYPE>					_imuTimeStamp;
-	vector<double>						U;			// Holder for the control action to be send
-	vector<double>						U_sent;			// Holder for the control action that were sent
-	InputPort<vector<double> >				_controlInputPort;	// The time of capture from the IMU
-	OutputPort<vector<double> >				_controlOutputPort;	// The time of capture from the IMU
-	OutputPort<TIME_TYPE>					_controlTimeStamp;
-
-	OutputPort<vector<double> >				_imuAndControlPort;
-	vector<double>						imuAndControl;
-
-	/// the number of items sucessfully read
-
-	// *** CONFIGURATION ***
-
-	// name to listen for incoming connections on, either FQDN or IPv4 addres
-	std::string					hostName;
-	// port to listen on
-	int						hostPort;
-	// timeout in seconds, when waiting for connection
-	int						connectionTimeout;
-	// timeout in seconds, when waiting to read
-	int						readTimeout;
-
-	typedef struct TIMUSensorData
-	{
-		short XGyro;
-		short YGyro;
-		short ZGyro;
+	/// Method for sending the references. All input must be scaled to -1.. +1.
+	void sendMotorReferences(double ref1, double ref2, double ref3);	
+	/// Method that communicates with the MCU. In case of ANY error, it triggers
+	/// the error hook.
+	void ethernetTransmitReceive( void );
+	/// Method for receiving sensor data. Data is NOT scaled, yet.
+	void receiveSensorData(std::vector< double >& data);
 	
-		short XAccl;
-		short YAccl;
-		short ZAccl;
+	/// Trigger the component to get IMU data if there is an event on this port.
+	RTT::InputPort< TIME_TYPE > portTrigger;
+	/// Time stamp of the input trigger. Used in the case when IMU component
+	/// is triggered externally.
+	TIME_TYPE triggerTimeStamp;
+	/// Holder for the IMU data.
+	std::vector< double > imuData;
+	/// The data from the IMU: [timestamp omegax omegay omegaz ax ay az].
+	/// All data is normalized.
+	RTT::OutputPort< std::vector< double > > portImuData;
+	/// Port with control signals [ua1, ua2, ue].
+	RTT::InputPort< std::vector< double> > portControls;	
+	/// Holder for the control action to be send
+	std::vector< double > controls;
+	/// Internal buffer for control values
+	std::vector< double > execControls;
+	/// Port which holds the execution time
+	RTT::OutputPort< double > portExecTime;
 	
-		short XMagn;
-		short YMagn;
-		short ZMagn;	
-	} IMUSensorData;
-
-	typedef struct TIMUSensorDataDouble
-	{
-		double XGyro;
-		double YGyro;
-		double ZGyro;
-	
-		double XAccl;
-		double YAccl;
-		double ZAccl;
-	} IMUSensorDataDouble;
-
-	IMUSensorData g_sIMUSensorData;
-	IMUSensorDataDouble g_sIMUSensorDataDouble;
-
-	unsigned char g_ucReceiveBuffer[ RECEIVE_BUFFER_SIZE ];
-	unsigned char g_ucTransmitBuffer[ TRANSMIT_BUFFER_SIZE ];
-
-	long g_uiNumOfBytesToBeReceived;
-	long g_uiNumOfBytesToBeTransmitted;
-	int g_TCPSocket;
-	struct sockaddr_in echoserver;
-
-	virtual bool configureHook();
-	/// reset count and lastRead, attempt to connect to remote
-	virtual bool startHook();
-	/// attempt to read and process one packet
-	virtual void updateHook();
-	/// close the socket and cleanup
-	virtual void stopHook();
-
-	/// Flag indicating to updateHook() that we want to quit
-	bool		quit;
+	/// Name to listen for incoming connections on, either FQDN or IPv4 address.
+	std::string hostName;
+	/// Port to listen on.
+	unsigned hostPort;
+	/// Timeout in seconds, when waiting for connection.
+	unsigned connectionTimeout;
+	/// Timeout in seconds, when waiting to read
+	unsigned readTimeout;
+	/// Sampling time of the component
+	double Ts;
+	/// RT mode indicator
+	bool rtMode;
 
 private:
-	void getIMUData();
-	void sendControls();
-	bool useExternalTrigger;
 
-public:
-	McuHandler(std::string name);
-	virtual ~McuHandler();
+	long numOfBytesToBeReceived;
+	long numOfBytesToBeTransmitted;
+	
+	unsigned char receiveBuffer[ RECEIVE_BUFFER_SIZE ];
+	unsigned char transmitBuffer[ TRANSMIT_BUFFER_SIZE ];
+	
+	int tcpSocket;
+	struct sockaddr_in tcpEchoServer;
+	int tcpStatus;
 
-	int EthernetTransmitReceive( void );
-	int ReceiveSensorData( vector<double> *data );
-	int SendMotorReferences( int m1_ref, int m2_ref, int m3_ref );
-    };
+	unsigned upTimeCnt;
+};
+
 #endif // __MCUHANDLER__

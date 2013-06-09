@@ -17,7 +17,7 @@ MedianFinder::~MedianFinder()
 
 // Given a histogram of values, find the median
 // Returns nan if the vector is zero.
-float MedianFinder::find_median(int *a)
+float MedianFinder::find_median(uint32_t *a)
 {
 	memset(cumsum, 0, n*sizeof(uint32_t));
 	cumsum[0] = a[0];
@@ -26,7 +26,8 @@ float MedianFinder::find_median(int *a)
 		cumsum[i] = cumsum[i-1] + a[i];
 	}
 	unsigned int sum = cumsum[n-1];
-	if(sum==0)
+	const int minBlobSize = 9; // pixels total
+	if(sum < minBlobSize)
 	{
 		return nanf("z");
 	}

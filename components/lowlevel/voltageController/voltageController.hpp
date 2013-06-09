@@ -2,64 +2,49 @@
 #define __VOLTAGECONTROLLER__
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Logger.hpp>
+#include <rtt/Component.hpp>
 #include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
 #include <rtt/Port.hpp>
 
-#include <ocl/OCL.hpp>
+// Include the EBOX encoder class
+#include <soem_ebox/soem_ebox/EBOXAnalog.h>
 
-#include <math.h>
-#include <fstream>
-using std::ifstream;
-
-using namespace std;
-using namespace RTT;
-using namespace BFL;
-using namespace Orocos;
-using namespace KDL;
-
-namespace OCL
+/// VoltageController class
+class VoltageController : public RTT::TaskContext
 {
+public:
+	/// Ctor
+	VoltageController(std::string name);
+    /// Dtor
+	~VoltageController()
+	{}
 
-    /// VoltageController class
-    /**
-    This class simulates the free motion of a ball attached to a pendulum.
-    The pendulum motion is executed in the x=0 plane of the pendulum reference
-    frame. The state of the ball in the pendulum plane is given by
-    [theta,omega,alpha]. The position of the ball in the world frame is given by
-    [x,y,z].
-    The pendulum reference frame wrt to the world reference frame gives the pose
-    of the pendulum motion plane wrt to the world.
-    */
-    class VoltageController
-        : public TaskContext
-    {
-    protected:
+	/// Configuration hook.
+	virtual bool configureHook( );
+	/// Start hook.
+	virtual bool startHook( );
+	/// Update hook.
+	virtual void updateHook( );
+	/// Stop hook.
+	virtual void stopHook( );
+	/// Cleanup hook.
+	virtual void cleanupHook( );
+	/// Error hook.
+	virtual void errorHook( );
 
-        /*********
-        OPERATIONS
-        *********/
-	OperationCaller<bool(unsigned int, double) >	writeAnalog;
+protected:
 
-    private:
-  	bool					setVoltage(int channel, double voltage);
+	/// EBOX analog port
+	RTT::OutputPort< soem_ebox::EBOXAnalog  > portEboxAnalog;
+	/// EBOX analog port data
+	soem_ebox::EBOXAnalog eboxAnalog;
+	/// "Public" method for setting the voltage
+  	bool setVoltage(int channel, double voltage);
+
+private:
 	double					voltage_increment;
-	double					reference_voltage[2];
-	double					actual_voltage[2];
+	double					reference_voltage[ 2 ];
+	double					actual_voltage[ 2 ];        
+};
 
-    public:
-        VoltageController(std::string name);
-        ~VoltageController();
-        bool					configureHook();
-        bool					startHook();
-        void					updateHook();
-        void					stopHook();
-        void					cleanUpHook();
-        
-    };
-}
 #endif // __VOLTAGECONTROLLER__

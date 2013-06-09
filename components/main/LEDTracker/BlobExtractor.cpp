@@ -4,33 +4,57 @@
 #include "MedianFinder.hpp"
 #include "types.hpp"
 
-using namespace std;
-using namespace cv;
+#include "debayer.hpp"
 
-BlobExtractor::BlobExtractor(int w, int h)
+BlobExtractor::BlobExtractor(int w, int h, bool source_is_bayer_coded)
 {
 	frame_w = w;
 	frame_h = h;
-	medianFinder_w = new MedianFinder(w);
-	medianFinder_h = new MedianFinder(h);
+	this->source_is_bayer_coded = source_is_bayer_coded;
 
-	bgr = Mat::zeros(frame_h, frame_w, CV_8UC(3));
-	r_mask = Mat::zeros(frame_h, frame_w, CV_8U);
-	g_mask = Mat::zeros(frame_h, frame_w, CV_8U);
-	b_mask = Mat::zeros(frame_h, frame_w, CV_8U);
+	medianFinder_w_r = new MedianFinder(w);
+	medianFinder_w_g = new MedianFinder(w);
+	medianFinder_w_b = new MedianFinder(w);
+	medianFinder_h_r = new MedianFinder(h);
+	medianFinder_h_g = new MedianFinder(h);
+	medianFinder_h_b = new MedianFinder(h);
+	integrated_w_r = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_w_g = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_w_b = (uint32_t*) malloc(w*sizeof(uint32_t));
+	integrated_h_r = (uint32_t*) malloc(h*sizeof(uint32_t));
+	integrated_h_g = (uint32_t*) malloc(h*sizeof(uint32_t));
+	integrated_h_b = (uint32_t*) malloc(h*sizeof(uint32_t));
 
-	integrated_w = (int*) malloc(w*sizeof(int));
-	integrated_h = (int*) malloc(h*sizeof(int));
+	if(source_is_bayer_coded)
+	{
+		debayered_frame_rgb = (uint8_t*) malloc(h*w*3*sizeof(uint8_t));
+	}
+
+#if ENABLE_RENDERING
+	renderFrame = NULL;
+#endif
 }
 BlobExtractor::~BlobExtractor()
 {
-	delete medianFinder_w;
-	delete medianFinder_h;
-	free(integrated_w);
-	free(integrated_h);
+	delete medianFinder_w_r;
+	delete medianFinder_w_g;
+	delete medianFinder_w_b;
+	delete medianFinder_h_r;
+	delete medianFinder_h_g;
+	delete medianFinder_h_b;
+	free(integrated_w_r);
+	free(integrated_w_g);
+	free(integrated_w_b);
+	free(integrated_h_r);
+	free(integrated_h_g);
+	free(integrated_h_b);
+	if(source_is_bayer_coded)
+	{
+		free(debayered_frame_rgb);
+	}
 }
 
-uint8_t BlobExtractor::compare_colors(uint8_t r1, 
+bool BlobExtractor::compare_colors(uint8_t r1, 
 		uint8_t g1,
 		uint8_t b1,
 		uint8_t r2,
@@ -39,7 +63,7 @@ uint8_t BlobExtractor::compare_colors(uint8_t r1,
 {
 	if(r1==0 && g1==0 && b1==0) return 0; 
 	uint32_t i1 = r1*r1 + g1*g1 + b1*b1; // levels^2
-	const uint32_t intensity_threshold = 32;
+	const uint32_t intensity_threshold = 15;
 	if(i1<intensity_threshold*intensity_threshold) return 0;
 
 	uint32_t i2 = r2*r2 + g2*g2 + b2*b2; // levels^2
@@ -47,102 +71,78 @@ uint8_t BlobExtractor::compare_colors(uint8_t r1,
 
 	// The compiler should be smart enough to reduce this at compile time:
 	const float PI = 3.1415;
-	const float color_angle_threshold = 20.0f * PI/180.0f; // Radians
+	const float color_angle_threshold = 30.0f * PI/180.0f; // Radians
 	const float color_dot_product_threshold = cosf(color_angle_threshold); // unitless thresh on cosine of the color angle
 	const float color_dot_product_threshold2 = color_dot_product_threshold
 		        *color_dot_product_threshold;
 
-	return 255*(uint8_t)(i1*i2*color_dot_product_threshold2 < dot*dot);
+	return (i1*i2*color_dot_product_threshold2 < dot*dot);
 }
 
-
-// Finds a single connected component in a "binary" uint8_t image.
-// Return value is the number of connected components. (hopefully just 1)
-// p is the center of one of the components.
-// This implementation simply computes the median x and y coordinates of white pixels.
-void BlobExtractor::find_single_led_singlepass(uint8_t * im, Point2d &p)
+void BlobExtractor::find_leds(uint8_t * im)
 {
-	// Integrate our binary image in each direction
-	memset(integrated_w, 0, frame_w*sizeof(int));
-	memset(integrated_h, 0, frame_h*sizeof(int));
+	memset(integrated_w_r, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_w_g, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_w_b, 0, frame_w*sizeof(uint32_t));
+	memset(integrated_h_r, 0, frame_h*sizeof(uint32_t));
+	memset(integrated_h_g, 0, frame_h*sizeof(uint32_t));
+	memset(integrated_h_b, 0, frame_h*sizeof(uint32_t));
+
+	if(source_is_bayer_coded)
+	{
+		debayer_frame(im, debayered_frame_rgb, frame_w, frame_h);
+		im = debayered_frame_rgb;
+	}
+	
+	// Iterate over rows
+	uint8_t * pp = im;
 	for(int y=0; y<frame_h; y++)
 	{
+		// Iterate over columns
 		for(int x=0; x<frame_w; x++)
 		{
-			uint8_t p = im[y*frame_w + x];
-			if(p>0)
+			uint8_t r1 = pp[0];	
+			uint8_t g1 = pp[1];	
+			uint8_t b1 = pp[2];	
+
+			// Apply the color thresholds to our pixel
+			bool is_r = compare_colors(r1,g1,b1,1,0,0);
+			bool is_g = compare_colors(r1,g1,b1,0,1,0);
+			bool is_b = compare_colors(r1,g1,b1,0,0,1);
+
+			// Increment the number of pixels marked red in this row, column
+			if ( is_r ) 
 			{
-				integrated_w[x]++;
-				integrated_h[y]++;
+				integrated_w_r[x] += 1;
+				integrated_h_r[y] += 1;
 			}
-		}
-	}
+			if ( is_g ) 
+			{
+				integrated_w_g[x] += 1;
+				integrated_h_g[y] += 1;
+			}
+			if ( is_b ) 
+			{
+				integrated_w_b[x] += 1;
+				integrated_h_b[y] += 1;
+			}
 
-	p.x = medianFinder_w->find_median(integrated_w);
-	p.y = medianFinder_h->find_median(integrated_h);
-	
-	// DIRTY HACK
-	// Once in thousands of samples I get a measurement at (0,0).  No clue why.
-	if(p.x==0 || p.y==0)
-	{
-		p.x = nanf("z");
-		p.y = nanf("z");
-	}
-}
-void BlobExtractor::find_single_led_singlepass(const Mat& m, Point2d &p)
-{
-	find_single_led_singlepass(m.data, p);
-}
-
-// This function extracts a red, a green, and a blue blob from a bayer coded image.
-// Coordinates are traditional image coordinates: u increases to the right along scaline,
-// v increases as you go down rows in the image.
-void BlobExtractor::extract_blobs(const Mat & bayer)
-{
-	assert(bayer.data>0);
-	cvtColor(bayer, bgr, CV_BayerBG2BGR);
-
-	// Manual color thresholding.  
-	for(int y=0; y<frame_h; y++)
-	{
-		uchar* p_bgr = bgr.ptr<uchar>(y);
-		uchar* p_r_mask = r_mask.ptr<uchar>(y);
-		uchar* p_g_mask = g_mask.ptr<uchar>(y);
-		uchar* p_b_mask = b_mask.ptr<uchar>(y);
-		for( int x = 0; x<frame_w; x+=1, p_bgr+=3 )
-		{
-			uint8_t b=p_bgr[0];
-			uint8_t g=p_bgr[1];
-			uint8_t r=p_bgr[2];
-
-			p_b_mask[x] = compare_colors(b,g,r,1,0,0);
-			p_g_mask[x] = compare_colors(b,g,r,0,1,0);
-			p_r_mask[x] = compare_colors(b,g,r,0,0,1);
-		}
-	}
-	//imwrite("r_mask.bmp",r_mask);
-	//imwrite("g_mask.bmp",g_mask);
-	//imwrite("b_mask.bmp",b_mask);
-
-	find_single_led_singlepass(r_mask, markerLocations.red);
-	find_single_led_singlepass(g_mask, markerLocations.green);
-	find_single_led_singlepass(b_mask, markerLocations.blue);
-
-#if 0
-	cout << "Displaying composite of thresholded images for debugging..." << endl;
-	vector<Mat> mv;
-	mv.push_back(b_mask);
-	mv.push_back(g_mask);
-	mv.push_back(r_mask);
-	Mat temp;
-	merge(mv, temp);
-	namedWindow("temp");
-	imshow("temp",temp);
+#if ENABLE_RENDERING
+			renderFrame[y*frame_w*3 + x*3 + 0] = 255*is_r;
+			renderFrame[y*frame_w*3 + x*3 + 1] = 255*is_g;
+			renderFrame[y*frame_w*3 + x*3 + 2] = 255*is_b;
 #endif
-};
-void BlobExtractor::extract_blobs(uint8_t *bayer)
-{
-	Mat mat_bayer(frame_h, frame_w, CV_8UC(1), bayer);
-	extract_blobs(mat_bayer);
+
+			pp += 3 * sizeof(uint8_t);
+		}
+	}
+
+	markerLocations.rx = medianFinder_w_r->find_median(integrated_w_r);
+	markerLocations.ry = medianFinder_h_r->find_median(integrated_h_r);
+	markerLocations.gx = medianFinder_w_g->find_median(integrated_w_g);
+	markerLocations.gy = medianFinder_h_g->find_median(integrated_h_g);
+	markerLocations.bx = medianFinder_w_b->find_median(integrated_w_b);
+	markerLocations.by = medianFinder_h_b->find_median(integrated_h_b);
+	
 }
 

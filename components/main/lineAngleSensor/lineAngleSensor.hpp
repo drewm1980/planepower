@@ -1,5 +1,5 @@
-#ifndef __CAMERATRIGGER__
-#define __CAMERATRIGGER__
+#ifndef __LINE_ANGLE_SENSOR__
+#define __LINE_ANGLE_SENSOR__
 
 #include <stdint.h>
 #include <rtt/TaskContext.hpp>
@@ -19,30 +19,30 @@ using std::ifstream;
 
 using namespace std;
 using namespace RTT;
-using namespace BFL;
 using namespace Orocos;
-using namespace KDL;
 
 typedef uint64_t TIME_TYPE;
 
-#define TRIGGER_ACTIVE_HIGH 0
-
-class CameraTrigger
+class LineAngleSensor
 : public TaskContext
 {
 	protected:
-		OperationCaller<bool(unsigned int, bool)>setBit;
-		void pull_trigger_high();
-		void pull_trigger_low();
-		InputPort<TIME_TYPE>	_Trigger;
-		OutputPort<TIME_TYPE>	_TriggerTriggeredTime; // Mainly for debugging
-		OutputPort<TIME_TYPE>	_TriggerResetTime; // Mainly for debugging
+		OperationCaller<double(unsigned int)>readAnalog;
+		InputPort<TIME_TYPE>	_TriggerIn;
+		OutputPort<TIME_TYPE>	_TriggerOut;
+		OutputPort<TIME_TYPE>	_EboxRequestTime;
+		OutputPort<TIME_TYPE>	_EboxReplyTime;
+		OutputPort<vector<double> >		_voltages;
+		OutputPort< vector< double > > portTimeStamps;
+		vector< double > timeStamps;
+
 	private:
 		TIME_TYPE tempTime;
+		vector<double> voltages;
 
 	public:
-		CameraTrigger(std::string name);
-		~CameraTrigger();
+		LineAngleSensor(std::string name);
+		~LineAngleSensor();
 		bool        configureHook();
 		bool        startHook();
 		void        updateHook();
