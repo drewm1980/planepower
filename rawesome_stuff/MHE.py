@@ -64,3 +64,15 @@ def makeMheRT(propertiesDir='../properties', cgOptions = None):
                     'CFLAGS':'-O3 -fPIC -finline-functions'}
     mhe = makeMhe(propertiesDir=propertiesDir)
     return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
+
+def milan_check_this_out():
+    mhe = makeMhe()
+    cgOptions= {'CXX':'clang++', 'CC':'clang',
+                'CXXFLAGS':'-O3 -fPIC -finline-functions',
+                'CFLAGS':'-O3 -fPIC -finline-functions',
+                'export_without_build_path':'so_cool_i_do_it_myself'}
+    phase1Options = {}
+    mhe.exportCode(mheOpts, mheIntOpts, cgOptions, phase1Options)
+
+if __name__ == '__main__':
+    milan_check_this_out()
