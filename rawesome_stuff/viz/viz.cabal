@@ -41,3 +41,46 @@ executable multicarousel
     build-depends:   zeromq-haskell
 
   ghc-options:       -O2 -threaded -with-rtsopts=-T
+
+
+executable sim_only
+  hs-source-dirs:    . ../autogenHs ../../extern/rawesome/wtfviz/src
+  main-is:           SimOnly.hs
+  build-depends:     base >= 4.5.0 && < 4.7,
+                     cmdargs >= 0.10,
+                     random,
+                     not-gloss >= 0.5.0,
+                     spatial-math,
+                     hmatrix,
+                     protocol-buffers,
+                     protocol-buffers-descriptor,
+                     bytestring
+
+  if os(OSX)
+    cpp-options:     -DOSX
+    build-depends:   zeromq3-haskell
+  else
+    build-depends:   zeromq-haskell
+
+  ghc-options:       -O2 -threaded -with-rtsopts=-T
+
+executable sim_only_with_rotation
+  hs-source-dirs:    . ../autogenHs ../../extern/rawesome/wtfviz/src
+  main-is:           WithRotation.hs
+  build-depends:     base >= 4.5.0 && < 4.7,
+                     cmdargs >= 0.10,
+                     random,
+                     not-gloss >= 0.5.0,
+                     spatial-math,
+                     hmatrix,
+                     protocol-buffers,
+                     protocol-buffers-descriptor,
+                     bytestring
+
+  if os(OSX)
+    cpp-options:     -DOSX
+    build-depends:   zeromq3-haskell
+  else
+    build-depends:   zeromq-haskell
+
+  ghc-options:       -O2 -threaded -with-rtsopts=-T
