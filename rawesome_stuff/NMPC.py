@@ -1,3 +1,4 @@
+import numpy
 import casadi as C
 import rawe
 
@@ -6,7 +7,7 @@ from common_conf import Ts
 from highwind_carousel_conf import getConf
 import carouselModel
 
-mpcHorizonN = MHE.mheHorizonN
+mpcHorizonN = 15
 
 mpcIntOpts = rawe.RtIntegratorOptions()
 mpcIntOpts['INTEGRATOR_TYPE'] = MHE.mheIntOpts['INTEGRATOR_TYPE']
@@ -28,23 +29,21 @@ mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING'
 mpcOpts['FIX_INITIAL_STATE'] = True
 #mpcOpts['CG_USE_C99'] = True
 
+def radians(x):
+    return float(numpy.radians(x))
+
 def makeNmpc(propertiesDir='../properties'):
     conf = getConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
     mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)
 
-    mpc.constrain( mpc['ddr'], '==', 0 );
-    mpc.constrain( -32767/1.25e6, '<=', mpc['aileron'] );
-    mpc.constrain( mpc['aileron'], '<=', 32767/1.25e6 );
-    mpc.constrain( -32767/2e5, '<=', mpc['elevator'] );
-    mpc.constrain( mpc['elevator'], '<=', 32767/2e5 );
-    mpc.constrain( -0.2, '<=', mpc['daileron'] );
-    mpc.constrain( mpc['daileron'], '<=', 0.2 );
-    mpc.constrain( -1, '<=', mpc['delevator'] );
-    mpc.constrain( mpc['delevator'], '<=', 1 );
-    mpc.constrain( 0, '<=', mpc['motor_torque'] );
-    mpc.constrain( mpc['motor_torque'], '<=', 2000 );
+#    mpc.constrain( mpc['dddr'], '==', 0 );
+    mpc.constrain( radians(-5.0), '<=', mpc['aileron'],  '<=', radians(5.0) );
+    mpc.constrain( radians(-5.0), '<=', mpc['elevator'], '<=', radians(5.0) );
+    mpc.constrain( -0.2*100, '<=', mpc['daileron'], '<=', 0.2*100 );
+    mpc.constrain( -1*100, '<=', mpc['delevator'], '<=', 1*100 );
+    mpc.constrain( 0, '<=', mpc['motor_torque'], '<=', 2000 );
 
     return mpc
 

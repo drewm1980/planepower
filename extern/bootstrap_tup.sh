@@ -1,5 +1,10 @@
 # This script checks out, builds, and reinstalls tup.
 echo "Bootstrapping tup..."
+
+sudo apt-get install fuse libfuse-dev
+
+echo "Note, you need to add user to fuse group for tup to work properly"
+
 buildloc=~/src/
 mkdir -p $buildloc
 (

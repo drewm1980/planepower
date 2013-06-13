@@ -6,8 +6,6 @@
 # Once you've made it through here once on a machine, you should rebuild with
 # tup upd
 
-sudo apt-get install fuse libfuse-dev
-
 (
 echo "Bootstrapping dependencies in extern..."
 cd extern

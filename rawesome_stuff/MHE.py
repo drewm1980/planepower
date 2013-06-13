@@ -10,7 +10,7 @@ mheHorizonN = 10
 mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
 #mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_RIIA3'
-mheIntOpts['NUM_INTEGRATOR_STEPS'] = 4
+mheIntOpts['NUM_INTEGRATOR_STEPS'] = 10
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
 #mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
@@ -35,6 +35,7 @@ measX += ['aileron','elevator']
 
 measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
+
 def makeMhe(propertiesDir='../properties'):
     conf = getConf()
     conf['stabilize_invariants'] = False
@@ -42,17 +43,17 @@ def makeMhe(propertiesDir='../properties'):
 
     mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yxNames=measX, yuNames=measU)
 
-    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_END')
-    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_START')
 
-    mhe.constrain(mhe['c'],'==',0, when='AT_END')
-    mhe.constrain(mhe['cdot'],'==',0, when='AT_END')
+    mhe.constrain(mhe['c'],'==',0, when='AT_START')
+    mhe.constrain(mhe['cdot'],'==',0, when='AT_START')
 
-    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_END')
+    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_START')
 
     return mhe
 
