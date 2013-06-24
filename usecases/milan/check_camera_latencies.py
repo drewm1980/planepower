@@ -1,28 +1,48 @@
 #!/usr/bin/env python
 from scipy.io import netcdf
-f = netcdf.netcdf_file('angleData.nc', 'r')
-from numpy import array
-from pylab import plot,xlabel,ylabel,show,legend
+f = netcdf.netcdf_file('cameraData.nc', 'r')
+from numpy import array, diff
+from pylab import figure,plot,xlabel,ylabel,show,legend
 
-t = array(f.variables['lineAngleSensor.timeStamps.0'].data) # ns
-t = t*1e-3 # ms
-
-# Horizontal, positive is forward
-hslope = 0.4246 # V / degrees
-hzero = -0.1227 # volts
-v1 = array(f.variables['lineAngleSensor.voltages.0'].data)
-v1 = (v1-hzero)/hslope
-
-# Vertical, positive is up
-vslope = 0.6074 # V / degrees 
-vzero = 5.1781 # V
-v2 = array(f.variables['lineAngleSensor.voltages.1'].data)
-v2 = (v2-vzero)/vslope
-
+print('loading data...')
+triggerTimeStamp = array(f.variables['LEDTracker.timeStamps.0'].data)*1e-6 # ms
+frameArrivalTimeStamp = array(f.variables['LEDTracker.timeStamps.1'].data)*1e-6 # ms
+computationCompleteTimeStamp = array(f.variables['LEDTracker.timeStamps.2'].data)*1e-6 # ms
+exitTimeStamp = array(f.variables['LEDTracker.timeStamps.3'].data)*1e-6 # ms
 f.close()
-plot(t,v1,t,v2) 
-xlabel('timestamp [ms]')
-ylabel('Tether angle [Degrees]')
-legend(['Horizontal Angle, + is forward','Vertical Angle, + is up'])
-show()
+print('...done')
 
+interframe = diff(frameArrivalTimeStamp)[4:-4]
+from numpy import median
+print('median inter-frame arrival time = ' + str(median(interframe)) + ' ms')
+sec = median(interframe) * 1e-3
+print('median framerate = ' + str(median(1/sec)) + ' hz')
+
+triggerToArrival=(frameArrivalTimeStamp-triggerTimeStamp)[4:-4]
+print('median time for frame to arrive = ' + str(median(triggerToArrival)) + ' ms')
+print('min time for frame to arrive = ' + str(min(triggerToArrival)) + ' ms')
+
+computationTime=(computationCompleteTimeStamp - frameArrivalTimeStamp)[4:-4]
+print('median time for computation= ' + str(median(computationTime)) + ' ms')
+
+latency=(computationCompleteTimeStamp - triggerTimeStamp)[4:-4]
+maxlatency = max(latency)
+print('max latency, including computation = ' + str(maxlatency) + ' ms')
+
+print('Based on latency, recommended frame rate for 1 sample delay is: ' + str(1/(maxlatency*1e-3)) + ' hz')
+
+#print('plotting...')
+#figure()
+#plot(frameArrivalTimeStamp[1:-3],'b.') 
+#xlabel('sample index')
+#ylabel('frameArrivalTimeStamp[ms]')
+#legend([''])
+
+#figure()
+#plot(interframe,'b.') 
+#xlabel('sample index')
+#ylabel('Difference in frame arrival times [ms]')
+#legend(['Interframe arrval times'])
+
+show()
+print('...done')
