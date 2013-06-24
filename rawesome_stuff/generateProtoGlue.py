@@ -1,7 +1,7 @@
 import rawe
 import sys
 
-from highwind_carousel_conf import getConf
+from rawe.models.arianne_conf import makeConf
 import carouselModel
 
 import MHE
@@ -9,7 +9,7 @@ import NMPC
 
 if __name__=='__main__':
     assert len(sys.argv) == 2, 'need to call generateProtoGlue.py with the properties directory'
-    conf = getConf()
+    conf = makeConf()
     dae = carouselModel.makeModel(conf,propertiesDir=sys.argv[1])
 
     autogenDir = '.'

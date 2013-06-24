@@ -8,13 +8,13 @@ import NMPC
 import MHE
 from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
-from highwind_carousel_conf import getConf
+from rawe.models.arianne_conf import makeConf
 import carouselModel
 from rawekite.carouselSteadyState import getSteadyState
 
 from common_conf import Ts
 
-conf = getConf()
+conf = makeConf()
 conf['stabilize_invariants'] = True
 daeSim = carouselModel.makeModel(conf)
 
