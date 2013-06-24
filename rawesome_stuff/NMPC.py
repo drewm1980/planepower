@@ -4,7 +4,7 @@ import rawe
 
 import MHE
 from common_conf import Ts
-from highwind_carousel_conf import getConf
+from rawe.models.arianne_conf import makeConf
 import carouselModel
 
 mpcHorizonN = 15
@@ -33,7 +33,7 @@ def radians(x):
     return float(numpy.radians(x))
 
 def makeNmpc(propertiesDir='../properties'):
-    conf = getConf()
+    conf = makeConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
     mpc = rawe.Mpc(dae, N=mpcHorizonN, ts=Ts)

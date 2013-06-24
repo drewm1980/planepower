@@ -2,7 +2,7 @@ import casadi as C
 import rawe
 
 import carouselModel
-from highwind_carousel_conf import getConf
+from rawe.models.arianne_conf import makeConf
 from common_conf import Ts
 
 mheHorizonN = 10
@@ -37,7 +37,7 @@ measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
 
 def makeMhe(propertiesDir='../properties'):
-    conf = getConf()
+    conf = makeConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
