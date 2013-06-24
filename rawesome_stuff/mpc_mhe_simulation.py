@@ -55,8 +55,8 @@ mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1.0
 mpcWeights = {}
 for name in mpcSigmas:
     mpcWeights[name] = 1.0/mpcSigmas[name]**2
-for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
-for name in ['dx','dy','dz']: mpcWeights[name] *= 1e-1
+#for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
+for name in ['dx','dy','dz']: mpcWeights[name] *= 5e-1
 
 ## Simulation parameters
 Tf = 500.0   # Simulation duration
@@ -219,7 +219,7 @@ while current_time < Tf:
            mheRT.getKKT(), mheIt, mheRT.preparationTime + mheRT.feedbackTime,
            mpcRT.getKKT(), mpcIt, mpcRT.preparationTime + mpcRT.feedbackTime)
     sim.step()
-    #time.sleep(Ts)
+    time.sleep(Ts)
 
     # first compute the final partial measurement
     mheRT.shiftXZU(strategy='copy', xEnd=mpcRT.x[1,:], uEnd=mpcRT.u[0,:])
