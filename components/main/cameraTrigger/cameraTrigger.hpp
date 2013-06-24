@@ -27,6 +27,8 @@ typedef uint64_t TIME_TYPE;
 
 #define TRIGGER_ACTIVE_HIGH 0
 
+#define SLEEP_TIME_MILLISECONDS 10
+
 class CameraTrigger
 : public TaskContext
 {

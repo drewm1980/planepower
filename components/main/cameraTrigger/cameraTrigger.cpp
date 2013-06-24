@@ -59,11 +59,11 @@ void  CameraTrigger::updateHook()
 	_TriggerTriggeredTime.write(tempTime);
 #if TRIGGER_ACTIVE_HIGH
 	pull_trigger_high();
-	usleep(500);
+	usleep(SLEEP_TIME_MILLISECONDS*1e3);
 	pull_trigger_low();
 #else
 	pull_trigger_low();
-	usleep(500);
+	usleep(SLEEP_TIME_MILLISECONDS*1e3);
 	pull_trigger_high();
 #endif
 	tempTime = RTT::os::TimeService::Instance()->getTicks();
