@@ -41,7 +41,8 @@ CameraArray::CameraArray(bool useExternalTrigger)
 	{
 		cameras[i] = dc1394_camera_new(dc1394_driver,guids[i]); 
 		if (!cameras[i]) {
-			CERR << "Failed to initialize camera with guid " << guids[i] << " index " << i << ENDL;
+			CERR << "Failed to initialize camera with index " << i << ENDL;
+			CERR << "Please check that you plugged in the correct cameras." << i << ENDL;
 			continue;
 		}
 	}

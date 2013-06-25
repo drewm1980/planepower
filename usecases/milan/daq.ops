@@ -171,7 +171,7 @@ cpLT.size = 5
 # connect("masterTimer.imuClock","mcuHandler.trigger", cp)
 connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpLT)
 connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
-connect("masterTimer.cameraClock", "lineAngleSensor.TriggerIn", cp)
+connect("masterTimer.imuClock", "lineAngleSensor.TriggerIn", cp)
 #connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)
 
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)

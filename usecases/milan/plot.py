@@ -5,7 +5,7 @@ from numpy import array
 from pylab import plot,xlabel,ylabel,show,legend
 
 t = array(f.variables['lineAngleSensor.timeStamps.0'].data) # ns
-t = t*1e-3 # ms
+t = t*1e-6 # ms
 
 # Horizontal, positive is forward
 hslope = 0.4246 # V / degrees
