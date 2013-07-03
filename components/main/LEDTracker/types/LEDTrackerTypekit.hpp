@@ -3,6 +3,7 @@
 
 #include "LEDTrackerDataType.hpp"
 #include <rtt/types/StructTypeInfo.hpp>
+#include <rtt/types/CArrayTypeInfo.hpp>
 #include <rtt/types/TypekitPlugin.hpp>
 
 namespace boost

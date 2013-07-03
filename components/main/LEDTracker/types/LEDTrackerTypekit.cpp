@@ -7,6 +7,9 @@ std::string LEDTrackerTypekit::getName()
 
 bool LEDTrackerTypekit::loadTypes()
 {
+
+	RTT::types::Types()->addType(new RTT::detail::CArrayTypeInfo<RTT::types::carray< double > >("double[]"));
+
 	RTT::types::Types()->addType(new LEDTrackerDataTypeInfo());
 
 	return true;
