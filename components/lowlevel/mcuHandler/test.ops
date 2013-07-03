@@ -38,7 +38,7 @@ connectPeers("reporter", "mcuHandler")
 reporter.reportComponent("mcuHandler")
  
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "imuTest.dat"
+reporter.ReportFile = "imuTest.nc"
  
 reporter.configure()
 reporter.start()
