@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#include "types/McuHandlerDataType.hpp"
+
 /// Define the time-stamp type
 typedef uint64_t TIME_TYPE;
 
@@ -24,7 +26,8 @@ typedef uint64_t TIME_TYPE;
 #define TRANSMIT_BUFFER_SIZE	64
 
 /// McuHandler class
-class McuHandler : public RTT::TaskContext
+class McuHandler
+	: public RTT::TaskContext
 {
 public:
 	/// Ctor
@@ -55,7 +58,7 @@ protected:
 	/// the error hook.
 	void ethernetTransmitReceive( void );
 	/// Method for receiving sensor data. Data is NOT scaled, yet.
-	void receiveSensorData(std::vector< double >& data);
+	void receiveSensorData( void );
 	
 	/// Trigger the component to get IMU data if there is an event on this port.
 	RTT::InputPort< TIME_TYPE > portTrigger;
@@ -63,18 +66,15 @@ protected:
 	/// is triggered externally.
 	TIME_TYPE triggerTimeStamp;
 	/// Holder for the IMU data.
-	std::vector< double > imuData;
-	/// The data from the IMU: [timestamp omegax omegay omegaz ax ay az].
-	/// All data is normalized.
-	RTT::OutputPort< std::vector< double > > portImuData;
+	McuHandlerDataType imuData;
+	/// The data from the IMU.
+	RTT::OutputPort< McuHandlerDataType > portImuData;
 	/// Port with control signals [ua1, ua2, ue].
 	RTT::InputPort< std::vector< double> > portControls;	
 	/// Holder for the control action to be send
 	std::vector< double > controls;
 	/// Internal buffer for control values
 	std::vector< double > execControls;
-	/// Port which holds the execution time
-	RTT::OutputPort< double > portExecTime;
 	
 	/// Name to listen for incoming connections on, either FQDN or IPv4 address.
 	std::string hostName;

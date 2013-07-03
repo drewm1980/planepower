@@ -26,7 +26,6 @@ setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
 var ConnPolicy cp
 connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
 
-
 mcuHandler.configure()
 mcuHandler.start()
 masterTimer.configure()
