@@ -23,10 +23,10 @@ using namespace soem_ebox;
 #define DFILTER_FC 10.0
 
 /// Digital filter coefficient calculation
-#define DFILTER_K( fc, fs ) \
-	exp( -2.0 * M_PI * fc / fs )
+#define DFILTER_K(fc, fs) \
+	exp( -2.0 * M_PI * (fc) / (fs) )
 /// 1-order low-pass digital filter
-#define DFILTER( Output, OldOutput, Input, fc, fs ) \
+#define DFILTER(Output, OldOutput, Input, fc, fs) \
 	Output = ( 1 - DFILTER_K(fc, fs) ) * Input + DFILTER_K(fc, fs) * OldOutput;
 
 
@@ -38,28 +38,26 @@ Encoder::Encoder(std::string name)
 	//
 	addEventPort("eboxOut", portEboxOut)
 		.doc("EBOX encoder port");
-	addPort("encoderData", portEncoderData)
-		.doc(	"Output port for encoder data:"
-				"[timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].");
-	addPort("execTime", portExecTime)
-		.doc("Execution time of the component.");
-	
+	addPort("data", portEncoderData)
+		.doc("Output port for encoder data");
+		
 	//
 	// Add properties
 	//
 	addProperty("encoderPort", encoderPort);
-	addProperty("samplingFreq", samplingFreq);
+	addProperty("Ts", Ts);
 
 	//
 	// Prepare ports
 	//
-	encoderData.resize(7, 0.0);
 	portEncoderData.setDataSample( encoderData );
 	portEncoderData.write( encoderData );
 }
 
 bool  Encoder::configureHook()
 {
+	Logger::In in( getName() );
+
 	if (portEboxOut.connected() == false)
 	{
 		log( Error ) << "Encoder port is not connected" << endlog();
@@ -100,38 +98,34 @@ void  Encoder::updateHook()
 	posDelta = posOld - posNew;
 	
 	// Convert encoder ticks to real angle in radians and bound it to -pi.. pi
-	posDeltaReal = (double)posDelta * 2.0 * PI / GEAR_RATIO / PULSES_PER_REVOLUTION;
+	posDeltaReal = (double)posDelta * 2.0 * M_PI / GEAR_RATIO / PULSES_PER_REVOLUTION;
 	posAcc += posDeltaReal;
-	if (posAcc > PI)
-		posAcc -= 2.0 * PI;
+	if (posAcc > M_PI)
+		posAcc -= 2.0 * M_PI;
 	else if (posAcc < -PI)
-		posAcc += 2.0 * PI;
+		posAcc += 2.0 * M_PI;
 	
 	// Calculate angular velocity [rad/s], and filter it through low-pass filter
 	omegaNew = posDeltaReal / elapsedTime;
-	DFILTER(omegaFiltNew, omegaFiltOld, omegaNew, DFILTER_FC, samplingFreq);
+	DFILTER(omegaFiltNew, omegaFiltOld, omegaNew, DFILTER_FC, (1 / Ts));
 	
-	// Invert the signs and fill in the output vector
-	encoderData[ 0 ] = timeStampNew;
-	encoderData[ 1 ] = posAcc;
-	encoderData[ 2 ] = sin( posAcc );
-	encoderData[ 3 ] = cos( posAcc );
-	encoderData[ 4 ] = omegaNew;
-	encoderData[ 5 ] = omegaFiltNew;
-	encoderData[ 6 ] = omegaFiltNew / (2.0 * PI) * 60.0;
-	
-	// Output data to the port
-	portEncoderData.write( encoderData );
+	// Fill in the output vector
+	encoderData.theta = posAcc;
+	encoderData.sin_theta = sin( posAcc );
+	encoderData.cos_theta = cos( posAcc );
+	encoderData.omega = omegaNew;
+	encoderData.omega_filt_rpm = omegaFiltNew / (2.0 * PI) * 60.0;
 	
 	// Prepare for the next sampling time.
 	posOld = posNew;
 	timeStampOld = timeStampNew;
 	omegaFiltOld = omegaFiltNew;
 	
-	// Output execution time of the component
-	portExecTime.write(
-		TimeService::Instance()->secondsSince( tickStart )
-	);
+	// Output data to the port
+	encoderData.ts_trigger = timeStampNew;
+	encoderData.ts_elapsed = TimeService::Instance()->secondsSince( tickStart );
+
+	portEncoderData.write( encoderData );
 }
 
 void  Encoder::stopHook()

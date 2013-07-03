@@ -27,7 +27,7 @@ import("encoder")
 loadComponent("encoder","Encoder")
 encoder.encoderPort = 0
 # Same as for SOEM master
-encoder.samplingFreq = 0.001
+encoder.Ts = 0.001
 setActivity("encoder", 0.0, 99, ORO_SCHED_RT)
 
 #connectPeers("encoder","soemMaster")
@@ -56,7 +56,7 @@ connectPeers("reporter", "encoder")
 reporter.reportComponent("encoder")
  
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "encoderTest.dat"
+reporter.ReportFile = "encoderTest.nc"
  
 reporter.configure()
 reporter.start()
