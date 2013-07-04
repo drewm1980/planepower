@@ -6,8 +6,8 @@
 #include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
 
-#include <soem_ebox/soem_ebox/EBoxOut.h>
-#include <LineAngleSensorDataType.hpp>
+#include <soem_ebox/soem_ebox/EBOXOut.h>
+#include "types/LineAngleSensorDataType.hpp"
 
 /// The line angle sensor component
 class LineAngleSensor
