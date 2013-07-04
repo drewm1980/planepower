@@ -52,6 +52,8 @@ CXXFLAGS_OROCOS += -DRTT_COMPONENT
 !ar_orocos = |> ar crs %o %f |>
 !ld_orocos = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> %d@(COMPONENT_NAME_MANGLING).so
 
+!ld_orocos_custom = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> $(SO_NAME).so
+
 # Acado specific flags and rules
 CPPFLAGS_ACADO = $(CPPFLAGS)
 CXXFLAGS_ACADO = $(CXXFLAGS)
