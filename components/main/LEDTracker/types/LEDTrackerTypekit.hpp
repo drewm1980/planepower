@@ -5,6 +5,7 @@
 #include <rtt/types/StructTypeInfo.hpp>
 #include <rtt/types/CArrayTypeInfo.hpp>
 #include <rtt/types/TypekitPlugin.hpp>
+#include <rtt/types/BoostArrayTypeInfo.hpp>
 
 namespace boost
 {
@@ -14,10 +15,10 @@ namespace boost
 		void serialize(Archive& a, LEDTrackerDataType& l, unsigned int)
 		{
 			using boost::serialization::make_nvp;
-			
-			a & make_nvp("positions", make_array(l.positions, 12));
-			a & make_nvp("weights", make_array(l.weights, 12));
-			
+
+			a & make_nvp("positions", l.positions);
+			a & make_nvp("weights", l.weights);
+						
 			a & make_nvp("ts_trigger", l.ts_trigger);
 			a & make_nvp("ts_frame", l.ts_frame);
 			a & make_nvp("ts_elapsed", l.ts_elapsed);

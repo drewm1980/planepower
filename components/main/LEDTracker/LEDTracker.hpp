@@ -9,11 +9,6 @@
 #include "CameraArray.hpp"
 #include "BlobExtractor.hpp"
 
-// XXX This is because of the current typekit configuration
-#if (CAMERA_COUNT != 2) || (LED_COUNT != 3)
-#error "No-no. This is not possible, you will get a segfault."
-#endif
-
 #include "types/LEDTrackerDataType.hpp"
 
 typedef uint64_t TIME_TYPE;

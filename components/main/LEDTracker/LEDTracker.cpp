@@ -35,6 +35,8 @@ LEDTracker::LEDTracker(std::string name)
 		.doc("The standard deviation of the camera measurements. Default = 1e3");
 	sigma_marker = 1e3;
 	
+	data.positions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
+	data.weights.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
 	data.ts_trigger = TimeService::Instance()->getTicks();
 	portData.setDataSample( data );
 	portData.write( data );

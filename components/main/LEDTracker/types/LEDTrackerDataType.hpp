@@ -1,13 +1,16 @@
 #ifndef __LEDTRACKERDATATYPE__
 #define __LEDTRACKERDATATYPE__
 
+#include <vector>
+
 /// Custom data type for the LED tracker
 typedef struct
 {
 	/// Pixel positions of the markers
-	double positions[ 12 ];
+	std::vector<double>  positions;
 	/// Weights
-	double weights[ 12 ];
+	std::vector<double> weights;
+
 	/// Time-stamps: trigger [ticks], frame arrival [ticks], elapsed[sec]
 	double ts_trigger, ts_frame, ts_elapsed;
 } LEDTrackerDataType;
