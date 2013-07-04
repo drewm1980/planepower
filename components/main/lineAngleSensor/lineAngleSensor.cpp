@@ -1,84 +1,82 @@
-#include <stdint.h>
-#include <ocl/Component.hpp>
-
 #include "lineAngleSensor.hpp"
+
+#include <rtt/Logger.hpp>
+#include <rtt/Property.hpp>
+#include <rtt/os/TimeService.hpp>
+#include <rtt/Time.hpp>
+
+#include <stdint.h>
+
+typedef uint64_t TIME_TYPE;
 
 using namespace std;
 using namespace RTT;
-using namespace Orocos;
-using namespace BFL;
+using namespace RTT::os;
+using namespace soem_ebox;
 
-ORO_CREATE_COMPONENT(LineAngleSensor);
-
-#define TIME_TYPE uint64_t
-
-LineAngleSensor::LineAngleSensor(std::string name):TaskContext(name,PreOperational)
+LineAngleSensor::LineAngleSensor( std::string name )
+	: TaskContext(name, PreOperational)
 {
-	addEventPort("TriggerIn",_TriggerIn).doc("Trigger input/timestamp");
-	addPort("TriggerOut",_TriggerOut).doc("Copy of the input trigger timestamp"); 
-	addPort("EboxRequestTime",_TriggerOut).doc("Timestamp before reading from Ebox"); 
-	addPort("EboxReplyTime",_TriggerOut).doc("Timestamp after reading from Ebox"); 
-	addPort("voltages",_voltages).doc("voltages in units from Ebox (V?)"); 
-	addPort("timeStamps", portTimeStamps)
-		.doc("Time stamps: [trigger EboxRequest EboxReply]");
+	addEventPort("EboxOut", portEboxOut)
+		.doc("Ebox port with measurements.");
 	
-	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
-	_TriggerOut.setDataSample( tempTime );
-	_TriggerOut.write( tempTime );
-	_EboxRequestTime.setDataSample( tempTime );
-	_EboxRequestTime.write( tempTime );
-	_EboxReplyTime.setDataSample( tempTime );
-	_EboxReplyTime.write( tempTime );
-	for(int i=0; i<2; i++) voltages.push_back(0.0);
-	for(int i=0; i<3; i++) timeStamps.push_back((double)tempTime);
-	portTimeStamps.setDataSample(timeStamps);
-	portTimeStamps.write(timeStamps);
-	_voltages.setDataSample(voltages);
-	_voltages.write(voltages);
+	addPort("data", portData)
+		.doc("Line angle sensor data");
+
+	addProperty("angle1Gain", angle1Gain);
+	addProperty("angle1Offset", angle1Offset);
+	addProperty("angle2Gain", angle2Gain);
+	addProperty("angle2Offset", angle2Offset);
+
+	// Default values for gains and offsets
+	angle1Gain = angle2Gain = 1.0;
+	angle1Offset = angle2Offset = 0.0;
+	
+	data.ts_trigger = TimeService::Instance()->getTicks();
+	portData.setDataSample( data );
+	portData.write( data );
 }
 
-LineAngleSensor::~LineAngleSensor()
+bool LineAngleSensor::configureHook()
 {
-}
+	Logger::In in( getName() );
 
-bool  LineAngleSensor::configureHook()
-{
-	// Connect to the ebox component
-	assert(this->hasPeer("soemMaster"));
-	assert(this->getPeer("soemMaster")->provides()->hasService("Slave_1001"));
-	assert(this->getPeer("soemMaster")->provides()->getService("Slave_1001")
-			->provides()->hasOperation("readAnalog"));
-	readAnalog = getPeer("soemMaster")->provides()->getService("Slave_1001")
-		->provides()->getOperation("readAnalog");
+	if (portEboxOut.connected() == false)
+	{
+		log( Error ) << "Measurements port is not connected" << endlog();
+		return false;
+	}
+
 	return true;
 }
 
-bool  LineAngleSensor::startHook()
+bool LineAngleSensor::startHook()
 {
 	return true;
 }
 
-void  LineAngleSensor::updateHook()
+void LineAngleSensor::updateHook()
 {
-	TIME_TYPE trigger;
-	_TriggerIn.read(trigger);
-	_TriggerOut.write(trigger);
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
-	TIME_TYPE EboxRequest = RTT::os::TimeService::Instance()->getTicks();
-	_EboxRequestTime.write(EboxRequest);
+	portEboxOut.read( eboxOut );
 
-	for(int i=0; i<2; i++) voltages[i]=readAnalog(i);
+	data.angle1 = (eboxOut.analog[ 0 ] - angle1Offset) * angle1Gain;
+	data.angle2 = (eboxOut.analog[ 1 ] - angle2Offset) * angle2Gain;
 
-	TIME_TYPE EboxReply = RTT::os::TimeService::Instance()->getTicks();
-	_EboxReplyTime.write(EboxReply);
+	data.ts_trigger = trigger;
+	data.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 
-	timeStamps[ 0 ] = (double) trigger;
-	timeStamps[ 1 ] = (double) EboxRequest;
-	timeStamps[ 2 ] = (double) EboxReply;
-	portTimeStamps.write(timeStamps);
-
-	_voltages.write(voltages);
+	portData.write( data );
 }
 
-void  LineAngleSensor::stopHook() {};
+void LineAngleSensor::stopHook()
+{}
 
+void LineAngleSensor::errorHook()
+{}
+
+void LineAngleSensor::cleanupHook()
+{}
+
+ORO_CREATE_COMPONENT( LineAngleSensor )
