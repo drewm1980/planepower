@@ -82,15 +82,14 @@ var double base_hz = masterTimer.imu_target_hz
 loadService("mcuHandler","marshalling")
 mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.Ts = 1.0 / base_hz
-mcuHandler.rtMode = false
+mcuHandler.rtMode = true
 
 # Voltage controller
 
 # Encoder
 encoder.encoderPort = 0;
 # Same as for SOEM
-# TODO: change this inside the component to Ts
-encoder.samplingFreq = 1000;
+encoder.Ts = 0.001;
 
 # Camera trigger
 
@@ -158,9 +157,9 @@ setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 #
 ################################################################################
 
-connectPeers("encoder", "soemMaster")
+connectPeers("soemMaster", "encoder")
 connectPeers("cameraTrigger", "soemMaster")
-connectPeers("lineAngleSensor", "soemMaster")
+connectPeers("soemMaster", "lineAngleSensor")
 
 var ConnPolicy cp
 
@@ -171,11 +170,11 @@ cpLT.size = 5
 # connect("masterTimer.imuClock","mcuHandler.trigger", cp)
 connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpLT)
 connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
-connect("masterTimer.imuClock", "lineAngleSensor.TriggerIn", cp)
 #connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)
 
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
+connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
 
 ################################################################################
 #
@@ -187,9 +186,7 @@ connectPeers("imuReporter", "mcuHandler")
 imuReporter.reportComponent( "mcuHandler" )
 
 connectPeers("cameraReporter", "LEDTracker")
-#cameraReporter.reportComponent( "LEDTracker" )
-cameraReporter.reportPort("LEDTracker", "timeStamps")
-cameraReporter.reportPort("LEDTracker", "markerPositionsAndCovariance")
+cameraReporter.reportComponent( "LEDTracker" )
 
 connectPeers("encoderReporter", "encoder")
 encoderReporter.reportComponent( "encoder" )

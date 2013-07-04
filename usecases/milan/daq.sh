@@ -1,2 +1,2 @@
 #!/bin/sh
-deployer-gnulinux -lerror -s daq.ops
+deployer-gnulinux -ldebug -s daq.ops
