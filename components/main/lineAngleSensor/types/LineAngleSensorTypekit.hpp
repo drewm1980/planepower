@@ -14,8 +14,8 @@ namespace boost
 		{
 			using boost::serialization::make_nvp;
 			
-			a & make_nvp("angle1", l.angle1);
-			a & make_nvp("angle2", l.angle2);
+			a & make_nvp("angle_hor", l.angle_hor);
+			a & make_nvp("angle_ver", l.angle_ver);
 			
 			a & make_nvp("ts_trigger", l.ts_trigger);
 			a & make_nvp("ts_elapsed", l.ts_elapsed);

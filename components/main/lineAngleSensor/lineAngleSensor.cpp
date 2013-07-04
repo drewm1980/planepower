@@ -23,14 +23,14 @@ LineAngleSensor::LineAngleSensor( std::string name )
 	addPort("data", portData)
 		.doc("Line angle sensor data");
 
-	addProperty("angle1Gain", angle1Gain);
-	addProperty("angle1Offset", angle1Offset);
-	addProperty("angle2Gain", angle2Gain);
-	addProperty("angle2Offset", angle2Offset);
+	addProperty("angleHorGain", angleHorGain);
+	addProperty("angleHorOffset", angleHorOffset);
+	addProperty("angleVerGain", angleVerGain);
+	addProperty("angleVerOffset", angleVerOffset);
 
 	// Default values for gains and offsets
-	angle1Gain = angle2Gain = 1.0;
-	angle1Offset = angle2Offset = 0.0;
+	angleHorGain = angleVerGain = 1.0;
+	angleHorOffset = angleVerOffset = 0.0;
 	
 	data.ts_trigger = TimeService::Instance()->getTicks();
 	portData.setDataSample( data );
@@ -61,8 +61,8 @@ void LineAngleSensor::updateHook()
 
 	portEboxOut.read( eboxOut );
 
-	data.angle1 = (eboxOut.analog[ 0 ] - angle1Offset) * angle1Gain;
-	data.angle2 = (eboxOut.analog[ 1 ] - angle2Offset) * angle2Gain;
+	data.angle_hor = (eboxOut.analog[ 0 ] - angleHorOffset) * angleHorGain;
+	data.angle_ver = (eboxOut.analog[ 1 ] - angleVerOffset) * angleVerGain;
 
 	data.ts_trigger = trigger;
 	data.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

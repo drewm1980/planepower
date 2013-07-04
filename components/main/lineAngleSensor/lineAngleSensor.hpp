@@ -43,14 +43,14 @@ protected:
 	/// Sensor data holder
 	LineAngleSensorDataType data;
 		
-	/// Angle 1 offset
-	double angle1Offset;
-	/// Angle 1 gain
-	double angle1Gain;
-	/// Angle 2 offset
-	double angle2Offset;
-	/// Angle 2 gain
-	double angle2Gain;
+	/// Horizontal angle offset
+	double angleHorOffset;
+	/// Horizontal angle gain
+	double angleHorGain;
+	/// Vertical angle offset
+	double angleVerOffset;
+	/// Vartical angle gain
+	double angleVerGain;
 };
 
 #endif /// __LINE_ANGLE_SENSOR__

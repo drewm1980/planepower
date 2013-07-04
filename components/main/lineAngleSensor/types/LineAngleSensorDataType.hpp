@@ -5,7 +5,7 @@
 typedef struct
 {
 	/// Measured angles [rad]
-	double angle1, angle2;
+	double angle_hor, angle_ver;
 	/// Time-stamps: trigger [ticks] and elapsed [sec]
 	double ts_trigger, ts_elapsed;
 } LineAngleSensorDataType;
