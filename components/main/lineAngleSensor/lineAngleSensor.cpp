@@ -17,7 +17,7 @@ using namespace soem_ebox;
 LineAngleSensor::LineAngleSensor( std::string name )
 	: TaskContext(name, PreOperational)
 {
-	addEventPort("EboxOut", portEboxOut)
+	addEventPort("eboxOut", portEboxOut)
 		.doc("Ebox port with measurements.");
 	
 	addPort("data", portData)

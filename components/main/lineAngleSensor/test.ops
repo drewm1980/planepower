@@ -4,20 +4,44 @@ import("lineAngleSensor")
 import("soem_master")
 import("soem_ebox")
  
-loadComponent("soemMaster","soem_master::SoemMasterComponent")
-loadComponent("lineAngleSensor","LineAngleSensor")
-
-# XXX Update this script for correct operation
- 
-var double base_hz = 100;
-setActivity("lineAngleSensor",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
-setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+loadComponent("soemMaster","soem_master::SoemMasterComponent") 
 soemMaster.ifname = "eth1"
-
-#connectPeers("lineAngleSensor","soemMaster")
+setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
 
 soemMaster.configure()
 soemMaster.start()
 
+loadComponent("lineAngleSensor","LineAngleSensor")
+setActivity("lineAngleSensor", 0.0, HighestPriority, ORO_SCHED_RT)
+
+var ConnPolicy cp
+connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
+
 lineAngleSensor.configure()
 lineAngleSensor.start()
+
+# voltageController
+import("voltageController")
+loadComponent("voltageController","VoltageController")
+setActivity("voltageController", 0.01, LowestPriority, ORO_SCHED_RT)
+
+#connectPeers("voltageController","soemMaster")
+connect("soemMaster.Slave_1001.AnalogIn", "voltageController.eboxAnalog", cp)
+
+voltageController.configure()
+voltageController.start()
+
+loadComponent("reporter", "OCL::NetcdfReporting")
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+connectPeers("reporter", "lineAngleSensor")
+reporter.reportComponent("lineAngleSensor")
+reporter.ReportPolicy = rp
+reporter.ReportFile = "lineAngleSensorTest.nc"
+ 
+reporter.configure()
+reporter.start()
