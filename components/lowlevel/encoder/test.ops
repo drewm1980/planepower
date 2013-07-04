@@ -52,8 +52,13 @@ setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 connect("soemMaster.Slave_1001.AnalogIn", "voltageController.eboxAnalog", cp)
 
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
 connectPeers("reporter", "encoder")
 reporter.reportComponent("encoder")
+reporter.ReportPolicy = rp
  
 #(optionally, overwrite the default report file name)
 reporter.ReportFile = "encoderTest.nc"
