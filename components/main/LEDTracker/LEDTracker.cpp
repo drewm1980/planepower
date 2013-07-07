@@ -50,7 +50,15 @@ LEDTracker::~LEDTracker()
 
 bool  LEDTracker::configureHook()
 {
+	Logger::In in( getName() );
+
 	cameraArray = new CameraArray( _useExternalTrigger.get() );
+	if (cameraArray->initialized() == false)
+	{
+		log( Error ) << "Camera array failed to initialize itself." << endlog();
+		return false;
+	}
+
 	frame_w = cameraArray->frame_w;
 	frame_h = cameraArray->frame_h;
 	for(int i=0; i < CAMERA_COUNT; i++)
@@ -62,6 +70,9 @@ bool  LEDTracker::configureHook()
 
 bool  LEDTracker::startHook()
 {
+	if (cameraArray->initialized() == false)
+		return false;
+
 	cameraArray->startHook();
 	return true;
 }

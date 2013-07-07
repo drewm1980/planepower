@@ -37,91 +37,107 @@ CameraArray::CameraArray(bool useExternalTrigger)
 
 	const uint64_t guids[CAMERA_COUNT] = GUIDS;
 
+	_initialized = true;
 	for(int i=0; i<CAMERA_COUNT; i++)
 	{
 		cameras[i] = dc1394_camera_new(dc1394_driver,guids[i]); 
 		if (!cameras[i]) {
 			CERR << "Failed to initialize camera with index " << i << ENDL;
 			CERR << "Please check that you plugged in the correct cameras." << i << ENDL;
+			_initialized = false;
 			continue;
 		}
 	}
-	COUT << "Successfully connected to all cameras..." << ENDL;
 
-	// Set up trigger and transmission mode on all cameras
-	for(unsigned int i=0; i < CAMERA_COUNT; i++) 
+	if (_initialized == true)
 	{
-		err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+		COUT << "Successfully connected to all cameras..." << ENDL;
 
-		err=dc1394_video_set_operation_mode(cameras[i], DC1394_OPERATION_MODE_1394B);
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-		err=dc1394_video_set_iso_speed(cameras[i], DC1394_ISO_SPEED_800);
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-		err=dc1394_video_set_mode(cameras[i], VIDEO_MODE);
-		frame_w=FRAME_W;
-		frame_h=FRAME_H;
-		camera_count = CAMERA_COUNT;
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-		if(_useExternalTrigger)
+		// Set up trigger and transmission mode on all cameras
+		for(unsigned int i=0; i < CAMERA_COUNT; i++) 
 		{
-			f_fps = nanf("External");
-			err=dc1394_external_trigger_set_power(cameras[i], DC1394_ON);
+			err=dc1394_video_set_transmission(cameras[i], DC1394_OFF);
 			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-			//err=dc1394_external_trigger_set_mode(cameras[i], DC1394_TRIGGER_MODE_0); // Didn't allow more than 7 Hz framerate!
-			err=dc1394_external_trigger_set_mode(cameras[i], DC1394_TRIGGER_MODE_14); // Goes up to (almost 15 Hz)
+			
+			err=dc1394_video_set_operation_mode(cameras[i], DC1394_OPERATION_MODE_1394B);
 			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+
+			err=dc1394_video_set_iso_speed(cameras[i], DC1394_ISO_SPEED_800);
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+
+			err=dc1394_video_set_mode(cameras[i], VIDEO_MODE);
+			frame_w=FRAME_W;
+			frame_h=FRAME_H;
+			camera_count = CAMERA_COUNT;
+			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			
+			if(_useExternalTrigger)
+			{
+				f_fps = nanf("External");
+				err=dc1394_external_trigger_set_power(cameras[i], DC1394_ON);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+				//err=dc1394_external_trigger_set_mode(cameras[i], DC1394_TRIGGER_MODE_0); // Didn't allow more than 7 Hz framerate!
+				err=dc1394_external_trigger_set_mode(cameras[i], DC1394_TRIGGER_MODE_14); // Goes up to (almost 15 Hz)
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
 #if TRIGGER_ACTIVE_HIGH
-			err=dc1394_external_trigger_set_polarity(cameras[i], DC1394_TRIGGER_ACTIVE_HIGH);	
+				err=dc1394_external_trigger_set_polarity(cameras[i], DC1394_TRIGGER_ACTIVE_HIGH);	
 #else
-			err=dc1394_external_trigger_set_polarity(cameras[i], DC1394_TRIGGER_ACTIVE_LOW);	
+				err=dc1394_external_trigger_set_polarity(cameras[i], DC1394_TRIGGER_ACTIVE_LOW);	
 #endif
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			} 
+			else
+			{
+				err=dc1394_external_trigger_set_power(cameras[i], DC1394_OFF);
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+				f_fps = 15.0f;
+				err=dc1394_video_set_framerate(cameras[i], DC1394_FRAMERATE_15); 
+				if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+			}
+
+			err=dc1394_capture_setup(cameras[i], FRAME_BUFFER_DEPTH, DC1394_CAPTURE_FLAGS_DEFAULT);
 			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-		} else {
-			err=dc1394_external_trigger_set_power(cameras[i], DC1394_OFF);
-			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-			f_fps = 15.0f;
-			err=dc1394_video_set_framerate(cameras[i], DC1394_FRAMERATE_15); 
-			if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
+
 		}
 
-		err=dc1394_capture_setup(cameras[i], FRAME_BUFFER_DEPTH, DC1394_CAPTURE_FLAGS_DEFAULT);
-		if(err!=DC1394_SUCCESS) COUT << dc1394_error_get_string(err) << ENDL;
-
-	}
-
-	// Put all cameras into broadcast mode
-	for(unsigned int i=0; i < CAMERA_COUNT; i++) {
-		if(BROADCAST) {
-			err = dc1394_camera_set_broadcast(cameras[i], DC1394_TRUE);
-		} else {
-			err = dc1394_camera_set_broadcast(cameras[i], DC1394_FALSE);
+		// Put all cameras into broadcast mode
+		for(unsigned int i=0; i < CAMERA_COUNT; i++) {
+			if(BROADCAST) {
+				err = dc1394_camera_set_broadcast(cameras[i], DC1394_TRUE);
+			}
+			else
+			{
+				err = dc1394_camera_set_broadcast(cameras[i], DC1394_FALSE);
+			}
+			if(err!=DC1394_SUCCESS) CERR << dc1394_error_get_string(err) << ENDL;
 		}
-		if(err!=DC1394_SUCCESS) CERR << dc1394_error_get_string(err) << ENDL;
-	}
 
-	for(unsigned int i=0; i < CAMERA_COUNT; i++) {
-		current_frame[i] = NULL;
-	}
+		for(unsigned int i=0; i < CAMERA_COUNT; i++) {
+			current_frame[i] = NULL;
+		}
 
-	transfer_time = CAMERA_COUNT*frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
-	if (VIDEO_MODE==DC1394_VIDEO_MODE_800x600_RGB8) transfer_time *= 3.0f;  // Three channels
-	COUT << "Based on bus speed, transfer time should be " << transfer_time*1e3 << "ms" << ENDL;
-	period = 1.0 / f_fps; // sec
+		transfer_time = CAMERA_COUNT*frame_h*frame_w*8.0f / 800.0e6f;  // sec.  the bus ~should run at 800 Mbps
+		if (VIDEO_MODE==DC1394_VIDEO_MODE_800x600_RGB8) transfer_time *= 3.0f;  // Three channels
+		COUT << "Based on bus speed, transfer time should be " << transfer_time*1e3 << "ms" << ENDL;
+		period = 1.0 / f_fps; // sec
 
-	sync_camera_parameters();
+		sync_camera_parameters();
 
 	// Print settings for first camera
 #if VERBOSE
-	dc1394_featureset_t features_for_printing;
-	dc1394_feature_get_all(cameras[0], &features_for_printing);
-	dc1394_feature_print_all(&feature_for_printing); // second parameter for stdout?
+		dc1394_featureset_t features_for_printing;
+		dc1394_feature_get_all(cameras[0], &features_for_printing);
+		dc1394_feature_print_all(&feature_for_printing); // second parameter for stdout?
 #endif
 
+	}
+
 	COUT << "(CameraArray) constructor finished" << ENDL;
+}
+
+bool CameraArray::initialized( void )
+{
+	return _initialized;
 }
 
 void CameraArray::sync_camera_parameters()
