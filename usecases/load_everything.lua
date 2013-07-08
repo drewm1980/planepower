@@ -1,45 +1,35 @@
+#!/usr/bin/env rttlua-i
+
 dofile("preamble.lua")
 
 deployer:import("masterTimer")
-deployer:loadComponent("masterTimer","OCL::MasterTimer")
+deployer:loadComponent("masterTimer","MasterTimer")
 masterTimer=deployer:getPeer("masterTimer")
 
---deployer:import("encoderLatch")
---deployer:loadComponent("EncoderLatch","OCL::EncoderLatch")
---EncoderLatch=deployer:getPeer("EncoderLatch")
+dofile("load_carousel_1_hardware.lua")
+dofile("configure_carousel_1_hardware.lua")
 
---deployer:import("LEDTrackerSimulator")
---deployer:loadComponent("LEDTrackerSimulator","OCL::LEDTrackerSimulator")
---LEDTrackerSimulator=deployer:getPeer("LEDTrackerSimulator")
-
---deployer:import("imuBuffer")
---deployer:loadComponent("imuBuffer","OCL::ImuBuffer")
---imuBuffer=deployer:getPeer("imuBuffer")
+-- Master timer base clock is clock of our fastest running sensor
+deployer:loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
+--base_hz = masterTimer.imu_target_hz
 
 --deployer:import("measurementsRecorder")
---deployer:loadComponent("measurementsRecorder","OCL::MeasurementsRecorder")
+--deployer:loadComponent("measurementsRecorder","MeasurementsRecorder")
 --measurementsRecorder=deployer:getPeer("measurementsRecorder")
 
---deployer:import("planeSimulatorRframe")
---deployer:loadComponent("sim","OCL::planeSimulatorRframe")
---sim=deployer:getPeer("sim")
-
---deployer:import("cameraSimulator")
---deployer:loadComponent("cameraSimulator","OCL::CameraSimulator")
---cameraSimulator=deployer:getPeer("cameraSimulator")
-
 --deployer:import("poseFromMarkers")
---deployer:loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
+--deployer:loadComponent("poseFromMarkers","PoseFromMarkers")
 --poseFromMarkers=deployer:getPeer("poseFromMarkers")
 
 ----rtt.setLogLevel("Debug")
 --deployer:import("simpleTrajectoryGenerator")
---deployer:loadComponent("trajectoryGenerator","OCL::SimpleTrajectoryGenerator")
+--deployer:loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 --trajectoryGenerator=deployer:getPeer("trajectoryGenerator")
 ----rtt.setLogLevel(globalLogLevel)
 
 --deployer:import("protobufBridge")
---deployer:loadComponent("protobuf","OCL::ProtobufBridge")
+--deployer:loadComponent("protobuf","ProtobufBridge")
 --protobuf=deployer:getPeer("protobuf")
 
 --deployer:import("dynamicMHE")

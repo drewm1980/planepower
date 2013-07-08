@@ -1,3 +1,5 @@
+#!/usr/bin/env rttlua-i
+
 require("rttlib")
 rtt.setLogLevel("Warning")
 
@@ -9,4 +11,8 @@ deployer = tc:getPeer("Deployer")
 rtt.logl("Info", "Loading PLANEPOWER components...")
 
 deployer:import("ocl")
+
+ORO_SCHED_RT=rtt.globals.ORO_SCHED_RT
+
+
 
