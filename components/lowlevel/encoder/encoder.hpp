@@ -12,6 +12,8 @@ typedef uint64_t TIME_TYPE;
 // Include SOEM EBOX encoder header
 #include <soem_ebox/soem_ebox/EBOXOut.h>
 
+#include "types/EncoderDataType.hpp"
+
 /// Encoder class
 class Encoder : public RTT::TaskContext
 {
@@ -36,22 +38,19 @@ public:
 	virtual void errorHook( );
 	
 protected:
-	/// EBOX encoder port
+	/// EBOX encoder port.
 	RTT::InputPort< soem_ebox::EBOXOut > portEboxOut;
-	/// EBOX encoder data
+	/// EBOX encoder data.
 	soem_ebox::EBOXOut eboxOut;
-	/// Output port for encoder data:
-	/// [timestamp, delta, sin_delta, cos_delta, omega, omega_filtered, omega_rpm].
-	RTT::OutputPort< std::vector< double > > portEncoderData;
+	/// Output port for encoder data.
+	RTT::OutputPort< EncoderDataType > portEncoderData;
 	/// Vector that holds measurements.
-	std::vector< double > encoderData;
-	/// Port which holds the execution time.
-	RTT::OutputPort< double > portExecTime;
-	
+	EncoderDataType encoderData;
+		
 	/// Encoder port, SOEM related.
 	unsigned encoderPort;
 	/// Sampling time of the component
-	double samplingFreq;
+	double Ts;
 
 private:
 	TIME_TYPE timeStampOld, timeStampNew, tickStart;

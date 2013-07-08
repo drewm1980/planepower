@@ -50,12 +50,10 @@ McuHandler::McuHandler(std::string name)
 	addEventPort("trigger", portTrigger)
 		.doc("Trigger the component to get an IMU measurement");
 	addPort("imuData", portImuData)
-		.doc("The IMU data: [timestamp, omegax, omegay, omegaz, ax, ay, az]");
+		.doc("The IMU data");
 	addPort("controls", portControls)
 		.doc("Port with control signals [ua1, ua2, ue].");
-	addPort("execTime", portExecTime)
-		.doc("Execution time of the component.");
-
+	
 	//
 	// Add operations
 	//
@@ -67,7 +65,6 @@ McuHandler::McuHandler(std::string name)
 	//
 	// Prepare ports
 	//
-	imuData.resize(7, 0.0);
 	portImuData.setDataSample( imuData );
 	portImuData.write( imuData );
 	
@@ -99,6 +96,8 @@ bool McuHandler::configureHook()
 
 bool McuHandler::startHook()
 {
+	Logger::In in( getName() );
+
 	if ((tcpSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 	{
 		log( Error ) << "Failed to create socket." << endlog();
@@ -155,15 +154,14 @@ void McuHandler::updateHook()
 	
 	// Before calling the MCU operation, reset the tcpStatus flag.
 	tcpStatus = OK;
-	receiveSensorData( imuData );
+	receiveSensorData();
+	imuData.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
 	portImuData.write( imuData );
-
-	double elapsedTime = TimeService::Instance()->secondsSince( triggerTimeStamp );
-	portExecTime.write( elapsedTime );
+	
 
 	// This is a check for the real-time mode. In case we do not meet the
 	// deadline, abort.
-	if (rtMode == true && elapsedTime > Ts && (++upTimeCnt > MAX_ERRORS_ALLOWED))
+	if (rtMode == true && imuData.ts_elapsed > Ts && (++upTimeCnt > MAX_ERRORS_ALLOWED))
 	{
 		tcpStatus = ERR_DEADLINE;
 		exception();
@@ -174,6 +172,8 @@ void McuHandler::updateHook()
 	
 void McuHandler::stopHook()
 {
+	Logger::In in( getName() );
+
 	/// Try to send neutral references to all motors
 //	if (tcpStatus == OK && this->isRunning() == true) 
 	sendMotorReferences(0., 0., 0.);
@@ -263,7 +263,7 @@ void McuHandler::sendMotorReferences(double ref1, double ref2, double ref3)
 	ethernetTransmitReceive();
 }
 
-void  McuHandler::receiveSensorData(vector< double >& data)
+void  McuHandler::receiveSensorData( void )
 {
 	//
 	// Prepare the request message
@@ -290,24 +290,21 @@ void  McuHandler::receiveSensorData(vector< double >& data)
 	}
 	
 	// Timestamp
-	// V1
-//	data[ 0 ] = (double) TimeService::Instance()->getTicks();
-	// V2
-	data[ 0 ] = triggerTimeStamp;
+	imuData.ts_trigger = triggerTimeStamp;
 	
 	// And now fill in the IMU data
-	data[ 1 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
-	data[ 2 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
-	data[ 3 ] = IMU_GYRO_SCALE((short)((receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]));
+	imuData.gyro_x = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
+	imuData.gyro_y = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
+	imuData.gyro_z = IMU_GYRO_SCALE((short)((receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]));
 
-	data[ 4 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]));
-	data[ 5 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]));
-	data[ 6 ] = IMU_ACCL_SCALE((short)((receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]));
+	imuData.accl_x = IMU_ACCL_SCALE((short)((receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]));
+	imuData.accl_y = IMU_ACCL_SCALE((short)((receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]));
+	imuData.accl_z = IMU_ACCL_SCALE((short)((receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]));
 
-	// ATM, we do not use the magnetometer data
-// 	data[ 7 ] = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
-// 	data[ 8 ] = ( receiveBuffer[ 17 ] << 8 ) + receiveBuffer[ 18 ];
-// 	data[ 9 ] = ( receiveBuffer[ 19 ] << 8 ) + receiveBuffer[ 20 ];
+	// TODO Update typekit and include magnetometer data
+// 	imuData.magn_x = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
+// 	imuData.magn_y = ( receiveBuffer[ 17 ] << 8 ) + receiveBuffer[ 18 ];
+// 	imuData.magn_z = ( receiveBuffer[ 19 ] << 8 ) + receiveBuffer[ 20 ];
 }
 
 void McuHandler::ethernetTransmitReceive( void )
@@ -317,10 +314,11 @@ void McuHandler::ethernetTransmitReceive( void )
 	long index;
 	static unsigned numErrors = 0;
 
-	// tcpStatus: exceptions are triggered only in case the current state is OK.
-	// This is implemented in such a way to be able to send last resort signal to the MCU
-	// to e.g. reset all position references to zero. In that case, we do not care to much
-	// about what is going to happen, but to try to do this actually.
+	// tcpStatus: exceptions are triggered only in case the current state is 
+	// OK. This is implemented in such a way to be able to send last resort
+	// signal to the MCU to e.g. reset all position references to zero. In 
+	// that case, we do not care to much about what is going to happen, but 
+	// to try to do this actually.
 
 	// First calculate the checksum...
 	for(index = 0, sum = 0; index < (numOfBytesToBeTransmitted - 1); index++)

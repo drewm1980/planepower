@@ -1,68 +1,47 @@
 #include "LEDTracker.hpp"
-#include <ocl/Component.hpp>
-#include <rtt/marsh/Marshalling.hpp>
 
+#include <rtt/Logger.hpp>
+#include <rtt/Property.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
+
+#include <cmath>
+
+using namespace std;
+using namespace RTT;
+using namespace RTT::os;
 
 #include "types.hpp"
 #include "cout.hpp"
 
 #define VERBOSE 0
 
-ORO_CREATE_COMPONENT( LEDTracker)
+#define MARKER_NOT_DETECTED_VALUE -1000.0
 
-using namespace std;
-using namespace RTT;
-using namespace Orocos;
-using namespace BFL;
-
-LEDTracker::LEDTracker(std::string name) : TaskContext(name, PreOperational)
+LEDTracker::LEDTracker(std::string name)
+	: TaskContext(name, PreOperational)
 {
-	attributes()->addAttribute( "useExternalTrigger", _useExternalTrigger);
-	_useExternalTrigger.set(false); // Default Value
+	attributes()->addAttribute("useExternalTrigger", _useExternalTrigger);
+	// Flag for external triggering. By default it is false.
+	_useExternalTrigger.set( false );
 
-	addPort("timeStamps", portTimeStamps)
-		.doc("Time stamps: [trigger frameArrival compDone exit]");
+	addPort("data", portData)
+		.doc("Output data port of the component.");
 
-	addPort( "markerPositions",_markerPositions ).doc("Pixel Locations of the markers");
-	addPort( "markerPositionsAndCovariance",_markerPositionsAndCovariance ).doc("Pixel locatoins and weights");
-	addPort("triggerTimeStampIn",_triggerTimeStampIn);
-	addPort("triggerTimeStampOut",_triggerTimeStampOut);
+	addPort("triggerTimeStampIn", _triggerTimeStampIn)
+		.doc("Input time stamp.");
 
-	addPort("compTime",_compTime);
-
-	addPort("frameArrivalTimeStamp",_frameArrivalTimeStamp);
-	addPort("computationCompleteTimeStamp",_computationCompleteTimeStamp);
-
-	addPort("deltaIn",_deltaIn);
-	addPort("deltaOut",_deltaOut);
-
-	markerPositions.resize(CAMERA_COUNT*LED_COUNT*2,0.0);
-	markerPositionsAndCovariance.resize(CAMERA_COUNT*LED_COUNT*2*2,0.0);
-
-	addProperty( "sigma_marker",sigma_marker).doc("The standard deviation of the camera measurements. Default = 1e3");
+	addProperty("sigma_marker", sigma_marker)
+		.doc("The standard deviation of the camera measurements. Default = 1e3");
 	sigma_marker = 1e3;
+	
+	data.positions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
+	data.weights.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
+	data.ts_trigger = TimeService::Instance()->getTicks();
+	portData.setDataSample( data );
+	portData.write( data );
 
-	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Get current time
-
-	timeStamps.resize(4, 0.0);
-	portTimeStamps.setDataSample( timeStamps );
-
-	_markerPositions.setDataSample( markerPositions );
-	_markerPositions.write( markerPositions );
-	_markerPositionsAndCovariance.setDataSample( markerPositionsAndCovariance );
-	_markerPositionsAndCovariance.write( markerPositionsAndCovariance );
-	_triggerTimeStampOut.setDataSample( tempTime );
-	_triggerTimeStampOut.write( tempTime );
-	_compTime.setDataSample( tempTime );
-	_compTime.write( tempTime );
-	_frameArrivalTimeStamp.setDataSample( tempTime );
-	_frameArrivalTimeStamp.write( tempTime );
-	_computationCompleteTimeStamp.setDataSample( tempTime );
-	_computationCompleteTimeStamp.write( tempTime );
-	_deltaOut.setDataSample( 0.0 );
-	_deltaOut.write( 0.0 );
+	markerPositions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
 }
 
 LEDTracker::~LEDTracker()
@@ -71,10 +50,18 @@ LEDTracker::~LEDTracker()
 
 bool  LEDTracker::configureHook()
 {
-	cameraArray = new CameraArray(_useExternalTrigger.get());
+	Logger::In in( getName() );
+
+	cameraArray = new CameraArray( _useExternalTrigger.get() );
+	if (cameraArray->initialized() == false)
+	{
+		log( Error ) << "Camera array failed to initialize itself." << endlog();
+		return false;
+	}
+
 	frame_w = cameraArray->frame_w;
 	frame_h = cameraArray->frame_h;
-	for(int i=0; i<CAMERA_COUNT; i++)
+	for(int i=0; i < CAMERA_COUNT; i++)
 	{
 		blobExtractors[i] = new BlobExtractor(frame_w, frame_h, NEED_TO_DEBAYER);
 	}
@@ -83,42 +70,36 @@ bool  LEDTracker::configureHook()
 
 bool  LEDTracker::startHook()
 {
+	if (cameraArray->initialized() == false)
+		return false;
+
 	cameraArray->startHook();
 	return true;
 }
 
 void  LEDTracker::updateHook()
 {
+	TIME_TYPE triggerTimeStamp, frameArrivalTimeStamp;
+
 	// This blocks until a frame arrives from all cameras
 	cameraArray->updateHook();
 
 	// The timestamp the camera was triggered for the current frame.
-	while(_triggerTimeStampIn.read(triggerTimeStamp) == NewData); 
+	while(_triggerTimeStampIn.read( triggerTimeStamp ) == NewData); 
 //	_triggerTimeStampIn.read(triggerTimeStamp);
+	
+	// Read the camera frame arrival time!
+	frameArrivalTimeStamp = TimeService::Instance()->getTicks();
 
-	_deltaIn.read(delta);
-
-	frameArrivalTimeStamp = RTT::os::TimeService::Instance()->getTicks(); // Get current time 
-	_frameArrivalTimeStamp.write(frameArrivalTimeStamp);
 #if VERBOSE
 	double transferTime = (frameArrivalTimeStamp-triggerTimeStamp)*1e-9; // sec
 	COUT << "Transfer time was: " << transferTime*1e3 << "ms" << ENDL;
 #endif
 
-	tempTime = RTT::os::TimeService::Instance()->getTicks(); // Refresh timestamp, in case PRINTF took time.
 	// Note, this ~could trivially be done in parallel!
-	for(int i=0; i<CAMERA_COUNT; i++)
-	{
-		blobExtractors[i] -> find_leds(cameraArray->current_frame_data[i]);
-	}
-	computationCompleteTimeStamp = RTT::os::TimeService::Instance()->getTicks();
-	//double computationTime = (computationCompleteTimeStamp - triggerTimeStamp)*1e-9; // sec
-	double computationTime = (computationCompleteTimeStamp - frameArrivalTimeStamp)*1e-9; // sec
-#if VERBOSE
-	COUT << "Total computation time was: " << computationTime*1.0e3 << "ms" << ENDL;
-#endif
-	_compTime.write(computationTime*1.0e3);
-
+	for(unsigned i = 0; i < CAMERA_COUNT; i++)
+		blobExtractors[ i ]->find_leds( cameraArray->current_frame_data[ i ] );
+	
 	// Copy marker location data from the extractors into our staging area.
 	for(int i=0; i<CAMERA_COUNT; i++)
 	{
@@ -136,7 +117,8 @@ void  LEDTracker::updateHook()
 		for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
 		{
 			if( ! isnan(markerPositions[i])){ 
-				markerPositions[i] *= 2; // Match old camera resolution until we redo geometric calibration
+				// Match old camera resolution until we redo geometric calibration
+				markerPositions[i] *= 2; 
 			} 
 		}
 	}
@@ -144,30 +126,24 @@ void  LEDTracker::updateHook()
 	// If a Marker was not detected properly,
 	// put an arbitrary value and set the weight to 0
 	// otherwise, set the weight properly
-	for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
-	{
-		if(isnan(markerPositions[i])){ 
-			markerPositionsAndCovariance[i] = MARKER_NOT_DETECTED_VALUE;
-			markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 0.0;
+	for(unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
+		if( isnan( markerPositions[ i ] ) )
+		{
+			data.positions[ i ] = MARKER_NOT_DETECTED_VALUE;
+			data.weights[ i ]   = 0.0;
 		}
-		else{
-			markerPositionsAndCovariance[i] = markerPositions[i];
-			markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 1.0/(sigma_marker*sigma_marker);
+		else
+		{
+			data.positions[ i ] = markerPositions[ i ];
+			data.weights[ i ]   = 1.0 / (sigma_marker * sigma_marker);
 		}
-	}
+	
+	data.ts_trigger = triggerTimeStamp; 
+	data.ts_frame   = frameArrivalTimeStamp;
+	data.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
 
-	_triggerTimeStampOut.write(triggerTimeStamp);
-	_deltaOut.write(delta);
-
-	_markerPositions.write(markerPositions);
-	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
-
-	timeStamps[ 0 ] = (double) triggerTimeStamp;
-	timeStamps[ 1 ] = (double) frameArrivalTimeStamp;
-	timeStamps[ 2 ] = (double) computationCompleteTimeStamp;
-	timeStamps[ 3 ] = (double) RTT::os::TimeService::Instance()->getTicks();
-
-	portTimeStamps.write( timeStamps );
+	// Write data to the output port.
+	portData.write( data );
 
 	// Tell orocos to re-trigger this component immediately after
 	// it is done updating output ports, so that it can start waiting
@@ -177,17 +153,17 @@ void  LEDTracker::updateHook()
 
 void  LEDTracker::stopHook()
 {
-	for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
+	for(unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
 	{
-		markerPositionsAndCovariance[i] = MARKER_NOT_DETECTED_VALUE;
-		markerPositionsAndCovariance[i+CAMERA_COUNT*LED_COUNT*2] = 0.0; 
+		data.positions[ i ] = MARKER_NOT_DETECTED_VALUE;
+		data.weights[ i ]   = 0.0;
 	}
-	_markerPositionsAndCovariance.write(markerPositionsAndCovariance);
+	portData.write( data );
 
 	cameraArray->stopHook();
 }
 
-void  LEDTracker::cleanUpHook()
+void  LEDTracker::cleanupHook()
 {
 	cameraArray->cleanUpHook();
 	delete cameraArray;
@@ -196,5 +172,10 @@ void  LEDTracker::cleanUpHook()
 		delete blobExtractors[i];
 	}
 }
+
+void LEDTracker::errorHook()
+{}
+
+ORO_CREATE_COMPONENT( LEDTracker)
 
 

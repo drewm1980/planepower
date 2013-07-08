@@ -64,6 +64,8 @@ class CameraArray
 		void tweak_frame_arrival_times();
 		bool _useExternalTrigger;
 
+		bool _initialized;
+
 	public:
 		CameraArray(bool useExternalTrigger);
 		~CameraArray();
@@ -81,6 +83,8 @@ class CameraArray
 		uint64_t current_timestamp; // us
 
 		void sync_camera_parameters();
+
+		bool initialized( void ); 
 };
 
 #endif

@@ -1,0 +1,5 @@
+SO_NAME = LineAngleSensorTypekit
+
+include_rules
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos_custom |> 

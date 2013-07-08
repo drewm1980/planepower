@@ -2,78 +2,63 @@
 #define __LEDTRACKER__
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
+#include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
-
-#include <ocl/OCL.hpp>
+#include <rtt/Attribute.hpp>
 
 #include "CameraArray.hpp"
 #include "BlobExtractor.hpp"
 
-#define MARKER_NOT_DETECTED_VALUE -1000.0
+#include "types/LEDTrackerDataType.hpp"
 
-#include <fstream>
-using std::ifstream;
-
-using namespace std;
-using namespace RTT;
-using namespace Orocos;
 typedef uint64_t TIME_TYPE;
 
-/**
- * This class captures images from a single firewire camera,
- * and finds the location of three LED markers in the image.
- * The emphasis is on speed, rather than robustness.
- */
-class LEDTracker : public TaskContext
+/// This class captures images from a single firewire camera,
+/// and finds the location of three LED markers in the image.
+/// The emphasis is on speed, rather than robustness.
+class LEDTracker
+	: public RTT::TaskContext
 {
-	protected:
-		OutputPort< vector<double> >	_markerPositions;
-		// Warning!!! These are actually invers covariances, i.e. weights!!!
-		OutputPort< vector<double> >	_markerPositionsAndCovariance;
-		Attribute<bool> _useExternalTrigger;
-		InputPort<TIME_TYPE>			_triggerTimeStampIn;
-		TIME_TYPE				triggerTimeStamp;
-		OutputPort<TIME_TYPE>			_triggerTimeStampOut;
-		OutputPort<double>			_compTime;
+public:
+	/// Ctor
+	LEDTracker(std::string name);
+	/// Dtor
+	virtual ~LEDTracker();
+	
+	/// Configuration hook.
+	virtual bool configureHook( );
+	/// Start hook.
+	virtual bool startHook( );
+	/// Update hook.
+	virtual void updateHook( );
+	/// Stop hook.
+	virtual void stopHook( );
+	/// Cleanup hook.
+	virtual void cleanupHook( );
+	/// Error hook.
+	virtual void errorHook( );
 
-		OutputPort<TIME_TYPE>			_frameArrivalTimeStamp;
-		TIME_TYPE				frameArrivalTimeStamp;
-		OutputPort<TIME_TYPE>			_computationCompleteTimeStamp;
-		TIME_TYPE				computationCompleteTimeStamp;
+protected:
+	/// Input trigger signal.
+	RTT::InputPort< TIME_TYPE > _triggerTimeStampIn;
+	/// LED tracker output data.
+	RTT::OutputPort< LEDTrackerDataType > portData;
+	/// Data holder
+	LEDTrackerDataType data;
+	
+	/// Use external triggering or not.
+	RTT::Attribute< bool > _useExternalTrigger;
+	/// Frame width and heigth.
+	int frame_w, frame_h;
+	/// Standard deviation of marker positions
+	double sigma_marker;
 
-		InputPort<double> _deltaIn;
-		OutputPort<double> _deltaOut;
-		double delta;
+private:
+	CameraArray *cameraArray;
+	BlobExtractor *blobExtractors[ CAMERA_COUNT ];
 
-		OutputPort< vector< double > > portTimeStamps;
-		vector< double > timeStamps;
-
-		int frame_w, frame_h;
-
-	private:
-		CameraArray *cameraArray;
-		BlobExtractor *blobExtractors[CAMERA_COUNT];
-
-		// These are staging areas for the ports
-		vector<double>	markerPositions;
-		vector<double>	markerPositionsAndCovariance;
-
-		double			sigma_marker;
-		TIME_TYPE		tempTime;
-
-	public:
-		LEDTracker(std::string name);
-		~LEDTracker();
-		bool        configureHook();
-		bool        startHook();
-		void        updateHook();
-		void        stopHook();
-		void        cleanUpHook();
+	// These are staging areas
+	std::vector< double > markerPositions;
 };
+
 #endif // __LEDTRACKER__

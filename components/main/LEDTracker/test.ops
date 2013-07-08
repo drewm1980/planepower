@@ -5,9 +5,15 @@ import("cameraTrigger")
 import("soem_master")
 import("soem_ebox")
 import("LEDTracker")
- 
+
+loadComponent("soemMaster","soem_master::SoemMasterComponent") 
+soemMaster.ifname = "eth1"
+setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
+
+soemMaster.configure()
+soemMaster.start()
+
 loadComponent("masterTimer","MasterTimer")
-loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("cameraTrigger","CameraTrigger")
 loadComponent("LEDTracker","LEDTracker")
 LEDTracker.useExternalTrigger = true
@@ -16,25 +22,45 @@ loadService("masterTimer", "marshalling")
 masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
 var double base_hz = masterTimer.imu_target_hz
 
-setActivity("LEDTracker",0.00,HighestPriority,ORO_SCHED_RT)
-#setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
-setActivity("cameraTrigger", .05 ,HighestPriority,ORO_SCHED_RT)
-soemMaster.ifname = "eth1"
-setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+setActivity("LEDTracker",0.0,HighestPriority,ORO_SCHED_RT)
+setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
+setActivity("cameraTrigger", 0.0,HighestPriority,ORO_SCHED_RT)
 
 connectPeers("cameraTrigger","soemMaster")
 var ConnPolicy cp
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
 connect("masterTimer.cameraClock","cameraTrigger.Trigger",cp)
 
-soemMaster.configure()
-soemMaster.start()
+# voltageController
+import("voltageController")
+loadComponent("voltageController","VoltageController")
+setActivity("voltageController", 0.01, LowestPriority, ORO_SCHED_RT)
+
+#connectPeers("voltageController","soemMaster")
+connect("soemMaster.Slave_1001.AnalogIn", "voltageController.eboxAnalog", cp)
+
+voltageController.configure()
+voltageController.start()
+
+
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+loadComponent("reporter", "OCL::NetcdfReporting")
+reporter.ReportPolicy = rp
+reporter.ReportFile = "LEDTrackerTest.nc"
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+connectPeers("reporter", "LEDTracker")
+reporter.reportPort("LEDTracker", "data")
 
 cameraTrigger.configure()
-cameraTrigger.start()
-
 LEDTracker.configure()
-LEDTracker.start()
-
 masterTimer.configure()
+reporter.configure()
+
+cameraTrigger.start()
+LEDTracker.start()
 masterTimer.start()
+reporter.start()

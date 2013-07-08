@@ -26,7 +26,6 @@ setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
 var ConnPolicy cp
 connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
 
-
 mcuHandler.configure()
 mcuHandler.start()
 masterTimer.configure()
@@ -35,11 +34,16 @@ masterTimer.start()
 loadComponent("reporter","OCL::NetcdfReporting")
 setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
 connectPeers("reporter", "mcuHandler")
 reporter.reportComponent("mcuHandler")
+reporter.ReportPolicy = rp
  
 #(optionally, overwrite the default report file name)
-reporter.ReportFile = "imuTest.dat"
+reporter.ReportFile = "imuTest.nc"
  
 reporter.configure()
 reporter.start()
