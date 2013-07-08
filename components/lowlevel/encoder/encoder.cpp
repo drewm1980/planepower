@@ -19,8 +19,8 @@ using namespace soem_ebox;
 /// PI
 #define PI 3.14159265358979323846264338327950288419716939937510
 
-/// Cut-off Frequency of the filter
-#define DFILTER_FC 10.0
+/// Cut-off Frequency of the filter [Hz]
+#define DFILTER_FC 0.5
 
 /// Digital filter coefficient calculation
 #define DFILTER_K(fc, fs) \
