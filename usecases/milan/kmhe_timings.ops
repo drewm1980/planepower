@@ -1,0 +1,271 @@
+# Description: Testing the buffering between sensor components and an estimator
+# 			   component. I took kinematicMHE component for this testing.
+#
+# Author:      Milan Vukov, milan.vukov@esat.kuleuven.be
+# Date:        July, 2013
+
+################################################################################
+#
+# Start with import, config and starting of the SOEM master
+#
+################################################################################
+
+# Import
+import("soem_master")
+import("soem_ebox")
+loadComponent("soemMaster", "soem_master::SoemMasterComponent")
+
+# Configure
+soemMaster.ifname = "eth1"
+
+# Set activivity
+var int soemPrio = 99
+setActivity("soemMaster", 0.001, soemPrio, ORO_SCHED_RT)
+
+soemMaster.configure()
+soemMaster.start()
+
+################################################################################
+#
+# Import and load components
+#
+################################################################################
+
+# Master Timer
+import("masterTimer")
+loadComponent("masterTimer", "MasterTimer")
+
+# MCU Handler
+import("mcuHandler")
+loadComponent("mcuHandler", "McuHandler")
+
+# Voltage controller
+import("voltageController")
+loadComponent("voltageController", "VoltageController")
+
+# Encoder
+import("encoder")
+loadComponent("encoder", "Encoder")
+
+# Camera trigger
+import("cameraTrigger")
+loadComponent("cameraTrigger","CameraTrigger")
+
+# Line Angle Sensor
+import("lineAngleSensor")
+loadComponent("lineAngleSensor","LineAngleSensor")
+
+# LEDTracker
+import("LEDTracker")
+loadComponent("LEDTracker","LEDTracker")
+
+# Pose from markers
+#import("poseFromMarkers")
+#loadComponent("poseFromMarkers","OCL::PoseFromMarkers")
+
+# Kinematic MHE component
+import("kinematicMHE")
+loadComponent("kinematicMhe", "KinematicMhe")
+
+# OCL NETcdf reporter
+loadComponent("imuReporter", "OCL::NetcdfReporting")
+loadComponent("cameraReporter", "OCL::NetcdfReporting")
+loadComponent("encoderReporter", "OCL::NetcdfReporting")
+loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
+loadComponent("kMheReporter", "OCL::NetcdfReporting")
+
+################################################################################
+#
+# Configure components' properties
+#
+################################################################################
+
+# Master timer
+loadService("masterTimer", "marshalling")
+masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz
+
+# MCU
+loadService("mcuHandler","marshalling")
+mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
+mcuHandler.Ts = 1.0 / base_hz
+mcuHandler.rtMode = true
+
+# Voltage controller
+
+# Encoder
+encoder.encoderPort = 0;
+# Same as for SOEM
+encoder.Ts = 0.001;
+
+# Camera trigger
+
+# LED tracker - hangs until frame arrival, does processing, and re-triggers itself.
+LEDTracker.useExternalTrigger = true;
+LEDTracker.sigma_marker = 20;
+
+#
+# Reporters
+#
+
+# Set reporter policy: we use circular buffer connection with quite a long 
+# buffer
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+imuReporter.ReportFile = "imuData.nc"
+imuReporter.ReportPolicy = rp
+imuReporter.ReportOnlyNewData = false
+
+cameraReporter.ReportFile = "cameraData.nc"
+cameraReporter.ReportPolicy = rp
+cameraReporter.ReportOnlyNewData = false
+
+encoderReporter.ReportFile = "encoderData.nc"
+encoderReporter.ReportPolicy = rp
+encoderReporter.ReportOnlyNewData = false
+
+lineAngleReporter.ReportFile = "angleData.nc"
+lineAngleReporter.ReportPolicy = rp
+lineAngleReporter.ReportOnlyNewData = false
+
+kMheReporter.ReportFile = "kinematicMheData.nc"
+kMheReporter.ReportPolicy = rp
+kMheReporter.ReportOnlyNewData = false
+
+################################################################################
+#
+# Set activities and priorities
+#
+################################################################################
+
+var int masterTimerPrio = 98
+var int sensorPrio = 97
+var int ocpPrio = 80
+var int LEDTrackerPrio = 70
+
+setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
+
+setActivity("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT)
+
+setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
+
+setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
+
+setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
+
+setActivity("kinematicMhe", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("kMheReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+################################################################################
+#
+# Connect components
+#
+################################################################################
+
+connectPeers("soemMaster", "encoder")
+connectPeers("cameraTrigger", "soemMaster")
+connectPeers("soemMaster", "lineAngleSensor")
+
+var ConnPolicy cp
+
+var ConnPolicy cpLT
+cpLT.type = 1
+cpLT.size = 5
+
+connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpLT)
+connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
+
+connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
+connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
+connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
+
+# Kinematic MHE connections
+
+var ConnPolicy cpImuMhe
+cpImuMhe.type = 1
+cpImuMhe.size = 100
+
+connect("masterTimer.controlsPlaybackClock", "kinematicMhe.trigger", cp)
+connect("mcuHandler.imuData", "kinematicMhe.mcuData", cpImuMhe)
+connect("encoder.data", "kinematicMhe.encoderData", cp)
+connect("LEDTracker.data", "kinematicMhe.ledTrackerData", cp)
+
+################################################################################
+#
+# Reporter configuration
+#
+################################################################################
+
+connectPeers("imuReporter", "mcuHandler")
+imuReporter.reportComponent( "mcuHandler" )
+
+connectPeers("cameraReporter", "LEDTracker")
+cameraReporter.reportComponent( "LEDTracker" )
+
+connectPeers("encoderReporter", "encoder")
+encoderReporter.reportComponent( "encoder" )
+
+connectPeers("lineAngleReporter", "lineAngleSensor")
+lineAngleReporter.reportComponent( "lineAngleSensor" )
+
+connectPeers("kMheReporter", "kinematicMhe")
+kMheReporter.reportComponent("kinematicMhe")
+
+################################################################################
+#
+# Configure and start components
+#
+################################################################################
+
+# Just conifgure the master timer component.
+masterTimer.configure()
+
+mcuHandler.configure()
+mcuHandler.start()
+
+voltageController.configure()
+voltageController.start()
+
+encoder.configure()
+encoder.start()
+
+cameraTrigger.configure()
+cameraTrigger.start()
+
+lineAngleSensor.configure()
+lineAngleSensor.start()
+
+LEDTracker.configure()
+LEDTracker.start()
+
+kinematicMhe.configure()
+kinematicMhe.start()
+
+imuReporter.configure()
+imuReporter.start()
+
+cameraReporter.configure()
+cameraReporter.start()
+
+encoderReporter.configure()
+encoderReporter.start()
+
+lineAngleReporter.configure()
+lineAngleReporter.start()
+
+kMheReporter.configure()
+kMheReporter.start()
+
+# Now, when all other components are started, start the master timer component.
+masterTimer.start()
