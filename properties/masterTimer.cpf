@@ -3,7 +3,7 @@
 <properties>
 
 	<simple name="imu_target_hz" type="double"><description>The target imu capture rate</description><value>500.0</value></simple>
-	<simple name="camera_target_hz" type="double"><description>The target camera frame rate</description><value>13.5</value></simple>
-	<simple name="controls_playback_target_hz" type="double"><description>The target rate for the controls playback</description><value>10.0</value></simple>
+	<simple name="camera_target_hz" type="double"><description>The target camera frame rate</description><value>12.5</value></simple>
+	<simple name="controls_playback_target_hz" type="double"><description>The target rate for the controls playback</description><value>50.0</value></simple>
   
 </properties>
