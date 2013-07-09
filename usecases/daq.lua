@@ -1,4 +1,5 @@
 #!/usr/bin/env rttlua-i
+require "deployment_helpers"
 
 dofile("preamble.lua")
 
@@ -9,10 +10,13 @@ masterTimer=deployer:getPeer("masterTimer")
 dofile("load_carousel_1_hardware.lua")
 dofile("configure_carousel_1_hardware.lua")
 
+--[[
+
 -- Master timer base clock is clock of our fastest running sensor
 deployer:loadService("masterTimer", "marshalling")
 masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
---base_hz = masterTimer.imu_target_hz
+
+base_hz = masterTimer:getProperty("imu_target_hz"):get()
 
 ----------------- Set Priorities and activities
 masterTimerPrio = 98
@@ -99,5 +103,7 @@ lineAngleReporter.start()
 
 -- Now, when all other components are started, start the master timer component.
 masterTimer.start()
+
+--]]
 
 dofile("postamble.lua")
