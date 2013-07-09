@@ -65,18 +65,23 @@ void KinematicMhe::updateHook()
 	//
 	portTrigger.read( trigger );
 	
-	// It si assumed that this port will be buffered
+	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
 	while(portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData)
 		numImuSamples++;
 
 	FlowStatus encStatus = portEncoderData.read( encData );
+
 	FlowStatus camStatus = portLEDTrackerData.read( camData );
+	unsigned numMarkers = 0;
+	if (camStatus == NewData)
+		for (unsigned i = 0; i < camData.weights.size(); ++i)
+			numMarkers += (camData.weights[ i ] > 0.0);
 
 	// Very basic debugging
 	debugData.num_imu_samples = numImuSamples;
 	debugData.num_enc_samples = (encStatus == NewData);
-	debugData.num_cam_samples = (camStatus == NewData);
+	debugData.num_cam_samples = (numMarkers > 6);
 
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
