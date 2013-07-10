@@ -23,5 +23,12 @@ function P.load_properties(instanceName,propertiesFilename)
 	return _G[instanceName]:provides("marshalling"):getOperation("loadProperties")(propertiesFilename)
 end
 
+function P.set_property(instanceName, propertyName, propertyValue)
+	return _G[instanceName]:getProperty(propertyName):set(propertyValue)
+end
+function P.get_property(instanceName, propertyName, propertyValue)
+	return _G[instanceName]:getProperty(propertyName):get(propertyValue)
+end
+
 return deployment_helpers
 
