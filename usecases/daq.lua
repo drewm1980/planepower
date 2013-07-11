@@ -1,28 +1,33 @@
 #!/usr/bin/env rttlua-i
 require "deployment_helpers"
+for i,symbol in ipairs({"load_component",
+						"load_properties",
+						"get_property",
+						"set_property"}) do
+	_G[symbol] = deployment_helpers[symbol]
+end
 
 dofile("preamble.lua")
 
-deployer:import("masterTimer")
-deployer:loadComponent("masterTimer","MasterTimer")
-masterTimer=deployer:getPeer("masterTimer")
+PLANEPOWER="../"
+PROPERTIES=PLANEPOWER.."properties/"
 
-dofile("load_carousel_1_hardware.lua")
-dofile("configure_carousel_1_hardware.lua")
-
---[[
-
--- Master timer base clock is clock of our fastest running sensor
-deployer:loadService("masterTimer", "marshalling")
-masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
-
-base_hz = masterTimer:getProperty("imu_target_hz"):get()
-
------------------ Set Priorities and activities
+soemPrio=99
 masterTimerPrio = 98
 sensorPrio = 97
 ocpPrio = 80
 LEDTrackerPrio = 70
+reporterPrio = 50
+
+load_component("masterTimer","MasterTimer","masterTimer")
+load_properties("masterTimer",PROPERTIES.."masterTimer.cpf")
+base_hz = get_property("masterTimer","imu_target_hz")
+
+dofile("load_carousel_1_hardware.lua")
+
+--[[
+
+----------------- Set Priorities and activities
 
 deployer:setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
 deployer:setActivity("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT)
@@ -32,11 +37,6 @@ deployer:setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 --deployer:setActivity("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
-
-deployer:setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-deployer:setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-deployer:setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-deployer:setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 ---------------- Connect Components
 cp = rtt.Variable("ConnPolicy")

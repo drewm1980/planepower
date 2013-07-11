@@ -21,9 +21,10 @@ using namespace RTT::os;
 LEDTracker::LEDTracker(std::string name)
 	: TaskContext(name, PreOperational)
 {
-	attributes()->addAttribute("useExternalTrigger", _useExternalTrigger);
+	properties()->addProperty("useExternalTrigger", _useExternalTrigger)
+		.doc("Set to true if the camera is triggered externally, otherwise LEDTracker will set the camera to free-running mode.");
 	// Flag for external triggering. By default it is false.
-	_useExternalTrigger.set( false );
+	_useExternalTrigger =false;
 
 	addPort("data", portData)
 		.doc("Output data port of the component.");
@@ -31,7 +32,7 @@ LEDTracker::LEDTracker(std::string name)
 	addPort("triggerTimeStampIn", _triggerTimeStampIn)
 		.doc("Input time stamp.");
 
-	addProperty("sigma_marker", sigma_marker)
+	properties()->addProperty("sigma_marker", sigma_marker)
 		.doc("The standard deviation of the camera measurements. Default = 1e3");
 	sigma_marker = 1e3;
 	
@@ -52,7 +53,7 @@ bool  LEDTracker::configureHook()
 {
 	Logger::In in( getName() );
 
-	cameraArray = new CameraArray( _useExternalTrigger.get() );
+	cameraArray = new CameraArray( _useExternalTrigger );
 	if (cameraArray->initialized() == false)
 	{
 		log( Error ) << "Camera array failed to initialize itself." << endlog();

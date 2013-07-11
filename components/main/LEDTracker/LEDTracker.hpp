@@ -3,6 +3,7 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
+#include <rtt/Property.hpp>
 #include <rtt/Port.hpp>
 #include <rtt/Attribute.hpp>
 
@@ -47,7 +48,7 @@ protected:
 	LEDTrackerDataType data;
 	
 	/// Use external triggering or not.
-	RTT::Attribute< bool > _useExternalTrigger;
+	bool _useExternalTrigger;
 	/// Frame width and heigth.
 	int frame_w, frame_h;
 	/// Standard deviation of marker positions
