@@ -25,8 +25,6 @@ base_hz = get_property("masterTimer","imu_target_hz")
 
 dofile("load_carousel_1_hardware.lua")
 
---[[
-
 ----------------- Set Priorities and activities
 
 deployer:setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
@@ -39,6 +37,7 @@ deployer:setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 --deployer:setActivity("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 
 ---------------- Connect Components
+
 cp = rtt.Variable("ConnPolicy")
 cpLT = rtt.Variable("ConnPolicy")
 cpLT.type = 1
@@ -49,61 +48,25 @@ deployer:connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpL
 deployer:connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 --deployer:connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)
 
-connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
-connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
-connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
-
----------------- Connect Reporters
-
-deployer:connectPeers("imuReporter", "mcuHandler")
-imuReporter.reportComponent( "mcuHandler" )
-
-deployer:connectPeers("cameraReporter", "LEDTracker")
-cameraReporter.reportComponent( "LEDTracker" )
-
-deployer:connectPeers("encoderReporter", "encoder")
-encoderReporter.reportComponent( "encoder" )
-
-deployer:connectPeers("lineAngleReporter", "lineAngleSensor")
-lineAngleReporter.reportComponent( "lineAngleSensor" )
+deployer:connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
+deployer:connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
+deployer:connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
 
 --------------- Configure and start the components
 
-masterTimer.configure()
+masterTimer:configure()
 
-mcuHandler.configure()
-mcuHandler.start()
+for i=1,#instanceNames do
+	_G[instanceNames[i]]:configure()
+	_G[instanceNames[i]]:start()
+end
 
-voltageController.configure()
-voltageController.start()
-
-encoder.configure()
-encoder.start()
-
-cameraTrigger.configure()
-cameraTrigger.start()
-
-lineAngleSensor.configure()
-lineAngleSensor.start()
-
-LEDTracker.configure()
-LEDTracker.start()
-
-imuReporter.configure()
-imuReporter.start()
-
-cameraReporter.configure()
-cameraReporter.start()
-
-encoderReporter.configure()
-encoderReporter.start()
-
-lineAngleReporter.configure()
-lineAngleReporter.start()
+-- Load, setup, connect, start the reporters
+dofile("setup_carousel_1_reporters.lua")
 
 -- Now, when all other components are started, start the master timer component.
-masterTimer.start()
+masterTimer:start()
 
---]]
+--os.execute("sleep 5")
 
 dofile("postamble.lua")
