@@ -1,12 +1,12 @@
 #ifndef __POSEFROMMARKERS__
 #define __POSEFROMMARKERS__
 
-#include <rtt/RTT.h>
+#include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
 
-#include "types/LEDTrackerDataType.hpp"
+#include "LEDTracker/types/LEDTrackerDataType.hpp"
 #include "types/PoseFromMarkersDataType.hpp"
 
 #define NMARKERPOSITIONS 12

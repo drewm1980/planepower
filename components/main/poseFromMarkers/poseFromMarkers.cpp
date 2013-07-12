@@ -24,7 +24,7 @@ PoseFromMarkers::PoseFromMarkers(string name)
 			 "based on marker positions in the cameras: x, y, z, e11, ..., e33");
 
 	data.pose.resize(NPOSE, 0.0);
-	portData.seDataSample( data );
+	portData.setDataSample( data );
 	portData.write( data );
 	
 	cInput[ 0 ]  = markers;
@@ -58,7 +58,7 @@ void PoseFromMarkers::updateHook()
 	int cStatus = 1;
 
 	// Read the input port
-	portData.read( camData );
+	portCamData.read( camData );
 	// Check if data is OK
 	for (unsigned i = 0; i < NMARKERPOSITIONS; i++)
 		if (camData.weights[ i ] == 0)
@@ -87,7 +87,7 @@ void PoseFromMarkers::updateHook()
 	// Send data out!
 	data.ts_trigger = camData.ts_trigger;
 	data.ts_entry   = ts_entry; 
-	dara.ts_elapsed = TimeService::Instance()->secondsSince( ts_entry );
+	data.ts_elapsed = TimeService::Instance()->secondsSince( ts_entry );
 	portData.write( data );
 }
 
