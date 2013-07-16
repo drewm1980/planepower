@@ -11,8 +11,10 @@ typedef struct
 	std::vector< double > imu_first, imu_avg;
 	/// Encoder measurement
 	std::vector< double > enc_data;
-	/// LED  positions
-	std::vector< double > cam_data;
+	/// Marker positions
+	std::vector< double > cam_markers;
+	/// Pose and orientation w.r.t anchorframe point
+	std::vector< double > cam_pose;
 	/// Time-stamps: trigger [ticks], entry [ticks], elapsed[sec];
 	double ts_trigger, ts_entry, ts_elapsed;
 } KinematicMheDataType;
