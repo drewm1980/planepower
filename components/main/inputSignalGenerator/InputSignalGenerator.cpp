@@ -12,6 +12,8 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+#define AMPLITUDE 0.2
+
 InputSignalGenerator::InputSignalGenerator(string name)
 	: TaskContext(name, PreOperational)
 {
@@ -68,14 +70,25 @@ void InputSignalGenerator::updateHook()
 
 	double sin_angle = sin( angle );
 
-	data[ 0 ] = sin_angle;
-	data[ 1 ] = sin_angle;
-	data[ 2 ] = 0.0;
+	if (abs(fsine) > 1e-4)
+	{
+		data[ 0 ] = AMPLITUDE * sin_angle;
+		data[ 1 ] = AMPLITUDE * sin_angle;
+		data[ 2 ] = 0.0;
+	}
+	else
+	{
+		data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
+	}
+
 	portData.write( data );
 }
 
 void InputSignalGenerator::stopHook()
-{}
+{
+	data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
+	portData.write( data );
+}
 
 void InputSignalGenerator::errorHook()
 {}
