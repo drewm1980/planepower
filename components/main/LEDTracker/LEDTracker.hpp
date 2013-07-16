@@ -2,10 +2,7 @@
 #define __LEDTRACKER__
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Component.hpp>
-#include <rtt/Property.hpp>
 #include <rtt/Port.hpp>
-#include <rtt/Attribute.hpp>
 
 #include "CameraArray.hpp"
 #include "BlobExtractor.hpp"
@@ -13,6 +10,8 @@
 #include "types/LEDTrackerDataType.hpp"
 
 typedef uint64_t TIME_TYPE;
+
+#define NPOSE 12
 
 /// This class captures images from a single firewire camera,
 /// and finds the location of three LED markers in the image.
@@ -55,11 +54,14 @@ protected:
 	double sigma_marker;
 
 private:
+
+	void poseFromMarkers(bool foundNan);
+
 	CameraArray *cameraArray;
 	BlobExtractor *blobExtractors[ CAMERA_COUNT ];
 
-	// These are staging areas
-	std::vector< double > markerPositions;
+	double markers[2 * CAMERA_COUNT * LED_COUNT];
+	double pose[ NPOSE ];
 };
 
 #endif // __LEDTRACKER__

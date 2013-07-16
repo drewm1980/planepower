@@ -18,6 +18,7 @@ namespace boost
 
 			a & make_nvp("positions", l.positions);
 			a & make_nvp("weights", l.weights);
+			a & make_nvp("pose", l.pose);
 						
 			a & make_nvp("ts_trigger", l.ts_trigger);
 			a & make_nvp("ts_frame", l.ts_frame);
