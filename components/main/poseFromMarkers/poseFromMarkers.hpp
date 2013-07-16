@@ -1,93 +1,57 @@
 #ifndef __POSEFROMMARKERS__
 #define __POSEFROMMARKERS__
 
+#include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
+#include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
 
-#include <rtt/os/TimeService.hpp>
-#include <rtt/Time.hpp>
-
-#include <ocl/OCL.hpp>
-
-#include <fstream>
-
-// #include "casadi_functions.cpp"
+#include "LEDTracker/types/LEDTrackerDataType.hpp"
+#include "types/PoseFromMarkersDataType.hpp"
 
 #define NMARKERPOSITIONS 12
 #define NPOSE 12
 
-using std::ifstream;
-
-using namespace std;
-using namespace RTT;
-using namespace BFL;
-using namespace Orocos;
-using namespace KDL;
-
-namespace OCL
+/// Component that calcuates aircraft pose based on marker positions
+class PoseFromMarkers
+	: public RTT::TaskContext
 {
+public:
+	/// Ctor
+	PoseFromMarkers(std::string name);
+	/// Dtor
+	virtual ~PoseFromMarkers()
+	{}
+	
+	/// Configuration hook.
+	virtual bool configureHook( );
+	/// Start hook.
+	virtual bool startHook( );
+	/// Update hook.
+	virtual void updateHook( );
+	/// Stop hook.
+	virtual void stopHook( );
+	/// Cleanup hook.
+	virtual void cleanupHook( );
+	/// Error hook.
+	virtual void errorHook( );
 
-    /// PoseFromMarkers class
-    /**
-    This class simulates the free motion of a ball attached to a pendulum.
-    The pendulum motion is executed in the x=0 plane of the pendulum reference
-    frame. The state of the ball in the pendulum plane is given by
-    [theta,omega,alpha]. The position of the ball in the world frame is given by
-    [x,y,z].
-    The pendulum reference frame wrt to the world reference frame gives the pose
-    of the pendulum motion plane wrt to the world.
-    */
-    class PoseFromMarkers
-        : public TaskContext
-    {
-    protected:
-        /*********
-        DATAPORTS
-        *********/
-        //! Input port
-        InputPort<vector<double> >			_markerPositions;
-	vector<double>					markerPositions;
-        //! Output port
-        OutputPort<vector<double> >			_pfm;
-        //OutputPort<vector<double> >			_cov_rt;
-        //OutputPort<vector<double> >			_cov_rt_inv;
-        OutputPort<vector<double> >			_pose_and_cov_rt_inv;
-	vector<double>					pfm;
-	vector<double>					cov_rt;
-	vector<double>					cov_rt_inv;
-	vector<double>					pose_and_cov_rt_inv;
+protected:
+	/// LED Tracker data
+	RTT::InputPort< LEDTrackerDataType > portCamData;
+	/// LED Tracker data holder
+	LEDTrackerDataType camData;
+	/// Pose data port
+	RTT::OutputPort< PoseFromMarkersDataType > portData;
+	/// Pose data holder
+	PoseFromMarkersDataType data;
 
-    private:
-        void					getPose();
+private:
+	double* cInput[ 1 ];
+	double* cOutput[ 1 ];
 
-	int					getPoseWrapper(vector<double> markerPositions
-									, vector<double> *pose
-									, vector<double> *cov_rt
-									, vector<double> *cov_rt_inv);
+	double markers[ NMARKERPOSITIONS ];
+	double pose[ NPOSE ];
+};
 
-	double					getPoseWrapper_markerPositions[NMARKERPOSITIONS];
-	double*					getPoseWrapper_input[1];
-
-	double					getPoseWrapper_pose[NPOSE];
-	double					getPoseWrapper_cov_rt[NPOSE*NPOSE];
-	double					getPoseWrapper_cov_rt_inv[NPOSE*NPOSE];
-	double*					getPoseWrapper_output[3];
-
-    public:
-        PoseFromMarkers(std::string name);
-        ~PoseFromMarkers();
-        bool        configureHook();
-        bool        startHook();
-        void        updateHook();
-        void        stopHook();
-        void        cleanUpHook();
-        
-    };
-}
 #endif // __POSEFROMMARKERS__

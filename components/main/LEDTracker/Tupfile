@@ -6,7 +6,7 @@ CXXFLAGS += -ggdb
 LDFLAGS += `pkg-config --libs opencv` -ldc1394
 LDFLAGS_OROCOS += `pkg-config --libs opencv` -ldc1394
 
-: foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp CameraArray.cpp |> !cxx_orocos |> {objsforcomponent}
+: foreach BlobExtractor.cpp MedianFinder.cpp LEDTracker.cpp CameraArray.cpp | ../../../pythonCodegen/pose_from_markers.h |> !cxx_orocos |> {objsforcomponent}
 
 : test_blob_extractor.cpp |> !cxx |>
 : test_blob_extractor.o BlobExtractor.o MedianFinder.o |> $(CXX) %f -o %o $(LDFLAGS) |> test_blob_extractor

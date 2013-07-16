@@ -1,7 +1,7 @@
-#ifndef __LEDTRACKERTYPEKIT__
-#define __LEDTRACKERTYPEKIT__
+#ifndef __POSEFROMMARKERSTYPEKIT__
+#define __POSEFROMMARKERSTYPEKIT__
 
-#include "LEDTrackerDataType.hpp"
+#include "PoseFromMarkersDataType.hpp"
 #include <rtt/types/StructTypeInfo.hpp>
 #include <rtt/types/CArrayTypeInfo.hpp>
 #include <rtt/types/TypekitPlugin.hpp>
@@ -12,31 +12,29 @@ namespace boost
 	namespace serialization
 	{
 		template< class Archive >
-		void serialize(Archive& a, LEDTrackerDataType& l, unsigned int)
+		void serialize(Archive& a, PoseFromMarkersDataType& l, unsigned int)
 		{
 			using boost::serialization::make_nvp;
 
-			a & make_nvp("positions", l.positions);
-			a & make_nvp("weights", l.weights);
 			a & make_nvp("pose", l.pose);
 						
 			a & make_nvp("ts_trigger", l.ts_trigger);
-			a & make_nvp("ts_frame", l.ts_frame);
+			a & make_nvp("ts_entry", l.ts_entry);
 			a & make_nvp("ts_elapsed", l.ts_elapsed);
 		}
 	}
 }
 
-struct LEDTrackerDataTypeInfo
-	: public RTT::types::StructTypeInfo< LEDTrackerDataType >
+struct PoseFromMarkersDataTypeInfo
+	: public RTT::types::StructTypeInfo< PoseFromMarkersDataType >
 {
-	LEDTrackerDataTypeInfo()
-		: RTT::types::StructTypeInfo< LEDTrackerDataType >( "LEDTrackerData" )
+	PoseFromMarkersDataTypeInfo()
+		: RTT::types::StructTypeInfo< PoseFromMarkersDataType >( "PoseFromMarkersData" )
 	{}
 };
 
-/// LEDTracker typekit plugin
-class LEDTrackerTypekit
+/// PoseFromMarkers typekit plugin
+class PoseFromMarkersTypekit
 	: public RTT::types::TypekitPlugin
 {
 public:
@@ -47,4 +45,4 @@ public:
 	virtual bool loadOperators();
 };
 
-#endif // __LEDTRACKERTYPEKIT__
+#endif // __POSEFROMMARKERSTYPEKIT__

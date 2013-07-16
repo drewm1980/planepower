@@ -94,7 +94,7 @@ pose_and_covrt_and_covrtinv_from_markers.init()
 
 # Last Step: Code Generation!
 
-generateSimpleCode(pose_and_covrt_and_covrtinv_from_markers,
+generateSimpleCode(pose_from_markers,
                    'pose_from_markers.h',
                   docstring="""// Estimate camera pose (and covariance estimate) purely from a set of marker positions.  See pose_from_markers.py""")
 

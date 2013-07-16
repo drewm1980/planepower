@@ -1,5 +1,6 @@
 #include "LEDTracker.hpp"
 
+#include <rtt/Component.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/os/TimeService.hpp>
@@ -14,9 +15,11 @@ using namespace RTT::os;
 #include "types.hpp"
 #include "cout.hpp"
 
+#include "pose_from_markers.h"
+
 #define VERBOSE 0
 
-#define MARKER_NOT_DETECTED_VALUE -1000.0
+#define MARKER_NOT_DETECTED_VALUE -1.0
 
 LEDTracker::LEDTracker(std::string name)
 	: TaskContext(name, PreOperational)
@@ -38,16 +41,14 @@ LEDTracker::LEDTracker(std::string name)
 	
 	data.positions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
 	data.weights.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
+	data.pose.resize(NPOSE, 0.0);
 	data.ts_trigger = TimeService::Instance()->getTicks();
 	portData.setDataSample( data );
 	portData.write( data );
-
-	markerPositions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
 }
 
 LEDTracker::~LEDTracker()
-{
-}
+{}
 
 bool  LEDTracker::configureHook()
 {
@@ -105,7 +106,7 @@ void  LEDTracker::updateHook()
 	for(int i=0; i<CAMERA_COUNT; i++)
 	{
 		MarkerLocations * src = &(blobExtractors[i]->markerLocations);	
-		MarkerLocations * dst = ((MarkerLocations*) &(markerPositions[0])) + i;
+		MarkerLocations * dst = ((MarkerLocations*) &(data.positions[ 0 ])) + i;
 		*dst = *src;
 	}
 
@@ -117,9 +118,10 @@ void  LEDTracker::updateHook()
 	{
 		for(unsigned int i=0; i<CAMERA_COUNT*LED_COUNT*2; i++)
 		{
-			if( ! isnan(markerPositions[i])){ 
+			if( !isnan( data.positions[ i ] ) )
+			{ 
 				// Match old camera resolution until we redo geometric calibration
-				markerPositions[i] *= 2; 
+				data.positions[ i ] *= 2; 
 			} 
 		}
 	}
@@ -127,23 +129,31 @@ void  LEDTracker::updateHook()
 	// If a Marker was not detected properly,
 	// put an arbitrary value and set the weight to 0
 	// otherwise, set the weight properly
+	bool foundNaN = false;
 	for(unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
-		if( isnan( markerPositions[ i ] ) )
+		if( isnan( data.positions[ i ] ) )
 		{
 			data.positions[ i ] = MARKER_NOT_DETECTED_VALUE;
 			data.weights[ i ]   = 0.0;
+			foundNaN = true;
 		}
 		else
 		{
-			data.positions[ i ] = markerPositions[ i ];
 			data.weights[ i ]   = 1.0 / (sigma_marker * sigma_marker);
 		}
+
+	//
+	// Calculate pose form marker positions
+	//
+	poseFromMarkers( foundNaN );
 	
+	//
+	// Fill in the timings and send data to the output port
+	//
 	data.ts_trigger = triggerTimeStamp; 
 	data.ts_frame   = frameArrivalTimeStamp;
 	data.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
 
-	// Write data to the output port.
 	portData.write( data );
 
 	// Tell orocos to re-trigger this component immediately after
@@ -154,11 +164,14 @@ void  LEDTracker::updateHook()
 
 void  LEDTracker::stopHook()
 {
-	for(unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
+	for (unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
 	{
 		data.positions[ i ] = MARKER_NOT_DETECTED_VALUE;
 		data.weights[ i ]   = 0.0;
 	}
+	for (unsigned i = 0; i < NPOSE; ++i)
+		data.pose[ i ] = 0.0;
+
 	portData.write( data );
 
 	cameraArray->stopHook();
@@ -177,6 +190,26 @@ void  LEDTracker::cleanupHook()
 void LEDTracker::errorHook()
 {}
 
-ORO_CREATE_COMPONENT( LEDTracker)
+void LEDTracker::poseFromMarkers(bool foundNaN)
+{
+	double* cInput[ 1 ] = { cMarkers };
+	double* cOutput[ 1 ] = { cPose };
+	int cStatus = 1;
 
+	if (foundNaN == false)
+	{
+		copy(data.positions.begin(), data.positions.end(), cInput[ 0 ]);
 
+		cStatus = pose_from_markers(cInput, cOutput);
+	}
+	
+	if (cStatus != 0 || foundNaN == true)
+	{
+		memset(cPose, 0.0, NPOSE * sizeof( double ));
+	}
+	
+	// Assign data to output buffer
+	data.pose.assign(cPose, cPose + NPOSE);
+}
+
+ORO_CREATE_COMPONENT( LEDTracker )

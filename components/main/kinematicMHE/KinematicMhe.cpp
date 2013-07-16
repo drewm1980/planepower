@@ -31,7 +31,8 @@ KinematicMhe::KinematicMhe(std::string name)
 	debugData.imu_first.resize(6, 0.0);
 	debugData.imu_avg.resize(6, 0.0);
 	debugData.enc_data.resize(3, 0.0);
-	debugData.cam_data.resize(12, 0.0);
+	debugData.cam_markers.resize(12, 0.0);
+	debugData.cam_pose.resize(12, 0.0);
 
 	portDebugData.setDataSample( debugData );
 	portDebugData.write( debugData );
@@ -74,7 +75,8 @@ void KinematicMhe::updateHook()
 	
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
-	while(portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData)
+	while((portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData) &&
+		  (numImuSamples < MAX_NUM_IMU_SAMPLES))
 		numImuSamples++;
 
 	FlowStatus encStatus = portEncoderData.read( encData );
@@ -113,7 +115,8 @@ void KinematicMhe::updateHook()
 	debugData.enc_data[ 1 ] = encData.sin_theta;
 	debugData.enc_data[ 2 ] = encData.cos_theta;
 
-	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_data.begin());
+	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_markers.begin());
+	copy(camData.pose.begin(), camData.pose.end(), debugData.cam_pose.begin());
 
 	// Very basic debugging
 	debugData.num_imu_samples = numImuSamples;
