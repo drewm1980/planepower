@@ -11,6 +11,7 @@
 
 typedef uint64_t TIME_TYPE;
 
+/// #elements in the pose array
 #define NPOSE 12
 
 /// This class captures images from a single firewire camera,
@@ -60,8 +61,8 @@ private:
 	CameraArray *cameraArray;
 	BlobExtractor *blobExtractors[ CAMERA_COUNT ];
 
-	double markers[2 * CAMERA_COUNT * LED_COUNT];
-	double pose[ NPOSE ];
+	double cMarkers[2 * CAMERA_COUNT * LED_COUNT];
+	double cPose[ NPOSE ];
 };
 
 #endif // __LEDTRACKER__

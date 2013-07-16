@@ -131,7 +131,7 @@ void  LEDTracker::updateHook()
 	// otherwise, set the weight properly
 	bool foundNaN = false;
 	for(unsigned i = 0; i < CAMERA_COUNT * LED_COUNT * 2; i++)
-		if( isnan( markerPositions[ i ] ) )
+		if( isnan( data.positions[ i ] ) )
 		{
 			data.positions[ i ] = MARKER_NOT_DETECTED_VALUE;
 			data.weights[ i ]   = 0.0;
@@ -192,8 +192,9 @@ void LEDTracker::errorHook()
 
 void LEDTracker::poseFromMarkers(bool foundNaN)
 {
-	double* cInput[ 1 ] = { markers };
-	double* cOutput[ 1 ] = { pose };
+	double* cInput[ 1 ] = { cMarkers };
+	double* cOutput[ 1 ] = { cPose };
+	int cStatus = 1;
 
 	if (foundNaN == false)
 	{
@@ -201,13 +202,14 @@ void LEDTracker::poseFromMarkers(bool foundNaN)
 
 		cStatus = pose_from_markers(cInput, cOutput);
 	}
-	else
+	
+	if (cStatus != 0 || foundNaN == true)
 	{
-		memset(pose, 0.0, NPOSE * sizeof( double ));
+		memset(cPose, 0.0, NPOSE * sizeof( double ));
 	}
 	
 	// Assign data to output buffer
-	data.pose.assign(pose, pose + NPOSE);
+	data.pose.assign(cPose, cPose + NPOSE);
 }
 
 ORO_CREATE_COMPONENT( LEDTracker )
