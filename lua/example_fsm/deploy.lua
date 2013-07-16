@@ -9,6 +9,11 @@ supervisor = deployer:getPeer("supervisor")
 supervisor:exec_file("launch_fsm.lua")
 supervisor:configure()
 
+
 cmd = rttlib.port_clone_conn(supervisor:getPort("events"))
+
+supervisor:start()
+
+cmd:write("e_pong")
 
 dofile("../postamble.lua")
