@@ -76,7 +76,7 @@ void PoseFromMarkers::updateHook()
 	// If status is NOT OK, clear temporary data buffer
 	if ( cStatus )
 	{
-		memset(pose, 0.0, NPOSE * sizeof( pose ));
+		memset(pose, 0.0, NPOSE * sizeof( double ));
 	}
 	
 	// Assign data to output buffer
