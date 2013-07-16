@@ -76,7 +76,7 @@ void KinematicMhe::updateHook()
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
 	while((portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData) &&
-		  (numImuSamples < MAXMAX_NUM_IMU_SAMPLES))
+		  (numImuSamples < MAX_NUM_IMU_SAMPLES))
 		numImuSamples++;
 
 	FlowStatus encStatus = portEncoderData.read( encData );
