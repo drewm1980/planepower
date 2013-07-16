@@ -55,14 +55,6 @@ McuHandler::McuHandler(std::string name)
 		.doc("Port with control signals [ua1, ua2, ue].");
 	
 	//
-	// Add operations
-	//
-
-	// This guy is supposed to be used only for debugging purposes
-	this->provides()->addOperation( "sendMotorReferences", &McuHandler::sendMotorReferences, this)
-		.doc( "MHE RTI feedback step." );
-
-	//
 	// Prepare ports
 	//
 	portImuData.setDataSample( imuData );
