@@ -1,0 +1,307 @@
+What "MheDataPreparation" class needs
+
+Camera marker measurements:
+
+- Camera sampling time multiplier: T_{s, camera} = M_1 T_{MHE}
+- Camera delay multiplier: T_{d, camera} = M_2 T_{MHE}
+- Inverse of covariance matrix, diagonal elements only
+
+Tether measurements:
+
+- Inverse of covariance matrix, diagonal elements only
+- Measurement of r is provided by the component poseFromMarkers
+
+Encoder measurements:
+
+- Inverse of covariance matrix, diagonal elements only
+
+IMU measurements:
+
+- Inverse of covariance matrix, diagonal elements only
+
+Control measurements:
+
+- Inverse of covariance matrix, diagonal elements only
+
+******************************************************************************************
+
+Prototype of the MheDataPreparation.hpp:
+
+class MheDataPreparation
+{
+public:
+	/// Ctor
+	MheDataPreparation()
+		: cameraTd( 0 ), initialized( false ), firstRun( true )
+	{}
+	/// Dtor
+	~MheDataPreparation()
+	{}
+	
+	unsigned init(	unsigned _cameraTd,
+					const std::vector< double >& _cameraCov,
+					const std::vector< double >& _tetherCov,
+					const std::vector< double >& _encoderCov,
+					const std::vector< double >& _imuCov,
+					const std::vector< double >& _controlsCov,
+					)
+	
+	unsigned update(	const std::vector< double >& _camera,
+						const std::vector< double >& _tether,
+						const std::vector< double >& _encoder,
+						const std::vector< double >& _imu,
+						const std::vector< double >& _controls);
+	
+	const std::vector< double >& getY()
+	{
+		return y;
+	}
+	
+	const std::vector< double >& getYN()
+	{
+		return yN;
+	}
+	
+	const std::vector< double >& getS()
+	{
+		return S;
+	}
+	
+	const std::vector< double >& getSN()
+	{
+		return SN;
+	}
+
+private:
+
+	void shiftMeasurements();
+
+	std::vector< double > y;
+	std::vector< double > yN;
+	std::vector< double > S;
+	std::vector< double > SN;
+	
+	std::vector< double > cameraCov;
+	std::vector< double > tetherCov;
+	
+	unsigned cameraTs;
+	unsigned cameraTd;
+	
+	bool initialized;
+	bool firstRun;
+};
+
+******************************************************************************************
+
+#include "acado_common.h"
+
+unsigned MheDataPreparation::init(	unsigned _cameraTd,
+									const std::vector< double >& _cameraCov,
+									const std::vector< double >& _tetherCov,
+									const std::vector< double >& _encoderCov,
+									const std::vector< double >& _imuCov,
+									const std::vector< double >& _controlsCov,
+									)
+{
+	y.resize(ACADO_N * ACADO_NY, 0.0);
+	yN.resize(ACADO_NYN, 0.0);
+	
+	S.resize(ACADO_N * ACADO_NY * ACADO_NY, 0.0);
+	SN.resize(ACADO_NYN * ACADO_NYN, 0.0);
+	
+	cameraTd = _cameraTd;
+	
+	// Assuming that the measurements are organized as:
+	
+	if ((	_cameraCov.size() + 
+			_tetherCov.size() + 
+			_encoderCov.size() + 
+			_imuCov.size() + 
+			controlsCov.size) != ACADO_NY)
+		return 1;
+		
+	if ((_encoderCov.size() + _imuCov.size())
+		!= ACADO_NYN)
+		return 2;
+	
+	//
+	// Set the covariance matrix S, this is by default 
+	//
+	unsigned offset;
+	for (unsigned i = 0; i < ACADO_N; ++i)
+	{
+		unsigned 0;
+	
+		// Camera: Measurements are delayed by cameraTd samples
+		for (unsigned j = 0; j < _cameraCov.size(); ++j)
+//			S.[i * ACADO_NY * ACADO_NY + j * (NY + 1)] = _cameraCov[ j ];
+			S.[i * ACADO_NY * ACADO_NY + j * (NY + 1)] = 0.0;
+		
+		// Tether: same source as for camera
+		offset += _cameraCov.size();
+		for (unsigned j = 0; j < _tetherCov.size(); ++j)
+//			S.[i * ACADO_NY * ACADO_NY + (offset + j) * (NY + 1)] = _tetherCov[ j ];
+			S.[i * ACADO_NY * ACADO_NY + (offset + j) * (NY + 1)] = 0.0;
+		
+		// Encoder: meas always available, without delays
+		offset += _tetherCov.size();
+		for (unsigned j = 0; j < _encoderCov.size(); ++j)
+			S.[i * ACADO_NY * ACADO_NY + (offset + j) * (NY + 1)] = _encoderCov[ j ];
+		
+		// IMU: meas always available, without delays
+		offset += _encoderCov.size();
+		for (unsigned j = 0; j < _imuCov.size(); ++j)
+			S.[i * ACADO_NY * ACADO_NY + (offset + j) * (NY + 1)] = _imuCov[ j ];
+		
+		// Controls: meas always available, delay of 1 sample
+		offset += _imuCov.size();
+		for (unsigned j = 0; j < _controlsCov.size(); ++j)
+			S.[i * ACADO_NY * ACADO_NY + (offset + j) * (NY + 1)] = _controlsCov[ j ];
+	}
+	
+	//
+	// Set the covariance matrix SN
+	//
+	offset 0;
+	for (unsigned j = 0; j < _encoderCov.size(); ++j)
+		SN.[(offset + j) * (NYN + 1)] = _encoderCov[ j ];
+			
+	offset += _encoderCov.size();
+	for (unsigned j = 0; j < _imuCov.size(); ++j)
+		SS.[(offset + j) * (NYN + 1)] = _imuCov[ j ];
+		
+	//
+	// Make local copies
+	//
+	cameraCov = _cameraCov;
+	tetherCov = _tetherCov;
+	
+	// etc...
+	initialized = true;
+	firstRun = true;
+		
+	return 0;
+}
+
+unsigned MheDataPreparation::update(	const std::vector< double >& _camera,
+										const std::vector< double >& _tether,
+										const std::vector< double >& _encoder,
+										const std::vector< double >& _imu,
+										const std::vector< double >& _controls)
+{
+	static unsigned counter;
+	static bool readyToOutput;
+
+	// I will start to output the measurements after N samples
+
+	if (initialized == false)
+		return 1;
+		
+	if (firstRun == false)
+		shiftMeasurements();
+	else
+	{
+		firstRun = false;
+		counter = 0;
+		readyToOutput = false;
+	}
+	
+	unsigned offset;
+		
+	//
+	// Set the camera measurements and the tether measurement
+	//
+	if (camera.size() && tether.size())
+	{
+		// This means we have a new measuremement
+		
+		// Camera
+		offset = 0;
+		for (i = 0; i < camera.size(); ++i)
+		{
+			y[(ACADO_N - cameraTd + 1) * ACADO_NY + i] = camera[ i ];
+			S[(ACADO_N - cameraTd + 1) * ACADO_NY * ACADO_NY + i * (NY + 1)]
+				= cameraCov[ i ];
+		}
+			
+		// Tether
+		offset = camera.size();
+		for (i = 0; i < tehter.size(); ++i)
+		{
+			y[(ACADO_N - cameraTd + 1) * ACADO_NY + offset + i] = tether[ i ];
+			S[(ACADO_N - cameraTd + 1) * ACADO_NY * ACADO_NY + (offset + i) * (NY + 1)]
+				= tetherCov[ i ];
+		}
+	}
+	else
+	{
+		// This means there is no measurement
+		
+		offset = 0;
+		for (i = 0; i < camera.size(); ++i)
+		{
+			y[(ACADO_N - cameraTd + 1) * ACADO_NY + i] = 0.0;
+			S[(ACADO_N - cameraTd + 1) * ACADO_NY * ACADO_NY + i * (NY + 1)]
+				= 0.0;
+		}
+			
+		// Tether
+		offset = camera.size();
+		for (i = 0; i < tehter.size(); ++i)
+		{
+			y[(ACADO_N - cameraTd + 1) * ACADO_NY + offset + i] = 0.0;
+			S[(ACADO_N - cameraTd + 1) * ACADO_NY * ACADO_NY + (offset + i) * (NY + 1)]
+				= 0.0;
+		}
+	}
+	
+	//
+	// Set the encoder measurements
+	//
+	offset = 0;
+	for (unsigned i = 0; i < encoder.size(); ++i)
+		yN[offset + i] = encoder[ i ];
+
+	//
+	// Set the imu measurements
+	//
+	offset += encoder.size();
+	for (unsigned i = 0; i < imu.size(); ++i)
+		yN[offset + i] = imu[ i ];
+	
+	//
+	// Set the measurements for controls
+	//
+	offset = camera.size() + tether.size() + encoder.size() + imu.size();
+	for (unsigned i = 0; i < controls.size(); ++i)
+		y[(ACADO_N - 1) * ACADO_NY + offset + i] = controls[ i ];
+	
+	if (readyToOutput == false)
+	{
+		if (++counter == ACADO_N)
+			readyToOutput = true;
+		else
+			return 2;
+	}
+
+	return 0;
+}
+
+void MheDataPreparation::shiftMeasurements()
+{
+	unsigned offset;
+
+	// Shift first N - 1 measurements
+	for (unsigned i = 0; i < ACADO_N - 1; ++i)
+		for (unsigned j = 0; j < ACADO_NY; ++j)
+			y[i * NY + j] = y[(i + 1) * NY + j];
+			
+	// Clear camera and tether measurements on the Nth measurement
+	for (unsigned i = 0; i < (cameraCov.size() + tether.size()); ++ i)
+		y[(ACADO_N - 1) * ACADO_NY + i] = 0.0;
+			
+	// Shift components from yN to y
+	offset = cameraCov.size() + tetherCov.size();
+	for (unsigned i = 0; i < ACADO_NYN; ++i)
+		y[(ACADO_N - 1) * ACADO_NY + offset + i] = yN[ i ];
+}
