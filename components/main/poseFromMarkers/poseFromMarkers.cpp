@@ -29,8 +29,6 @@ PoseFromMarkers::PoseFromMarkers(string name)
 	
 	cInput[ 0 ]  = markers;
 	cOutput[ 0 ] = pose;
-	cOutput[ 1 ] = cov;
-	cOutput[ 2 ] = invCov;
 }
 
 bool PoseFromMarkers::configureHook()

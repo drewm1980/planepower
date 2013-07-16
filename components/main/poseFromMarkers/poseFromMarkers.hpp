@@ -48,12 +48,10 @@ protected:
 
 private:
 	double* cInput[ 1 ];
-	double* cOutput[ 3 ];
+	double* cOutput[ 1 ];
 
 	double markers[ NMARKERPOSITIONS ];
 	double pose[ NPOSE ];
-	double cov[NPOSE * NPOSE];
-	double invCov[NPOSE * NPOSE];
 };
 
 #endif // __POSEFROMMARKERS__
