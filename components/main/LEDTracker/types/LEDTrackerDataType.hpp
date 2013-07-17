@@ -7,9 +7,11 @@
 typedef struct
 {
 	/// Pixel positions of the markers
-	std::vector<double>  positions;
+	std::vector< double > positions;
 	/// Weights
-	std::vector<double> weights;
+	std::vector< double > weights;
+	/// Pose
+	std::vector< double > pose;
 
 	/// Time-stamps: trigger [ticks], frame arrival [ticks], elapsed[sec]
 	double ts_trigger, ts_frame, ts_elapsed;

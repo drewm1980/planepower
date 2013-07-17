@@ -5,6 +5,8 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
+#include <algorithm>
+
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
@@ -25,6 +27,12 @@ KinematicMhe::KinematicMhe(std::string name)
 		.doc("LED Tracker data");
 	addPort("debugData", portDebugData)
 		.doc("Debugging data");
+
+	debugData.imu_first.resize(6, 0.0);
+	debugData.imu_avg.resize(6, 0.0);
+	debugData.enc_data.resize(3, 0.0);
+	debugData.cam_markers.resize(12, 0.0);
+	debugData.cam_pose.resize(12, 0.0);
 
 	portDebugData.setDataSample( debugData );
 	portDebugData.write( debugData );
@@ -67,7 +75,8 @@ void KinematicMhe::updateHook()
 	
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
-	while(portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData)
+	while((portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData) &&
+		  (numImuSamples < MAX_NUM_IMU_SAMPLES))
 		numImuSamples++;
 
 	FlowStatus encStatus = portEncoderData.read( encData );
@@ -77,6 +86,37 @@ void KinematicMhe::updateHook()
 	if (camStatus == NewData)
 		for (unsigned i = 0; i < camData.weights.size(); ++i)
 			numMarkers += (camData.weights[ i ] > 0.0);
+
+	//
+	// Prepare data for logging
+	//
+	debugData.imu_first[ 0 ] = imuData[numImuSamples - 1].gyro_x;
+	debugData.imu_first[ 1 ] = imuData[numImuSamples - 1].gyro_y;
+	debugData.imu_first[ 2 ] = imuData[numImuSamples - 1].gyro_z;
+	debugData.imu_first[ 3 ] = imuData[numImuSamples - 1].accl_x;
+	debugData.imu_first[ 4 ] = imuData[numImuSamples - 1].accl_y;
+	debugData.imu_first[ 5 ] = imuData[numImuSamples - 1].accl_z;
+
+	for (unsigned i = 0; i < debugData.imu_avg.size(); ++i)
+		debugData.imu_avg[ i ] = 0.0;
+	for (unsigned i = 0; i < numImuSamples; ++i)
+	{
+		debugData.imu_avg[ 0 ] += imuData[ i ].gyro_x;
+		debugData.imu_avg[ 1 ] += imuData[ i ].gyro_y;
+		debugData.imu_avg[ 2 ] += imuData[ i ].gyro_z;
+		debugData.imu_avg[ 3 ] += imuData[ i ].accl_x;
+		debugData.imu_avg[ 4 ] += imuData[ i ].accl_y;
+		debugData.imu_avg[ 5 ] += imuData[ i ].accl_z;
+	}
+	for (unsigned i = 0; i < debugData.imu_avg.size(); ++i)
+		debugData.imu_avg[ i ] /= (double)numImuSamples;
+
+	debugData.enc_data[ 0 ] = encData.theta;
+	debugData.enc_data[ 1 ] = encData.sin_theta;
+	debugData.enc_data[ 2 ] = encData.cos_theta;
+
+	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_markers.begin());
+	copy(camData.pose.begin(), camData.pose.end(), debugData.cam_pose.begin());
 
 	// Very basic debugging
 	debugData.num_imu_samples = numImuSamples;

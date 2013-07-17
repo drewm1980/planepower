@@ -67,6 +67,10 @@ loadComponent("LEDTracker","LEDTracker")
 import("kinematicMHE")
 loadComponent("kinematicMhe", "KinematicMhe")
 
+# Input signal generator
+import("inputSignalGenerator")
+loadComponent("inputSignalGenerator", "InputSignalGenerator")
+
 # OCL NETcdf reporter
 loadComponent("imuReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
@@ -144,6 +148,7 @@ var int masterTimerPrio = 98
 var int sensorPrio = 97
 var int ocpPrio = 80
 var int LEDTrackerPrio = 70
+var int sineGenPrio = 60
 
 setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
 
@@ -160,6 +165,8 @@ setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
 setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
 
 setActivity("kinematicMhe", 0.0, ocpPrio, ORO_SCHED_RT)
+
+setActivity("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT)
 
 setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
 setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
@@ -189,6 +196,8 @@ connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
 connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
+
+connect("inputSignalGenerator.data", "mcuHandler.controls", cp)
 
 # Kinematic MHE connections
 
@@ -266,6 +275,9 @@ lineAngleReporter.start()
 
 kMheReporter.configure()
 kMheReporter.start()
+
+inputSignalGenerator.configure()
+inputSignalGenerator.start()
 
 # Now, when all other components are started, start the master timer component.
 masterTimer.start()

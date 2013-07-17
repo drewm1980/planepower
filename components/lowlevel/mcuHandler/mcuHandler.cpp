@@ -55,14 +55,6 @@ McuHandler::McuHandler(std::string name)
 		.doc("Port with control signals [ua1, ua2, ue].");
 	
 	//
-	// Add operations
-	//
-
-	// This guy is supposed to be used only for debugging purposes
-	this->provides()->addOperation( "sendMotorReferences", &McuHandler::sendMotorReferences, this)
-		.doc( "MHE RTI feedback step." );
-
-	//
 	// Prepare ports
 	//
 	portImuData.setDataSample( imuData );
@@ -136,10 +128,28 @@ void McuHandler::updateHook()
 	else
 		triggerTimeStamp = TimeService::Instance()->getTicks();
 
- 	if (portControls.read( controls ) == NewData && rtMode == true)
+	//
+	// Read the IMU data, process the packet and output the data.
+	//
+
+	// Before calling the MCU operation, reset the tcpStatus flag.
+	tcpStatus = OK;
+	receiveSensorData();
+	imuData.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
+	portImuData.write( imuData );
+
+	//
+	// If some controls arrived, send them to the MCU
+	//
+	// TODO this is probably not the nicest solution, consider to remove the
+	// "rtMode == true" and sendMotorReferences access from outside, i.e.
+	// make the component fully I/O port based.
+	//
+
+	if (portControls.read( controls ) == NewData && rtMode == true)
  	{
 		// In case we received new commands and we are in the real-time mode
-		// we can send new commands to the plane
+		// we can send new commands to the plane if some checks are satisfied
  		if (controls.size() != 3)
  		{
  			tcpStatus = ERR_BAD_DATA_SIZE;
@@ -151,13 +161,6 @@ void McuHandler::updateHook()
 		tcpStatus = OK;
 		sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
  	}
-	
-	// Before calling the MCU operation, reset the tcpStatus flag.
-	tcpStatus = OK;
-	receiveSensorData();
-	imuData.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
-	portImuData.write( imuData );
-	
 
 	// This is a check for the real-time mode. In case we do not meet the
 	// deadline, abort.
