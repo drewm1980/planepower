@@ -21,3 +21,9 @@ cd rttlua_completion
 make
 )
 
+echo "Bootstrapping rFSM..."
+git clone git@github.com:kmarkus/rFSM
+(
+cd rFSM
+make
+)
