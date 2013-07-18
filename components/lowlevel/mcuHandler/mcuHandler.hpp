@@ -1,13 +1,8 @@
 #ifndef __MCUHANDLER__
 #define __MCUHANDLER__
 
-#include <rtt/RTT.hpp>
 #include <rtt/TaskContext.hpp>
-#include <rtt/Component.hpp>
 #include <rtt/Port.hpp>
-
-#include <vector>
-#include <string>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -52,29 +47,20 @@ public:
 
 protected:
 
-	/// Method for sending the references. All input must be scaled to -1.. +1.
-	void sendMotorReferences(double ref1, double ref2, double ref3);	
-	/// Method that communicates with the MCU. In case of ANY error, it triggers
-	/// the error hook.
-	void ethernetTransmitReceive( void );
-	/// Method for receiving sensor data. Data is NOT scaled, yet.
-	void receiveSensorData( void );
-	
 	/// Trigger the component to get IMU data if there is an event on this port.
 	RTT::InputPort< TIME_TYPE > portTrigger;
 	/// Time stamp of the input trigger. Used in the case when IMU component
 	/// is triggered externally.
 	TIME_TYPE triggerTimeStamp;
 	/// Holder for the IMU data.
-	McuHandlerDataType imuData;
+	McuHandlerDataType data;
 	/// The data from the IMU.
-	RTT::OutputPort< McuHandlerDataType > portImuData;
-	/// Port with control signals [ua1, ua2, ue].
-	RTT::InputPort< std::vector< double> > portControls;	
+	RTT::OutputPort< McuHandlerDataType > portMcuData;
+	/// Port with control signals [ua1, ua2, ue]. Must be: -1..1
+	RTT::InputPort< std::vector< double > > portControls;	
 	/// Holder for the control action to be send
 	std::vector< double > controls;
 	/// Internal buffer for control values
-	std::vector< double > execControls;
 	
 	/// Name to listen for incoming connections on, either FQDN or IPv4 address.
 	std::string hostName;
@@ -91,6 +77,10 @@ protected:
 
 private:
 
+	void sendMotorReferences( void );
+	void ethernetTransmitReceive( void );
+	void receiveSensorData( void );
+	
 	long numOfBytesToBeReceived;
 	long numOfBytesToBeTransmitted;
 	
@@ -102,6 +92,8 @@ private:
 	int tcpStatus;
 
 	unsigned upTimeCnt;
+
+	std::vector< double > execControls;
 };
 
 #endif // __MCUHANDLER__

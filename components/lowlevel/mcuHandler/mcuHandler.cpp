@@ -1,5 +1,6 @@
 #include "mcuHandler.hpp"
 
+#include <rtt/Component.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/os/TimeService.hpp>
@@ -49,16 +50,16 @@ McuHandler::McuHandler(std::string name)
 	//
 	addEventPort("trigger", portTrigger)
 		.doc("Trigger the component to get an IMU measurement");
-	addPort("imuData", portImuData)
-		.doc("The IMU data");
+	addPort("data", portMcuData)
+		.doc("The MCU data");
 	addPort("controls", portControls)
-		.doc("Port with control signals [ua1, ua2, ue].");
+		.doc("Port with control signals [ua1, ua2, ue]. Valid range for all signals is -1..1");
 	
 	//
 	// Prepare ports
 	//
-	portImuData.setDataSample( imuData );
-	portImuData.write( imuData );
+	portMcuData.setDataSample( data );
+	portMcuData.write( data );
 	
 	controls.resize(3, 0.0);
 	execControls.resize(3, 0.0);
@@ -111,10 +112,8 @@ bool McuHandler::startHook()
 		return false;
 	}
 
-	execControls[ 0 ] = 0.;
-	execControls[ 1 ] = 0.;
-	execControls[ 2 ] = 0.;
-	sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
+	execControls[ 0 ] = execControls[ 1 ] = execControls[ 2 ] = 0.;
+	sendMotorReferences();
 
 	upTimeCnt = 0;
 
@@ -135,18 +134,11 @@ void McuHandler::updateHook()
 	// Before calling the MCU operation, reset the tcpStatus flag.
 	tcpStatus = OK;
 	receiveSensorData();
-	imuData.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
-	portImuData.write( imuData );
 
 	//
-	// If some controls arrived, send them to the MCU
+	// If _NEW_ controls arrived, send them to the MCU
 	//
-	// TODO this is probably not the nicest solution, consider to remove the
-	// "rtMode == true" and sendMotorReferences access from outside, i.e.
-	// make the component fully I/O port based.
-	//
-
-	if (portControls.read( controls ) == NewData && rtMode == true)
+	if (portControls.read( controls ) == NewData)
  	{
 		// In case we received new commands and we are in the real-time mode
 		// we can send new commands to the plane if some checks are satisfied
@@ -159,12 +151,15 @@ void McuHandler::updateHook()
 		
 		// Before calling the MCU operation, reset the tcpStatus flag.
 		tcpStatus = OK;
-		sendMotorReferences(execControls[ 0 ], execControls[ 1 ], execControls[ 2 ]);
+		sendMotorReferences();
  	}
 
+	data.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
+	portMcuData.write( data );
+	
 	// This is a check for the real-time mode. In case we do not meet the
 	// deadline, abort.
-	if (rtMode == true && imuData.ts_elapsed > Ts && (++upTimeCnt > MAX_ERRORS_ALLOWED))
+	if (rtMode == true && data.ts_elapsed > Ts && (++upTimeCnt > MAX_ERRORS_ALLOWED))
 	{
 		tcpStatus = ERR_DEADLINE;
 		exception();
@@ -178,8 +173,9 @@ void McuHandler::stopHook()
 	Logger::In in( getName() );
 
 	/// Try to send neutral references to all motors
-//	if (tcpStatus == OK && this->isRunning() == true) 
-	sendMotorReferences(0., 0., 0.);
+//	if (tcpStatus == OK && this->isRunning() == true)
+	for (unsigned i = 0; i < execControls.size(); execControls[ i ] = 0.0, ++i);
+	sendMotorReferences();
 	/// Close the socket
 	close( tcpSocket );
 	/// Now print the error
@@ -227,21 +223,22 @@ void McuHandler::cleanupHook()
 void McuHandler::errorHook()
 {}
 
-void McuHandler::sendMotorReferences(double ref1, double ref2, double ref3)
+/// Method for sending the references. All input must be scaled to -1.. +1.
+void McuHandler::sendMotorReferences( void )
 {
 	//
 	// Clip the control values
 	//
-	if (ref1 > 1.0) ref1 = 1.0; else if (ref1 < -1.0) ref1 = -1.0;
-	if (ref2 > 1.0) ref2 = 1.0; else if (ref2 < -1.0) ref2 = -1.0;
-	if (ref3 > 1.0) ref3 = 1.0; else if (ref3 < -1.0) ref3 = -1.0;
+	if (execControls[ 0 ] > 1.0) execControls[ 0 ] = 1.0; else if (execControls[ 0 ] < -1.0) execControls[ 0 ] = -1.0;
+	if (execControls[ 1 ] > 1.0) execControls[ 1 ] = 1.0; else if (execControls[ 1 ] < -1.0) execControls[ 1 ] = -1.0;
+	if (execControls[ 2 ] > 1.0) execControls[ 2 ] = 1.0; else if (execControls[ 2 ] < -1.0) execControls[ 2 ] = -1.0;
 	
 	//
 	// Scale controls
 	//
-	short execRef1 = (short)(ref1 * MAX_VALUE_MOTOR_REF);
-	short execRef2 = (short)(ref2 * MAX_VALUE_MOTOR_REF);
-	short execRef3 = (short)(ref3 * MAX_VALUE_MOTOR_REF);
+	short execRef1 = (short)(execControls[ 0 ] * MAX_VALUE_MOTOR_REF);
+	short execRef2 = (short)(execControls[ 1 ] * MAX_VALUE_MOTOR_REF);
+	short execRef3 = (short)(execControls[ 2 ] * MAX_VALUE_MOTOR_REF);
 
 	//
 	// Prepare the request message
@@ -266,6 +263,7 @@ void McuHandler::sendMotorReferences(double ref1, double ref2, double ref3)
 	ethernetTransmitReceive();
 }
 
+/// Method for receiving sensor data. Data is NOT scaled, yet.
 void  McuHandler::receiveSensorData( void )
 {
 	//
@@ -293,23 +291,25 @@ void  McuHandler::receiveSensorData( void )
 	}
 	
 	// Timestamp
-	imuData.ts_trigger = triggerTimeStamp;
+	data.ts_trigger = triggerTimeStamp;
 	
 	// And now fill in the IMU data
-	imuData.gyro_x = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
-	imuData.gyro_y = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
-	imuData.gyro_z = IMU_GYRO_SCALE((short)((receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]));
+	data.gyro_x = IMU_GYRO_SCALE((short)((receiveBuffer[ 3  ] << 8 ) + receiveBuffer[ 4  ]));
+	data.gyro_y = IMU_GYRO_SCALE((short)((receiveBuffer[ 5  ] << 8 ) + receiveBuffer[ 6  ]));
+	data.gyro_z = IMU_GYRO_SCALE((short)((receiveBuffer[ 7  ] << 8 ) + receiveBuffer[ 8  ]));
 
-	imuData.accl_x = IMU_ACCL_SCALE((short)((receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]));
-	imuData.accl_y = IMU_ACCL_SCALE((short)((receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]));
-	imuData.accl_z = IMU_ACCL_SCALE((short)((receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]));
+	data.accl_x = IMU_ACCL_SCALE((short)((receiveBuffer[ 9  ] << 8 ) + receiveBuffer[ 10 ]));
+	data.accl_y = IMU_ACCL_SCALE((short)((receiveBuffer[ 11 ] << 8 ) + receiveBuffer[ 12 ]));
+	data.accl_z = IMU_ACCL_SCALE((short)((receiveBuffer[ 13 ] << 8 ) + receiveBuffer[ 14 ]));
 
 	// TODO Update typekit and include magnetometer data
-// 	imuData.magn_x = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
-// 	imuData.magn_y = ( receiveBuffer[ 17 ] << 8 ) + receiveBuffer[ 18 ];
-// 	imuData.magn_z = ( receiveBuffer[ 19 ] << 8 ) + receiveBuffer[ 20 ];
+// 	data.magn_x = ( receiveBuffer[ 15 ] << 8 ) + receiveBuffer[ 16 ];
+// 	data.magn_y = ( receiveBuffer[ 17 ] << 8 ) + receiveBuffer[ 18 ];
+// 	data.magn_z = ( receiveBuffer[ 19 ] << 8 ) + receiveBuffer[ 20 ];
 }
 
+/// Method that communicates with the MCU. In case of ANY error, it triggers
+/// the error hook.
 void McuHandler::ethernetTransmitReceive( void )
 {
 	int i, j;
