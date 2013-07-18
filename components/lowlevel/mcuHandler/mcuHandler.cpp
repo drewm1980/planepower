@@ -6,6 +6,8 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
+#include <cmath>
+
 /// Packet tag filed
 #define TAG_CMD        			0xff
 /// Packet identifier for sending motor references.
@@ -17,11 +19,11 @@
 
 /// Conversion from integer to radians per second
 #define	IMU_GYRO_SCALE( Value ) \
-		(double)Value / 4.0 * 0.2 * 3.14159 / 180.0
+		(float)Value / 4.0 * 0.2 * M_PI / 180.0
 
 /// Conversion from integer to m/s^2
 #define IMU_ACCL_SCALE( Value ) \
-		(double)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
+		(float)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
 
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
@@ -153,6 +155,10 @@ void McuHandler::updateHook()
 		tcpStatus = OK;
 		sendMotorReferences();
  	}
+
+	data.ua1 = (float) execControls[ 0 ];
+	data.ua2 = (float) execControls[ 1 ];
+	data.ue  = (float) execControls[ 2 ];
 
 	data.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
 	portMcuData.write( data );
