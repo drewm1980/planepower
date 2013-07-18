@@ -206,7 +206,7 @@ cpImuMhe.type = 1
 cpImuMhe.size = 100
 
 connect("masterTimer.controlsPlaybackClock", "kinematicMhe.trigger", cp)
-connect("mcuHandler.imuData", "kinematicMhe.mcuData", cpImuMhe)
+connect("mcuHandler.data", "kinematicMhe.mcuData", cpImuMhe)
 connect("encoder.data", "kinematicMhe.encoderData", cp)
 connect("LEDTracker.data", "kinematicMhe.ledTrackerData", cp)
 
