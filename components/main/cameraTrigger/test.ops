@@ -1,0 +1,21 @@
+#!/usr/bin/env deployer
+
+import("cameraTrigger")
+import("soem_master")
+import("soem_ebox")
+ 
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+loadComponent("cameraTrigger","CameraTrigger")
+ 
+var double base_hz = 10;
+setActivity("cameraTrigger",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+soemMaster.ifname = "eth1"
+
+connectPeers("cameraTrigger","soemMaster")
+
+soemMaster.configure()
+soemMaster.start()
+
+cameraTrigger.configure()
+cameraTrigger.start()

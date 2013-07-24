@@ -1,0 +1,2 @@
+#.gitignore
+#: ../solver.hpp |> cp ../solver.hpp . |> solver.hpp

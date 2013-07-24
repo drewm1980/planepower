@@ -1,0 +1,26 @@
+#!/usr/bin/env deployer
+
+import("dynamicMHE")
+
+loadComponent("LoggingService", "OCL::logging::LoggingService")
+setActivity("LoggingService", 0.5, 0, 0)
+
+LoggingService.configure()
+LoggingService.start()
+
+# Set up the MHE component
+loadComponent("dynamicMHE", "DynamicMHE")
+
+dynamicMHE.propNumSQPIterations = 1
+
+# Set up non-periodic activity
+setActivity("dynamicMHE", 0.0, HighestPriority, ORO_SCHED_RT)
+
+loadService("dynamicMHE","marshalling")
+dynamicMHE.marshalling.loadProperties( "sample.cpf" )
+
+# Configuring components
+dynamicMHE.configure()
+
+# Starting components
+dynamicMHE.start()

@@ -1,0 +1,35 @@
+#!/usr/bin/env deployer
+
+#VELOCITYCONTROLLER
+
+#Import libraries
+import("planeSimulator")
+ 
+#Create components
+loadComponent("sim","OCL::planeSimulator")
+ 
+#Set activities
+setActivity("sim",0.01,HighestPriority,ORO_SCHED_RT)
+
+sim.configure()
+#sim.start()
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter","sim")
+reporter.reportPort("sim","stateOutputPort")
+reporter.ReportFile = "state.dat"
+reporter.NullSample = "nan" 
+reporter.configure()
+reporter.start()
+
+
+#loadComponent("NMPC","OCL::NMPC")
+#setActivity("NMPC",0.0,HighestPriority,ORO_SCHED_RT)
+#connectPeers("NMPC","sim")
+##var ConnPolicy cp
+#connect("sim.stateOutputPort","NMPC.inputEstimate")
+#connectPeers("sim","NMPC")
+#connect("NMPC.controlsOutputPort","sim.controlInputPort")
+#NMPC.configure()
+##NMPC.start()

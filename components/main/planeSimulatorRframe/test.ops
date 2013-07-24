@@ -1,0 +1,60 @@
+#!/usr/bin/env deployer
+
+var ConnPolicy cp
+
+#MasterTimer
+import("masterTimer")
+loadComponent("masterTimer","OCL::MasterTimer")
+loadService("masterTimer","marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+var double base_hz = masterTimer.imu_target_hz;
+setActivity("masterTimer",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+masterTimer.configure()
+masterTimer.start()
+
+#Import libraries
+import("planeSimulatorRframe")
+ 
+#Create components
+loadComponent("sim","OCL::planeSimulatorRframe")
+setActivity("sim",0,HighestPriority,ORO_SCHED_RT)
+connect("sim.trigger","masterTimer.imuClock",cp)
+sim.integrationStep = masterTimer.getPeriod()
+sim.configure()
+#sim.start()
+
+loadComponent("reporter","OCL::FileReporting")
+setActivity("reporter",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter","sim")
+reporter.reportPort("sim","stateOutputPort")
+reporter.ReportFile = "state.txt"
+reporter.NullSample = "nan" 
+reporter.configure()
+reporter.start()
+
+# IMU buffer
+import("imuBuffer")
+loadComponent("imuBuffer","OCL::ImuBuffer")
+setActivity("imuBuffer",0,HighestPriority,ORO_SCHED_RT)
+connect("masterTimer.imuCameraRatio","imuBuffer.imuCameraRatio",cp)
+connect("imuBuffer.imuData","sim.imuData",cp)
+imuBuffer.configure()
+imuBuffer.start()
+
+loadComponent("reporter1","OCL::FileReporting")
+setActivity("reporter1",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter1","sim")
+reporter1.reportPort("sim","imuData")
+reporter1.ReportFile = "IMU.txt"
+reporter1.NullSample = "nan" 
+reporter1.configure()
+reporter1.start()
+
+loadComponent("reporter2","OCL::FileReporting")
+setActivity("reporter2",0.0,HighestPriority,ORO_SCHED_RT)
+connectPeers("reporter2","imuBuffer")
+reporter2.reportPort("imuBuffer","imuMeanCov")
+reporter2.ReportFile = "IMUBuffered.txt"
+reporter2.NullSample = "nan" 
+reporter2.configure()
+reporter2.start()

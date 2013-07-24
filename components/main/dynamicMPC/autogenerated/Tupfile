@@ -1,0 +1,7 @@
+include_rules
+
+# make rawesome export the solver
+#propsdir = $(PLANEPOWER_ROOT)/properties
+#export PYTHONPATH
+#genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateNmpc.py
+#: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.o solver.hpp nmpc_structs.h whereami.txt

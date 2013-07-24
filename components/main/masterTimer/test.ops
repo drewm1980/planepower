@@ -1,0 +1,18 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("masterTimer")
+ 
+#Create components
+loadComponent("masterTimer","MasterTimer")
+ 
+#Load properties
+loadService("masterTimer","marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+ 
+#Set activities
+var double base_hz = masterTimer.imu_target_hz;
+setActivity("masterTimer",1.0/base_hz,HighestPriority,ORO_SCHED_RT)
+ 
+masterTimer.configure()
+masterTimer.start()

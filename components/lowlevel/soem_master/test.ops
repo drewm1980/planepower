@@ -1,0 +1,9 @@
+#!/usr/bin/env deployer
+
+import("soem_master")
+import("soem_ebox")
+loadComponent("soemMaster","soem_master::SoemMasterComponent")
+setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
+soemMaster.ifname = "eth1"
+soemMaster.configure()
+soemMaster.start()

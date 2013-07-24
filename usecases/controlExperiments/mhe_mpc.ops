@@ -50,8 +50,8 @@ import("dynamicMPC")
 loadComponent("dynamicMPC","DynamicMPC")
 
 # Trajectory generator
-import("simpleTrajectoryGenerator")
-loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
+#import("simpleTrajectoryGenerator")
+#loadComponent("trajectoryGenerator","SimpleTrajectoryGenerator")
 
 # OCL reporter
 loadComponent("reporter","OCL::FileReporting")
@@ -140,14 +140,14 @@ loadService("dynamicMPC", "marshalling")
 dynamicMPC.marshalling.loadProperties("../../properties/mpc_properties/mpc_properties.cpf")
 
 # trajectoryGenerator
-trajectoryGenerator.N = 10
-trajectoryGenerator.NX = 22
-trajectoryGenerator.NU = 3
+#trajectoryGenerator.N = 10
+#trajectoryGenerator.NX = 22
+#trajectoryGenerator.NU = 3
 
 #trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/refs.dat"
 #trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/weights.dat"
-trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
-trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
+#trajectoryGenerator.referencesFileName = "../../matlab_acado_codegen_simulation/Xrefslope.dat"
+#trajectoryGenerator.weightsPFileName = "../../matlab_acado_codegen_simulation/Sslope.dat"
 
 # OCL Reporter (non real-time)
 #(optionally, overwrite the default report file name)
@@ -196,7 +196,7 @@ setActivity("dynamicMHE", 0, ocpPrio, ORO_SCHED_RT)
 setActivity("dynamicMPC", 0.0, ocpPrio, ORO_SCHED_RT)
 
 # Trajectory generator
-setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
+#setActivity("trajectoryGenerator", 0.0, ocpPrio, ORO_SCHED_RT)
 
 setActivity("reporter", 0.1, 10, ORO_SCHED_RT)
 #setActivity("reporter1", 0.0, 10, ORO_SCHED_RT)
@@ -220,8 +220,8 @@ connect("masterTimer.imuClock","mcuHandler.imuTrigger",cp)
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
 connect("masterTimer.cameraClock","protobuf.portTrigger",cp)
 
-connect("encoder.encoderTimeStampIn","masterTimer.cameraClock",cp)
-connect("cameraTrigger.Trigger","masterTimer.cameraClock",cp)
+connect("masterTimer.cameraClock","encoder.encoderTimeStampIn",cp)
+connect("masterTimer.cameraClock","cameraTrigger.Trigger",cp)
 
 connect("encoder.delta","LEDTracker.deltaIn",cp)
 
@@ -248,10 +248,10 @@ connect("measurementsRecorder.portStateEstimate","dynamicMHE.portStateEstimate",
 # Connection between MHE and MPC
 #
 
-connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
-connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
-connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
-connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
+#connect("dynamicMHE.portReady",			"trajectoryGenerator.portTrigger", cp)
+#connect("trajectoryGenerator.portReady",			"dynamicMPC.portFeedbackReady", cp)
+#connect("trajectoryGenerator.portReferences","dynamicMPC.portReferences",cp)
+#connect("trajectoryGenerator.portWeightingMatrixP","dynamicMPC.portWeightingMatrixP",cp)
 connect("dynamicMHE.portStateEstimate",	"dynamicMPC.portFeedback", cp)
 
 # FEEDBACK!!!!!
@@ -260,10 +260,10 @@ connect("dynamicMPC.portControlsForMeasurement","mcuHandler.controlInputPort",cp
 connect("dynamicMPC.portControlInput","mcuHandler.controlOutputPort",cp)
 connect("dynamicMHE.portMeasurementsCtrlRates", "dynamicMPC.portControlRates", cp)
 
-connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
+#connect("dynamicMHE.portStateReference","trajectoryGenerator.portCurrentReference",cp)
 
 #Protobuf connections
-connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portReferences",cp)
+#connect("protobuf.portReferenceTrajectory","trajectoryGenerator.portReferences",cp)
 connect("protobuf.portMHEFullStateVector","dynamicMHE.portFullStateVector",cp)
 connect("protobuf.portMHEFullControlVector","dynamicMHE.portFullControlVector",cp)
 connect("protobuf.portMPCFullStateVector","dynamicMPC.portFullStateVector",cp)
@@ -286,7 +286,7 @@ connect("protobuf.portControlsApplied","mcuHandler.controlOutputPort",cp)
 #connectPeers("reporter","imuBuffer")
 connectPeers("reporter","dynamicMHE")
 connectPeers("reporter","dynamicMPC")
-connectPeers("reporter","trajectoryGenerator")
+#connectPeers("reporter","trajectoryGenerator")
 connectPeers("reporter","encoder")
 connectPeers("reporter","LEDTracker")
 
@@ -393,7 +393,7 @@ dynamicMPC.configure()
 #dynamicMHE.start()
 #dynamicMPC.start()
  
-trajectoryGenerator.configure()
+#trajectoryGenerator.configure()
 #trajectoryGenerator.start()
 
 reporter.configure()

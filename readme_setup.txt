@@ -1,9 +1,6 @@
-# Steps for getting the carousel code running for a new developer:
+# Steps for getting the flight software running for a new developer:
 
-Create new user on planepower-pc (or wherever)
->> sudo adduser bob
-
-# Get the repository checked out:
+# Get the planepower git repository checked out:
 1. >> ssh-keygen (hit enter repeatedly to select defaults)
 2. Send the ~/.ssh/id_rsa.pub to the esat helpdesk attached to a ticket requesting access to the "planepower" git repository
 3. >> sudo apt-get install git-core gitk
@@ -20,7 +17,7 @@ Create new user on planepower-pc (or wherever)
 # Read the rules, love the rules, live by the rules:
 8. read ~/planepower/readme_rules.txt
 
-
+9. Go follow the directions for building in readme_building.txt
 
 
 

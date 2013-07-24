@@ -1,0 +1,95 @@
+# Generic rules
+CC = clang
+CXX = clang++
+CXXFLAGS += -Wall
+CXXFLAGS += -fPIC
+LDFLAGS += -Wl,-z,defs
+CFLAGS = $(CXXFLAGS)
+PATH=$PATH:$(TUP_CWD)/tools
+export PATH
+export PKG_CONFIG_PATH
+# The following makes the PLANEPOWER_ROOT environment variable
+# available as an absolute path to build targets.
+export PLANEPOWER_ROOT
+# The following command sets a tup variable that seems
+# redundant with the above, but tup expands it to a relative path.
+PLANEPOWER_ROOT=$(TUP_CWD)
+RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
+
+!cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!cc = |> $(CC) $(CFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
+!ar = |> ar crs %o %f |>
+!ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+
+# CasADi related rules
+TOOLS = $(TUP_CWD)/tools/
+!rename_casadi = |> $(TOOLS)/rename_casadi_function %f %B.cpp |> %B.cpp %B.h
+
+CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
+
+# Orocos specific flags and rules
+export OROCOS_TARGET
+CPPFLAGS_OROCOS = $(CPPFLAGS)
+LDFLAGS_OROCOS = $(LDFLAGS)
+CXXFLAGS_OROCOS = $(CXXFLAGS)
+CXXFLAGS_OROCOS += -fno-strict-aliasing
+CFLAGS_OROCOS = $(CFLAGS)
+#CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
+CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)
+CXXFLAGS_OROCOS_PLUGIN += -fno-strict-aliasing
+
+# Add components paths to include paths
+CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/main
+CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/lowlevel
+
+CPPFLAGS_OROCOS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
+LDFLAGS_OROCOS += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
+CXXFLAGS_OROCOS += -DRTT_COMPONENT
+
+!cxx_orocos = |> $(CXX) $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!cxx_orocos_plugin = |> $(CXX) $(CXXFLAGS_OROCOS_PLUGIN) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!cc_orocos = |> $(CC) $(CFLAGS_OROCOS) $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
+!ar_orocos = |> ar crs %o %f |>
+!ld_orocos = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> %d@(COMPONENT_NAME_MANGLING).so
+
+!ld_orocos_custom = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> $(SO_NAME).so
+
+# Acado specific flags and rules
+CPPFLAGS_ACADO = $(CPPFLAGS)
+CXXFLAGS_ACADO = $(CXXFLAGS)
+CXXFLAGS_ACADO += -fvisibility=hidden -fvisibility-inlines-hidden
+CFLAGS_ACADO = $(CFLAGS)
+LDFLAGS_ACADO = $(LDFLAGS) 
+
+# Note: here we keep PLANEPOWER_ROOT a shell variable;
+# if it were a tup variable, it would be a relative
+# path in the build rule and rpath wouldn't work
+# when the build executable is run in an arbitrary location.
+ACADO_ROOT_ABSOLUTE = $PLANEPOWER_ROOT/extern/acado
+ACADO_ROOT = $(PLANEPOWER_ROOT)/extern/acado
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/include
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/build/include
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/libs -lacado_toolkit
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/csparse/libs -lacado_csparse
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/external_packages/casadi/libs -lacado_casadi
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/external_packages/
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/libs
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/external_packages/csparse/libs
+CPPFLAGS_ACADO += -I$(ACADO_ROOT)/experimental/mvukov/mhe_export
+LDFLAGS_ACADO += -L$(ACADO_ROOT)/build/experimental/mvukov/mhe_export/lib -lmhe_export
+LDFLAGS_ACADO += -Wl,-rpath,$(ACADO_ROOT_ABSOLUTE)/build/experimental/mvukov/mhe_export/lib
+
+CPPFLAGS_ACADO += -DACADO_CMAKE_BUILD
+CPPFLAGS_ACADO += -DCODEGEN_FOR_OROCOS
+
+QPOASES_ROOT=$(ACADO_ROOT)/external_packages/qpoases
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)/INCLUDE
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)
+CPPFLAGS_ACADO += -I$(QPOASES_ROOT)/SRC
+CPPFLAGS_ACADO += -I.
+
+!cc_acado = |> $(CC) $(CFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
+!cxx_acado = |> $(CXX) $(CXXFLAGS_ACADO) $(CPPFLAGS_ACADO) -c %f -o %o |> %B.o
+!ld_acado = |> $(CXX) -o %o %f $(LDFLAGS_ACADO) |>
+
+.gitignore
