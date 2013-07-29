@@ -36,6 +36,8 @@ protected:
 
 	/// Frequency of the output sine wave
 	double fsine;
+	/// Amplitude of the output sine wave
+	double amplitude;
 
 private:
 	double Ts;

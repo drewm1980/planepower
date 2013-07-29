@@ -12,8 +12,6 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
-#define AMPLITUDE 0.2
-
 InputSignalGenerator::InputSignalGenerator(string name)
 	: TaskContext(name, PreOperational)
 {
@@ -30,6 +28,10 @@ InputSignalGenerator::InputSignalGenerator(string name)
 	addProperty("fsine", fsine)
 		.doc("Frequency of the sine wave");
 	fsine = 0.0;
+
+	addProperty("amplitude", amplitude)
+		.doc("Amplitude of the sine wave");
+	amplitude = 0.2;
 }
 
 bool InputSignalGenerator::configureHook()
@@ -72,8 +74,8 @@ void InputSignalGenerator::updateHook()
 
 	if (abs(fsine) > 1e-4)
 	{
-		data[ 0 ] = AMPLITUDE * sin_angle;
-		data[ 1 ] = AMPLITUDE * sin_angle;
+		data[ 0 ] = amplitude * sin_angle;
+		data[ 1 ] = amplitude * sin_angle;
 		data[ 2 ] = 0.0;
 	}
 	else
