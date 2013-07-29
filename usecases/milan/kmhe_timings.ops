@@ -209,6 +209,7 @@ connect("masterTimer.controlsPlaybackClock", "kinematicMhe.trigger", cp)
 connect("mcuHandler.data", "kinematicMhe.mcuData", cpImuMhe)
 connect("encoder.data", "kinematicMhe.encoderData", cp)
 connect("LEDTracker.data", "kinematicMhe.ledTrackerData", cp)
+connect("lineAngleSensor.data", "kinematicMhe.lasData", cp)
 
 ################################################################################
 #

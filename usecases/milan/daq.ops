@@ -4,14 +4,6 @@
 
 ################################################################################
 #
-# OROCOS common stuff
-#
-################################################################################
-
-require( "os" )
-
-################################################################################
-#
 # Start with import, config and starting of the SOEM master
 #
 ################################################################################
@@ -114,19 +106,16 @@ var ConnPolicy rp
 rp.type = 2
 rp.size = 4096
 
-# Second argument is the date-time-stamp
-var string rfPostfix = "_" + os.argv[ 1 ] + ".nc" 
-
-imuReporter.ReportFile = "imuData" + rfPostfix 
+imuReporter.ReportFile = "imuData.nc"
 imuReporter.ReportPolicy = rp
 imuReporter.ReportOnlyNewData = false
-cameraReporter.ReportFile = "cameraData" + rfPostfix
+cameraReporter.ReportFile = "cameraData.nc"
 cameraReporter.ReportPolicy = rp
 cameraReporter.ReportOnlyNewData = false
-encoderReporter.ReportFile = "encoderData" + rfPostfix
+encoderReporter.ReportFile = "encoderData.nc"
 encoderReporter.ReportPolicy = rp
 encoderReporter.ReportOnlyNewData = false
-lineAngleReporter.ReportFile = "lineAngleData" + rfPostfix
+lineAngleReporter.ReportFile = "lineAngleData.nc"
 lineAngleReporter.ReportPolicy = rp
 lineAngleReporter.ReportOnlyNewData = false
 
