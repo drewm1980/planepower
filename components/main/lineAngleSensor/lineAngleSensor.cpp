@@ -61,8 +61,8 @@ void LineAngleSensor::updateHook()
 
 	portEboxOut.read( eboxOut );
 
-	data.angle_hor = (eboxOut.analog[ 0 ] - angleHorOffset) * angleHorGain;
-	data.angle_ver = (eboxOut.analog[ 1 ] - angleVerOffset) * angleVerGain;
+	data.angle_hor = (float)((eboxOut.analog[ 0 ] - angleHorOffset) * angleHorGain);
+	data.angle_ver = (float)((eboxOut.analog[ 1 ] - angleVerOffset) * angleVerGain);
 
 	data.ts_trigger = trigger;
 	data.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
