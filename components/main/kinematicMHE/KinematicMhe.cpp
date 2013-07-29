@@ -11,11 +11,11 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+/// Size of the IMU data buffer size
 #define MAX_NUM_IMU_SAMPLES 100
 
 KinematicMhe::KinematicMhe(std::string name)
 	: TaskContext(name, PreOperational)
-//	  , portMcuHandlerData(ConnPolicy::buffer( MAX_NUM_IMU_SAMPLES ))
 {
 	addEventPort("trigger", portTrigger)
 		.doc("Trigger port");
@@ -25,6 +25,8 @@ KinematicMhe::KinematicMhe(std::string name)
 		.doc("Encoder data");
 	addPort("ledTrackerData", portLEDTrackerData)
 		.doc("LED Tracker data");
+	addPort("lasData", portLASData)
+		.doc("Line angle sensor data");
 	addPort("debugData", portDebugData)
 		.doc("Debugging data");
 
@@ -33,6 +35,7 @@ KinematicMhe::KinematicMhe(std::string name)
 	debugData.enc_data.resize(3, 0.0);
 	debugData.cam_markers.resize(12, 0.0);
 	debugData.cam_pose.resize(12, 0.0);
+	debugData.las_data.resize(2, 0.0);
 
 	portDebugData.setDataSample( debugData );
 	portDebugData.write( debugData );
@@ -87,6 +90,8 @@ void KinematicMhe::updateHook()
 		for (unsigned i = 0; i < camData.weights.size(); ++i)
 			numMarkers += (camData.weights[ i ] > 0.0);
 
+	FlowStatus lasStatus = portLASData.read( lasData );
+
 	//
 	// Prepare data for logging
 	//
@@ -118,10 +123,14 @@ void KinematicMhe::updateHook()
 	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_markers.begin());
 	copy(camData.pose.begin(), camData.pose.end(), debugData.cam_pose.begin());
 
+	debugData.las_data[ 0 ] = lasData.angle_hor;
+	debugData.las_data[ 1 ] = lasData.angle_ver;
+
 	// Very basic debugging
 	debugData.num_imu_samples = numImuSamples;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (numMarkers > 6);
+	debugData.num_las_samples = (lasStatus == NewData);
 
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

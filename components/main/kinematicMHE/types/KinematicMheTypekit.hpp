@@ -21,12 +21,14 @@ namespace boost
 			a & make_nvp("num_imu_samples", l.num_imu_samples);
 			a & make_nvp("num_enc_samples", l.num_enc_samples);
 			a & make_nvp("num_cam_samples", l.num_cam_samples);
+			a & make_nvp("num_las_samples", l.num_las_samples);
 
 			a & make_nvp("imu_first", l.imu_first);
 			a & make_nvp("imu_avg", l.imu_avg);
 			a & make_nvp("enc_data", l.enc_data);
 			a & make_nvp("cam_markers", l.cam_markers);
 			a & make_nvp("cam_pose", l.cam_pose);
+			a & make_nvp("las_data", l.las_data);
 		}
 	}
 }
