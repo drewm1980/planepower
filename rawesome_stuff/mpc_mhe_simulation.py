@@ -62,9 +62,8 @@ for name in ['dx','dy','dz']: mpcWeights[name] *= 5e-1
 Tf = 500.0   # Simulation duration
 
 # Reference parameters
-refP = {'r0':1.2,
-        'ddelta0':2*numpy.pi,
-        'z0':0.1}
+refP = {'r0':2,
+        'ddelta0':2*numpy.pi}
 
 # utility function
 def getDeltaRange(delta0, kRange):
@@ -76,7 +75,8 @@ def getDeltaRangeMpc(delta0):
 
 # Create a sim and initalize it
 sim = rawe.RtIntegrator(daeSim, ts=Ts, options=MHE.mheIntOpts)
-steadyState,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'], refP['z0'])
+steadyState,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
+
 sim.x = steadyState
 sim.z = steadyState
 sim.u = steadyState
