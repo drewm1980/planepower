@@ -166,7 +166,7 @@ current_time = 0
 
 pbb = ProtobufBridge()
 log = []
-steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3, refP['z0']-0.5)
+steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3)
 while current_time < Tf:
     # run MHE
     mheIt = 0
