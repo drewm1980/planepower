@@ -3,11 +3,13 @@
 import numpy
 import time
 import rawe
+import matplotlib.pyplot as plt
 
 import NMPC
 import MHE
 from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
+from mpc_mhe_utils import Plotter
 from rawe.models.arianne_conf import makeConf
 import carouselModel
 from rawekite.carouselSteadyState import getSteadyState
@@ -55,11 +57,11 @@ mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1.0
 mpcWeights = {}
 for name in mpcSigmas:
     mpcWeights[name] = 1.0/mpcSigmas[name]**2
-#for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
-for name in ['dx','dy','dz']: mpcWeights[name] *= 5e-1
+for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
+for name in ['dx','dy','dz']: mpcWeights[name] *= 1e1
 
 ## Simulation parameters
-Tf = 500.0   # Simulation duration
+Tf = 50.0   # Simulation duration
 
 # Reference parameters
 refP = {'r0':2,
@@ -200,13 +202,17 @@ while current_time < Tf:
             break
         assert mpcIt < 100, "mpc took too may iterations"
 
+    mheRT.log()    
+    mpcRT.log()
     # set the next control
     sim.u = mpcRT.u[0,:]
-
+    
     # first compute the new final full measurement
     yxNsim = mheRT.computeYX(sim.x)
     yuNsim = mheRT.computeYU(sim.u)
-
+    
+    sim.log(new_x=sim.x,new_u=sim.u,new_y=mheRT.y[-1,:],new_yN=mheRT.yN,new_out=sim.getOutputs())
+    
     # send the protobuf and log the message
     pbb.setMhe(mheRT)
     pbb.setMpc(mpcRT)
@@ -219,7 +225,7 @@ while current_time < Tf:
            mheRT.getKKT(), mheIt, mheRT.preparationTime + mheRT.feedbackTime,
            mpcRT.getKKT(), mpcIt, mpcRT.preparationTime + mpcRT.feedbackTime)
     sim.step()
-    time.sleep(Ts)
+#    time.sleep(Ts)
 
     # first compute the final partial measurement
     mheRT.shiftXZU(strategy='copy', xEnd=mpcRT.x[1,:], uEnd=mpcRT.u[0,:])
@@ -244,7 +250,7 @@ while current_time < Tf:
 
     current_time += Ts
 
-import sys; sys.exit()
+#import sys; sys.exit()
 plt.ion()
 
 plotter = Plotter(sim,mheRT,mpcRT)
