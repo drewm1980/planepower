@@ -68,9 +68,11 @@ measurements['time'] = time[start:cut_end:nSamples,:]
 measurements['marker_positions'] = cam_led[start+nSamples:cut_end+nSamples:nSamples,:]
 #measurements['xyz'] = cam_pose[start+nSamples:cut_end+nSamples:nSamples,:]
 measurements['cos_delta'] = enc_data[start:cut_end:nSamples,2]
-measurements['sin_delta'] = enc_data[start:cut_end:nSamples,1]
-measurements['IMU_angular_velocity'] = imu_first[start:cut_end:nSamples,:3]
-measurements['IMU_acceleration'] = imu_first[start:cut_end:nSamples,3:]
+measurements['sin_delta'] = -enc_data[start:cut_end:nSamples,1]
+#measurements['IMU_angular_velocity'] = imu_first[start:cut_end:nSamples,:3]
+#measurements['IMU_acceleration'] = imu_first[start:cut_end:nSamples,3:]
+measurements['IMU_angular_velocity'] = imu_avg[start:cut_end:nSamples,:3]
+measurements['IMU_acceleration'] = imu_avg[start:cut_end:nSamples,3:]
 measurements['aileron'] = control_surf[start:cut_end:nSamples,0]
 measurements['elevator'] = control_surf[start:cut_end:nSamples,2]
 
@@ -118,7 +120,7 @@ steadyState,dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'], ref_
 
 # utility function
 def getDeltaRange(delta0, kRange):
-    return numpy.array([delta0 - k*Ts*refP['ddelta0'] for k in kRange])
+    return numpy.array([delta0 + k*Ts*refP['ddelta0'] for k in kRange])
 def getDeltaRangeMhe(delta0):
     return getDeltaRange(delta0, range(-MHE.mheHorizonN, 1))
 
@@ -133,8 +135,8 @@ sim.p = steadyState
 
 ####### initialize MHE #########
 # x/z/u
-#delta0 = numpy.arctan2(measurements['sin_delta'][0],measurements['cos_delta'][0])
-delta0 = enc_data[start,0]
+delta0 = numpy.arctan2(measurements['sin_delta'][0],measurements['cos_delta'][0])
+#delta0 = enc_data[start,0]
 
 delta[:21*4:4]-getDeltaRange(delta0,range(MHE.mheHorizonN+1))
 
@@ -168,23 +170,52 @@ mheRT.yN = numpy.concatenate([numpy.array([measurements[name][mheRT.ocp.N]]).fla
 print y[0,:12]-mheRT.y[0,:12]
 print y[0,-9:-3]-mheRT.y[0,-9:-3]
 
-plt.figure()
-plt.subplot(2,2,1)
-color = ['b','r','k']
-for k in range(3):
-    plt.plot(y[:,2*k],y[:,2*k+1],'x'+color[k])
-    plt.plot(mheRT.y[:,2*k],mheRT.y[:,2*k+1],'.'+color[k])
-plt.plot([0,0],[1200,1200],linewidth=0)
-plt.grid('on')
-plt.subplot(2,2,2)
-for k in range(3):
-    plt.plot(y[:,2*k+6],y[:,2*k+7],'x'+color[k])
-    plt.plot(mheRT.y[:,2*k+6],mheRT.y[:,2*k+7],'.'+color[k])
-plt.plot([0,0],[1200,1200],linewidth=0)
-plt.grid('on')
 
-assert(1==0)
+def plot(y,y_hat):
 
+    plt.figure()
+    plt.subplot(2,2,1)
+    plt.plot([0,1200],[0,1200],linewidth=0)
+    color = ['b','r','k']
+    for k in range(3):
+        plt.plot(y[:,2*k],y[:,2*k+1],'x'+color[k])
+        plt.plot(y_hat[:,2*k],y_hat[:,2*k+1],'.'+color[k])
+    plt.grid('on')
+    plt.subplot(2,2,2)
+    plt.plot([0,1200],[0,1200],linewidth=0)
+    for k in range(3):
+        plt.plot(y[:,2*k+6],y[:,2*k+7],'x'+color[k])
+        plt.plot(y_hat[:,2*k+6],y_hat[:,2*k+7],'.'+color[k])
+    plt.grid('on')
+    
+    
+    plt.figure()
+    plt.subplot(2,1,1)
+    color = ['b','r','k']
+    for k in range(3):
+        plt.plot(y[:,k+14],'x'+color[k])
+        plt.plot(y_hat[:,k+14],'.'+color[k])
+    plt.grid('on')
+    plt.subplot(2,1,2)
+    for k in range(3):
+        plt.plot(y[:,k+17],'x'+color[k])
+        plt.plot(y_hat[:,k+17],'.'+color[k])
+    plt.grid('on')
+    
+    plt.figure()
+    for k in range(2):
+        plt.plot(y[:,k+12],'x'+color[k])
+        plt.plot(y_hat[:,k+12],'.'+color[k])
+    plt.grid('on')
+    
+    plt.figure()
+    for k in range(2):
+        plt.plot(y[:,k+20],'x'+color[k])
+        plt.plot(y_hat[:,k+20],'.'+color[k])
+    plt.grid('on')
+
+plot(y,mheRT.y)
+#assert(1==0)
 
 # weights
 Weight_ = numpy.array([])
@@ -224,9 +255,17 @@ while current_time < time[-1]:
         mheRT.feedbackStep()
         mheIt += 1
         print mheRT.getKKT()
+#        break
         if mheRT.getKKT() < 1e-9:
             break
         assert mheIt < 100, "mhe took too may iterations"
+        
+    y = numpy.zeros((mheRT.ocp.N,ny))
+    for k in range(mheRT.ocp.N):
+        y[k,:] = numpy.concatenate([mheRT.computeYX(mheRT.x[k,:]),
+                                          numpy.array([mheRT.computeYU(mheRT.u[k,:])])])
+
+    plot(y,mheRT.y)
     assert(1==0)
     mheRT.log()    
 

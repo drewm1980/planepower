@@ -35,14 +35,14 @@ def makeModel(conf,propertiesDir='../properties'):
     RIMU = C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'IMU/RIMU.dat')))
 #    print pIMU
 #    print RIMU
-    RIMU = np.eye(3)
-    RIMU[1,1] = RIMU[2,2] = -1
+    RNED = np.eye(3)
+    RNED[1,1] = RNED[2,2] = -1
     ddpIMU_c = ddp - ddelta**2*C.vertcat([x+rA,y,0]) + 2*ddelta*C.vertcat([-dy,dx,0]) + dddelta*C.vertcat([-y,x+rA,0]) + C.vertcat([0,0,g])
     ddpIMU = C.mul(R,ddpIMU_c)
 #    ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
     aBridle = cross(ddt_w_bn_b,pIMU)
-    dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aBridle)
-    dae['IMU_angular_velocity'] = C.mul(RIMU,dae['w_bn_b'])
+    dae['IMU_acceleration'] = C.mul([RNED,RIMU,ddpIMU+aBridle])
+    dae['IMU_angular_velocity'] = C.mul([RNED,RIMU,dae['w_bn_b']])
 
     camConf = {'PdatC1':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/PC1.dat'))),
                'PdatC2':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'cameras/PC2.dat'))),
@@ -52,7 +52,9 @@ def makeModel(conf,propertiesDir='../properties'):
                'pos_marker_body2':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'markers/pos_marker_body2.dat'))),
                'pos_marker_body3':C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'markers/pos_marker_body3.dat')))}
     
-#    for name in ['pos_marker_body1','pos_marker_body2','pos_marker_body3']: camConf[name][1:3] *= -1
+    # Change the markers positions to NED
+    for name in ['pos_marker_body1','pos_marker_body2','pos_marker_body3']: camConf[name][1:3] *= -1
+
     dae['marker_positions'] = camModel.fullCamModel(dae,camConf)
 
     dae['ConstR1'] = dae['e11']*dae['e11'] + dae['e12']*dae['e12'] + dae['e13']*dae['e13'] - 1

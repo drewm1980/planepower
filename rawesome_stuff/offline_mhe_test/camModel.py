@@ -9,11 +9,17 @@ import numpy as np
 import casadi as C
 
 def singleCamModel(p,R,RP,P,pos_marker_body):
+    '''
+    p = [x,y,z] position of the markers
+    R = rotation matrix of the plane
+    RP = calibration matrix?
+    P = calibration?
+    '''
     trans = C.SXMatrix(4,4)
-    R_NED = np.eye(3)
-    R_NED[0,0] = -1
+    R_NED = np.eye(4)
+    R_NED[1,1] = -1
     R_NED[2,2] = -1
-    trans[0:3,3] = C.mul(R_NED,p)
+    trans[0:3,3] = p
     trans[0,0] = 1.0;trans[1,1] = 1.0;trans[2,2] = 1.0;trans[3,3] = 1.0
     #Get the pixel values: multiplication from right to left do:
     # Rotate over the orientation of the BODY
@@ -21,9 +27,9 @@ def singleCamModel(p,R,RP,P,pos_marker_body):
     # Transform (rotate & translate) over the pose of the REFERENCE frame w.r.t. the CAMERA frame: You now have the position of the marker in the camera frame
     # Multiply with the camera projection matrix to get the pixel values
     R_4x4 = C.SXMatrix(4,4)
-    R_4x4[0:3,0:3] = R
+    R_4x4[0:3,0:3] = R.T
     R_4x4[3,3] = 1
-    uvs = C.mul([P,RP,trans,R_4x4,C.vertcat([pos_marker_body,1.0])])
+    uvs = C.mul([P,RP,R_NED,trans,R_4x4,C.vertcat([pos_marker_body,1.0])])
     # Devide by s, which is the homogeneous scaling factor
     uv = uvs[:2]/uvs[2]
     return uv
