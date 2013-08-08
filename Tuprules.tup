@@ -40,7 +40,8 @@ CXXFLAGS_OROCOS_PLUGIN += -fno-strict-aliasing
 
 # Add components paths to include paths
 CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/main
-CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/lowlevel
+CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/carousel1
+CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/carousel2
 
 CPPFLAGS_OROCOS += `pkg-config --cflags orocos-rtt-gnulinux orocos-ocl-gnulinux`
 LDFLAGS_OROCOS += `pkg-config --libs orocos-rtt-gnulinux orocos-ocl-gnulinux`
