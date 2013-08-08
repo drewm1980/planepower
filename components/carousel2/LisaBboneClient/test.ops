@@ -1,0 +1,37 @@
+#!/usr/bin/env deployer
+
+# Import libraries
+import("LisaBboneClient")
+
+# Create components
+loadComponent("client","LisaBboneClient")
+
+# Set properties
+client.HostName           = "10.33.136.55"
+client.DownstreamHostPort = 8888
+client.UpstreamHostPort   = 7777
+
+client.Ts     = 0.5
+client.rtMode = false
+
+# Set activities
+setActivity("client", 0.05, HighestPriority, ORO_SCHED_RT)
+
+# Start component
+client.configure()
+client.start()
+
+loadComponent("reporter","OCL::NetcdfReporting")
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+connectPeers("reporter", "client")
+reporter.reportComponent("client")
+reporter.ReportPolicy = rp
+reporter.ReportFile = "LisaBboneClientTest.nc"
+ 
+reporter.configure()
+reporter.start()
