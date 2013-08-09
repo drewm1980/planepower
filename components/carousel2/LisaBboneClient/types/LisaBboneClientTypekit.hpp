@@ -21,6 +21,15 @@ namespace boost
 			a & make_nvp("accl_x", mht.accl_x);
 			a & make_nvp("accl_y", mht.accl_y);
 			a & make_nvp("accl_z", mht.accl_z);
+
+			a & make_nvp("abs_pressure", mht.abs_pressure);
+			a & make_nvp("diff_pressure", mht.diff_pressure);
+
+			a & make_nvp("airspeed", mht.airspeed);
+
+			a & make_nvp("gps_ecef_x", mht.gps_ecef_x);
+			a & make_nvp("gps_ecef_y", mht.gps_ecef_y);
+			a & make_nvp("gps_ecef_z", mht.gps_ecef_z);
 						
 			a & make_nvp("ts_trigger", mht.ts_trigger);
 			a & make_nvp("ts_elapsed", mht.ts_elapsed);

@@ -298,18 +298,36 @@ void LisaBboneClient::inputDataProcessing()
 	switch_read_write();
 	Data* dPtr = get_read_pointer();
 
-	if(inputStream[ 3 ] == 203)
+	if (inputStream[ 3 ] == 203)
 	{
 		data.gyro_x = (float)dPtr->lisa_plane.imu_gyro_raw.message.gp;
 		data.gyro_y = (float)dPtr->lisa_plane.imu_gyro_raw.message.gq;
 		data.gyro_z = (float)dPtr->lisa_plane.imu_gyro_raw.message.gr;
 	}
 
-	if(inputStream[ 3 ] == 204)
+	if (inputStream[ 3 ] == 204)
 	{
 		data.accl_x = (float)dPtr->lisa_plane.imu_accel_raw.message.ax;
 		data.accl_y = (float)dPtr->lisa_plane.imu_accel_raw.message.ay;
 		data.accl_z = (float)dPtr->lisa_plane.imu_accel_raw.message.az;
+	}
+
+	if (inputStream[ 3 ] == 221)
+	{
+		data.abs_pressure = (float)dPtr->lisa_plane.baro_raw.message.abs;
+		data.diff_pressure = (float)dPtr->lisa_plane.baro_raw.message.diff;
+	}
+
+	if (inputStream[ 3 ] == 57)
+	{
+		data.airspeed = dPtr->lisa_plane.airspeed_ets.message.scaled;
+	}
+
+	if (inputStream[ 3 ] ==  155)
+	{
+		data.gps_ecef_x = (float)dPtr->lisa_plane.gps_int.message.ecef_x;
+		data.gps_ecef_y = (float)dPtr->lisa_plane.gps_int.message.ecef_y;
+		data.gps_ecef_z = (float)dPtr->lisa_plane.gps_int.message.ecef_z;
 	}
 }
 

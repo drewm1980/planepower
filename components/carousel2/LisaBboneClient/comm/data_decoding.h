@@ -38,7 +38,7 @@ typedef union{ //message id 72
 
 	
 typedef union { // id = 1
-		uint8_t raw[155];
+		uint8_t raw[26];
 		struct Status_message {
 			uint8_t error;
 			time_t time;
@@ -56,15 +56,15 @@ typedef union { // id = 2
 			struct timeval tv; //16
 			int8_t new_data;
 		} message;
-	} LisaError;
+	} Beagle_error;
 	
 typedef struct { // sender id = 2
 		Status status;
-		LisaError error;
+		Beagle_error error;
 	} Bone_plane;	
 	
 typedef union { // id = 54
-		uint8_t raw[9];
+		uint8_t raw[41];
 		struct Airspeed_message {
 			float airspeed;
 			float airspeed_sp;
@@ -93,19 +93,19 @@ typedef union { // id = 25
 	} Svinfo;
 	
 typedef union Airspeed_ets { // id = 57
-		uint8_t raw[9];
+		uint8_t raw[33];
 		struct Airspeed_ets_message {
 			uint16_t adc;
 			uint16_t offset;
-			float scaled;
-			time_t time;
-			struct timeval tv;
+			float scaled; //4
+			time_t time; //8
+			struct timeval tv; //16
 			int8_t new_data;
 		} message;
 	} Airspeed_ets;
 	
 typedef union { // id = 155
-		uint8_t raw[9];
+		uint8_t raw[81];
 		struct Gps_int_message {
 			int32_t ecef_x;
 			int32_t ecef_y;
@@ -124,13 +124,13 @@ typedef union { // id = 155
 			uint8_t numsv;
 			uint8_t fix;
 			time_t time;
-			struct timeval tv;
+			struct timeval tv; //16
 			int8_t new_data;
 		} message;
 	} Gps_int;
 	
 typedef union { // id = 221
-		uint8_t raw[9];
+		uint8_t raw[33];
 		struct Baro_raw_message {
 			int32_t abs;
 			int32_t diff;
@@ -141,7 +141,7 @@ typedef union { // id = 221
 	} Baro_raw;
 	
 typedef union { // id = 203
-		uint8_t raw[9];
+		uint8_t raw[37];
 		struct Imu_gyro_message {
 			int32_t gp;
 			int32_t gq;
@@ -153,7 +153,7 @@ typedef union { // id = 203
 	} Imu_gyro_raw;
 	
 typedef union { // id = 204
-		uint8_t raw[9];
+		uint8_t raw[37];
 		struct Imu_accel_message {
 			int32_t ax;
 			int32_t ay;
@@ -165,7 +165,7 @@ typedef union { // id = 204
 	} Imu_accel_raw;
 	
 typedef union { // id = 205
-		uint8_t raw[9];
+		uint8_t raw[37];
 		struct Imu_mag_message {
 			int32_t mx;
 			int32_t my;

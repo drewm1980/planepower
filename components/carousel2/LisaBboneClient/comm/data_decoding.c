@@ -118,7 +118,7 @@ DEC_errCode data_decode(uint32_t pos, uint8_t sender,uint8_t stream[], int lengt
 		case 165: //sender_id of lisa
 			switch(stream[pos]) // the message id of the folowing message
 			{
-				case 25: // Svinfo - NOG DOEN
+				case 25: // Svinfo 
 					pos = data_write(stream, write_data->lisa_plane.svinfo.raw, 8, pos);
 					write_data->lisa_plane.svinfo.message.new_data = 0;
 					break;
@@ -130,8 +130,8 @@ DEC_errCode data_decode(uint32_t pos, uint8_t sender,uint8_t stream[], int lengt
 					pos = data_write(stream, write_data->lisa_plane.airspeed_ets.raw, 8, pos);
 					write_data->lisa_plane.airspeed_ets.message.new_data = 0;
 					break;
-				case 155: // gps_int - 88 bytes
-					pos = data_write(stream, write_data->lisa_plane.gps_int.raw, 8, pos);
+				case 155: // gps_int - 81 bytes
+					pos = data_write(stream, write_data->lisa_plane.gps_int.raw, 56, pos);
 					write_data->lisa_plane.gps_int.message.new_data = 0;
 					break;
 				case 203: // imu_gyro_raw - 48 bytes
