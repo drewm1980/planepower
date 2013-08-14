@@ -1,0 +1,6 @@
+include_rules
+#: test.cpp |> $(CXX) $(CPPFLAGS) $(CXXFLAGS) %f -o %o |> %B
+
+: foreach tcp_client.cpp tcp_server.cpp |> $(CXX) $(CPPFLAGS) $(CXXFLAGS) %f -o %o |> %B
+: foreach udp_client.cpp udp_server.cpp |> $(CXX) $(CPPFLAGS) $(CXXFLAGS) %f -o %o |> %B
+

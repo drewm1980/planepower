@@ -1,2 +1,0 @@
-include_rules
-: test.cpp |> $(CXX) $(CPPFLAGS) $(CXXFLAGS) %f -o %o |> %B
