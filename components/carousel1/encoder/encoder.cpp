@@ -38,6 +38,8 @@ Encoder::Encoder(std::string name)
 	//
 	addEventPort("eboxOut", portEboxOut)
 		.doc("EBOX encoder port");
+	addPort("eboxAnalog", portEboxAnalog)
+		.doc("EBOX analog data port");
 	addPort("data", portEncoderData)
 		.doc("Output port for encoder data");
 		
@@ -74,7 +76,10 @@ bool  Encoder::startHook()
 	timeStampOld = TimeService::Instance()->getTicks();
 
 	omegaFiltNew = omegaFiltOld = 0.0;
-	posAcc = 0.0;
+	posAcc = posRaw = 0.0;
+
+	analogConn = portEboxAnalog.connected();
+	encoderData.dbg_speed_voltage = 0.0;
 	
     return true;
 }
@@ -87,7 +92,17 @@ void  Encoder::updateHook()
 	// TODO Encoder provides the time stamp, too
 	portEboxOut.read( eboxOut );
 	timeStampNew = TimeService::Instance()->getTicks();
+	
+	// Read voltage sent to the carousel for the debugging purposes
+	if (analogConn == true)
+	{
+		portEboxAnalog.read( eboxAnalog );
+		encoderData.dbg_speed_voltage = eboxAnalog.analog[ 0 ];
+	}
+
+	// Read and log the new, raw, position
 	posNew = eboxOut.encoder[ encoderPort ];
+	encoderData.dbg_raw_angle = posNew;
 		
 	// Read elapsed time since the last position reading
 	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
@@ -99,6 +114,12 @@ void  Encoder::updateHook()
 	
 	// Convert encoder ticks to real angle in radians and bound it to -pi.. pi
 	posDeltaReal = (double)posDelta * 2.0 * M_PI / GEAR_RATIO / PULSES_PER_REVOLUTION;
+
+	// Just for debugging, log the raw angle
+	posRaw += posDeltaReal;
+	encoderData.dbg_angle = posRaw;
+
+	// Accumulate and limit the angle
 	posAcc += posDeltaReal;
 	if (posAcc > M_PI)
 		posAcc -= 2.0 * M_PI;

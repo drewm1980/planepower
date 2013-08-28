@@ -9,9 +9,11 @@
 #include <stdint.h>
 typedef uint64_t TIME_TYPE;
 
-// Include SOEM EBOX encoder header
+// Include SOEM EBOX encoder headers
 #include <soem_ebox/soem_ebox/EBOXOut.h>
+#include <soem_ebox/soem_ebox/EBOXAnalog.h>
 
+// Include custom "output" data type header
 #include "types/EncoderDataType.hpp"
 
 /// Encoder class
@@ -42,10 +44,16 @@ protected:
 	RTT::InputPort< soem_ebox::EBOXOut > portEboxOut;
 	/// EBOX encoder data.
 	soem_ebox::EBOXOut eboxOut;
+	
+	/// EBOX analog port
+	RTT::InputPort< soem_ebox::EBOXAnalog > portEboxAnalog;
+	/// EBOX analog port data
+	soem_ebox::EBOXAnalog eboxAnalog;
+	
 	/// Output port for encoder data.
 	RTT::OutputPort< EncoderDataType > portEncoderData;
 	/// Vector that holds measurements.
-	EncoderDataType encoderData;
+	EncoderDataType encoderData; 
 		
 	/// Encoder port, SOEM related.
 	unsigned encoderPort;
@@ -56,8 +64,9 @@ private:
 	TIME_TYPE timeStampOld, timeStampNew, tickStart;
 	double elapsedTime;
 	int32_t posOld, posNew, posDelta;
-	double posDeltaReal, posAcc;
+	double posDeltaReal, posAcc, posRaw;
 	double omegaNew, omegaFiltNew, omegaFiltOld;
+	bool analogConn;
 };
 
 #endif // __ENCODER__

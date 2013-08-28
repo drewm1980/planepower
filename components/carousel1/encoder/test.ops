@@ -35,22 +35,17 @@ setActivity("encoder", 0.0, 99, ORO_SCHED_RT)
 
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
 
-encoder.configure()
-encoder.start()
-
 # voltageController
 import("voltageController")
 loadComponent("voltageController","VoltageController")
 setActivity("voltageController", 0.01, LowestPriority, ORO_SCHED_RT)
 connectPeers("voltageController","soemMaster")
 
-voltageController.configure()
-voltageController.start()
-
 loadComponent("reporter", "OCL::NetcdfReporting")
 setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
-connect("soemMaster.Slave_1001.AnalogIn", "voltageController.eboxAnalog", cp)
+connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
+connect("voltageController.eboxAnalog", "encoder.eboxAnalog", cp)
 
 var ConnPolicy rp
 rp.type = 2
@@ -62,6 +57,16 @@ reporter.ReportPolicy = rp
  
 #(optionally, overwrite the default report file name)
 reporter.ReportFile = "encoderTest.nc"
+
+##
+## Start components
+##
+
+voltageController.configure()
+voltageController.start()
+
+encoder.configure()
+encoder.start()
  
 reporter.configure()
 reporter.start()
