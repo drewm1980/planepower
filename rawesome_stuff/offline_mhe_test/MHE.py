@@ -5,13 +5,13 @@ import carouselModel
 from rawe.models.arianne_conf import makeConf
 #from common_conf import Ts
 
-mheHorizonN = 20
+mheHorizonN = 25
 
 mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
 #mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_RIIA3'
-mheIntOpts['NUM_INTEGRATOR_STEPS'] = 10
-#mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 3
+mheIntOpts['NUM_INTEGRATOR_STEPS'] = 3
+# mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 5
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
 #mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
 #mheIntOpts['UNROLL_LINEAR_SOLVER'] = False
@@ -23,39 +23,52 @@ mheOpts['DISCRETIZATION_TYPE'] = 'MULTIPLE_SHOOTING'
 mheOpts['QP_SOLVER'] = 'QP_QPOASES'
 mheOpts['HOTSTART_QP'] = True
 mheOpts['SPARSE_QP_SOLUTION'] = 'CONDENSING'
-mheOpts['LEVENBERG_MARQUARDT'] = 1e-10
 #mheOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING_U2'
 #mheOpts['MAX_NUM_QP_ITERATIONS'] = '30'
 mheOpts['FIX_INITIAL_STATE'] = False
-#mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = False
-#mheOpts['CG_USE_C99'] = True
 
-# measurements
-measX = ['marker_positions','cos_delta','sin_delta','IMU_angular_velocity','IMU_acceleration']
-measX += ['aileron','elevator']
+# This is somehow mandatory, cause we use it on the real system (always!)
+mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = True
 
+# And we introduce arrival cost computation
+# mheOpts['CG_USE_ARRIVAL_COST'] = True
+
+# Measurements depending only on diff. state variables
+# DO NOT CHANGE THIS ORDER
+measX = ['marker_positions', 'cos_delta', 'sin_delta', 'IMU_angular_velocity', 'IMU_acceleration']
+measX += ['aileron', 'elevator']
+measX += ['r', 'dr', 'ddr']
+
+# Measurements depending only on control variables
 measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-measU = ['dddr']
 
-
-def makeMhe(Ts=0.1,propertiesDir='../../properties'):
+def makeMhe(Ts, propertiesDir = '../../properties', ):
     conf = makeConf()
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
 
     mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yxNames=measX, yuNames=measU)
+    
+    mheConstraintsWhen = 'AT_START'
+#     mheConstraintsWhen = 'AT_END'
 
-    mhe.constrain(mhe['ConstR1'],'==',0, when='AT_START')
-    mhe.constrain(mhe['ConstR2'],'==',0, when='AT_START')
-    mhe.constrain(mhe['ConstR3'],'==',0, when='AT_START')
-    mhe.constrain(mhe['ConstR4'],'==',0, when='AT_START')
-    mhe.constrain(mhe['ConstR5'],'==',0, when='AT_START')
-    mhe.constrain(mhe['ConstR6'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstR1'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['ConstR2'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['ConstR3'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['ConstR4'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['ConstR5'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['ConstR6'], '==', 0, when=mheConstraintsWhen)
 
-    mhe.constrain(mhe['c'],'==',0, when='AT_START')
-    mhe.constrain(mhe['cdot'],'==',0, when='AT_START')
+    mhe.constrain(mhe['c'], '==', 0, when=mheConstraintsWhen)
+    mhe.constrain(mhe['cdot'], '==', 0, when=mheConstraintsWhen)
 
-    mhe.constrain(mhe['ConstDelta'],'==',0, when='AT_START')
+    mhe.constrain(mhe['ConstDelta'],'==',0, when=mheConstraintsWhen)
+    
+#     mhe.constrain(mhe['r'], '==', 1.2, when='AT_START')
+#     mhe.constrain(mhe['r'], '>=', 0.0, when='AT_START')
+#     mhe.constrain(mhe['dr'], '==', 0.0, when='AT_START')
+#     mhe.constrain(mhe['ddr'], '==', 0.0, when='AT_START')
+#     mhe.constrain(mhe['dddr'], '==', 0.0)
 
     return mhe
 
@@ -64,6 +77,7 @@ def makeMheRT(Ts=0.1,propertiesDir='../../properties', cgOptions = None):
         cgOptions= {'CXX':'clang++', 'CC':'clang',
                     'CXXFLAGS':'-O3 -fPIC -finline-functions',
                     'CFLAGS':'-O3 -fPIC -finline-functions'}
+#                     , 'force_export_path':'export_here'}
     mhe = makeMhe(Ts=Ts,propertiesDir=propertiesDir)
     return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
 

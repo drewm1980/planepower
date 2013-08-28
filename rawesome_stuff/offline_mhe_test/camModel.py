@@ -36,13 +36,18 @@ def singleCamModel(p,R,RP,P,pos_marker_body):
     #Jh_cam.generateCode('camModelJacobian.c')
 
 def fullCamModel(dae,conf):
+	
+	# Rotation matrix to convert from NWU to NED frame type
+    R_nwu2ned = np.eye( 3 )
+    R_nwu2ned[1, 1] = R_nwu2ned[2, 2] = -1.0
+	
     PdatC1 = conf['PdatC1']
     PdatC2 = conf['PdatC2']
     RPC1 = conf['RPC1']
     RPC2 = conf['RPC2']
-    pos_marker_body1 = conf['pos_marker_body1']
-    pos_marker_body2 = conf['pos_marker_body2']
-    pos_marker_body3 = conf['pos_marker_body3']
+    pos_marker_body1 = C.mul(R_nwu2ned, conf['pos_marker_body1'])
+    pos_marker_body2 = C.mul(R_nwu2ned, conf['pos_marker_body2'])
+    pos_marker_body3 = C.mul(R_nwu2ned, conf['pos_marker_body3'])
     
     RpC1 = C.DMatrix.eye(4)
     RpC1[0:3,0:3] = RPC1[0:3,0:3].T
@@ -68,6 +73,7 @@ def fullCamModel(dae,conf):
                                     'e21', 'e22', 'e23',
                                     'e31', 'e32', 'e33']]
                       ).reshape((3,3))
+                      
     uv_all = C.vertcat([C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body1)) ,\
                         C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body2)) ,\
                         C.vec(singleCamModel(p,R,RpC1[0:3,:],PC1,pos_marker_body3)) ,\
