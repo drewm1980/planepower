@@ -7,7 +7,11 @@ import matplotlib.pyplot as plt
 
 import NMPC
 import MHE
-from bufStuff.protobufBridgeWrapper import ProtobufBridge
+
+useProtobufBridge = False
+
+if useProtobufBridge:
+    from bufStuff.protobufBridgeWrapper import ProtobufBridge
 
 from mpc_mhe_utils import Plotter
 from rawe.models.arianne_conf import makeConf
@@ -166,8 +170,10 @@ mpcRT.SN = numpy.diag( Q )*10
 # Simulation loop
 current_time = 0
 
-pbb = ProtobufBridge()
-log = []
+if useProtobufBridge:
+	pbb = ProtobufBridge()
+	log = []
+
 steadyState2,_ = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0']+3)
 while current_time < Tf:
     # run MHE
@@ -214,10 +220,11 @@ while current_time < Tf:
     sim.log(new_x=sim.x,new_u=sim.u,new_y=mheRT.y[-1,:],new_yN=mheRT.yN,new_out=sim.getOutputs())
     
     # send the protobuf and log the message
-    pbb.setMhe(mheRT)
-    pbb.setMpc(mpcRT)
-    pbb.setSimState(sim.x, sim.z, sim.u, yxNsim, yuNsim, mheRT.computeOutputs(sim.x,sim.u))
-    log.append( pbb.sendMessage() )
+    if useProtobufBridge:
+		pbb.setMhe(mheRT)
+		pbb.setMpc(mpcRT)
+		pbb.setSimState(sim.x, sim.z, sim.u, yxNsim, yuNsim, mheRT.computeOutputs(sim.x,sim.u))
+		log.append( pbb.sendMessage() )
 
     # step the simulation
     print "sim time: %6.2f | mhe {kkt: %.4e, iter: %2d, time: %.2e} | mpc {kkt: %.4e, iter: %2d, time: %.2e }" \
