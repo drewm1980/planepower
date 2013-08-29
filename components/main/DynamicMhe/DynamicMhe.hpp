@@ -99,7 +99,8 @@ protected:
 	//
 	
 private:
-
+	bool readInputPorts( void );
+	bool writeOutputPorts( void );
 	
 };
 
