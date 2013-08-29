@@ -14,17 +14,25 @@
 //
 // Define some common stuff
 //
-#define NX		ACADO_NX	// # differential states
-#define NU		ACADO_NU	// # control inputs
+#define NX		ACADO_NX	// # differential variables
+#define NXA		ACADO_NXA	// # algebraic variables
+#define NU		ACADO_NU	// # control variables
 #define NP		ACADO_NP	// # user parameters
 #define NY		ACADO_NY	// # measurements, nodes 0.. N - 1
 #define NYN		ACADO_NYN	// # measurements, last node
 #define N 		ACADO_N		// # estimation intervals
 
-#define DELAY_CAM		4   // samples
-
 typedef uint64_t TIME_TYPE;
 
+// Here we import custom data type definitions
+#include "mcuHandler/types/McuHandlerDataType.hpp"
+#include "encoder/types/EncoderDataType.hpp"
+#include "LEDTracker/types/LEDTrackerDataType.hpp"
+#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
+
+#include "types/DynamicMheDataTypes.hpp"
+
+/// Dynamic MHE class
 class DynamicMhe
 	: public RTT::TaskContext
 {
@@ -49,7 +57,46 @@ public:
 	virtual void errorHook( );
 
 protected:
-	
+	//
+	// Input ports
+	//
+
+	/// Input trigger port
+	RTT::InputPort< TIME_TYPE > portTrigger;
+	/// MCU handler data inputs; buffered port
+	RTT::InputPort< McuHandlerDataType > portMcuHandlerData;
+	/// IMU data holder
+	std::vector< McuHandlerDataType > imuData;
+	/// Encoder data input
+	RTT::InputPort< EncoderDataType > portEncoderData;
+	/// Encoder data holder
+	EncoderDataType encData;
+	/// Camera data input
+	RTT::InputPort< LEDTrackerDataType > portLEDTrackerData;
+	/// Camera data holder
+	LEDTrackerDataType camData;
+	/// LAS data input
+	RTT::InputPort< LineAngleSensorDataType > portLASData;
+	/// LAS data holder
+	LineAngleSensorDataType lasData;
+
+	//
+	// Output ports
+	//
+
+	/// Port for the current state estimate
+	RTT::OutputPort< DynamicMheStateEstimate > portStateEstimate;
+	/// Current state estimate data holder
+	DynamicMheStateEstimate stateEstimate;
+
+	/// Output data for debug
+	RTT::OutputPort< DynamicMheHorizon > portDebugData;
+	/// Debug data port holder
+	DynamicMheHorizon debugData;
+
+	//
+	// Properties
+	//
 	
 private:
 

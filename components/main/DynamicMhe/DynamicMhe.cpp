@@ -11,6 +11,8 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+#define DELAY_CAM 4 // samples
+
 DynamicMhe::DynamicMhe(std::string name)
 	: TaskContext(name, PreOperational)
 {
@@ -29,7 +31,7 @@ bool DynamicMhe::startHook()
 
 void DynamicMhe::updateHook()
 {
-	
+	preparationStep();
 }
 
 void DynamicMhe::stopHook()
