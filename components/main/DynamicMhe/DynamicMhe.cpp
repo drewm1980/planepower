@@ -82,19 +82,20 @@ bool DynamicMhe::configureHook()
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
 
-	double weights[ NY ];
-	// TODO read weights from the file and populate array
-	return false;
+	// TODO do nto forget to call memcpy functions here!!!
 
 	//
 	// Configure weights
 	//
+	
+	prepareWeights();
+
 	for (unsigned blk = 0; blk < N; ++blk)
 		for (unsigned el = 0; el < NY; ++el)
-			acadoVariables.S[blk * NY * NY + el * NY + el] = weights[ el ];
+			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
 
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = weights[ el ];
+		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
 	
 	return true;
 }
@@ -282,7 +283,8 @@ bool DynamicMhe::prepareMeasurements( void )
 			{
 				++numMarkers;
 				ledData[ i ] = camData.positions[ i ];
-				ledWeights[ i ] = camData.weights[ i ]; // TODO this has to be from rawesome!!!
+				//ledWeights[ i ] = camData.weights[ i ];
+				ledWeights[ i ] = weight_marker_positions;
 			}
 			else
 			{
@@ -381,6 +383,32 @@ bool DynamicMhe::prepareDebugData( void )
 
 	debugData.las_data[ 0 ] = lasData.angle_hor;
 	debugData.las_data[ 1 ] = lasData.angle_ver;
+
+	return true;
+}
+
+bool DynamicMhe::prepareWeights( void )
+{
+	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
+
+	unsigned offset = NUM_MARKERS;
+	mheWeights[ offset++ ] = weight_cos_delta;
+	mheWeights[ offset++ ] = weight_sin_delta;
+	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_angular_velocity, el++);
+	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_acceleration, el++);
+
+	mheWeights[ offset++ ] = weight_aileron;
+	mheWeights[ offset++ ] = weight_elevator;
+
+	mheWeights[ offset++ ] = weight_r;
+	mheWeights[ offset++ ] = weight_dr;
+	mheWeights[ offset++ ] = weight_ddr;
+
+	mheWeights[ offset++ ] = weight_daileron;
+	mheWeights[ offset++ ] = weight_delevator;
+
+	mheWeights[ offset++ ] = weight_dmotor_torque;
+	mheWeights[ offset++ ] = weight_dddr;
 
 	return true;
 }
