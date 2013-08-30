@@ -3,14 +3,18 @@ import os
 import shutil
 
 import rawe
-import MHE
+
+#
+# We import the MHE that is tested on real measurements, not the one used in simulations
+#
+from offline_mhe_test import MHE
 
 if __name__=='__main__':
     assert len(sys.argv) == 2, \
         'need to call generateMhe.py with the properties directory'
     propsDir = sys.argv[1]
 
-    mhe = MHE.makeMhe(propertiesDir = propsDir)
+    mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = propsDir)
 
     # Options for code compilation
     cgOptions = {
