@@ -107,7 +107,7 @@ protected:
 	double targetCableLength;
 	
 private:
-	bool readInputPorts( void );
+	bool prepareMeasurements( void );
 	bool prepareDebugData( void );
 
 	double ledData[ NUM_MARKERS ];
