@@ -1,20 +1,16 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #ifndef UDP_COMMUNCATION_H_ 
 #define UDP_COMMUNCATION_H_
 
 #include<sys/socket.h>
 #include<arpa/inet.h>
 
-typedef struct 
+struct UDP
 { 
 	struct sockaddr_in si_me;
 	struct sockaddr_in si_other;
 	int fd;
 	int fd_len;
-} UDP;
+};
 
 extern int openUDPSocket(UDP *udp);
 

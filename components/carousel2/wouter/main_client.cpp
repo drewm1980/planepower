@@ -4,9 +4,8 @@
 #include <sys/socket.h>
 
 #include "udp_communication.hpp"
-#include <stdlib.h> //exit(0);
+#include <stdlib.h> 
 #include <ctype.h>
-#include <byteswap.h>
 
 static UDP udp_client;
  
@@ -28,21 +27,19 @@ int32_t getSpeedFromUser(){
 
 int main(int argc, char *argv[])
 {
-	const int port_number = 2000;
-	const char *ip_address = "192.168.0.1";
+	int port_number = 2000;
+	char ip_address[] = "192.168.0.1";
 	printf("Opening client\n");
 	openUDPClientSocket(&udp_client,ip_address,port_number);
-	int i;
 	bool cont=1;
 	while(cont){
 		int32_t n = getSpeedFromUser();
-		int32_t n_swapped = bswap32(int32_t n);
+		int32_t n_swapped = __builtin_bswap32(n);
 
-		if(sendUDPClientData(&udp_client,n_swapped,sizeof(n_swapped)))
+		if(sendUDPClientData(&udp_client, &n_swapped, sizeof(n_swapped)))
 			printf("sending of data failed\n");
 		printf("Continue?\n");
-		char c = 'y';
-		scanf("%b",c);
+		char c = getchar();
 		if(c!='y' || c!='Y') cont=0;
 	}
 	printf("Closing client\n");

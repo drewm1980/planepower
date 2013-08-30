@@ -5,8 +5,6 @@
 
 #include <iostream>
 
-static char FILENAME[] = "udp_communication.c";
-
 using namespace std;
 
 int openUDPClientSocket(UDP *udp_client,char *server_ip,int port)
@@ -87,7 +85,13 @@ int openUDPServerSocket(UDP *udp_server,int port){
 int receiveUDPServerData(UDP *udp_server,void *data,size_t data_len){
 	int recv_len;
 	//blocking !!!
-	if ((recv_len = recvfrom(udp_server->fd, data,data_len, 0, (struct sockaddr *) &(udp_server->si_other), &(udp_server->fd_len))) == -1)
+	recv_len = recvfrom(udp_server->fd, 
+			data,
+			data_len, 
+			0, 
+			(struct sockaddr *) &(udp_server->si_other), 
+			(unsigned int *) &(udp_server->fd_len));
+	if (recv_len==-1)
 	{
 		cout << "recvfrom() failed!" << endl;
 		//error_write(FILENAME,"receiveUDPServerData()","recvfrom() failed");
