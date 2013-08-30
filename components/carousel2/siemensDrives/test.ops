@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("siemensDrives")
+ 
+#Create components
+loadComponent("siemensDrives","SiemensDrives")
+ 
+siemensDrives.configure()
+siemensDrives.start()
