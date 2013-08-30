@@ -4,12 +4,6 @@ import camModel
 import numpy as np
 import os
 
-def cross(a,b):
-    c = C.vertcat([a[1]*b[2]-a[2]*b[1],
-                   a[2]*b[0]-a[0]*b[2],
-                   a[0]*b[1]-a[1]*b[0]])
-    return c
-
 def makeModel(conf,propertiesDir='../properties'):
     dae = rawe.models.carousel(conf)
     (xDotSol, zSol) = dae.solveForXDotAndZ()
@@ -34,7 +28,7 @@ def makeModel(conf,propertiesDir='../properties'):
     pIMU = C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'IMU/pIMU.dat')))
     RIMU = C.DMatrix(np.loadtxt(os.path.join(propertiesDir,'IMU/RIMU.dat')))
     ddpIMU = C.mul(R.T,ddp) - ddelta**2*C.mul(R.T,C.vertcat([x+rA,y,0])) + 2*ddelta*C.mul(R.T,C.vertcat([-dy,dx,0])) + dddelta*C.mul(R.T,C.vertcat([-y,x+rA,0])) + C.mul(R.T,C.vertcat([0,0,g]))
-    aBridle = cross(ddt_w_bn_b,pIMU)
+    aBridle = C.cross(ddt_w_bn_b,pIMU)
     dae['IMU_acceleration'] = C.mul(RIMU,ddpIMU+aBridle)
     dae['IMU_angular_velocity'] = C.mul(RIMU,dae['w_bn_b'])
 

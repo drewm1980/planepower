@@ -23,6 +23,10 @@ namespace boost
 
 			a & make_nvp("ts_trigger", e.ts_trigger);
 			a & make_nvp("ts_elapsed", e.ts_elapsed);
+
+			a & make_nvp("dbg_angle", e.dbg_angle);
+			a & make_nvp("dbg_raw_angle", e.dbg_raw_angle);
+			a & make_nvp("dbg_speed_voltage", e.dbg_speed_voltage);
 		}
 	}
 }

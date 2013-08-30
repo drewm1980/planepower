@@ -1,6 +1,8 @@
 #ifndef __ENCODERDATATYPE__
 #define __ENCODERDATATYPE__
 
+#include <stdint.h>
+
 /// Custom data type for the encoder component
 typedef struct
 {
@@ -14,6 +16,10 @@ typedef struct
 	float omega_filt_rpm;
 	/// Time-stamps: trigger [ticks] and elapsed [sec]
 	double ts_trigger, ts_elapsed;
+	/// A few debug things
+	float dbg_angle;
+	int32_t dbg_raw_angle;
+	float dbg_speed_voltage;
 } EncoderDataType;
 
 #endif // __ENCODERDATATYPE__

@@ -1,1 +1,6 @@
 autogen
+
+whereami.txt
+ocp.o
+acado_*
+solver.hpp

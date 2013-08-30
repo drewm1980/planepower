@@ -7,12 +7,12 @@ CPPFLAGS_OROCOS+=-I../soem_core
 CPPFLAGS_OROCOS+=-Iinclude
 
 LDFLAGS_OROCOS+=-Llib
-LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/lowlevel/soem_master/lib
+LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/carousel1/soem_master/lib
 LDFLAGS_OROCOS+=-lsoem_driver_factory
 
 LDFLAGS_OROCOS+=-L../soem_core
 LDFLAGS_OROCOS+=-lsoem_core
-LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/lowlevel/soem_core
+LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/carousel1/soem_core
 
 : soem_master_component.cpp |> !cxx_orocos |>
 : soem_master_component.o | lib/libsoem_driver_factory.so ../soem_core/libsoem_core.so |> !ld_orocos |> libsoem_master.so

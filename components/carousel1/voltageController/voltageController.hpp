@@ -35,16 +35,16 @@ public:
 protected:
 
 	/// EBOX analog port
-	RTT::OutputPort< soem_ebox::EBOXAnalog  > portEboxAnalog;
+	RTT::OutputPort< soem_ebox::EBOXAnalog > portEboxAnalog;
 	/// EBOX analog port data
 	soem_ebox::EBOXAnalog eboxAnalog;
 	/// "Public" method for setting the voltage
   	bool setVoltage(int channel, double voltage);
 
 private:
-	double					voltage_increment;
-	double					reference_voltage[ 2 ];
-	double					actual_voltage[ 2 ];        
+	double voltage_increment;
+	double reference_voltage[ 2 ];
+	double actual_voltage[ 2 ];
 };
 
 #endif // __VOLTAGECONTROLLER__

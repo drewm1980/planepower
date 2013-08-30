@@ -3,35 +3,39 @@ import os
 import shutil
 
 import rawe
-import MHE
+
+#
+# We import the MHE that is tested on real measurements, not the one used in simulations
+#
+from offline_mhe_test import MHE
 
 if __name__=='__main__':
     assert len(sys.argv) == 2, \
         'need to call generateMhe.py with the properties directory'
     propsDir = sys.argv[1]
 
-    mhe = MHE.makeMhe(propertiesDir=propsDir)
-    cgOptions= {'CXX':'clang++', 'CC':'clang',
-                'CXXFLAGS':'-O3 -fPIC -finline-functions',
-                'CFLAGS':'-O3 -fPIC -finline-functions',
-                'hideSymbols':True}
-    exportpath =  mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
+    mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = propsDir)
 
-    for filename in ['acado_common.h','ocp.o']:
-        fullname = os.path.join(exportpath, filename)
+    # Options for code compilation
+    cgOptions = {
+        'CXX': 'clang++', 'CC': 'clang',
+        'CXXFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
+        'CFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
+        # For OROCOS compilation, this option is mandatory
+        'hideSymbols': True
+    }
+    # Now export the code
+    exportpath = mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
+
+    # Copy the library and the headers to the 
+    for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
+        if filename == 'solver.hpp':
+            fullname = os.path.join(exportpath, 'qpoases/' + filename)
+        else:
+            fullname = os.path.join(exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
-
-    for filename in ['solver.hpp']:
-        fullname = os.path.join(exportpath, 'qpoases', filename)
-        assert os.path.isfile(fullname), fullname+' is not a file'
-        shutil.copy(fullname, filename)
-
-    structs = rawe.utils.mkprotobufs.writeStructs(mhe.dae, 'MHE', mhe.yNames, mhe.yNNames)
-    f = open('mhe_structs.h','w')
-    f.write(structs)
-    f.close()
-
+    
     f = open('whereami.txt','w')
     f.write(exportpath+'\n')
     f.close()

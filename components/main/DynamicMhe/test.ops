@@ -1,0 +1,4 @@
+#!/usr/bin/env deployer
+
+import("DynamicMhe")
+loadComponent("dmhe", "DynamicMhe")

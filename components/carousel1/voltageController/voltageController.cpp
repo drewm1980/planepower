@@ -13,6 +13,8 @@ using namespace soem_ebox;
 #define MIN_TIME_TO_MAX_VOLTAGE 25
 /// SOEM chanel to which the motor controller is connected
 #define MAIN_CAROUSEL_MOTOR_CHANEL 0
+/// This guy enables increment to be a property, use with EXTREME care!!!
+#define DEBUG 0
 
 /// There can be only one!!!! - Nice try to make a singleton
 VoltageController *theVoltageController;
@@ -49,6 +51,14 @@ VoltageController::VoltageController(std::string name)
 		.arg("voltage", "The voltage to put on [channel] (between -10 and 10)");
 
 	//
+	// Add properties
+	//
+#if DEBUG == 666
+	addProperty("increment", voltage_increment)
+		.doc("Only, and only for debugging purposes");
+#endif // DEBUG == 666
+	
+	//
 	// Configure fail-safe procedures
 	//
 	theVoltageController = this;
@@ -57,42 +67,46 @@ VoltageController::VoltageController(std::string name)
 
 bool  VoltageController::configureHook()
 {
-	actual_voltage[ 0 ] = 0.0;
-	actual_voltage[ 1 ] = 0.0;
-	reference_voltage[ 0 ] = 0.0;
-	reference_voltage[ 1 ] = 0.0;
+	actual_voltage[ 0 ]  = actual_voltage[ 1 ] = 0.0;
+	reference_voltage[ 0 ] = reference_voltage[ 1 ] = 0.0;
     
 	return true;
 }
 
 bool VoltageController::startHook()
 {
+	if (getPeriod() < 1e-5)
+	{
+		log( Error ) << "The component must be periodic!" << endlog(); 
+		return false;
+	}
+
+	voltage_increment = MAX_VOLTAGE / MIN_TIME_TO_MAX_VOLTAGE * (this->getPeriod());
+
 	return true;
 }
 
 void VoltageController::updateHook()
 {
+	double inc = voltage_increment;
+
 	for(int channel = 0; channel < 2; channel++)
 	{
-		if (channel == 0)
+		if (channel == 0 && abs( actual_voltage[ channel ] ) > 5.1)
 		{
 			// If main motor, slow stop.
-			voltage_increment = MAX_VOLTAGE / MIN_TIME_TO_MAX_VOLTAGE * (this->getPeriod());
-			if(abs( actual_voltage[ channel ] ) > 5.1)
-			{
-				voltage_increment *= 4;
-			}
+			inc *= 4;
 		}
 
-		if(abs(actual_voltage[ channel ] - reference_voltage[ channel ]) > voltage_increment)
+		if(abs(actual_voltage[ channel ] - reference_voltage[ channel ]) > inc)
 		{
 			if( actual_voltage[channel] < reference_voltage[channel] )
 			{
-				actual_voltage[channel] += voltage_increment;
+				actual_voltage[channel] += inc;
 			}
 			else if( actual_voltage[channel] > reference_voltage[channel] )
 			{
-				actual_voltage[channel] -= voltage_increment;
+				actual_voltage[channel] -= inc;
 			}
 		}
 		else
@@ -101,8 +115,9 @@ void VoltageController::updateHook()
 		}
 		
 		eboxAnalog.analog[ channel ] = actual_voltage[ channel ];
-		// writeAnalog(channel, actual_voltage[ channel ]);
 	}
+
+	// Send data to the port
 	portEboxAnalog.write( eboxAnalog );	
 }
 
