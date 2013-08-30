@@ -1,13 +1,33 @@
 *~
 *#
 .tup
+
+# Ignore SVN shit
+.svn
+
+# No compiled code
 *.pyc
-*.dat
+*.mex*
+
+# No OS X stuff
 .DS_Store
 ._.DS_Store
-*.nc
 
+# No Orocos stuff
 .tb_history
 orocos.log
 
+# OMG, no deb packages!
 *.deb
+
+# No data files
+*.mat
+*.dat
+*.nc
+dataset
+
+# And yeah, no eclipse project products
+*.project
+*.cproject
+*.pydevproject
+*.settings

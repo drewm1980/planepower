@@ -12,6 +12,7 @@ typedef uint64_t TIME_TYPE;
 #include "mcuHandler/types/McuHandlerDataType.hpp"
 #include "encoder/types/EncoderDataType.hpp"
 #include "LEDTracker/types/LEDTrackerDataType.hpp"
+#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
 
 #include "types/KinematicMheDataType.hpp"
 
@@ -54,6 +55,11 @@ protected:
 	RTT::InputPort< LEDTrackerDataType > portLEDTrackerData;
 	/// Camera data holder
 	LEDTrackerDataType camData;
+	/// LAS data input
+	RTT::InputPort< LineAngleSensorDataType > portLASData;
+	/// LAS data holder
+	LineAngleSensorDataType lasData;
+//	std::vector< LineAngleSensorDataType > lasData;
 	/// Output data for debug
 	RTT::OutputPort< KinematicMheDataType > portDebugData;
 	/// Debug data port holder
