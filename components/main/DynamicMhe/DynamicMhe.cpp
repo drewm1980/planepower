@@ -121,39 +121,9 @@ void DynamicMhe::updateHook()
 	portTrigger.read( trigger );
 	debugData.ts_trigger = stateEstimate.ts_trigger = trigger;
 	
-	// Read sensor data
-	if (readInputPorts() == false)
+	// Read and prepare sensor data
+	if (prepareMeasurements() == false)
 		exception();
-
-	//
-	// Prepare the sensor data
-	//
-	
-	unsigned offset = NUM_MARKERS;
-	execY[ offset++ ] = encData.cos_theta;
-	execY[ offset++ ] = -encData.sin_theta; // !!! Sign is inverted !!!
-	// gyro_xyz, accl_xyz
-	for (unsigned i = 0; i < 6; ++i)
-		execY[ offset++ ] = debugData.imu_avg[ i ];
-
-	// Control surfaces; TODO we might skip this!
-	execY[ offset++ ] = debugData.controls_avg[ 0 ]; // TODO check signs
-	execY[ offset++ ] = debugData.controls_avg[ 2 ]; // TODO check signs
-
-	// TODO addPropery:
-
-	
-	// r, dr, ddr
-	execY[ offset++ ] = targetCableLength;
-	execY[ offset++ ] = 0.0;
-	execY[ offset++ ] = 0.0;
-	
-	// controls
-	for (unsigned i = 0; i < NU; ++i)
-		execY[ offset++ ] = 0.0;
-
-	// Copy to execYN
-	for (unsigned i = 0; i < NYN; execYN[ i ] = execY[ i ], i++);
 	
 	//
 	// MHE "state-machine"
@@ -249,6 +219,10 @@ void DynamicMhe::updateHook()
 		debugData.kkt_value = getKKT();
 		debugData.obj_value = getObjective();
 		debugData.n_asc     = getNWSR();
+		
+		// Copy the current state estimate to the output port
+		for (unsigned i = 0; i < NX; ++i)
+			stateEstimate.x_hat[ i ] = acadoVariables.x[N * NX + i];
 	}
 	debugData.solver_status = mheStatus;
 
@@ -285,8 +259,12 @@ void DynamicMhe::errorHook()
 	
 }
 
-bool DynamicMhe::readInputPorts( void )
+bool DynamicMhe::prepareMeasurements( void )
 {	
+	//
+	// Read sensor ports
+	//
+	
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
 	while((portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData) &&
@@ -353,6 +331,33 @@ bool DynamicMhe::readInputPorts( void )
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
 	debugData.num_las_samples = (lasStatus == NewData);
+	
+	//
+	// Prepare the sensor data
+	//
+	
+	unsigned offset = NUM_MARKERS;
+	execY[ offset++ ] = encData.cos_theta;
+	execY[ offset++ ] = -encData.sin_theta; // !!! Sign is inverted !!!
+	// gyro_xyz, accl_xyz
+	for (unsigned i = 0; i < 6; ++i)
+		execY[ offset++ ] = debugData.imu_avg[ i ];
+
+	// Control surfaces; TODO we might skip this!
+	execY[ offset++ ] = debugData.controls_avg[ 0 ]; // TODO check signs
+	execY[ offset++ ] = debugData.controls_avg[ 2 ]; // TODO check signs
+	
+	// r, dr, ddr
+	execY[ offset++ ] = targetCableLength;
+	execY[ offset++ ] = 0.0;
+	execY[ offset++ ] = 0.0;
+	
+	// controls
+	for (unsigned i = 0; i < NU; ++i)
+		execY[ offset++ ] = 0.0;
+
+	// Copy to execYN
+	for (unsigned i = 0; i < NYN; execYN[ i ] = execY[ i ], i++);
 
 	return true;
 }
