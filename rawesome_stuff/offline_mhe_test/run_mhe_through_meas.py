@@ -183,18 +183,25 @@ measU = MHE.measU
 #
 measCableLength = 2.0
 
+#
+# Speed for the steady state calculation
+#
+steadyStateSpeed = -4.0
+#steadyStateSpeed = -ddelta[ 0 ]
+
 # Reference parameters
 refP = {'r0': measCableLength,
-        'ddelta0':-ddelta[0],
+		'ddelta0': steadyStateSpeed,
         }
 
-ref_dict = {
-            'z':(-10,10),
-            'aileron':(0,0),
-            'elevator':(0,0),
-            'rudder':(0,0),
-            'flaps':(0,0),
-            }
+# Latest
+#ref_dict = {
+#            'z':(-10,10),
+#            'aileron':(0,0),
+#            'elevator':(0,0),
+#            'rudder':(0,0),
+#            'flaps':(0,0),
+#            }
 #ref_dict = {
 #            'z':(0,0),
 #            'aileron':(-1,1),
@@ -204,7 +211,7 @@ ref_dict = {
 #            }
 
 # Get the steady state
-steadyState,dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'], ref_dict)
+steadyState,dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
 
 # Utility functions
 def getDeltaRange(delta0, kRange):
