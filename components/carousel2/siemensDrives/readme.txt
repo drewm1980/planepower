@@ -1,1 +1,2 @@
-Add documentation for component siemensDrives in here!!!
+This component handles all communication to and from
+the siemens motor drives via the PLC.
