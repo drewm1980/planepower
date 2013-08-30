@@ -4,6 +4,8 @@ import shutil
 
 import rawe
 
+import numpy as np
+
 #
 # We import the MHE that is tested on real measurements, not the one used in simulations
 #
@@ -36,6 +38,19 @@ if __name__=='__main__':
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
     
+    # Generate info file 
     f = open('whereami.txt','w')
     f.write(exportpath+'\n')
     f.close()
+    
+    # Generate a data file with weights
+    fw = open("mhe_weights.h", "w")
+    fw.write(
+'''
+#ifndef MHE_WEIGHTS
+#define MHE_WEIGHTS
+''')
+    for k, v in MHE.mheWeights.items():
+        fw.write("#define weight_" + str( k ) + " " + str( v ) + "\n")
+    fw.write("#endif // MHE_WEIGHTS\n")
+    fw.close()

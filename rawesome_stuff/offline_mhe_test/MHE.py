@@ -65,7 +65,7 @@ measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 # New, verified with experimental data
 # Order must be EXACTLY in the same order as [measX measU]
 mheSigmas = {
-				'marker_positions':5e0,
+				'marker_positions': 5e0,
 				
 				'cos_delta': 1e-2, 'sin_delta': 1e-2,
 				
