@@ -22,6 +22,11 @@
 #define NYN		ACADO_NYN	// # measurements, last node
 #define N 		ACADO_N		// # estimation intervals
 
+// # delay samples for the cameras; maybe to define this as a property?
+#define NDELAY 4
+// # markers
+#define NUM_MARKERS 12
+
 typedef uint64_t TIME_TYPE;
 
 // Here we import custom data type definitions
@@ -97,11 +102,20 @@ protected:
 	//
 	// Properties
 	//
+
+	/// Target cable length, for which we fake the measurement
+	double targetCableLength;
 	
 private:
 	bool readInputPorts( void );
-	bool writeOutputPorts( void );
-	
+	bool prepareDebugData( void );
+
+	double ledData[ NUM_MARKERS ];
+	double ledWeights[ NUM_MARKERS ];
+
+	unsigned runCnt;
+	double execY[ NY ], execYN[ NYN ];
+
 };
 
 #endif // DYNAMIC_MHE_HPP

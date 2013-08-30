@@ -23,6 +23,8 @@ typedef struct
 	double exec_fdb, exec_prep;
 	/// Ready indicator
 	bool ready;
+	/// Error code
+	int solver_status;
 	/// Performance indicators
 	double kkt_value, obj_value, n_asc;
 
@@ -51,6 +53,8 @@ typedef struct
 	std::vector< double > cam_pose;
 	/// Horizontal and vertical angle from LAS [V]; TODO Convert to [rad]
 	std::vector< double > las_data;
+	/// Averaged controls
+	std::vector< double > controls_avg;
 } DynamicMheHorizon;
 
 #endif // __DYNAMIC_MHE_DATA_TYPES__

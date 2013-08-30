@@ -36,6 +36,7 @@ namespace boost
 
 			a & make_nvp("ready", l.ready);
 
+			a & make_nvp("solver_status", l.solver_status);
 			a & make_nvp("kkt_value", l.kkt_value);
 			a & make_nvp("obj_value", l.obj_value);
 			a & make_nvp("n_asc", l.n_asc);
@@ -59,6 +60,7 @@ namespace boost
 			a & make_nvp("cam_markers", l.cam_markers);
 			a & make_nvp("cam_pose", l.cam_pose);
 			a & make_nvp("las_data", l.las_data);
+			a & make_nvp("controls_avg", l.controls_avg);
 		}
 	}
 }
