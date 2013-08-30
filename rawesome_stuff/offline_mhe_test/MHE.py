@@ -5,6 +5,10 @@ import carouselModel
 from rawe.models.arianne_conf import makeConf
 #from common_conf import Ts
 
+# Sampling time, aka 50 Hz
+samplingTime = 0.02
+
+# Horizon length
 mheHorizonN = 25
 
 mheIntOpts = rawe.RtIntegratorOptions()
@@ -42,12 +46,62 @@ measX += ['r', 'dr', 'ddr']
 # Measurements depending only on control variables
 measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
-def makeMhe(Ts, propertiesDir = '../../properties', ):
+#
+# Standard deviations for measurements
+#
+
+# Mario's
+# mheSigmas = {'cos_delta':1e-1, 'sin_delta':1e-1,
+#              'IMU_angular_velocity':1.0,
+#              'IMU_acceleration':10.0,
+#              'marker_positions':1e2,
+#              'aileron':1e-2,
+#              'elevator':1e-2,
+#              'daileron':1e-4,
+#              'delevator':1e-4,
+#              'dmotor_torque':1e-4,
+#              'dddr':1e-4}
+
+# New, verified with experimental data
+# Order must be EXACTLY in the same order as [measX measU]
+mheSigmas = {
+				'marker_positions':5e0,
+				
+				'cos_delta': 1e-2, 'sin_delta': 1e-2,
+				
+				'IMU_angular_velocity': 1e-2,
+				'IMU_acceleration': 1e-2,
+             
+             	'aileron': 1e-2,
+			 	'elevator': 1e-2,
+             
+             	'r': 1e-2, 'dr': 1e-2, 'ddr': 1e-2,
+			 	
+			 	'daileron': 1e-2, 'delevator': 1e-2,
+             
+             	'dmotor_torque': 1e0,
+             
+			 	'dddr': 1e-4
+			 }
+
+# Weights
+mheWeightScaling = 1e-3
+
+mheWeights = {}
+for sigma in mheSigmas:
+	mheWeights[ sigma ] = mheWeightScaling / mheSigmas[ sigma ] ** 2
+
+def makeMhe(Ts = None, propertiesDir = '../../properties', ):
     conf = makeConf()
     conf['stabilize_invariants'] = False
-    dae = carouselModel.makeModel(conf,propertiesDir=propertiesDir)
+    dae = carouselModel.makeModel(conf, propertiesDir = propertiesDir)
+    
+    if Ts is None:
+    	execSamplingTime = samplingTime
+    else:
+		execSamplingTime = Ts
 
-    mhe = rawe.Mhe(dae, N=mheHorizonN, ts=Ts, yxNames=measX, yuNames=measU)
+    mhe = rawe.Mhe(dae, N = mheHorizonN, ts = execSamplingTime, yxNames = measX, yuNames = measU)
     
     mheConstraintsWhen = 'AT_START'
 #     mheConstraintsWhen = 'AT_END'
@@ -75,8 +129,8 @@ def makeMhe(Ts, propertiesDir = '../../properties', ):
 def makeMheRT(Ts=0.1,propertiesDir='../../properties', cgOptions = None):
     if cgOptions is None:
         cgOptions= {'CXX':'clang++', 'CC':'clang',
-                    'CXXFLAGS':'-O3 -fPIC -finline-functions',
-                    'CFLAGS':'-O3 -fPIC -finline-functions'}
+                    'CXXFLAGS':'-O3 -fPIC -finline-functions -march=native',
+                    'CFLAGS':'-O3 -fPIC -finline-functions -march=native'}
 #                     , 'force_export_path':'export_here'}
     mhe = makeMhe(Ts=Ts,propertiesDir=propertiesDir)
     return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)

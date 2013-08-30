@@ -412,48 +412,19 @@ def visualize(projY, projYN, measY, measYN):
 print "\n\n*** Alright, now we start the simulation ***\n\n"
 
 #
-# Standard deviations for the measurements
-#
-# mheSigmas = {'cos_delta':1e-1, 'sin_delta':1e-1,
-#              'IMU_angular_velocity':1.0,
-#              'IMU_acceleration':10.0,
-#              'marker_positions':1e2,
-#              'aileron':1e-2,
-#              'elevator':1e-2,
-#              'daileron':1e-4,
-#              'delevator':1e-4,
-#              'dmotor_torque':1e-4,
-#              'dddr':1e-4}
-
-mheSigmas = {'cos_delta':1e-2, 'sin_delta':1e-2,
-             'IMU_angular_velocity':1e-2,
-             'IMU_acceleration':1e-2,
-             'marker_positions':5e0,
-             'aileron':1e-2,
-             'elevator':1e-2,
-             'daileron':1e-2,
-             'delevator':1e-2,
-             'dmotor_torque':1e0,
-             'r': 1e-2,
-             'dr': 1e-2,
-             'ddr': 1e-2,
-             'dddr': 1e-4
-             }
-
-#
 # Define actual weights for the MHE
 #
 
 diagWeightNY = numpy.array([])
 for name in mheRT.ocp.yxNames + mheRT.ocp.yuNames:
 	diagWeightNY = numpy.append(diagWeightNY, 
-			numpy.ones(mheRT.ocp.dae[name].shape) * (1.0 / mheSigmas[name] ** 2))
+			numpy.ones(mheRT.ocp.dae[name].shape) * MHE.mheWeights[ name ])
 mheNY = diagWeightNY.shape[ 0 ]
 
 diagWeightNYN = numpy.array([])
 for name in mheRT.ocp.yxNames:
 	diagWeightNYN = numpy.append(diagWeightNYN,
-			numpy.ones(mheRT.ocp.dae[name].shape) * (1.0 / mheSigmas[name] ** 2))
+			numpy.ones(mheRT.ocp.dae[name].shape) * MHE.mheWeights[ name ])
 mheNYN = diagWeightNYN.shape[ 0 ]
 
 mheRT.y = numpy.zeros(mheRT.y.shape)
