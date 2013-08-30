@@ -81,12 +81,19 @@ bool DynamicMhe::configureHook()
 	checkPortConnection( portEncoderData );
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
+	
+	return true;
+}
 
+bool DynamicMhe::startHook()
+{
 	//
 	// Clean the ACADO solver structures
 	//
 	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
 	memset(&acadoVariables, 0, sizeof( acadoVariables ));
+
+	// NOTE: Above code cleans everything from the solver!!!
 
 	initializeSolver();
 
@@ -96,20 +103,6 @@ bool DynamicMhe::configureHook()
 	//
 	
 	prepareWeights();
-
-	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = 0; el < NY; ++el)
-			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
-
-	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
-	
-	return true;
-}
-
-bool DynamicMhe::startHook()
-{
-	// TODO Initialize the nodes!!!
 
 	runCnt = 0;
 
@@ -166,7 +159,10 @@ void DynamicMhe::updateHook()
 			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
 		}
 
-		// TODO run preparation step
+		// Initialize nodes:
+		prepareInitialGuess();
+
+		// TODO run preparation step: this has to be restructured!!!
 
 		runMhe = true;
 		++runCnt;
@@ -416,10 +412,56 @@ bool DynamicMhe::prepareWeights( void )
 	mheWeights[ offset++ ] = weight_dmotor_torque;
 	mheWeights[ offset++ ] = weight_dddr;
 
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NY; ++el)
+			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
+
+	for (unsigned el = 0; el < NYN; ++el)
+		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
+
+	// XXX A bit off topic, but must be done somewhere :p
 	for (unsigned el = 0; el < NY; execY[ el++ ] = 0.0);
 	for (unsigned el = 0; el < NYN; execYN[ el++ ] = 0.0);
 
 	return true;
+}
+
+bool DynamicMhe::prepareInitialGuess( void )
+{
+	//
+	// Initialize differential variables
+	// NOTE Must be called AFTER y and yN buffers are filled in!
+	//
+
+	// Last two states are cos_delta and sin_delta which have to be initialized
+	// from measurements
+	for (unsigned blk = 0; blk < N + 1; ++blk)
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.x[blk * NX + el] = ss_x[ el ];
+
+	// Initialize cos_delta and sin_delta from measurements
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
+	// Last node must be initialized from yN
+	for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
+
+	//
+	// Initialize algebraic variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NXA; ++el)
+			acadoVariables.z[blk * NXA + el] = ss_z[ el ];
+	
+	//
+	// Initialize control variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NU; ++el)
+			acadoVariables.u[blk * NU + el] = ss_u[ el ];
+
+	return false;
 }
 
 ORO_CREATE_COMPONENT( DynamicMhe )
