@@ -103,6 +103,8 @@ bool DynamicMhe::startHook()
 {
 	// TODO Initialize the solver
 
+	// TODO Initialize the nodes!!!
+
 	runCnt = 0;
 
 	// TODO clean them to zero in conf hook; execY, execYN
@@ -229,6 +231,10 @@ void DynamicMhe::updateHook()
 		runMhe = true;
 	}
 
+	//
+	// Run the MHE
+	//
+
 	int mheStatus = 0;
 	if (runMhe == true)
 	{
@@ -239,20 +245,24 @@ void DynamicMhe::updateHook()
 		mheStatus = feedbackStep();
 
 		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
-		debugData.solver_status = mheStatus;
+		
 		debugData.kkt_value = getKKT();
 		debugData.obj_value = getObjective();
 		debugData.n_asc     = getNWSR();
 	}
+	debugData.solver_status = mheStatus;
 
+	//
 	// Output the current state estimate
+	//
 	stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portStateEstimate.write( stateEstimate );
 
 	//
 	// Copy all debug data to the debug port
 	//
-
+	
+	prepareDebugData();
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
 
@@ -349,7 +359,7 @@ bool DynamicMhe::readInputPorts( void )
 
 bool DynamicMhe::prepareDebugData( void )
 {
-	debugData.x.assign(acadoVariables.x, acadoVariables.x + (N + 1));
+	debugData.x.assign(acadoVariables.x, acadoVariables.x + (N + 1) * NX);
 	debugData.u.assign(acadoVariables.u, acadoVariables.u + N * NU);
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
