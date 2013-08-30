@@ -26,8 +26,8 @@ typedef uint64_t TIME_TYPE;
 
 // Include MHE data types
 #include "DynamicMhe/types/DynamicMheDataTypes.hpp"
-
-//#include "types/DynamicMpcDataTypes.hpp"
+// Include NMPC data types
+#include "types/DynamicMpcDataTypes.hpp"
 
 class DynamicMpc
 	: public RTT::TaskContext
@@ -68,9 +68,14 @@ protected:
 	//
 	
 	/// Output port with control signals
-	RTT::InputPort< std::vector< double > > portControls;
+	RTT::OutputPort< std::vector< double > > portControls;
 	/// control data holder
 	std::vector< double > controls;
+
+	/// Debug port
+	RTT::OutputPort< DynamicMpcHorizon > portDebugData;
+	/// Debug data holder
+	DynamicMpcHorizon debugData;
 	
 	//
 	// Properties
