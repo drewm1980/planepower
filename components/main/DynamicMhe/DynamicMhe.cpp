@@ -82,10 +82,17 @@ bool DynamicMhe::configureHook()
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
 
-	// TODO do nto forget to call memcpy functions here!!!
+	//
+	// Clean the ACADO solver structures
+	//
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables, 0, sizeof( acadoVariables ));
+
+	initializeSolver();
 
 	//
-	// Configure weights
+	// Configure weights, ATM they are fixed, in a header file,
+	// which exported in rawesome
 	//
 	
 	prepareWeights();
@@ -102,13 +109,9 @@ bool DynamicMhe::configureHook()
 
 bool DynamicMhe::startHook()
 {
-	// TODO Initialize the solver
-
 	// TODO Initialize the nodes!!!
 
 	runCnt = 0;
-
-	// TODO clean them to zero in conf hook; execY, execYN
 
 	return true;
 }
@@ -283,6 +286,9 @@ bool DynamicMhe::prepareMeasurements( void )
 			{
 				++numMarkers;
 				ledData[ i ] = camData.positions[ i ];
+
+				// We do not use weights from Andrew, but
+				// from rawesome simulation...
 				//ledWeights[ i ] = camData.weights[ i ];
 				ledWeights[ i ] = weight_marker_positions;
 			}
@@ -409,6 +415,9 @@ bool DynamicMhe::prepareWeights( void )
 
 	mheWeights[ offset++ ] = weight_dmotor_torque;
 	mheWeights[ offset++ ] = weight_dddr;
+
+	for (unsigned el = 0; el < NY; execY[ el++ ] = 0.0);
+	for (unsigned el = 0; el < NYN; execYN[ el++ ] = 0.0);
 
 	return true;
 }
