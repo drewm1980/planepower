@@ -12,26 +12,20 @@ if __name__=='__main__':
 
     nmpc = NMPC.makeNmpc(propertiesDir=propsDir)
     cgOptions= {'CXX':'clang++', 'CC':'clang',
-                'CXXFLAGS':'-O3 -fPIC -finline-functions',
-                'CFLAGS':'-O3 -fPIC -finline-functions',
+                'CXXFLAGS':'-O3 -fPIC -finline-functions -march=native',
+                'CFLAGS':'-O3 -fPIC -finline-functions -march=native',
                 'hideSymbols':True}
     exportpath =  nmpc.exportCode(NMPC.mpcOpts, NMPC.mpcIntOpts, cgOptions, {})
 
-    for filename in ['acado_common.h','ocp.o']:
-        fullname = os.path.join(exportpath, filename)
+    # Copy the library and the headers to output location
+    for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
+        if filename == 'solver.hpp':
+            fullname = os.path.join(exportpath, 'qpoases/' + filename)
+        else:
+            fullname = os.path.join(exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
-
-    for filename in ['solver.hpp']:
-        fullname = os.path.join(exportpath, 'qpoases', filename)
-        assert os.path.isfile(fullname), fullname+' is not a file'
-        shutil.copy(fullname, filename)
-
-    structs = rawe.utils.mkprotobufs.writeStructs(nmpc.dae, 'NMPC', nmpc.yNames, nmpc.yNNames)
-    f = open('nmpc_structs.h','w')
-    f.write(structs)
-    f.close()
-
+    
     f = open('whereami.txt','w')
     f.write(exportpath+'\n')
     f.close()

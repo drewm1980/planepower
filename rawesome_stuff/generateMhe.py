@@ -34,7 +34,7 @@ if __name__=='__main__':
     # Now export the code
     exportpath = mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
 
-    # Copy the library and the headers to the 
+    # Copy the library and the headers to output location
     for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
         if filename == 'solver.hpp':
             fullname = os.path.join(exportpath, 'qpoases/' + filename)
