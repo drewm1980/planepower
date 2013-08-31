@@ -87,9 +87,7 @@ bool DynamicMhe::configureHook()
 
 bool DynamicMhe::startHook()
 {
-	//
 	// Clean the ACADO solver structures
-	//
 	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
 	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
@@ -245,19 +243,13 @@ void DynamicMhe::updateHook()
 }
 
 void DynamicMhe::stopHook()
-{
-	
-}
+{}
 
 void DynamicMhe::cleanupHook()
-{
-	
-}
+{}
 
 void DynamicMhe::errorHook()
-{
-	
-}
+{}
 
 bool DynamicMhe::prepareMeasurements( void )
 {	
@@ -461,7 +453,7 @@ bool DynamicMhe::prepareInitialGuess( void )
 		for (unsigned el = 0; el < NU; ++el)
 			acadoVariables.u[blk * NU + el] = ss_u[ el ];
 
-	return false;
+	return true;
 }
 
 ORO_CREATE_COMPONENT( DynamicMhe )
