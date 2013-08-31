@@ -21,6 +21,13 @@ static bool isNaN(double* array, unsigned dim)
 	return false;	
 }
 
+/// Check port connection
+#define checkPortConnection( port ) \
+	if (port.connected() == false) \
+	{log( Error ) << "Port " << port.getName() << " is not connected." << endlog(); return false;}
+
+#define DEBUG 1
+
 DynamicMpc::DynamicMpc(std::string name)
 	: TaskContext(name, PreOperational)
 {
@@ -38,96 +45,235 @@ DynamicMpc::DynamicMpc(std::string name)
 	addPort("controls", portControls)
 		.doc("MPC controls, current controls (estimated by MHE).");
 
-	//
-	// Initialize and output the relevant output ports
-	//
+	addPort("debugData", portDebugData)
+		.doc("Debugging data");
 
+	controls.resize(3, 0.0);
+	portControls.setDataSample( controls );
+	portControls.write( controls );
+
+	debugData.x_hat.resize(NX, 0.0);
+	debugData.x.resize((N + 1) * NX, 0.0);
+	debugData.u.resize(N * NU, 0.0);
+	debugData.z.resize(N * NXA, 0.0);
+	debugData.y.resize(N * NY, 0.0);
+	debugData.yN.resize(NYN, 0.0);
+	debugData.S.resize(NY * NY, 0.0);
+	debugData.SN.resize(NYN * NYN, 0.0);
+
+	portDebugData.setDataSample( debugData );
+	portDebugData.write( debugData );
+	
 	//
 	// Properties
 	//
 	numSqpIterations = 1;
 	addProperty("numSqpIterations", numSqpIterations)
 		.doc("Number of SQP iterations. Default = 1, Max = 10.");
-	
-	//
-	// Reset the MPC structures
-	//
 }
 
 bool DynamicMpc::configureHook()
 {
-	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
-	memset(&acadoVariables, 0, sizeof( acadoVariables ));
-
-	unsigned i, j;
-
-	if (portFeedback.connected() == false)
-	{
-		log( Error ) << "At least one of the input ports is not connected" << endlog();
-
-		return false;
-	}
+	checkPortConnection( portFeedback  );
 
 	if (numSqpIterations > 10)
 		log( Warning )
 			<< "Number of requested SQP iterations is: "
 			<< numSqpIterations << endlog();
-
+	
 	return true;
 }
 
 bool DynamicMpc::startHook()
 {
+	// Clean the ACADO solver structures
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables, 0, sizeof( acadoVariables ));
+
+	// NOTE: This guy cleans everything
 	initializeSolver();
+
+	// Configure weights, from the header file
+	prepareWeights();
+
+	runCnt = 0;
 
 	return true;
 }
 
 void DynamicMpc::updateHook()
 {
-	// tickMPCBegin = TimeService::Instance()->getTicks();
+	int mpcStatus = 0;
 
-	// portFeedbackReady.read( feedbackReady );
+	debugData.ts_entry = TimeService::Instance()->getTicks();
 
-	// if (feedbackReady == false)
-	// 	goto out_done;
+	portFeedback.read( feedback );
+	if (feedback.x_hat.size() != NX)
+		exception();
+	for (unsigned i = 0; i < NX; acadoVariables.x0[ i ] = feedback.x_hat[ i ], i++);
+	if (prepareReference() == false)
+		exception();
 
-	// for (sqpIterationsCounter = 0; sqpIterationsCounter < numSQPIterations; sqpIterationsCounter++)
-	// {
-	// 	mpcFeedbackPhase();
-	// 	mpcPreparationPhase();
-	// }
+	if (runCnt == 0)
+	{
+		prepareInitialGuess();
+	}
+	else
+	{
+		mpcStatus = feedbackStep();
 
-	// out_done:
+		if (mpcStatus == 0)
+		{
+			// TODO Do not forget about scaling!!!
+			controls[ 0 ] = controls[ 1 ] = acadoVariables.x[NX + idx_aileron];
+			controls[ 2 ] = acadoVariables.x[NX + idx_elevator];
+		}
+		else
+		{
+			controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
+		}
 
-	// timeMPC = TimeService::Instance()->secondsSince( tickMPCBegin );
-	// portExecutionTime.write( timeMPC );
+		portControls.write( controls );
+
+		debugData.ready = mpcStatus ? false : true;
+		debugData.kkt_value = getKKT();
+		debugData.obj_value = getObjective();
+		debugData.n_asc     = getNWSR();
+		debugData.solver_status = mpcStatus;
+	}
+
+	//
+	// Copy all debug data to the debug port
+	//
+	
+	prepareDebugData();
+	debugData.ts_elapsed = TimeService::Instance()->secondsSince( debugData.ts_entry );
+	portDebugData.write( debugData );
+
+	//
+	// Prepare for the next iteration; run the RTI preparation step
+	//
+
+	if ( runCnt )
+	{
+		shiftStates(2, 0, 0);
+		shiftControls( 0 );
+	}
+
+	preparationStep();
+
+	if ( mpcStatus )
+		exception();
+
+	if (runCnt == 0)
+		++runCnt;
 }
 
 void DynamicMpc::stopHook( )
 {
-	//
-	// Reset all controls -- for safety
-	//
-	// for (unsigned i = 0; i < N_OUT; ++i)
-	// {
-	// 	controls[ i ] = 0.0;
-	// 	controlsForMeasurement[ i ] = 0.0;
-	// 	controlRates[ i ] = 0.0;
-	// }
-
-	// portControls.write( controls );
-	// portControlsForMeasurement.write( controlsForMeasurement );
-	// portControlRates.write( controlRates );
+	controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
+	portControls.write( controls );
 }
 
 void DynamicMpc::cleanupHook( )
 {}
 
 void DynamicMpc::errorHook( )
+{}
+
+bool DynamicMpc::prepareInitialGuess( void )
 {
-	// TODO Implement some wisdom...
+	//
+	// Initialize differential variables
+	// NOTE Must be called AFTER first feedback arrives!
+	//
+
+	for (unsigned blk = 0; blk < N + 1; ++blk)
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.x[blk * NX + el] = ss_x[ el ];
+
+	// Initialize cos_delta and sin_delta from feedback
+	double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
+	for (unsigned blk = 1; blk < N + 1; ++blk)
+	{
+		angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
+		acadoVariables.x[blk * NX + idx_cos_delta] = cos( angle );
+		acadoVariables.x[blk * NX + idx_sin_delta] = sin( angle );
+	}
+	
+	//
+	// Initialize algebraic variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NXA; ++el)
+			acadoVariables.z[blk * NXA + el] = ss_z[ el ];
+	
+	//
+	// Initialize control variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NU; ++el)
+			acadoVariables.u[blk * NU + el] = ss_u[ el ];
+
+	return true;
 }
+
+bool DynamicMpc::prepareWeights( void )
+{
+	for (unsigned el = 0; el < NY; ++el)
+		acadoVariables.S[el * NY + el] = mpc_weights[ el ];
+	for (unsigned el = 0; el < NYN; ++el)
+		acadoVariables.SN[el * NYN + el] = mpc_weights[ el ];
+	
+	return true;
+}
+
+bool DynamicMpc::prepareReference( void )
+{
+#if DEBUG == 1
+
+	// Set precomputed steady state as a reference!!!
+
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.y[blk * NY + el] = ss_x[ el ];
+
+	// Set cos_delta and sin_delta from feedback
+	double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
+	for (unsigned blk = 1; blk < N + 1; ++blk)
+	{
+		angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+		acadoVariables.x[blk * NX + idx_cos_delta] = cos( angle );
+		acadoVariables.x[blk * NX + idx_sin_delta] = sin( angle );
+	}
+
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NU; ++el)
+			acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
+	
+	for (unsigned el = 0; el < NX; ++el)
+		acadoVariables.yN[ el ] = ss_x[ el ];
+	
+#endif // DEBUG == 1
+
+	return true;
+}
+
+bool DynamicMpc::prepareDebugData( void )
+{
+	debugData.x_hat.assign(acadoVariables.x0, acadoVariables.x0 + NX);
+	
+	debugData.x.assign(acadoVariables.x, acadoVariables.x + (N + 1) * NX);
+	debugData.u.assign(acadoVariables.u, acadoVariables.u + N * NU);
+	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
+	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
+	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
+	debugData.S.assign(acadoVariables.S, acadoVariables.S + NY * NY);
+	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
+
+	return true;
+}
+
 
 //void DynamicMpc::mpcPreparationPhase()
 //{
