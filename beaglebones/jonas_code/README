@@ -1,0 +1,70 @@
+/**********************************************************************
+0. GENERAL
+***********************************************************************/
+
+- All the header files all located in folder header_files
+
+- This are the libraries that I've written:
+		- upd_communication.h				to establish client-server UDP communication
+		- uart_communication.h				to establish UART communication with lisa
+		- data_decode.h						to translate packages coming from lisa to structs and encode server messages to lisa format
+		- analyze.h							to analyze the incoming packages on the server (frequency, latency)
+		- circular_buffer.h					to use a circular buffer for logging
+		- log.h								to log data on beaglebone and to log errors
+					
+					See header files for more detailed documentation!
+		
+- All libraries have error handling
+		
+- The folder contains 4 programs:
+
+/**********************************************************************
+1. BEAGLE BONE SOFTWARE FOR THE PLANE
+***********************************************************************/
+
+- software that establishes communication between lisa and server
+	- one thread for receiving data on UART and sending it to server using UDP
+	- one thread for receiving UDP data from server and sending it to lisa using UART
+	- one thread to log data coming from lisa
+	- one thread to log data coming from server
+	
+	--> For compiling and running:  sh runBeagle.sh
+
+/**********************************************************************
+2. BEAGLE BONE SOFTWARE FOR THE WINDSENSOR
+***********************************************************************/
+
+
+- software that receives data from the windsensor and send it to the server
+	- On the UART port the package is received in NMEA ASCII format
+	- This ASCII data is first translated to a real structure with real data formats like double
+	- After that the package is translated to the default pacakge format that is used by the decoder (sender id, message id, checksums, timestamp, ...)
+	- Finally the package is sent to the server using UDP
+	
+	--> For compiling and running:  sh runWind.sh
+
+/**********************************************************************
+3. SERVER SOFTWARE
+***********************************************************************/
+
+
+- software that acts like a test server.
+	- one thread for sending servo commands to beaglebone/lisa using UDP
+	- one thread to receive UDP data coming from beaglebone
+		- decodes data coming from the beaglebone
+		- analyzes the packages coming from beaglebone: Calculating latency and frequency of sending
+		  After 20 seconds retreiving data the results will be printed to the screen and dumped to a file
+	
+	--> For compiling and running:  sh runServer.sh
+
+
+/**********************************************************************
+4. READ LOG SOFTWARE
+***********************************************************************/
+
+- sofware to read the data that is logged on the SD card on the beaglebone
+	
+	--> For compiling and running:  sh runReadLog.sh
+
+
+
