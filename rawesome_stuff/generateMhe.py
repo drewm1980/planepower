@@ -49,17 +49,31 @@ if __name__=='__main__':
     f.close()
     
     # Generate a data file with weights
-    fw = open("mhe_weights.h", "w")
+    fw = open("mhe_configuration.h", "w")
     fw.write(
 '''
-#ifndef MHE_WEIGHTS
-#define MHE_WEIGHTS
+#ifndef MHE_CONFIGURATION
+#define MHE_CONFIGURATION
+
 '''
             )
     for k, v in MHE.mheWeights.items():
         fw.write("#define weight_" + str( k ) + " " + repr( v ) + "\n")
-    fw.write("#endif // MHE_WEIGHTS\n")
-    fw.close()
+    fw.write("\n\n")
+
+    #
+    # Write indices
+    #
+    fw.write("// Differential variables\n")
+    for k, name in enumerate( mhe.dae.xNames() ):
+        fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
+    
+    fw.write("\n\n")
+    fw.write("// Control variables\n")
+    for k, name in enumerate( mhe.dae.uNames() ):
+        fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
+    fw.write("\n\n")
+
     
     #
     # Generate steady state for MHE
@@ -82,41 +96,33 @@ if __name__=='__main__':
 
     # Get the steady state
     steadyState, dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
-    
-    fss = open("mhe_steady_state.h", "w")
-    fss.write(
-'''
-#ifndef MHE_STEADY_STATE
-#define MHE_STEADY_STATE
-'''
-            )
-    
+        
     xlen = len( daeSim.xNames() )
-    fss.write("// " + str(daeSim.xNames()) + "\n");
-    fss.write("const double ss_x[ " + str( xlen ) + " ] = {")
+    fw.write("// " + str(daeSim.xNames()) + "\n");
+    fw.write("const double ss_x[ " + str( xlen ) + " ] = {")
     for k, name in enumerate(daeSim.xNames()):
-        fss.write(repr(steadyState[ name ]))
+        fw.write(repr(steadyState[ name ]))
         if k < (xlen - 1):
-            fss.write(", ") 
-    fss.write("};\n\n")
+            fw.write(", ") 
+    fw.write("};\n\n")
     
     ulen = len( daeSim.uNames() )
-    fss.write("// " + str(daeSim.uNames()) + "\n");
-    fss.write("const double ss_u[ " + str( ulen ) + " ] = {")
+    fw.write("// " + str(daeSim.uNames()) + "\n");
+    fw.write("const double ss_u[ " + str( ulen ) + " ] = {")
     for k, name in enumerate(daeSim.uNames()):
-        fss.write(repr(steadyState[ name ]))
+        fw.write(repr(steadyState[ name ]))
         if k < (ulen - 1):
-            fss.write(", ") 
-    fss.write("};\n\n")
+            fw.write(", ") 
+    fw.write("};\n\n")
     
     zlen = len( daeSim.zNames() )
-    fss.write("// " + str(daeSim.zNames()) + "\n");
-    fss.write("const double ss_z[ " + str( zlen ) + " ] = {")
+    fw.write("// " + str(daeSim.zNames()) + "\n");
+    fw.write("const double ss_z[ " + str( zlen ) + " ] = {")
     for k, name in enumerate(daeSim.zNames()):
-        fss.write(repr(steadyState[ name ]))
+        fw.write(repr(steadyState[ name ]))
         if k < (zlen - 1):
-            fss.write(", ") 
-    fss.write("};\n\n")
-    fss.write("#endif // MHE_STEADY_STATE\n")
-    fss.close()
+            fw.write(", ") 
+    fw.write("};\n\n")
     
+    fw.write("#endif // MHE_CONFIGURATION\n")
+    fw.close()

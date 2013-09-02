@@ -91,7 +91,7 @@ bool DynamicMhe::startHook()
 	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
 	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
-	// NOTE: Above code cleans everything from the solver!!!
+	// NOTE: Code below cleans everything from the solver!!!
 
 	initializeSolver();
 
