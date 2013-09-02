@@ -1,0 +1,75 @@
+﻿Lisa documentation
+
+Documentation:
+
+http://paparazzi.enac.fr/wiki/Main_Page
+http://paparazzi.github.io/docs/latest/
+http://wiki.thequadshot.com/wiki/Software_User_Guide#Updating_Autopilot_Firmware
+
+
+How to program the lisa ?
+
+1. Install drivers to program lisa
+
+# sudo apt-add-repository ppa:paparazzi-uav/ppa 
+# sudo apt-get update
+# sudo apt-get install paparazzi-dev paparazzi-arm-multilib
+
+2. Download paparazzi source code
+
+		# git clone https://github.com/jonasvanpelt/paparazzi
+		# make clean; make
+
+3. Install paparazzi software: (http://wiki.thequadshot.com/wik
+i/Software_User_Guide#Updating_Autopilot_Firmware)
+
+# sudo apt-get install freeglut3 freeglut3-dev
+#sudo apt-get install binutils-gold
+# sudo apt-get install python-opengl
+# sudo apt-get install python-pygame
+# make clean; make
+# run paparazzi/sw/in_progress/python/attitude_viz.py
+
+4. Upload or compile the code (plug usb in)
+ # sudo make AIRCRAFT=betty clean_ac ap.compile 
+#  sudo make AIRCRAFT=betty clean_ac ap.upload 
+
+Configuration
+
+Betty_manual.xml
+
+location: /conf/airframes/highwind/betty_manual.xml
+
+This is the main configuration file for the lisa!
+
+Pleas read the comments (<!--jonas: … ->) in the this file that I added to check the changes that I've made. Stuff that not commented means that Pranay did that part of the configuration.
+ 
+ Betty.xml  = telemetry file
+
+location: conf/telemetry/betty.xml
+
+This files describes which message is sent at what frequency. The data types of these messages are described in /home/jonas/Desktop/highwind/code/paparazzi/conf/messages.xml
+
+NOTE:
+Airspeed and system monitoring packages are configured as modules in betty_manual.xml and cannot be used in the telemetry file !
+
+servo_commands.xml
+
+location: /home/jonas/Desktop/highwind/code/paparazzi/conf/modules
+
+This is a module that I wrote myself so that the lisa can retreive servo commands. It is loaded from the main configuration file.
+
+The <datalink> tag, links the incoming servo messages (also defined in messages.xml) with the function defined in the tag.
+
+The source code linked with this module can be found here:
+sw/airborne/modules/servo_commands/drive_servos.c
+sw/airborne/modules/servo_commands/drive_servos.h
+
+More information about creating modules can be found here: http://wiki.paparazziuav.org/wiki/Modules
+
+Bind the RC
+
+Follow instructions here: 
+http://wiki.paparazziuav.org/wiki/Lisa/M_v2.0#Binding
+
+

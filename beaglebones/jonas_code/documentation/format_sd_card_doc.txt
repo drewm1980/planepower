@@ -1,0 +1,14 @@
+﻿How to Format a SD card for Logging on the Beaglebone
+
+1. put the new sd card in your ubuntu machine
+2. go to the mount_sd_card directory in this folder
+3. # sh runFormatSd.h  
+4. Wait 10 minutes
+5. Wen finished SD card should have two partitions. The scripts already copies some files to the partitions that are necessary so that the SD card works on the beaglebone
+
+More documentation: http://dev.gentoo.org/~armin76/arm/beagleboneblack/install_emmc.xml
+
+Notes:
+
+The c program that is running on the beaglebone automatically mounts the sd card at startup.
+
