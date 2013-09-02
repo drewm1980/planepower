@@ -96,7 +96,7 @@ bool DynamicMhe::startHook()
 
 	//
 	// Configure weights, ATM they are fixed, in a header file,
-	// which exported in rawesome
+	// which gets exported from rawesome
 	//
 	
 	prepareWeights();
@@ -130,41 +130,84 @@ void DynamicMhe::updateHook()
 		for (unsigned i = 0; i < NY; ++i)
 			acadoVariables.y[runCnt * NY + i] = execY[ i ];
 
-		int ledInd = runCnt - NDELAY;
+		int ledInd = runCnt - mhe_ndelay;
 		if (ledInd >= 0)
 		{
-			for (unsigned i = 0; i < NUM_MARKERS; ++i)
-			{
+			for (unsigned i = 0; i < mhe_num_markers; ++i)
 				acadoVariables.y[ledInd * NY + i] = ledData[ i ];
+			for (unsigned i = 0; i < mhe_num_markers; ++i)
 				acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
-			}
+		}
+
+		if (++runCnt == N)
+		{
+			// Prepare initial guess
+			prepareInitialGuess();
+			// Run the preparation step
+			preparationStep();
 		}
 
 		runMhe = false;
 		stateEstimate.ready = debugData.ready = false;
-		++runCnt;
 	}
-	else if (runCnt == N)
+	else if (runCnt >= N)
 	{
+		// Put new measurements
 		for (unsigned i = 0; i < NYN; ++i)
 			acadoVariables.yN[ i ] = execYN[ i ];
 
-		int ledInd = runCnt - NDELAY;
-		for (unsigned i = 0; i < NUM_MARKERS; ++i)
-		{
+		int ledInd = N - mhe_ndelay;
+		for (unsigned i = 0; i < mhe_num_markers; ++i)
 			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
+		for (unsigned i = 0; i < mhe_num_markers; ++i)
 			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
-		}
-
-		// Initialize nodes:
-		prepareInitialGuess();
-
-		// TODO run preparation step: this has to be restructured!!!
-
+		
 		runMhe = true;
-		++runCnt;
 	}
-	else
+	
+	//
+	// Run the MHE
+	//
+
+	int mheStatus = 0;
+	if (runMhe == true)
+	{
+		//
+		// Execute an RTI
+		//
+
+//		preparationStep();
+		
+		// Execute feedback step of the RTI scheme
+		mheStatus = feedbackStep();
+
+		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
+	
+		debugData.solver_status = mheStatus;
+		debugData.kkt_value = getKKT();
+		debugData.obj_value = getObjective();
+		debugData.n_asc = getNWSR();
+		
+		// Copy the current state estimate to the output port
+		for (unsigned i = 0; i < NX; ++i)
+			stateEstimate.x_hat[ i ] = acadoVariables.x[N * NX + i];
+
+		//
+		// Output the current state estimate
+		//
+		stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+		portStateEstimate.write( stateEstimate );
+	}
+
+	//
+	// Copy all debug data from the current optimization step to the debug port
+	//
+	prepareDebugData();
+
+	//
+	// Prepare solver for the next time step
+	//
+	if (runMhe == true)
 	{
 		// Shift weighting matrices
 		for (unsigned blk = 0; blk < N - 1; ++blk)
@@ -180,60 +223,28 @@ void DynamicMhe::updateHook()
 			acadoVariables.y[(N - 1) * NY + el] = acadoVariables.yN[ el ];
 		
 		// Put new measurements
-		for (unsigned el = 0; el < NYN; ++ el)
-			acadoVariables.yN[ el ] = execYN[ el ];
+//		for (unsigned el = 0; el < NYN; ++ el)
+//			acadoVariables.yN[ el ] = execYN[ el ];
 		
 		// Put new camera data
-		int ledInd = N - NDELAY;
-		for (unsigned i = 0; i < NUM_MARKERS; ++i)
-		{
-			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
-		}
+//		int ledInd = N - mhe_ndelay;
+//		for (unsigned i = 0; i < mhe_num_markers; ++i)
+//		{
+//			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
+//			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+//		}
 
 		// Shift MHE states and controls
 		shiftStates(2, 0, 0);
 		shiftControls( 0 );
 
-		runMhe = true;
-	}
-
-	//
-	// Run the MHE
-	//
-
-	int mheStatus = 0;
-	if (runMhe == true)
-	{
-		// Execute an RTI
-
+		// Execute preparation step of the RTI scheme
 		preparationStep();
-		
-		mheStatus = feedbackStep();
-
-		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
-		
-		debugData.kkt_value = getKKT();
-		debugData.obj_value = getObjective();
-		debugData.n_asc     = getNWSR();
-		
-		// Copy the current state estimate to the output port
-		for (unsigned i = 0; i < NX; ++i)
-			stateEstimate.x_hat[ i ] = acadoVariables.x[N * NX + i];
 	}
-	debugData.solver_status = mheStatus;
 
 	//
-	// Output the current state estimate
+	// Output debug data to the port
 	//
-	stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
-	portStateEstimate.write( stateEstimate );
-
-	//
-	// Copy all debug data to the debug port
-	//
-	
-	prepareDebugData();
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
 
@@ -249,6 +260,13 @@ void DynamicMhe::cleanupHook()
 
 void DynamicMhe::errorHook()
 {}
+
+void DynamicMhe::exceptionHook()
+{
+	log( Error ) << "Exception happened..." << endlog();
+	// Try to recover component ...
+	recover();
+}
 
 bool DynamicMhe::prepareMeasurements( void )
 {	
@@ -287,7 +305,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	else
 		for (unsigned i = 0; i < camData.weights.size(); ++i)
 			ledData[ i ] = ledWeights[ i ] = 0.0;
-
+	
 	FlowStatus lasStatus = portLASData.read( lasData );
 
 	//
@@ -331,7 +349,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	// Prepare the sensor data
 	//
 	
-	unsigned offset = NUM_MARKERS;
+	unsigned offset = mhe_num_markers;
 	execY[ offset++ ] = encData.cos_theta;
 	execY[ offset++ ] = -encData.sin_theta; // !!! Sign is inverted !!!
 	// gyro_xyz, accl_xyz
@@ -386,7 +404,7 @@ bool DynamicMhe::prepareWeights( void )
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
-	unsigned offset = NUM_MARKERS;
+	unsigned offset = mhe_num_markers;
 	mheWeights[ offset++ ] = weight_cos_delta;
 	mheWeights[ offset++ ] = weight_sin_delta;
 	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_angular_velocity, el++);
@@ -437,7 +455,7 @@ bool DynamicMhe::prepareInitialGuess( void )
 
 	// Nodes 0.. N - 1
 	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+		for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
 			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
 
 	// Node N
@@ -451,7 +469,7 @@ bool DynamicMhe::prepareInitialGuess( void )
 	acadoVariables.x[N * NX + idx_sin_delta] = sin( angle );
 
 //	// Last node must be initialized from yN
-//	for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+//	for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
 //		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
 
 	//

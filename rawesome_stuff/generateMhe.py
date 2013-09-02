@@ -51,6 +51,8 @@ if __name__=='__main__':
     # Generate MHE configuration file
 
     Ts = 0.02
+    nDelay = 4
+    numMarkers = 12
     
     fw = open("mhe_configuration.h", "w")
     fw.write(
@@ -61,9 +63,11 @@ if __name__=='__main__':
 '''
             )
 
-    fw.write("// This file was created from the file: " + os.path.realpath(__file__) + "\n")
+    fw.write("// This file was created from the file: " + os.path.realpath(__file__) + "\n\n")
 
     fw.write("#define mhe_sampling_time " + repr( Ts ) + "\n");
+    fw.write("#define mhe_ndelay " + str( nDelay ) + "\n");
+    fw.write("#define mhe_num_markers " + repr( numMarkers ) + "\n");
     fw.write("\n\n")
 
     for k, v in MHE.mheWeights.items():
