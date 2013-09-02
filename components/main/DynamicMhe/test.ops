@@ -11,12 +11,12 @@ var ConnPolicy rp
 rp.type = 2
 rp.size = 4096
 
-reporter.ReportFile = "kinematicMheData.nc"
+reporter.ReportFile = "dynamicMheTest.nc"
 reporter.ReportPolicy = rp
 reporter.ReportOnlyNewData = false
 
 setActivity("mhe", 0.0, HighestPriority, ORO_SCHED_RT)
-setActivity("kMheReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
 
 connectPeers("reporter", "mhe")
 reporter.reportComponent("mhe")
