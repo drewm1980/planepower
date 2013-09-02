@@ -9,7 +9,7 @@ struct UDP
 	struct sockaddr_in si_me;
 	struct sockaddr_in si_other;
 	int fd;
-	int fd_len;
+	unsigned int fd_len;
 };
 
 extern int openUDPSocket(UDP *udp);

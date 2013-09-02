@@ -1,0 +1,40 @@
+﻿Open ups documentation
+
+Documentation:
+
+http://www.mini-box.com/OpenUPS
+
+Program the OpenUPS
+
+Just download the windows software from the website and pluging the USB. Configuration is self explaining when the software is open.
+
+Monitor the OpenUPS
+
+On Windows
+
+Just use the software monitoring software that has been installed automatically.
+
+On Ubuntu
+
+1. First follow the steps here: 
+
+	http://minibox.cerb5.com/kb/article/58-Using_OpenUPS_under_Linux
+
+2. go to /etc/nut and replace the config files with the one in my folder ups_conf_ubuntu
+3. # sudo service nut restart
+4. Print the monitoring information on the screen
+# upsc openups@localhost
+
+On Beaglebone
+
+I was able to install the nut package from source on the beagle bone but I was not able to install the openups usb driver.
+
+
+
+
+
+
+
+
+
+

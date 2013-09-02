@@ -1,0 +1,9 @@
+﻿Jonas' code was originally stored here:
+
+https://github.com/jonasvanpelt/highwind
+
+I copied it into planepower without preserving history.
+
+-Andrew
+
+
