@@ -1,4 +1,27 @@
 #!/usr/bin/env deployer
 
 import("DynamicMhe")
-loadComponent("dmhe", "DynamicMhe")
+loadComponent("mhe", "DynamicMhe")
+
+loadComponent("reporter", "OCL::NetcdfReporting")
+
+# Set reporter policy: we use circular buffer connection with quite a long 
+# buffer
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+reporter.ReportFile = "kinematicMheData.nc"
+reporter.ReportPolicy = rp
+reporter.ReportOnlyNewData = false
+
+setActivity("mhe", 0.0, HighestPriority, ORO_SCHED_RT)
+setActivity("kMheReporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+connectPeers("reporter", "mhe")
+reporter.reportComponent("mhe")
+
+mhe.configure()
+
+reporter.configure()
+reporter.start()

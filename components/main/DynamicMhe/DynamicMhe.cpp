@@ -48,8 +48,8 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.z.resize(N * NXA, 0.0);
 	debugData.y.resize(N * NY, 0.0);
 	debugData.yN.resize(NYN, 0.0);
-	debugData.S.resize(N * NY * NY, 0.0);
-	debugData.SN.resize(NYN * NYN, 0.0);
+//	debugData.S.resize(N * NY * NY, 0.0);
+//	debugData.SN.resize(NYN * NYN, 0.0);
 
 	debugData.imu_first.resize(6, 0.0);
 	debugData.imu_avg.resize(6, 0.0);
@@ -81,33 +81,28 @@ bool DynamicMhe::configureHook()
 	checkPortConnection( portEncoderData );
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
-
-	double weights[ NY ];
-	// TODO read weights from the file and populate array
-	return false;
-
-	//
-	// Configure weights
-	//
-	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = 0; el < NY; ++el)
-			acadoVariables.S[blk * NY * NY + el * NY + el] = weights[ el ];
-
-	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = weights[ el ];
 	
 	return true;
 }
 
 bool DynamicMhe::startHook()
 {
-	// TODO Initialize the solver
+	// Clean the ACADO solver structures
+	memset(&acadoWorkspace, 0, sizeof( acadoWorkspace ));
+	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
-	// TODO Initialize the nodes!!!
+	// NOTE: Code below cleans everything from the solver!!!
+
+	initializeSolver();
+
+	//
+	// Configure weights, ATM they are fixed, in a header file,
+	// which exported in rawesome
+	//
+	
+	prepareWeights();
 
 	runCnt = 0;
-
-	// TODO clean them to zero in conf hook; execY, execYN
 
 	return true;
 }
@@ -162,7 +157,10 @@ void DynamicMhe::updateHook()
 			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
 		}
 
-		// TODO run preparation step
+		// Initialize nodes:
+		prepareInitialGuess();
+
+		// TODO run preparation step: this has to be restructured!!!
 
 		runMhe = true;
 		++runCnt;
@@ -245,19 +243,13 @@ void DynamicMhe::updateHook()
 }
 
 void DynamicMhe::stopHook()
-{
-	
-}
+{}
 
 void DynamicMhe::cleanupHook()
-{
-	
-}
+{}
 
 void DynamicMhe::errorHook()
-{
-	
-}
+{}
 
 bool DynamicMhe::prepareMeasurements( void )
 {	
@@ -282,7 +274,11 @@ bool DynamicMhe::prepareMeasurements( void )
 			{
 				++numMarkers;
 				ledData[ i ] = camData.positions[ i ];
-				ledWeights[ i ] = camData.weights[ i ]; // TODO this has to be from rawesome!!!
+
+				// We do not use weights from Andrew, but
+				// from rawesome simulation...
+				//ledWeights[ i ] = camData.weights[ i ];
+				ledWeights[ i ] = weight_marker_positions;
 			}
 			else
 			{
@@ -369,8 +365,8 @@ bool DynamicMhe::prepareDebugData( void )
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
-	debugData.S.assign(acadoVariables.S, acadoVariables.S + N * NY * NY);
-	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
+//	debugData.S.assign(acadoVariables.S, acadoVariables.S + N * NY * NY);
+//	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
 
 	debugData.enc_data[ 0 ] = encData.theta;
 	debugData.enc_data[ 1 ] = encData.sin_theta;
@@ -381,6 +377,81 @@ bool DynamicMhe::prepareDebugData( void )
 
 	debugData.las_data[ 0 ] = lasData.angle_hor;
 	debugData.las_data[ 1 ] = lasData.angle_ver;
+
+	return true;
+}
+
+bool DynamicMhe::prepareWeights( void )
+{
+	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
+
+	unsigned offset = NUM_MARKERS;
+	mheWeights[ offset++ ] = weight_cos_delta;
+	mheWeights[ offset++ ] = weight_sin_delta;
+	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_angular_velocity, el++);
+	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_acceleration, el++);
+
+	mheWeights[ offset++ ] = weight_aileron;
+	mheWeights[ offset++ ] = weight_elevator;
+
+	mheWeights[ offset++ ] = weight_r;
+	mheWeights[ offset++ ] = weight_dr;
+	mheWeights[ offset++ ] = weight_ddr;
+
+	mheWeights[ offset++ ] = weight_daileron;
+	mheWeights[ offset++ ] = weight_delevator;
+
+	mheWeights[ offset++ ] = weight_dmotor_torque;
+	mheWeights[ offset++ ] = weight_dddr;
+
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NY; ++el)
+			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
+
+	for (unsigned el = 0; el < NYN; ++el)
+		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
+
+	// XXX A bit off topic, but must be done somewhere :p
+	for (unsigned el = 0; el < NY; execY[ el++ ] = 0.0);
+	for (unsigned el = 0; el < NYN; execYN[ el++ ] = 0.0);
+
+	return true;
+}
+
+bool DynamicMhe::prepareInitialGuess( void )
+{
+	//
+	// Initialize differential variables
+	// NOTE Must be called AFTER y and yN buffers are filled in!
+	//
+
+	// Last two states are cos_delta and sin_delta which have to be initialized
+	// from measurements
+	for (unsigned blk = 0; blk < N + 1; ++blk)
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.x[blk * NX + el] = ss_x[ el ];
+
+	// Initialize cos_delta and sin_delta from measurements
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
+	// Last node must be initialized from yN
+	for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
+
+	//
+	// Initialize algebraic variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NXA; ++el)
+			acadoVariables.z[blk * NXA + el] = ss_z[ el ];
+	
+	//
+	// Initialize control variables
+	//
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NU; ++el)
+			acadoVariables.u[blk * NU + el] = ss_u[ el ];
 
 	return true;
 }

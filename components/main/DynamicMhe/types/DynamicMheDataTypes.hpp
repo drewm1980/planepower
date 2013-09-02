@@ -34,8 +34,8 @@ typedef struct
 	std::vector< double > z; 
 	std::vector< double > y;
 	std::vector< double > yN;
-	std::vector< double > S;
-	std::vector< double > SN;
+//	std::vector< double > S;
+//	std::vector< double > SN;
 
 	//
 	// Sensor data (ATM, same as in the KinematicMhe component)

@@ -6,10 +6,15 @@ import rawe
 
 import numpy as np
 
+from rawe.models.arianne_conf import makeConf
+
 #
 # We import the MHE that is tested on real measurements, not the one used in simulations
 #
 from offline_mhe_test import MHE
+from offline_mhe_test import carouselModel
+
+from rawekite.carouselSteadyState import getSteadyState
 
 if __name__=='__main__':
     assert len(sys.argv) == 2, \
@@ -29,7 +34,7 @@ if __name__=='__main__':
     # Now export the code
     exportpath = mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
 
-    # Copy the library and the headers to the 
+    # Copy the library and the headers to output location
     for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
         if filename == 'solver.hpp':
             fullname = os.path.join(exportpath, 'qpoases/' + filename)
@@ -44,13 +49,80 @@ if __name__=='__main__':
     f.close()
     
     # Generate a data file with weights
-    fw = open("mhe_weights.h", "w")
+    fw = open("mhe_configuration.h", "w")
     fw.write(
 '''
-#ifndef MHE_WEIGHTS
-#define MHE_WEIGHTS
-''')
+#ifndef MHE_CONFIGURATION
+#define MHE_CONFIGURATION
+
+'''
+            )
     for k, v in MHE.mheWeights.items():
-        fw.write("#define weight_" + str( k ) + " " + str( v ) + "\n")
-    fw.write("#endif // MHE_WEIGHTS\n")
+        fw.write("#define weight_" + str( k ) + " " + repr( v ) + "\n")
+    fw.write("\n\n")
+
+    #
+    # Write indices
+    #
+    fw.write("// Differential variables\n")
+    for k, name in enumerate( mhe.dae.xNames() ):
+        fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
+    
+    fw.write("\n\n")
+    fw.write("// Control variables\n")
+    for k, name in enumerate( mhe.dae.uNames() ):
+        fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
+    fw.write("\n\n")
+
+    
+    #
+    # Generate steady state for MHE
+    #
+    
+    # Get the plane configuration parameters
+    conf = makeConf()
+    daeSim = carouselModel.makeModel(conf, propsDir)
+    
+    # Cable length which we are going to supply to the MHE as a fake measurement
+    measCableLength = 2.0
+    
+    # Speed for the steady state calculation
+    steadyStateSpeed = -4.0
+
+    # Reference parameters
+    refP = {'r0': measCableLength,
+            'ddelta0': steadyStateSpeed,
+            }
+
+    # Get the steady state
+    steadyState, dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
+        
+    xlen = len( daeSim.xNames() )
+    fw.write("// " + str(daeSim.xNames()) + "\n");
+    fw.write("const double ss_x[ " + str( xlen ) + " ] = {")
+    for k, name in enumerate(daeSim.xNames()):
+        fw.write(repr(steadyState[ name ]))
+        if k < (xlen - 1):
+            fw.write(", ") 
+    fw.write("};\n\n")
+    
+    ulen = len( daeSim.uNames() )
+    fw.write("// " + str(daeSim.uNames()) + "\n");
+    fw.write("const double ss_u[ " + str( ulen ) + " ] = {")
+    for k, name in enumerate(daeSim.uNames()):
+        fw.write(repr(steadyState[ name ]))
+        if k < (ulen - 1):
+            fw.write(", ") 
+    fw.write("};\n\n")
+    
+    zlen = len( daeSim.zNames() )
+    fw.write("// " + str(daeSim.zNames()) + "\n");
+    fw.write("const double ss_z[ " + str( zlen ) + " ] = {")
+    for k, name in enumerate(daeSim.zNames()):
+        fw.write(repr(steadyState[ name ]))
+        if k < (zlen - 1):
+            fw.write(", ") 
+    fw.write("};\n\n")
+    
+    fw.write("#endif // MHE_CONFIGURATION\n")
     fw.close()
