@@ -92,7 +92,6 @@ bool DynamicMhe::startHook()
 	memset(&acadoVariables, 0, sizeof( acadoVariables ));
 
 	// NOTE: Code below cleans everything from the solver!!!
-
 	initializeSolver();
 
 	//
@@ -383,6 +382,8 @@ bool DynamicMhe::prepareDebugData( void )
 
 bool DynamicMhe::prepareWeights( void )
 {
+	// XXX Weights for markers are done in a different way, by dflt = 0.0
+
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
 	unsigned offset = NUM_MARKERS;
@@ -404,6 +405,7 @@ bool DynamicMhe::prepareWeights( void )
 	mheWeights[ offset++ ] = weight_dmotor_torque;
 	mheWeights[ offset++ ] = weight_dddr;
 
+	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
 		for (unsigned el = 0; el < NY; ++el)
 			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
@@ -422,7 +424,7 @@ bool DynamicMhe::prepareInitialGuess( void )
 {
 	//
 	// Initialize differential variables
-	// NOTE Must be called AFTER y and yN buffers are filled in!
+	// NOTE Must be called AFTER y is full and BEFORE we get the first yN
 	//
 
 	// Last two states are cos_delta and sin_delta which have to be initialized
@@ -431,13 +433,26 @@ bool DynamicMhe::prepareInitialGuess( void )
 		for (unsigned el = 0; el < NX; ++el)
 			acadoVariables.x[blk * NX + el] = ss_x[ el ];
 
-	// Initialize cos_delta and sin_delta from measurements
+	// Initialize cos_delta and sin_delta from measurements:
+
+	// Nodes 0.. N - 1
 	for (unsigned blk = 0; blk < N; ++blk)
 		for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
 			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
-	// Last node must be initialized from yN
-	for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
-		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
+
+	// Node N
+	// Take cos_delta and sin_delta from the last row from y and based on the 
+	// steady state speed construct initial guess for the last node
+	
+	double angle = atan2(acadoVariables.x[(N - 1) * NX + idx_sin_delta],
+						 acadoVariables.x[(N - 1) * NX + idx_cos_delta]);
+	angle += ss_x[ idx_ddelta ] * mhe_sampling_time;
+	acadoVariables.x[N * NX + idx_cos_delta] = cos( angle );
+	acadoVariables.x[N * NX + idx_sin_delta] = sin( angle );
+
+//	// Last node must be initialized from yN
+//	for (unsigned el = NX - 2, yIt = NUM_MARKERS; el < NX; ++el, ++yIt)
+//		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
 
 	//
 	// Initialize algebraic variables
