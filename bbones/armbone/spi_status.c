@@ -24,8 +24,6 @@ int main(int argc, const char *argv[])
 	gpio_set_dir(ELEVATION_STATUS_PIN, INPUT_PIN);
 
 	// The raw values from the sensors.
-	uint16_t rsp_azimuth[2] = {0}; 
-
 	unsigned long foo;
 
 	while(1)
@@ -37,19 +35,19 @@ int main(int argc, const char *argv[])
 			abort();
 		}
 
+		foo = 0;
+
 		unsigned int azimuth_status;
 		gpio_get_value(AZIMUTH_STATUS_PIN, &azimuth_status);
 		if (azimuth_status == HIGH){
 			
 			// Configure the SPI port
 			struct spi_ioc_transfer tr_azimuth;
-			tr_azimuth.rx_buf = &foo; //(unsigned long) 
-rsp_azimuth;
-			tr_azimuth.tx_buf = 0; // Transmit Buffer
-			tr_azimuth.len = 2;
-			tr_azimuth.delay_usecs = 10000;
-			tr_azimuth.speed_hz = 2500000;
-			//tr_azimuth.speed_hz = 1600;
+			tr_azimuth.rx_buf = &foo; 
+			tr_azimuth.tx_buf = 0; 
+			tr_azimuth.len = 1;
+			tr_azimuth.delay_usecs =       100;
+			tr_azimuth.speed_hz =        100000;
 			tr_azimuth.bits_per_word = 16;
 			tr_azimuth.cs_change = 1;
 
@@ -59,15 +57,14 @@ rsp_azimuth;
 			
 			// Print the values to sanity check them
 			int i;
-			for(i=0; i<32; i++)
+			for(i=15; i>=0; i--)
 			{
-				printf("%i", foo>>i & 1);
+				printf("%i", foo>>i & (unsigned long int)1);
 			} printf("\n");
 		}
 		else{ printf("Warning, Low status pin!!!\n"); }
 		//read(fd_azimuth, rsp_azimuth, 2);
 		close(fd_azimuth);
-
 		
 		//uint16_t azimuth_swapped = __builtin_bswap16(rsp_azimuth[0]);
 		//printf("rsp_azimuth = %x\n", rsp_azimuth[0]);
