@@ -108,12 +108,17 @@ bool DynamicMhe::startHook()
 
 void DynamicMhe::updateHook()
 {
+	TIME_TYPE prepStart, fdbStart;
+
 	debugData.ts_entry = stateEstimate.ts_entry = TimeService::Instance()->getTicks();
 	
 	// Read the trigger port
 	TIME_TYPE trigger;
 	portTrigger.read( trigger );
 	debugData.ts_trigger = stateEstimate.ts_trigger = trigger;
+
+	// This should be removed
+	trigger = debugData.ts_entry;
 	
 	// Read and prepare sensor data
 	if (prepareMeasurements() == false)
@@ -169,6 +174,7 @@ void DynamicMhe::updateHook()
 	// Run the MHE
 	//
 
+	fdbStart = TimeService::Instance()->getTicks();
 	int mheStatus = 0;
 	if (runMhe == true)
 	{
@@ -198,6 +204,7 @@ void DynamicMhe::updateHook()
 		stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 		portStateEstimate.write( stateEstimate );
 	}
+	debugData.exec_fdb = TimeService::Instance()->secondsSince( fdbStart );
 
 	//
 	// Copy all debug data from the current optimization step to the debug port
@@ -207,6 +214,7 @@ void DynamicMhe::updateHook()
 	//
 	// Prepare solver for the next time step
 	//
+	prepStart = TimeService::Instance()->getTicks();
 	if (runMhe == true)
 	{
 		// Shift weighting matrices
@@ -241,6 +249,7 @@ void DynamicMhe::updateHook()
 		// Execute preparation step of the RTI scheme
 		preparationStep();
 	}
+	debugData.exec_prep = TimeService::Instance()->secondsSince( prepStart );
 
 	//
 	// Output debug data to the port
