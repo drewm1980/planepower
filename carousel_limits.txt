@@ -1,0 +1,40 @@
+Both motors to through a reducing gearbox and a (usually) reducing belt.  The motor torque limits are set at the breaking point of the belt, with a safety margin.  Since we don't account for the inertia of the motor rotors, the torque limits are conservative.
+
+tensile strength of the belts: 
+6500 N
+
+Safety Factor: 3/4
+
+tensile stength of the tether:
+3000 Newtons
+
+Carousel drive gearbox ratio:
+14.86
+
+Carousel drive pulley ratio: (not used)
+2/3
+
+Carousel drive pulley diameter
+0.12545 meters
+
+(Carousel motor's intrinsic torque limit) 26.53 N-m
+(computed torque limit based on belt breaking)  20 N-m
+(computed torque limit based on tether breaking) Not meaningful; if tether is anchored to ground, and aligned with arm, torque limit would have to be zero.
+
+Winch drive gearbox ratio:
+1/3
+
+Winch drive pulley diameter on motor side:
+0.10186 meters
+
+Winch drive pulley diameters on drum side:
+0.10186 meters
+
+Drum diameter:
+0.2 meters
+
+(computed winch torque limit based on carousel belt breaking) 82 N-m
+(computed winch torque limit based on tether breaking) 75 N-m
+
+Chosen motor torque limit is 82.  
+Rationale: in the event that we are flying near our physical limits, we want the motor to still try to hold the tether to keep the plane from getting away.
