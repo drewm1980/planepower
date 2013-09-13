@@ -1,8 +1,8 @@
-TARGETS=spi_status BB-SPI1-01-00A0.dtbo
+TARGETS=spi_status BB-SPI1-01-00A0.dtbo BB-Bitbanging-00A0.dtbo bitbanging
 all: ${TARGETS} 
 
 SimpleGPIO.o:SimpleGPIO.c 
-	gcc  $^ -c
+	gcc  $^ -c -Wall -Wextra
 
 spi_status.o:spi_status.c 
 	gcc  $^ -c
@@ -10,7 +10,16 @@ spi_status.o:spi_status.c
 spi_status:spi_status.o SimpleGPIO.o
 	gcc  $^ -o $@
 
+bitbanging.o:bitbanging.c 
+	gcc  $^ -c
+
+bitbanging:bitbanging.o SimpleGPIO.o
+	gcc  $^ -o $@
+
 BB-SPI1-01-00A0.dtbo:BB-SPI1-01-00A0.dts
+	dtc -o $@ -b o -@ $^
+
+BB-Bitbanging-00A0.dtbo:BB-Bitbanging-00A0.dts
 	dtc -o $@ -b o -@ $^
 	cp $@ ~
 
