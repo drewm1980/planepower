@@ -6,7 +6,7 @@ from rawe.models.arianne_conf import makeConf
 
 #from common_conf import Ts
 
-# Sampling time, aka 50 Hz
+# Sampling time, aka 25 Hz
 samplingTime = 0.04
 
 # Horizon length

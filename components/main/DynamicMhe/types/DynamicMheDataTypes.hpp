@@ -55,6 +55,18 @@ typedef struct
 	std::vector< double > las_data;
 	/// Averaged controls
 	std::vector< double > controls_avg;
+
+	//
+	// Debug data
+	//
+
+	// Camera sample delay
+	int dbg_cam_delay;
+	// IMU sample delay
+	int dbg_imu_delay;
+	// Encoder sample delay
+	int dbg_enc_delay;
+
 } DynamicMheHorizon;
 
 #endif // __DYNAMIC_MHE_DATA_TYPES__
