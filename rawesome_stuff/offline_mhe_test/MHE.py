@@ -5,16 +5,16 @@ import carouselModel
 from rawe.models.arianne_conf import makeConf
 #from common_conf import Ts
 
-# Sampling time, aka 50 Hz
-samplingTime = 0.02
+# Sampling time, aka 25 Hz
+samplingTime = 0.04
 
 # Horizon length
-mheHorizonN = 25
+mheHorizonN = 21
 
 mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
 #mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_RIIA3'
-mheIntOpts['NUM_INTEGRATOR_STEPS'] = 3
+mheIntOpts['NUM_INTEGRATOR_STEPS'] = 2
 # mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS'] = 5
 #mheIntOpts['IMPLICIT_INTEGRATOR_NUM_ITS_INIT'] = 0
 #mheIntOpts['LINEAR_ALGEBRA_SOLVER'] = 'HOUSEHOLDER_QR'
