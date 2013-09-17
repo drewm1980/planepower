@@ -31,3 +31,7 @@ dataset
 *.cproject
 *.pydevproject
 *.settings
+
+# Images
+*.png
+
