@@ -26,8 +26,8 @@ if __name__=='__main__':
     # Options for code compilation
     cgOptions = {
         'CXX': 'clang++', 'CC': 'clang',
-        'CXXFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
-        'CFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
+        'CXXFLAGS': '-fPIC -O3 -march=native -mtune=native',
+        'CFLAGS': '-fPIC -O3 -march=native -mtune=native',
         # For OROCOS compilation, this option is mandatory
         'hideSymbols': True
     }
@@ -42,6 +42,7 @@ if __name__=='__main__':
             fullname = os.path.join(exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
+
     
     # Generate info file 
     f = open('whereami.txt','w')
@@ -50,8 +51,8 @@ if __name__=='__main__':
     
     # Generate MHE configuration file
 
-    Ts = 0.02
-    nDelay = 4
+    Ts = MHE.samplingTime
+    nDelay = 2
     numMarkers = 12
     
     fw = open("mhe_configuration.h", "w")
