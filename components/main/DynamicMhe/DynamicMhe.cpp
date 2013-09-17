@@ -386,9 +386,9 @@ bool DynamicMhe::prepareMeasurements( void )
 	// Prepare debug data, delays
 	// XXX This is not 100% safe way...
 	//
-	debugData.dbg_cam_delay = (int)floor((debugData.ts_entry - camData.ts_trigger) / mhe_sampling_time);
-	debugData.dbg_imu_delay = (int)floor((debugData.ts_entry - imuData[numImuSamples - 1].ts_trigger) / mhe_sampling_time);
-	debugData.dbg_enc_delay = (int)floor((debugData.ts_entry - encData.ts_trigger) / mhe_sampling_time);
+	debugData.dbg_cam_delay = (int)round((debugData.ts_entry - camData.ts_trigger) / mhe_sampling_time);
+	debugData.dbg_imu_delay = (int)round((debugData.ts_entry - imuData[numImuSamples - 1].ts_trigger) / mhe_sampling_time);
+	debugData.dbg_enc_delay = (int)round((debugData.ts_entry - encData.ts_trigger) / mhe_sampling_time);
 
 	return true;
 }
