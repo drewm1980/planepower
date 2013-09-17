@@ -116,9 +116,6 @@ void DynamicMhe::updateHook()
 	TIME_TYPE trigger;
 	portTrigger.read( trigger );
 	debugData.ts_trigger = stateEstimate.ts_trigger = trigger;
-
-	// This should be removed
-	trigger = debugData.ts_entry;
 	
 	// Read and prepare sensor data
 	if (prepareMeasurements() == false)
@@ -181,8 +178,6 @@ void DynamicMhe::updateHook()
 		//
 		// Execute an RTI
 		//
-
-//		preparationStep();
 		
 		// Execute feedback step of the RTI scheme
 		mheStatus = feedbackStep();
@@ -230,18 +225,6 @@ void DynamicMhe::updateHook()
 		for (unsigned el = 0; el < NYN; ++ el)
 			acadoVariables.y[(N - 1) * NY + el] = acadoVariables.yN[ el ];
 		
-		// Put new measurements
-//		for (unsigned el = 0; el < NYN; ++ el)
-//			acadoVariables.yN[ el ] = execYN[ el ];
-		
-		// Put new camera data
-//		int ledInd = N - mhe_ndelay;
-//		for (unsigned i = 0; i < mhe_num_markers; ++i)
-//		{
-//			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-//			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
-//		}
-
 		// Shift MHE states and controls
 		shiftStates(2, 0, 0);
 		shiftControls( 0 );
@@ -273,7 +256,7 @@ void DynamicMhe::errorHook()
 void DynamicMhe::exceptionHook()
 {
 	log( Error ) << "Exception happened..." << endlog();
-	// Try to recover component ...
+	// Try to recover the component ...
 	recover();
 }
 
