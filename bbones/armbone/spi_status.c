@@ -11,16 +11,12 @@
 #include <unistd.h>
 #include <string.h>
 
-#define AZIMUTH_STATUS_PIN 115
-#define ELEVATION_STATUS_PIN 116
+#include "pins.h"
 #define AZIMUTH_DEVICE_FILE "/dev/spidev1.0"
 #define ELEVATION_DEVICE_FILE "/dev/spidev1.1"
 #define USE_IOCTL_API 1
 
-
 #define RESPONSE_TYPE uint16_t // 64 causes crash here.
-
-
 
 int main(int argc, const char *argv[])
 {
