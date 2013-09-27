@@ -26,8 +26,8 @@ if __name__=='__main__':
     # Options for code compilation
     cgOptions = {
         'CXX': 'clang++', 'CC': 'clang',
-        'CXXFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
-        'CFLAGS': '-O3 -fPIC -finline-functions -march=native -DACADO_CMAKE_BUILD',
+        'CXXFLAGS': '-fPIC -O3 -march=native -mtune=native',
+        'CFLAGS': '-fPIC -O3 -march=native -mtune=native',
         # For OROCOS compilation, this option is mandatory
         'hideSymbols': True
     }
@@ -42,13 +42,19 @@ if __name__=='__main__':
             fullname = os.path.join(exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
+
     
     # Generate info file 
     f = open('whereami.txt','w')
     f.write(exportpath+'\n')
     f.close()
     
-    # Generate a data file with weights
+    # Generate MHE configuration file
+
+    Ts = MHE.samplingTime
+    nDelay = 2
+    numMarkers = 12
+    
     fw = open("mhe_configuration.h", "w")
     fw.write(
 '''
@@ -57,6 +63,14 @@ if __name__=='__main__':
 
 '''
             )
+
+    fw.write("// This file was created from the file: " + os.path.realpath(__file__) + "\n\n")
+
+    fw.write("#define mhe_sampling_time " + repr( Ts ) + "\n");
+    fw.write("#define mhe_ndelay " + str( nDelay ) + "\n");
+    fw.write("#define mhe_num_markers " + repr( numMarkers ) + "\n");
+    fw.write("\n\n")
+
     for k, v in MHE.mheWeights.items():
         fw.write("#define weight_" + str( k ) + " " + repr( v ) + "\n")
     fw.write("\n\n")
