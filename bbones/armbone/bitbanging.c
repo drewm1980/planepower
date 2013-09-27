@@ -9,26 +9,40 @@
 #include <unistd.h>
 #include <math.h>
 #include "SimpleGPIO.h"
+#include "assert.h"
 
 #include "pins.h"
 #include "encoder_calibration.h"
 
-void bitbang_init(){
-	gpio_export(CS0_PIN);
-	gpio_export(CS1_PIN);
-	gpio_export(DO_MISO_PIN);
-	gpio_export(CLK_PIN);
+void bitbang_init()
+{
+	int err;
+	err = gpio_export(CS0_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
+	err = gpio_export(CS1_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
+	err = gpio_export(DO_MISO_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
+	err = gpio_export(CLK_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
 
 	//Set GPIO Pins Direction
-	gpio_set_dir(CS0_PIN, OUTPUT_PIN);
-	gpio_set_dir(CS1_PIN, OUTPUT_PIN);
-	gpio_set_dir(DO_MISO_PIN, INPUT_PIN);
-	gpio_set_dir(CLK_PIN, OUTPUT_PIN);
+	err = gpio_set_dir(CS0_PIN, OUTPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
+	err = gpio_set_dir(CS1_PIN, OUTPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
+	err = gpio_set_dir(DO_MISO_PIN, INPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
+	err = gpio_set_dir(CLK_PIN, OUTPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
 
 	//Set the Values
-	gpio_set_value(CS0_PIN, HIGH);
-	gpio_set_value(CS1_PIN, HIGH);
-	gpio_set_value(CLK_PIN, LOW);
+	err = gpio_set_value(CS0_PIN, HIGH);
+	if(err!=0) printf("Trouble Setting a pin value!\n");
+	err = gpio_set_value(CS1_PIN, HIGH);
+	if(err!=0) printf("Trouble Setting a pin value!\n");
+	err = gpio_set_value(CLK_PIN, LOW);
+	if(err!=0) printf("Trouble Setting a pin value!\n");
 }
 
 int bitbang_read(unsigned int cs_pin,
@@ -42,23 +56,29 @@ int bitbang_read(unsigned int cs_pin,
 
 	usleep(10);	
 	int status = 0;
-	gpio_get_value(status_pin, &status);
+	int err;
+	err = gpio_get_value(status_pin, &status);
+	if(err!=0) printf("Error reading status pin!\n");
 	unsigned int bit = LOW;
 
 	for (int c=0; c < 16 ; c++)
 	{
-		gpio_set_value(clk_pin, HIGH);
+		err = gpio_set_value(clk_pin, HIGH);
+		if(err!=0) printf("Error setting clock pin value!\n");
 
 		for(int c0=0; c0<1000; c0++);
-		gpio_get_value(miso_pin, &bit);
+		err = gpio_get_value(miso_pin, &bit);
+		if(err!=0) printf("Error getting miso pin value!\n");
 
-		gpio_set_value(clk_pin, LOW);
+		err = gpio_set_value(clk_pin, LOW);
+		assert(err==0);
 		for(int c1=0; c1<1000; c1++);
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
 	}
 	usleep(10);
-	gpio_set_value(cs_pin, HIGH);
+	err = gpio_set_value(cs_pin, HIGH);
+	assert(err==0);
 	usleep(10);
 	if (status)
 	{
@@ -100,6 +120,7 @@ void print_uint8_as_binary(uint8_t raw)
 
 int main()
 {
+	printf("Intializing GPIO pins...\n");
 	bitbang_init();
 
 	uint16_t azimuth_raw, elevation_raw; 
@@ -111,8 +132,10 @@ int main()
 		azimuth_raw = 0;
 		elevation_raw = 0;
 
+		//printf("Reading azimuth...\n");
 		bitbang_read(CS0_PIN,CLK_PIN,DO_MISO_PIN,AZIMUTH_STATUS_PIN,
 				&azimuth_raw);
+		//printf("Reading elevation...\n");
 		bitbang_read(CS1_PIN,CLK_PIN,DO_MISO_PIN,ELEVATION_STATUS_PIN,
 				&elevation_raw);
 
