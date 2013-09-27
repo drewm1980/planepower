@@ -25,6 +25,10 @@ void bitbang_init()
 	if(err!=0) printf("Trouble Exporting a pin!\n");
 	err = gpio_export(CLK_PIN);
 	if(err!=0) printf("Trouble Exporting a pin!\n");
+	err = gpio_export(AZIMUTH_STATUS_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
+	err = gpio_export(ELEVATION_STATUS_PIN);
+	if(err!=0) printf("Trouble Exporting a pin!\n");
 
 	//Set GPIO Pins Direction
 	err = gpio_set_dir(CS0_PIN, OUTPUT_PIN);
@@ -34,6 +38,10 @@ void bitbang_init()
 	err = gpio_set_dir(DO_MISO_PIN, INPUT_PIN);
 	if(err!=0) printf("Trouble Setting a pin direction!\n");
 	err = gpio_set_dir(CLK_PIN, OUTPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
+	err = gpio_set_dir(AZIMUTH_STATUS_PIN, INPUT_PIN);
+	if(err!=0) printf("Trouble Setting a pin direction!\n");
+	err = gpio_set_dir(ELEVATION_STATUS_PIN, INPUT_PIN);
 	if(err!=0) printf("Trouble Setting a pin direction!\n");
 
 	//Set the Values
@@ -45,6 +53,10 @@ void bitbang_init()
 	if(err!=0) printf("Trouble Setting a pin value!\n");
 }
 
+// Read the values of an SPI attached encoder using bitbanging of GPIO pins.
+// Inputs are the numbers of pins... not sure where they're documented...
+// Output is the raw encoder value.
+// Return value:  Zero if no error, 1 if encoder has bad status during read
 int bitbang_read(unsigned int cs_pin,
 		unsigned int clk_pin,
 		unsigned int miso_pin,
@@ -80,7 +92,7 @@ int bitbang_read(unsigned int cs_pin,
 	err = gpio_set_value(cs_pin, HIGH);
 	assert(err==0);
 	usleep(10);
-	if (status)
+	if (status==0)
 	{
 		printf("Warning! Line angle sensor reports bad status; probably misalignmened?!!!\n");
 	}
@@ -88,7 +100,7 @@ int bitbang_read(unsigned int cs_pin,
 	{
 		*rsp_raw = rsp;
 	}
-	return status;
+	return !status;
 }
 
 float raw_to_radians(uint16_t raw)
@@ -110,12 +122,30 @@ void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_raw,
 	*elevation_radians = raw_to_radians(elevation_raw);
 }
 
-void print_uint8_as_binary(uint8_t raw)
+void print_uint16_as_binary(uint16_t raw)
 {
 	for(int i=sizeof(raw)*8-1; i>=0; i--)
 	{
 		printf("%i", raw>>i & (uint16_t)1);
 	}
+}
+
+#define PLOT_H 32
+#define PLOT_W (PLOT_H*2)
+unsigned char framebuffer[PLOT_H][PLOT_W+1];
+void plot_two_angles(float az, float el)
+{
+	memset(framebuffer, '_', sizeof(framebuffer));
+	for(int i=0; i<PLOT_H; i++) framebuffer[i][PLOT_W] = '\n';
+	framebuffer[PLOT_H][PLOT_W] = 0; // Null terminator
+	int az_index = az/(2*3.1415)*PLOT_W + PLOT_W/2;
+	az_index %= PLOT_W;
+	int el_index = el/(2*3.1415)*PLOT_H + PLOT_H/2;
+	el_index %= PLOT_H;
+	framebuffer[el_index][az_index] = '+';
+	puts(framebuffer[0]);
+	putchar('\n');
+	putchar('\n');
 }
 
 int main()
@@ -142,28 +172,23 @@ int main()
 		encoders_to_angles(azimuth_raw, elevation_raw,
 				&azimuth_radians, &elevation_radians);
 
-#if 1
-		// Print the values to sanity check them
-		printf("AZIMUTH:");
-		printf("   %f",azimuth_radians);
-		print_uint8_as_binary(azimuth_raw);
-		printf("  ***  ELEVATION:");
-		printf("   %f",elevation_radians);
-		print_uint8_as_binary(elevation_raw);
+#if 0
+		// Print the raw values in binary
+		printf("AZ: ");
+		print_uint16_as_binary(azimuth_raw);
+		printf(" EL: ");
+		print_uint16_as_binary(elevation_raw);
 		printf("\n");
 #endif
-
 #if 0
-		uint32_t rsp;
-		rsp=0;
-		rsp = rsp + azimuth_raw;
-		rsp = rsp << 16;
-		rsp = rsp + elevation_raw;
-		for(int k=sizeof(rsp)*8-1; k>=0; k--)
-		{
-			printf("%i", rsp>>k & (uint32_t)1);
-		} 	printf("\n");
+		// Print the values in radians
+		printf("AZIMUTH: %f ELEVATION: %f\n",azimuth_radians, elevation_radians);
 #endif
+#if 1
+		plot_two_angles(azimuth_radians, elevation_radians);
+		usleep(300000);
+#endif
+
 		printf("\n");
 		usleep(500);
 	}
