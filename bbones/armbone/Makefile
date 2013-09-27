@@ -4,14 +4,14 @@ all: ${TARGETS}
 SimpleGPIO.o:SimpleGPIO.c 
 	gcc  $^ -c -Wall -Wextra
 
-spi_status.o:spi_status.c 
+spi_status.o:spi_status.c pins.h encoder_calibration.h
 	gcc  $^ -c
 
 spi_status:spi_status.o SimpleGPIO.o
 	gcc  $^ -o $@
 
-bitbanging.o:bitbanging.c 
-	gcc  $^ -c
+bitbanging.o:bitbanging.c pins.h encoder_calibration.h
+	gcc  $^ -c -std=gnu99
 
 bitbanging:bitbanging.o SimpleGPIO.o
 	gcc  $^ -o $@
