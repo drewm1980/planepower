@@ -16,10 +16,10 @@ Siemens::Siemens()
 { 
 	strncpy(ip_address,"192.168.000.001",sizeof(ip_address)-1);
 	ip_address[15] = '\0';
+	port_number = 2000;
 	openUDPClientSocket(&udp_client,ip_address,port_number);
 	currentWinchCommand = 0;
 	currentCarouselCommand = 0;
-	port_number = 2000;
 }
 Siemens::~Siemens()
 {

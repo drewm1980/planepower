@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-//#include "siemens_communication.hpp"
+#include "siemens_communication.hpp"
 
 // Prompt for and return a speed from the user
 float getSpeedFromUser()
@@ -22,17 +22,32 @@ float getSpeedFromUser()
 
 int main(int argc, char *argv[])
 {
-	//Siemens siemens;
-	//bool cont=1;
-	//while(cont){
-		//double winchSpeed = getSpeedFromUser();
-		//double carouselSpeed = getSpeedFromUser();
-		//siemens.send_reference_speeds(winchSpeed,carouselSpeed);
+	Siemens siemens;
+	bool cont=1;
+	while(cont){
+		double winchSpeed = getSpeedFromUser();
+		double carouselSpeed = getSpeedFromUser();
+		siemens.send_reference_speeds(winchSpeed,carouselSpeed);
 
-		////printf("Continue?\n");
-		////char cc = getchar();
-////		if(cc!='y' && cc!='Y') cont=0;
-	//}
+		printf("Continue?\n");
+
+		char c=EOF;
+		while(c==EOF) c=getchar();
+		switch (getchar())
+		{
+			case 'y':
+			case 'Y':
+			case ' ':
+			case '\n':
+				cont=1;
+				break;
+			case 'n':
+			case 'q':
+			case 'N':
+				cont=0;
+				break;
+		}
+	}
 	
 	return 0;	
 }

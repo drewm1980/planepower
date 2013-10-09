@@ -6,7 +6,7 @@ LDFLAGS += -ggdb
 : udp_communication.cpp |> !cxx_orocos |>
 : siemens_communication.cpp |> !cxx_orocos |>
 : main_client.cpp |> !cxx_orocos |>
-: main_client.o |> !ld |> main_client
+: main_client.o udp_communication.o siemens_communication.o |> !ld |> main_client
 
 : siemensDrives.cpp |> !cxx_orocos |>
 : siemensDrives.o udp_communication.o siemens_communication.o |> !ld_orocos |> 
