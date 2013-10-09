@@ -29,25 +29,25 @@ struct UDPReceive{
 
 int main(int argc, char *argv[])
 {
-        int port_number=2000;
+	int port_number=2000;
 	UDPReceive c;
-        
-        openUDPServerSocket(&udp_server,port_number);
 
-        while(1){
-                printf("\nWaiting for data...\n");
-                fflush(stdout);
+	openUDPServerSocket(&udp_server,port_number);
 
-                receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
+	while(1){
+		printf("\nWaiting for data...\n");
+		fflush(stdout);
+
+		receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
 		c.winchSpeedSmoothed = __builtin_bswap32(c.winchSpeedSmoothed);
 		c.winchEncoderPosition = __builtin_bswap32(c.winchEncoderPosition);
 		c.carouselSpeedSmoothed = __builtin_bswap32(c.carouselSpeedSmoothed);
 		c.carouselEncoderPosition = __builtin_bswap32(c.carouselEncoderPosition);
-		double winchSpeed = ((double) c.winchSpeedSmoothed)/(0x40000000);
+		//double winchSpeed = ((double) c.winchSpeedSmoothed)/(0x40000000);
 		//printf("winchSpeed: %f\n",winchSpeed);
 		printf("winchPosition: %u\n",c.winchEncoderPosition);
-        }
+	}
 
-        closeUDPServerSocket(&udp_server);
+	closeUDPServerSocket(&udp_server);
 }
 

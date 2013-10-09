@@ -2,4 +2,4 @@ include_rules
 : foreach *.cpp |> !cxx_orocos |>
 : siemensDrives.o udp_communication.o |> !ld_orocos |> 
 
-: main_client.o udp_communication.o |> !ld |> main_client
+: main_client.o udp_communication.o siemens_communication.o |> !ld |> main_client

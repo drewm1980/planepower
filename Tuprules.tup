@@ -19,7 +19,8 @@ RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
-!ld = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+!ld_library = |> $(CXX) -shared -Wl,-soname,%o -o %o %f $(LDFLAGS) |>
+!ld = |> $(CXX) -o %o %f $(LDFLAGS) |>
 
 # CasADi related rules
 TOOLS = $(TUP_CWD)/tools/
