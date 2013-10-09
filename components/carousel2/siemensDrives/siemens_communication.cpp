@@ -30,7 +30,7 @@ Siemens::~Siemens()
 int Siemens::send_reference_speeds(double winchSpeed, double carouselSpeed)
 {
 	UDPSpeedCommand udpsc;
-	memset(&udpsc,sizeof(udpsc),0);
+	memset(&udpsc,0,sizeof(udpsc));
 	int32_t n1 = winchSpeed/nominalWinchSpeed*nominalCommand;
 	//int32_t n2 = carouselSpeed/nominalCarouselSpeed*nominalCommand;
 	udpsc.winchSpeedReference = __builtin_bswap32(n1);
@@ -66,7 +66,7 @@ void Siemens::read_positions(double *tether_length, double *cos_delta, double *s
 
 void Siemens::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
 {
-	const uint64_t max_change = 0x3FFFFFFF;
+	const int64_t max_change = 0x3FFFFFFF;
 	int64_t diff = smallCounts - e->smallCountsLast;
 	if(diff > max_change) e->bigCounts -= 0x0000FFFF;
 	if(diff < -max_change) e->bigCounts += 0x0000FFFF;

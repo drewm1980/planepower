@@ -5,4 +5,4 @@ CFLAGS = -Wall -fPIC
 # We want symbols in here to be globally visible
 : foreach *.c |> !cc |>
 #: *.o |> !ld_orocos |> 
-: *.o |> !ld |> libsoem_core.so
+: *.o |> !ld_library |> libsoem_core.so

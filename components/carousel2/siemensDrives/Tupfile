@@ -1,5 +1,13 @@
 include_rules
-: foreach *.cpp |> !cxx_orocos |>
-: siemensDrives.o udp_communication.o |> !ld_orocos |> 
+CXX = g++
+CXXFLAGS += -ggdb
+LDFLAGS += -ggdb
 
-: main_client.o udp_communication.o siemens_communication.o |> !ld |> main_client
+: udp_communication.cpp |> !cxx_orocos |>
+: siemens_communication.cpp |> !cxx_orocos |>
+: main_client.cpp |> !cxx_orocos |>
+: main_client.o |> !ld |> main_client
+
+: siemensDrives.cpp |> !cxx_orocos |>
+: siemensDrives.o udp_communication.o siemens_communication.o |> !ld_orocos |> 
+

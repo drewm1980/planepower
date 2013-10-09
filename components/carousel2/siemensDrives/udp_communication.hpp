@@ -12,17 +12,17 @@ struct UDP
 	unsigned int fd_len;
 };
 
-extern int openUDPSocket(UDP *udp);
+int openUDPSocket(UDP *udp);
 
 //udp client prototypes
-extern int openUDPClientSocket(UDP *udp_client,char *server_ip,int port);
-extern int sendUDPClientData(UDP *udp_client,void *data,size_t data_len);
-extern int closeUDPClientSocket(UDP *udp_client);
+int openUDPClientSocket(UDP *udp_client,char *server_ip,int port);
+int sendUDPClientData(UDP *udp_client,void *data,size_t data_len);
+int closeUDPClientSocket(UDP *udp_client);
 
 //udp server prototypes
-extern int openUDPServerSocket(UDP *udp_server,int port);
-extern int receiveUDPServerData(UDP *udp_server,void *data,size_t data_len);
-extern int closeUDPServerSocket(UDP *udp_server);
+int openUDPServerSocket(UDP *udp_server,int port);
+int receiveUDPServerData(UDP *udp_server,void *data,size_t data_len);
+int closeUDPServerSocket(UDP *udp_server);
 
 #endif /*UDP_COMMUNCATION_H__*/
 
