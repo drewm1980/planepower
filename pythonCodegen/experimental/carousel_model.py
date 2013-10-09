@@ -69,12 +69,12 @@ constants[z_bridle] = 0.0
 # Declare inputs
 tau_carousel_motor = ssym('tau_carousel_motor')
 tau_winch_motor = ssym('tau_winch_motor')
-motor_torques = casadi.SXMatrix([tau_carousel_motor,tau_winch_motor])
+motor_torques = casadi.vertcat([tau_carousel_motor,tau_winch_motor])
 aileron1 = ssym('aileron1')
 aileron2 = ssym('aileron2')
 elevator = ssym('elevator')
 rudder = ssym('rudder')
-control_surfaces = casadi.SXMatrix([aileron1, aileron2, elevator, rudder])
+control_surfaces = casadi.vertcat([aileron1, aileron2, elevator, rudder])
 inputs = casadi.vertcat([motor_torques,control_surfaces])
 
 ####################
@@ -114,13 +114,13 @@ ddroll = ssym('ddroll')
 ddpitch = ssym('ddpitch')
 ddyaw = ssym('ddyaw')
 
-q  = casadi.SXMatrix([ delta,  r_tether,  lag,  inc,  roll,  pitch,  yaw])
-dq = casadi.SXMatrix([ddelta, dr_tether, dlag, dinc, droll, dpitch, dyaw])
-ddq = casadi.SXMatrix([dddelta, ddr_tether, ddlag, ddinc, ddroll, ddpitch, ddyaw])
+q  = casadi.vertcat([ delta,  r_tether,  lag,  inc,  roll,  pitch,  yaw])
+dq = casadi.vertcat([ddelta, dr_tether, dlag, dinc, droll, dpitch, dyaw])
+ddq = casadi.vertcat([dddelta, ddr_tether, ddlag, ddinc, ddroll, ddpitch, ddyaw])
 nq = q.size()
 
 # Numerical partial state example for debugging:
-q_flying = casadi.SXMatrix([ arctan2(1,9),  1.5,   arctan2(1,10),  arctan2(1,11),  0.001,  0.002,  0.003])
+q_flying = casadi.vertcat([ arctan2(1,9),  1.5,   arctan2(1,10),  arctan2(1,11),  0.001,  0.002,  0.003])
 
 ####################
 # Derive the transformation that maps points in the plane frame
@@ -162,8 +162,8 @@ dp0dq_a = J04[[3,7,11],:]
 dp0dq_b = casadi.jacobian(p0,q) 
 
 def test_dp_equivalence():
-	vars = casadi.vertcat((q,constants.keys()))
-	vals = casadi.vertcat((q_flying,constants.values()))
+	vars = casadi.vertcat([q,constants.keys()])
+	vals = casadi.vertcat([q_flying,constants.values()])
 	for i in xrange(7):
 		assert test_numerically_the_same(dp0dq_a[i],dp0dq_b[i],vars,vals)
 		#print [casadi.countNodes(exp[i]) for exp in [dp0dq_a, dp0dq_a]]

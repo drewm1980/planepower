@@ -29,6 +29,30 @@ mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING'
 mpcOpts['FIX_INITIAL_STATE'] = True
 #mpcOpts['CG_USE_C99'] = True
 
+# Define the weights
+mpcSigmas = {}
+for name in ['x','y','z']: mpcSigmas[name] = 1.0
+for name in ['dx','dy','dz']: mpcSigmas[name] = 1.0
+for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = 1.0
+for name in ['w_bn_b_x','w_bn_b_y','w_bn_b_z']: mpcSigmas[name] = 1.0
+mpcSigmas['r'] = 1.0
+mpcSigmas['dr'] = 1.0
+mpcSigmas['ddr'] = 1.0
+mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = 1.0
+mpcSigmas['ddelta'] = 1.0
+mpcSigmas['motor_torque'] = 1e1
+mpcSigmas['aileron'] = mpcSigmas['elevator'] = 1e-2
+
+mpcSigmas['dmotor_torque'] = 1.0
+mpcSigmas['dddr'] = 1.0
+mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1.0
+
+mpcWeights = {}
+for name in mpcSigmas:
+    mpcWeights[name] = 1.0/mpcSigmas[name]**2
+for name in [ 'x', 'y', 'z']: mpcWeights[name] *= 1e-1
+for name in ['dx','dy','dz']: mpcWeights[name] *= 1e1
+
 def radians(x):
     return float(numpy.radians(x))
 

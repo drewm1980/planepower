@@ -46,8 +46,8 @@ namespace boost
 			a & make_nvp("z", l.z);
 			a & make_nvp("y", l.y);
 			a & make_nvp("yN", l.yN);
-			a & make_nvp("S", l.S);
-			a & make_nvp("SN", l.SN);
+//			a & make_nvp("S", l.S);
+//			a & make_nvp("SN", l.SN);
 
 			a & make_nvp("num_imu_samples", l.num_imu_samples);
 			a & make_nvp("num_enc_samples", l.num_enc_samples);
@@ -61,6 +61,10 @@ namespace boost
 			a & make_nvp("cam_pose", l.cam_pose);
 			a & make_nvp("las_data", l.las_data);
 			a & make_nvp("controls_avg", l.controls_avg);
+
+			a & make_nvp("dbg_cam_delay", l.dbg_cam_delay);
+			a & make_nvp("dbg_imu_delay", l.dbg_imu_delay);
+			a & make_nvp("dbg_enc_delay", l.dbg_enc_delay);
 		}
 	}
 }

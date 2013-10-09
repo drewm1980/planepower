@@ -1,0 +1,47 @@
+﻿INSTALLATION/CONFIGURATION PTP2
+
+Documentation:
+
+about		http://sourceforge.net/p/ptpd/wiki/Home/
+tutorial		http://www.pkje.net/meander/2009/03/04/using-ntpd-with-ptpd/
+package	http://sourceforge.net/projects/ptpd/files/
+man		http://dev.man-online.org/man8/ptpd/
+
+SERVER CONFIGURATION
+
+# sudo apt-get install ptpd
+
+edit /etc/default/ptpd as root
+
+add this configuration: 
+
+# /etc/default/ptpd
+
+# Set to "yes" to actually start ptpd automatically
+START_DAEMON=yes
+
+# Add command line options for ptpd
+PTPD_OPTS="-b eth0 -S -t"
+
+restart ptpd
+
+ # sudo /etc/init.d/ptpd restart 
+
+Client configuration on Beaglebone
+
+download package from http://sourceforge.net/projects/ptpd/files/
+
+ # wget http://downloads.sourceforge.net/project/ptpd/ptpd/2.2.0/ptpd-2.2.0.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fptpd%2F%3Fsource%3Ddlp&ts=1377246236&use_mirror=kent 
+
+extract and compile it
+
+# ptpd2.0/src/make
+
+run client code
+
+# ./ptpd2 -b eth0 -g -y 0 -D -f /var/log/ptpd.log 
+
+Check log here: /var/log/ptpd.log.
+
+Note:
+The beaglebone will automatically execute the ptpd2 file at startup so the ptp2.0 folder should be on the same location as the program

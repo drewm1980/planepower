@@ -1,0 +1,4 @@
+include_rules
+: foreach *.cpp |> !cxx |>
+
+: main_client.o udp_communication.o |> !ld |> main_client
