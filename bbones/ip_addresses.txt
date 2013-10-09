@@ -2,6 +2,6 @@ Remember that IP addresses and hostnames may change and cause this documentation
 
 The USB ip address of the beaglebones is always 192.168.7.2
 
-ESAT_IP      Name      MAC
-10.33.136.57 armbone
-10.33.136.22 plane2    C8:A0:30:C5:B9:BB
+ESAT_IP      Name                 MAC
+10.33.136.57 armbone,plane4
+10.33.136.22 plane2               C8:A0:30:C5:B9:BB
