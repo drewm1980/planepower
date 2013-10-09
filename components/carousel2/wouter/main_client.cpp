@@ -19,7 +19,7 @@ void quit(){
 // up to endianness
 int32_t getSpeedFromUser(){
 	printf("Please enter the speed as a percentage of the nominal speed:\n");
-	double speedpercent;
+	float speedpercent;
 	scanf("%f",&speedpercent);
 	const int nominalSpeed = 0x40000000;
 	if (speedpercent>100.0) speedpercent=100.0;
@@ -32,7 +32,7 @@ int32_t getSpeedFromUser(){
 struct UDPSpeedCommand {
 	uint32_t winchSpeedReference;
 	uint32_t carouselSpeedReference;
-	uint32_t checksum;
+//	uint32_t checksum;
 };
 
 // Compute checksum for our message type.
@@ -44,7 +44,7 @@ void recompute_checksum(UDPSpeedCommand *c)
 	for(int i=0; i<numentries; i++)
 	{
 		sum += *((uint32_t *) c + i);
-		c->checksum = sum;
+//		c->checksum = sum;
 	}
 }
 
@@ -60,14 +60,15 @@ int main(int argc, char *argv[])
 	bool cont=1;
 	while(cont){
 		c.winchSpeedReference = __builtin_bswap32(getSpeedFromUser());
-		c.carouselSpeedReference = __builtin_bswap32(getSpeedFromUser());
-		recompute_checksum(&c);
+		//c.carouselSpeedReference = __builtin_bswap32(getSpeedFromUser());
+		c.carouselSpeedReference = __builtin_bswap32(0);
+//		recompute_checksum(&c);
 
 		if(sendUDPClientData(&udp_client, &c, sizeof(c)))
 			printf("sending of data failed\n");
 		printf("Continue?\n");
 		char cc = getchar();
-		if(cc!='y' || cc!='Y') cont=0;
+//		if(cc!='y' && cc!='Y') cont=0;
 	}
 	printf("Closing client\n");
 	closeUDPClientSocket(&udp_client);
