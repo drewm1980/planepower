@@ -4,6 +4,8 @@
 #include "stdint.h"
 #include "udp_communication.hpp"
 
+#define CHECKSUM 0
+
 // This is a high-level API for interfacing with the siemens drives.
 // This API is NOT threadsafe, i.e. it should only ever be used from ONE thread!!
 
@@ -18,12 +20,44 @@
 #define nominalCarouselSpeed (nominalCarouselShaftSpeed/carouselGearRatio*2.0*PI/60) // rad/s Nominal drive shaft rotation speed
 #define nominalCommand 0x40000000 // This is the command corresponding to the nominal drive shaft rotation speed
 
-
 // This is a wire format we defined to hold the references for both motors
-struct UDPSpeedCommand {
+struct UDPSendPacket {
 	uint32_t winchSpeedReference;
 	uint32_t carouselSpeedReference;
-//	uint32_t checksum;
+#if CHECKSUM
+	uint32_t checksum;
+#endif
+};
+
+// This is a wire format defined in the PLC and starter software
+struct UDPReceivePacket{
+	int32_t winchSpeedSmoothed;
+	uint32_t winchEncoderPosition;
+	int32_t carouselSpeedSmoothed;
+	uint32_t carouselEncoderPosition;
+	int32_t winchTorque;
+	int32_t winchPower;
+	int32_t winchSpeedSetpoint;
+	int32_t carouselTorque;
+	int32_t carouselPower;
+	int32_t carouselSpeedSetpoint;
+#if CHECKSUM
+	uint32_t checksum;
+#endif
+};
+
+// This is a unit converted version of UDPReceivePacket
+struct SiemensDriveState{
+	double winchSpeedSmoothed;
+	double winchEncoderPosition;
+	double carouselSpeedSmoothed;
+	double carouselEncoderPosition;
+	double winchTorque;
+	double winchPower;
+	double winchSpeedSetpoint;
+	double carouselTorque;
+	double carouselPower;
+	double carouselSpeedSetpoint;
 };
 
 struct EncoderState
@@ -42,20 +76,20 @@ class Siemens
 		int send_winch_reference_speed(double winch_speed);
 		int send_carousel_reference_speed(double carousel_speed);
 
-		// Read the positions and perform any necessary calibration
-		// Note:  While the motors are turning, this function should be
-		//		  called at least once every 3 hours to avoid missing a 32 bit
-		//		  rollover event.
-		void read_positions(double *tether_length, // in m, measured from end of arm
-							double *cos_delta, // unitless
-							double *sin_delta); // unitless
+		//// Read a UDP packet from the drives and perform unit conversions.
+		////	See the comments for the SiemensDriveState for more info.
+		//// Note:  While the motors are turning, this function should be
+		////		  called at least once every 3 hours to avoid missing a 32 bit
+		////		  rollover event.
+		void read(SiemensDriveState* ds);
+
 	private:
 		EncoderState winch;
 		EncoderState carousel;
 		void handle_32bit_rollover(EncoderState *e, uint32_t smallCounts);
-		void recompute_checksum(UDPSpeedCommand * c);
 
 		UDP udp_client;
+		UDP udp_server;
 		int port_number;
 		char ip_address[16];
 		

@@ -1,5 +1,5 @@
 include_rules
-CXX = g++
+#CXX = g++
 CXXFLAGS += -ggdb
 LDFLAGS += -ggdb -lrt
 
@@ -9,8 +9,8 @@ LDFLAGS += -ggdb -lrt
 : test_send.cpp |> !cxx_orocos |>
 : test_send.o udp_communication.o siemens_communication.o |> !ld |> test_send
 
-: test_recieve.cpp |> !cxx_orocos |>
-: test_recieve.o udp_communication.o siemens_communication.o |> !ld |> test_recieve
+: test_receive.cpp |> !cxx_orocos |>
+: test_receive.o udp_communication.o siemens_communication.o |> !ld |> test_receive
 
 : siemensDrives.cpp |> !cxx_orocos |>
 : siemensDrives.o udp_communication.o siemens_communication.o |> !ld_orocos |> 
