@@ -12,6 +12,12 @@ struct UDPReceive{
 	uint32_t winchEncoderPosition;
 	int32_t carouselSpeedSmoothed;
 	uint32_t carouselEncoderPosition;
+	int32_t winchTorque;
+	int32_t winchPower;
+	int32_t winchSpeedSetpoint;
+	int32_t carouselTorque;
+	int32_t carouselPower;
+	int32_t carouselSpeedSetpoint;
 //	uint32_t checksum;
 };
 
@@ -35,7 +41,6 @@ int main(int argc, char *argv[])
 	UDPReceive c;
 
 	openUDPServerSocket(&udp_server,port_number);
-
 	timespec t1, t2;
 	clock_gettime(CLOCK_REALTIME, &t1); // Works on Linux
 	for(int i=0; i<1000; i++)
@@ -60,9 +65,16 @@ int main(int argc, char *argv[])
 		c.winchEncoderPosition = __builtin_bswap32(c.winchEncoderPosition);
 		c.carouselSpeedSmoothed = __builtin_bswap32(c.carouselSpeedSmoothed);
 		c.carouselEncoderPosition = __builtin_bswap32(c.carouselEncoderPosition);
+		c.winchTorque = __builtin_bswap32(c.winchTorque);
+		c.winchPower = __builtin_bswap32(c.winchPower);
+		c.winchSpeedSetpoint = __builtin_bswap32(c.winchSpeedSetpoint);
+		c.carouselTorque = __builtin_bswap32(c.carouselTorque);
+		c.carouselPower = __builtin_bswap32(c.carouselPower);
+		c.carouselSpeedSetpoint = __builtin_bswap32(c.carouselSpeedSetpoint);
 		//double winchSpeed = ((double) c.winchSpeedSmoothed)/(0x40000000);
 		//printf("winchSpeed: %f\n",winchSpeed);
 		printf("winchPosition: %u\n",c.winchEncoderPosition);
+		printf("winchSpeedSetpoint: %u\n",c.winchSpeedSetpoint);
 	}
 
 	closeUDPServerSocket(&udp_server);
