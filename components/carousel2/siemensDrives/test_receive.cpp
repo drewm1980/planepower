@@ -11,7 +11,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	Siemens s;
+	SiemensCommunicator s;
 	SiemensDriveState ds;
 
 	cout << "Measuring how fast we are receiving packets from the PLC" << endl;

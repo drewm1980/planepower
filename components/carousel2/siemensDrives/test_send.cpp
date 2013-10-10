@@ -22,7 +22,7 @@ float getSpeedFromUser()
 
 int main(int argc, char *argv[])
 {
-	Siemens siemens;
+	SiemensCommunicator siemens;
 	bool cont=1;
 	while(cont){
 		double winchSpeed = getSpeedFromUser()/100.0*nominalWinchSpeed; // m/s

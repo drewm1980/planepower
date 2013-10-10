@@ -46,7 +46,7 @@ void bswap_packet(Packet *c)
 	}
 }
 
-Siemens::Siemens()
+SiemensCommunicator::SiemensCommunicator()
 { 
 	strncpy(ip_address,"192.168.000.001",sizeof(ip_address)-1);
 	ip_address[15] = '\0';
@@ -56,14 +56,14 @@ Siemens::Siemens()
 	currentWinchCommand = 0;
 	currentCarouselCommand = 0;
 }
-Siemens::~Siemens()
+SiemensCommunicator::~SiemensCommunicator()
 {
 	send_reference_speeds(0,0);
 	closeUDPClientSocket(&udp_client);
 	closeUDPServerSocket(&udp_server);
 }
 
-int Siemens::send_reference_speeds(double winchSpeed, double carouselSpeed)
+int SiemensCommunicator::send_reference_speeds(double winchSpeed, double carouselSpeed)
 {
 	UDPSendPacket udpsc;
 	memset(&udpsc,0,sizeof(udpsc));
@@ -88,18 +88,18 @@ int Siemens::send_reference_speeds(double winchSpeed, double carouselSpeed)
 	}
 }
 
-int Siemens::send_winch_reference_speed(double winch_speed)
+int SiemensCommunicator::send_winch_reference_speed(double winch_speed)
 {
 	return send_reference_speeds(winch_speed, currentCarouselCommand);
 }
 
-int Siemens::send_carousel_reference_speed(double carousel_speed)
+int SiemensCommunicator::send_carousel_reference_speed(double carousel_speed)
 {
 	return send_reference_speeds(currentWinchCommand, carousel_speed);
 }
 
 // Blocks until a UDP packet arrives!
-void Siemens::read(SiemensDriveState* ds)
+void SiemensCommunicator::read(SiemensDriveState* ds)
 {
 	UDPReceivePacket c;
 	memset(ds,0,sizeof(SiemensDriveState));
@@ -113,7 +113,7 @@ void Siemens::read(SiemensDriveState* ds)
 	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed)/(nominalCommand);
 }
 
-void Siemens::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
+void SiemensCommunicator::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
 {
 	const int64_t max_change = 0x3FFFFFFF;
 	int64_t diff = smallCounts - e->smallCountsLast;

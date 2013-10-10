@@ -66,11 +66,11 @@ struct EncoderState
 	int32_t smallCountsLast;
 };
 
-class Siemens
+class SiemensCommunicator
 {
 	public:
-		Siemens();
-		~Siemens();
+		SiemensCommunicator();
+		~SiemensCommunicator();
 		int send_reference_speeds(double winch_speed, // in m/s, positive for reelout
 				double carousel_speed); // in rad/s, positive for clockwise rotation when viewed from above
 		int send_winch_reference_speed(double winch_speed);
