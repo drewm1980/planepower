@@ -5,8 +5,12 @@ LDFLAGS += -ggdb
 
 : udp_communication.cpp |> !cxx_orocos |>
 : siemens_communication.cpp |> !cxx_orocos |>
-: main_client.cpp |> !cxx_orocos |>
-: main_client.o udp_communication.o siemens_communication.o |> !ld |> main_client
+
+: test_send.cpp |> !cxx_orocos |>
+: test_send.o udp_communication.o siemens_communication.o |> !ld |> test_send
+
+: test_recieve.cpp |> !cxx_orocos |>
+: test_recieve.o udp_communication.o siemens_communication.o |> !ld |> test_recieve
 
 : siemensDrives.cpp |> !cxx_orocos |>
 : siemensDrives.o udp_communication.o siemens_communication.o |> !ld_orocos |> 

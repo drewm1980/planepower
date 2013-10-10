@@ -7,6 +7,18 @@
 // This is a high-level API for interfacing with the siemens drives.
 // This API is NOT threadsafe, i.e. it should only ever be used from ONE thread!!
 
+// The following values must be configured to match in the siemens "Starter" app.
+#define nominalWinchShaftSpeed 3000.0 // RPM Nominal drive shaft rotation speed
+#define winchGearRatio 3.0  // input rotations per output rotation
+#define winchDrumRadius 0.20 // m
+#define PI 3.14159265359
+#define nominalWinchSpeed (nominalWinchShaftSpeed/winchGearRatio*2.0*PI/60*winchDrumRadius) // m/s The speed of the surface of the drum
+#define nominalCarouselShaftSpeed 1440.0 // RPM Nominal drive shaft rotation speed
+#define carouselGearRatio (14.68*1.5) // input rotations per output rotation.  Includes gears and belt.
+#define nominalCarouselSpeed (nominalCarouselShaftSpeed/carouselGearRatio*2.0*PI/60) // rad/s Nominal drive shaft rotation speed
+#define nominalCommand 0x40000000 // This is the command corresponding to the nominal drive shaft rotation speed
+
+
 // This is a wire format we defined to hold the references for both motors
 struct UDPSpeedCommand {
 	uint32_t winchSpeedReference;

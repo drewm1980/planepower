@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
 	Siemens siemens;
 	bool cont=1;
 	while(cont){
-		double winchSpeed = getSpeedFromUser();
-		double carouselSpeed = getSpeedFromUser();
+		double winchSpeed = getSpeedFromUser()/100.0*nominalWinchSpeed; // m/s
+		double carouselSpeed = getSpeedFromUser()/100.0*nominalCarouselSpeed; // rad/s
 		siemens.send_reference_speeds(winchSpeed,carouselSpeed);
 
 		printf("Continue?\n");

@@ -5,11 +5,6 @@
 
 #include "siemens_communication.hpp"
 
-// The following values must be configured to match in the siemens "Starter" app.
-#define nominalWinchSpeed 0.0 // Nominal drive shaft rotation speed
-#define nominalCarouselSpeed 0.0 // Nominal drive shaft rotation speed
-#define nominalCommand 0x40000000 // This is the command corresponding to the nominal drive shaft rotation speed
-
 using namespace std;
 
 Siemens::Siemens()
