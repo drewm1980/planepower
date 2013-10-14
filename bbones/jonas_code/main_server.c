@@ -668,7 +668,7 @@ static void *server_to_planebone(void *connection){
 		}
 	
 		//2. encode the data	
-		DEC_err_handler(data_encode(output.raw,sizeof(output.raw),encoded_data,1,72),write_error_ptr);
+		DEC_err_handler(data_encode(output.raw,sizeof(output.raw),encoded_data,SERVER,SERVO_COMMANDS),write_error_ptr);
 	
 		/*printf("OUTPUT RAW:");
 		int j;

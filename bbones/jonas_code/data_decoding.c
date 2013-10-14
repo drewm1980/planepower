@@ -94,7 +94,7 @@ static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length) /
 	
 	switch(sender)
 	{
-		case PLANE_BONE: //sender_id of beaglebone
+		case BONE_PLANE: //sender_id of beaglebone
 			switch(stream[MESSAGE_ID_INDEX])
 			{
 				case BEAGLE_ERROR: 
@@ -140,7 +140,7 @@ static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length) /
 				default: return DEC_ERR_UNKNOWN_LISA_PACKAGE;break;
 			}
 		 break;
-		 case WIND_BONE:
+		 case BONE_WIND:
 			switch(stream[MESSAGE_ID_INDEX]){
 					case NMEA_IIMWV_ID:
 						data_write(stream, (void *)&write_data->bone_wind.nmea_iimmwv, sizeof(NMEA_IIMWV)-1);
@@ -151,6 +151,15 @@ static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length) /
 					default: return DEC_ERR_UNKNOWN_WIND_PACKAGE; break;
 			}
 		break;
+		 case BONE_ARM:
+			switch(stream[MESSAGE_ID_INDEX]){
+					case LINE_ANGLE_ID:
+						data_write(stream, (void *)&write_data->bone_arm.line_angle, sizeof(LINE_ANGLE)-1);
+						break;
+					default: return DEC_ERR_UNKNOWN_WIND_PACKAGE; break;
+			}
+		break;		
+		
 		default: return DEC_ERR_UNKNOWN_SENDER; break;
 	}	
 	return DEC_ERR_NONE;	
@@ -178,7 +187,7 @@ DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]){
 		sscanf(&buffer[15],"%lf",&wind.wind_speed);
 		sscanf(&buffer[22],"%c",&wind.wind_speed_unit);
 		sscanf(&buffer[24],"%c",&wind.status);
-		data_encode((uint8_t *)&wind,sizeof(NMEA_IIMWV)-16-1,encoded_data,WIND_BONE,NMEA_IIMWV_ID); //- timestamp and - new data flag
+		data_encode((uint8_t *)&wind,sizeof(NMEA_IIMWV)-16-1,encoded_data,BONE_WIND,NMEA_IIMWV_ID); //- timestamp and - new data flag
 
 		/*printf("wind angle %lf\n",wind.wind_angle);
 		printf("relative %c\n",wind.relative);
@@ -192,7 +201,7 @@ DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]){
 				NMEA_WIXDR temp;
 				sscanf(&buffer[9],"%lf",&temp.temperature);
 				sscanf(&buffer[15],"%c",&temp.unit);
-				data_encode((uint8_t *)&temp,sizeof(NMEA_WIXDR)-16-1,encoded_data,WIND_BONE,NMEA_WIXDR_ID); //- timestamp and - new data flag
+				data_encode((uint8_t *)&temp,sizeof(NMEA_WIXDR)-16-1,encoded_data,BONE_WIND,NMEA_WIXDR_ID); //- timestamp and - new data flag
 
 				/*printf("Temperature %lf\n",temp.temperature);
 				printf("unit %c\n",temp.unit);

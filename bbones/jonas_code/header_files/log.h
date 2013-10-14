@@ -11,15 +11,6 @@
 enum log_errCode {LOG_ERR_NONE=0,LOG_ERR_UNDEFINED,LOG_ERR_MOUNT_SD,LOG_ERR_OPEN_FILE,LOG_ERR_WRITE,LOG_ERR_CLOSE};
 typedef enum log_errCode LOG_errCode;
 
-static const char FILE_PATH_LISA_LOG[] = "/media/rootfs/data_lisa_log.txt";
-static const char FILE_PATH_GROUND_LOG[] = "/media/rootfs/data_groundstation_log.txt";
-static const char FILE_PATH_BONEPLANE_LOG[] = "/media/rootfs/data_boneplane_log.txt";
-
-static const char FILE_PATH_PROGRAM_LOG[]="log/log.txt";
-static const char FILE_PATH_PROGRAM_ERROR[]="log/error.txt";
-
-static const char SD_CARD_MOUNT_LOCATION[] = "/media/rootfs/";
-static const char SD_CARD_DEVICE_LOCATION[] = "/dev/mmcblk0p2";
 
 /********************************
  * PROTOTYPES PUBLIC

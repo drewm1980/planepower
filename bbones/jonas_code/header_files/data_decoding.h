@@ -31,10 +31,10 @@ extern "C"
  * GLOBALS
  * ******************************/
 //message ids
-enum Message_id{BEAGLE_ERROR = 2 ,SYSMON = 33,UART_ERRORS = 208,ACTUATORS = 105,SVINFO=25,AIRSPEED_ETS = 57, GPS_INT=155, BARO_RAW = 221,IMU_GYRO_RAW = 203, IMU_ACCEL_RAW = 204,IMU_MAG_RAW = 205,NMEA_IIMWV_ID = 3, NMEA_WIXDR_ID = 4  ,LINE_ANGLE_ID = 5};
+enum Message_id{BEAGLE_ERROR = 2 ,SYSMON = 33,UART_ERRORS = 208,ACTUATORS = 105,SVINFO=25,AIRSPEED_ETS = 57, GPS_INT=155, BARO_RAW = 221,IMU_GYRO_RAW = 203, IMU_ACCEL_RAW = 204,SERVO_COMMANDS = 72,IMU_MAG_RAW = 205,NMEA_IIMWV_ID = 3, NMEA_WIXDR_ID = 4  ,LINE_ANGLE_ID = 5};
 
 //sender ids
-enum Sender_id{PLANE_BONE=2,LISA=165,WIND_BONE=3};
+enum Sender_id{SERVER = 1,BONE_PLANE=2,LISA=165,BONE_WIND=3, BONE_ARM=4};
 
 //import indexes of incoming data array
 enum stream_index{STARTBYTE_INDEX=0,LENGTH_INDEX,SENDER_ID_INDEX,MESSAGE_ID_INDEX,MESSAGE_START_INDEX};
@@ -43,8 +43,8 @@ enum stream_index{STARTBYTE_INDEX=0,LENGTH_INDEX,SENDER_ID_INDEX,MESSAGE_ID_INDE
 enum dec_errCode { DEC_ERR_NONE = 0,DEC_ERR_START_BYTE,DEC_ERR_CHECKSUM,DEC_ERR_UNKNOWN_BONE_PACKAGE,DEC_ERR_UNKNOWN_LISA_PACKAGE,DEC_ERR_UNKNOWN_WIND_PACKAGE,DEC_ERR_UNKNOWN_SENDER,DEC_ERR_LENGTH,DEC_ERR_UNDEFINED};
 typedef enum dec_errCode DEC_errCode;
  
-//library numbers to now which library generated error on beaglebone 
-enum Library {UDP_L,UART_L,DECODE_L,LOG_L,CIRCULAR_BUFFER_L};
+//library numbers to know which library generated error on beaglebone 
+enum Library {UDP_L,UART_L,DECODE_L,LOG_L,CIRCULAR_BUFFER_L,SPI_L};
 typedef enum Library library; 
 
 typedef struct timeval timeval;
@@ -212,7 +212,8 @@ typedef struct{
 }NMEA_WIXDR;
 
 typedef struct{
-		uint16_t position;
+		uint16_t elevation_raw;
+		uint16_t azimuth_raw;
 		Timeval16 tv;
 		int8_t new_data;		
 }LINE_ANGLE;

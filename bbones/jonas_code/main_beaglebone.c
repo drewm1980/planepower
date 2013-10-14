@@ -176,7 +176,6 @@ int main(int argc, char *argv[]){
 					switch_cb_ground_pointers();
 				}else{
 					printf("GROUND WRITE WAS NOT READY \n");
-					exit(1); //FOR DEBUGGING
 				}
 			 }
 			
