@@ -33,7 +33,7 @@ export OROCOS_TARGET
 CPPFLAGS_OROCOS = $(CPPFLAGS)
 LDFLAGS_OROCOS = $(LDFLAGS)
 CXXFLAGS_OROCOS = $(CXXFLAGS)
-CXXFLAGS_OROCOS += -fno-strict-aliasing
+CXXFLAGS_OROCOS += -fno-strict-aliasing -Wno-return-type-c-linkage
 CFLAGS_OROCOS = $(CFLAGS)
 #CXXFLAGS_OROCOS += -fvisibility=hidden -fvisibility-inlines-hidden
 CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)
