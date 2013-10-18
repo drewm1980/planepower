@@ -130,6 +130,31 @@ void print_uint16_as_binary(uint16_t raw)
 	}
 }
 
+void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
+{
+	uint16_t azimuth_raw=0.0, elevation_raw=0.0; 
+
+	//printf("Reading azimuth...\n");
+	bitbang_read(CS0_PIN,CLK_PIN,DO_MISO_PIN,AZIMUTH_STATUS_PIN,
+			&azimuth_raw);
+	//printf("Reading elevation...\n");
+	bitbang_read(CS1_PIN,CLK_PIN,DO_MISO_PIN,ELEVATION_STATUS_PIN,
+			&elevation_raw);
+
+	encoders_to_angles(azimuth_raw, elevation_raw,
+			&azimuth_radians, &elevation_radians);
+
+#if 0
+	// Print the raw values in binary
+	printf("AZ: ");
+	print_uint16_as_binary(azimuth_raw);
+	printf(" EL: ");
+	print_uint16_as_binary(elevation_raw);
+	printf("\n");
+#endif
+
+}
+
 #define PLOT_H 32
 #define PLOT_W (PLOT_H*2)
 unsigned char framebuffer[PLOT_H][PLOT_W+1];
@@ -148,48 +173,3 @@ void plot_two_angles(float az, float el)
 	putchar('\n');
 }
 
-int main()
-{
-	printf("Intializing GPIO pins...\n");
-	bitbang_init();
-
-	uint16_t azimuth_raw, elevation_raw; 
-	float azimuth_radians,elevation_radians;
-
-	while(1)
-	{
-		// Set to zero to make failure more obvious
-		azimuth_raw = 0;
-		elevation_raw = 0;
-
-		//printf("Reading azimuth...\n");
-		bitbang_read(CS0_PIN,CLK_PIN,DO_MISO_PIN,AZIMUTH_STATUS_PIN,
-				&azimuth_raw);
-		//printf("Reading elevation...\n");
-		bitbang_read(CS1_PIN,CLK_PIN,DO_MISO_PIN,ELEVATION_STATUS_PIN,
-				&elevation_raw);
-
-		encoders_to_angles(azimuth_raw, elevation_raw,
-				&azimuth_radians, &elevation_radians);
-
-#if 0
-		// Print the raw values in binary
-		printf("AZ: ");
-		print_uint16_as_binary(azimuth_raw);
-		printf(" EL: ");
-		print_uint16_as_binary(elevation_raw);
-		printf("\n");
-#endif
-#if 0
-		// Print the values in radians
-		printf("AZIMUTH: %f ELEVATION: %f\n",azimuth_radians, elevation_radians);
-#endif
-#if 1
-		plot_two_angles(azimuth_radians, elevation_radians);
-		usleep(300000);
-#endif
-
-		printf("\n");
-		usleep(500);
-	}
-}
