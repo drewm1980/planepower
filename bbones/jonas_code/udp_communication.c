@@ -5,7 +5,7 @@
 #include<string.h> //memset
 #include<stdlib.h> //exit
 #include <unistd.h> // close
-#include "header_files/udp_communication.h"
+#include "udp_communication.h"
 
 #ifndef DEBUG 
 #define DEBUG 0
@@ -23,6 +23,7 @@ static UDP_errCode openUDPSocket(UDP *udp,unsigned int timeout);
 /********************************
  * FUNCTIONS
  * ******************************/
+// timeout in us
 UDP_errCode openUDPClientSocket(UDP *udp_client,const char *server_ip,int port,unsigned int timeout){
 	
 	#if DEBUG  > 1
@@ -71,13 +72,14 @@ UDP_errCode closeUDPClientSocket(UDP *udp_client){
 		return UDP_ERR_NONE;
 }
 
-static UDP_errCode openUDPSocket(UDP *udp,unsigned int timeout){
-	
-	#if DEBUG  > 1
-		printf("Entering openUDPSocket\n");
-	#endif
-	
-	 struct timeval tv;
+// timeout in us
+static UDP_errCode openUDPSocket(UDP *udp,unsigned int timeout)
+{
+#if DEBUG  > 1
+	printf("Entering openUDPSocket\n");
+#endif
+
+	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = timeout;
 	

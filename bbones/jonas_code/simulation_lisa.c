@@ -1,10 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "udp_communication.h"
-#include "communication_datatypes.h"
+//#include "communication_datatypes.h"
 #include<stdlib.h> //exit(0);
 #include "data_decoding.h"
-
 
 static UDP udp_client;
  

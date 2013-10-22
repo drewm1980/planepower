@@ -3,7 +3,7 @@
  */
  
 #include <stdlib.h>
-#include "header_files/data_decoding.h"
+#include "data_decoding.h"
 #include <string.h>
 
 #ifndef DEBUG 

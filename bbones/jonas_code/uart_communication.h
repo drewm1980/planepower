@@ -1,7 +1,3 @@
-/*
- * AUTHOR: Maarten Arits and Jonas Van Pelt
- */
-
 #ifndef UART_COMMUNCATION_H_ 
 #define UART_COMMUNCATION_H_
 
@@ -10,12 +6,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#define INPUT_BUFFER 255 
+#define INPUT_BUFFER_SIZE 255 
 
-/**
- * GLOBALS
- * */
- 
 enum uart_errCode {UART_ERR_READ_CHECKSUM = -4,UART_ERR_READ_LENGTH = -3,UART_ERR_READ_MESSAGE = -2,UART_ERR_READ_NO_DATA_IN_BUF = -1, UART_ERR_NONE=0,UART_ERR_SERIAL_PORT_FLUSH_INPUT,UART_ERR_SERIAL_PORT_FLUSH_OUTPUT,UART_ERR_SERIAL_PORT_OPEN,UART_ERR_SERIAL_PORT_CLOSE,UART_ERR_SERIAL_PORT_CREATE,UART_ERR_SERIAL_PORT_WRITE,UART_ERR_UNDEFINED};
 typedef enum uart_errCode UART_errCode;
  
@@ -26,7 +18,6 @@ typedef struct{
 }serial_port; 
  
 serial_port *serial_stream;
-
 
 struct Packets {
 	struct Serial {

@@ -1,10 +1,5 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #ifndef UDP_COMMUNCATION_H_ 
 #define UDP_COMMUNCATION_H_
-
 
 #ifdef __cplusplus
 extern "C"
@@ -20,7 +15,15 @@ extern "C"
  * ******************************/
 
 // UDP error codes 
-enum udp_errCode { UDP_ERR_NONE = 0, UDP_ERR_INET_ATON, UDP_ERR_SEND, UDP_ERR_CLOSE_SOCKET,UDP_ERR_OPEN_SOCKET,UDP_ERR_BIND_SOCKET_PORT,UDP_ERR_RECV,UDP_ERR_SET_TIMEOUT, UDP_ERR_UNDEFINED };
+enum udp_errCode { 
+	UDP_ERR_NONE = 0, 
+	UDP_ERR_INET_ATON, 
+	UDP_ERR_SEND, 
+	UDP_ERR_CLOSE_SOCKET,
+	UDP_ERR_OPEN_SOCKET,
+	UDP_ERR_BIND_SOCKET_PORT,
+	UDP_ERR_RECV,UDP_ERR_SET_TIMEOUT, 
+	UDP_ERR_UNDEFINED };
 
 typedef enum udp_errCode UDP_errCode;
 
@@ -31,7 +34,6 @@ typedef struct
 	int fd;
 	int fd_len;
 } UDP;
-
 
 /********************************
  * PROTOTYPES PUBLIC

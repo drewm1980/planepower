@@ -14,8 +14,8 @@
 #include <sys/ioctl.h>
 #include <linux/types.h>
 
-#include "header_files/SimpleGPIO.h"
-#include "header_files/spi_communication.h"
+#include "SimpleGPIO.h"
+#include "spi_communication.h"
 
 
 const unsigned int CS0 = 113;

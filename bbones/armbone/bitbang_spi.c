@@ -52,6 +52,22 @@ void bitbang_init()
 	err = gpio_set_value(CLK_PIN, LOW);
 	if(err!=0) printf("Trouble Setting a pin value!\n");
 }
+void bitbang_close()
+{
+	int err;
+	err = gpio_unexport(CS0_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	err = gpio_unexport(CS1_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	err = gpio_unexport(DO_MISO_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	err = gpio_unexport(CLK_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	err = gpio_unexport(AZIMUTH_STATUS_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	err = gpio_unexport(ELEVATION_STATUS_PIN);
+	if(err!=0) printf("Trouble Unexporting a pin!\n");
+}
 
 // Read the values of an SPI attached encoder using bitbanging of GPIO pins.
 // Inputs are the numbers of pins... not sure where they're documented...

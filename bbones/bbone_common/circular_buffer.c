@@ -6,7 +6,7 @@
 /* Circular buffer example, keeps one slot open */
  
 #include <stdlib.h>
-#include "header_files/circular_buffer.h"
+#include "circular_buffer.h"
 
 
 #ifndef DEBUG 

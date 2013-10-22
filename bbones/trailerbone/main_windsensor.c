@@ -1,33 +1,21 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "header_files/udp_communication.h"
-#include "header_files/uart_communication.h"
-#include "header_files/log.h"
-#include "header_files/circular_buffer.h"
-#include "header_files/data_decoding.h"
+#include "udp_communication.h"
+#include "uart_communication.h"
+#include "log.h"
+#include "circular_buffer.h"
+#include "data_decoding.h"
 
 #define MAX_STREAM_SIZE 255
 #define UDP_SOCKET_TIMEOUT 1000000000
-
-/************************************
- * PROTOTYPES
- * **********************************/
 
 static void sendError(DEC_errCode err,library lib);
 static void write_uart_error(char *file_name,char *message,int err_code);
 static void write_udp_error(char *file_name,char *message,int err_code);
 static void write_decode_error(char *file_name,char *message,int err_code);
-
- /***********************************
-  * GLOBALS
-  * *********************************/
 
 static char FILENAME[] = "main_windsensor.c";
 

@@ -1,25 +1,14 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "header_files/log.h"
+#include <unistd.h>
+#include "log.h"
 
 #ifndef DEBUG 
 #define DEBUG 0
 #endif
 
-/********************************
- * PROTOTYPES PRIVATE
- * ******************************/
- 
 static LOG_errCode mount_sd_card();
- 
-/********************************
- * GLOBALS
- * ******************************/
  
 FILE *lisa_log_file,*groundstation_log_file,*boneplane_log_file;
 

@@ -1,6 +1,3 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
 #ifndef ANALYZE_H_ 
 #define ANALYZE_H_
 

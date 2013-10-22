@@ -25,4 +25,5 @@ int main()
 		printf("\n");
 		usleep(500);
 	}
+	bitbang_close();
 }
