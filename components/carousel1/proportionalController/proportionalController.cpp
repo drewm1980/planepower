@@ -10,7 +10,11 @@ using namespace RTT::os;
 
 ProportionalController::ProportionalController(std::string name):TaskContext(name,PreOperational) 
 {
-	log(Error) << "foooo" << endlog();
+	addPort("controls", portControls)
+		.doc("Control values");
+	controls.resize(3, 0.0);
+	portControls.setDataSample( controls );
+	portControls.write( controls );
 }
 
 bool ProportionalController::configureHook()
@@ -28,7 +32,10 @@ void  ProportionalController::updateHook()
 }
 
 void  ProportionalController::stopHook()
-{}
+{
+	controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
+	portControls.write( controls );
+}
 
 void  ProportionalController::cleanupHook()
 {}
