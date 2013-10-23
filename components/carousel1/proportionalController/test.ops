@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("proportionalController")
+ 
+#Create components
+loadComponent("proportionalController","ProportionalController")
+ 
+proportionalController.configure()
+proportionalController.start()
