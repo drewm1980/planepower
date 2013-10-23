@@ -1,5 +1,10 @@
 #!/usr/bin/env rttlua-i
 
 ---- Niceties for when we run in interactive mode
-rttlib.info()
-rttlib.stat()
+require "complete"
+require "readline"
+function i()
+	rttlib.info()
+	rttlib.stat()
+end
+i()
