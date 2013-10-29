@@ -82,6 +82,19 @@ McuHandler::McuHandler(std::string name)
 	rtMode = false;
 	addProperty("rtMode", rtMode)
 		.doc("Real-time mode of the component.");
+
+	// Provide ability to manually set the flight surfaces, for testing,
+	// calibration, etc...
+	addOperation("setControlsRadians", &McuHandler::setControlsRadians, this, ClientThread)
+		.doc("Set the values for the flight surfaces, in units of Radians")
+		.arg("right_aileron", "Right Aileron, in Units of Radians, positive is DOWN")
+		.arg("left_aileron", "Left Aileron, in Units of Radians, positive is Up")
+		.arg("elevator", "Elevator position, in Units of Radians, positive is Up");
+	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, ClientThread)
+		.doc("Set the values for the flight surfaces, scaled from -1 to 1")
+		.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
+		.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
+		.arg("elevator", "Right Aileron, scaled from -1 to 1, positive is UP");
 }
 	
 bool McuHandler::configureHook()
@@ -228,6 +241,20 @@ void McuHandler::cleanupHook()
 
 void McuHandler::errorHook()
 {}
+
+
+void McuHandler::setControlsRadians(double left_aileron, double right_aileron, double elevator)
+{
+
+}
+void McuHandler::setControlsUnitless(double left_aileron, double right_aileron, double elevator)
+{
+	controls[0] = left_aileron;
+	controls[1] = right_aileron;
+	controls[2] = elevator;
+	copy(controls.begin(), controls.end(), execControls.begin());
+	sendMotorReferences();
+}
 
 /// Method for sending the references. All input must be scaled to -1.. +1.
 void McuHandler::sendMotorReferences( void )

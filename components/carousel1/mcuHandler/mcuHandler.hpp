@@ -75,6 +75,13 @@ protected:
 	/// RT mode indicator
 	bool rtMode;
 
+	// Commands for setting the references.
+	// Note:  These are intended to be used manually for debugging purposes!
+	// For actual control, you should use the provided input port!
+	// Meanings:
+	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+
 private:
 
 	void sendMotorReferences( void );
