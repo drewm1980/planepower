@@ -42,6 +42,7 @@ def makeModel(conf,propertiesDir='../properties'):
 
 	# Define IMU measurement functions
 	# TODO here is omitted the term: w x w pIMU 
+    # The sign of gravity is negative because of the NED convention (z points down!)
     ddpIMU_c = ddp - ddelta ** 2 * C.vertcat([x + rA, y, 0]) + 2 * ddelta * C.vertcat([-dy, dx, 0]) + \
                 dddelta * C.vertcat([-y, x + rA, 0]) - C.vertcat([0, 0, g])
     ddpIMU = C.mul(R, ddpIMU_c)
