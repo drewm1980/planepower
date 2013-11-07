@@ -12,6 +12,8 @@
 
 #include "types/McuHandlerDataType.hpp"
 
+#define NONREALTIME_DEBUGGING 1
+
 /// Define the time-stamp type
 typedef uint64_t TIME_TYPE;
 
@@ -75,12 +77,13 @@ protected:
 	/// RT mode indicator
 	bool rtMode;
 
+#ifdef NONREALTIME_DEBUGGING
 	// Commands for setting the references.
 	// Note:  These are intended to be used manually for debugging purposes!
 	// For actual control, you should use the provided input port!
-	// Meanings:
 	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
 	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+#endif
 
 private:
 

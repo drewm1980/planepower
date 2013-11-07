@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <pthread.h>
+
 using namespace std;
 using namespace RTT;
 using namespace soem_ebox;
@@ -67,6 +69,8 @@ VoltageController::VoltageController(std::string name)
 
 bool  VoltageController::configureHook()
 {
+	pthread_setname_np(pthread_self(), "depl:VoltageController");
+
 	actual_voltage[ 0 ]  = actual_voltage[ 1 ] = 0.0;
 	reference_voltage[ 0 ] = reference_voltage[ 1 ] = 0.0;
     

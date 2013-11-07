@@ -6,6 +6,8 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
+#include <pthread.h>
+
 #include <cmath>
 
 /// Packet tag filed
@@ -24,6 +26,15 @@
 /// Conversion from integer to m/s^2
 #define IMU_ACCL_SCALE( Value ) \
 		(float)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
+
+// For these conversion factors,
+// angle_radians = (angle_unitless - OFFSET) * SCALE
+#define RIGHT_AILERON_OFFSET 0.0
+#define RIGHT_AILERON_SCALE 1.0
+#define LEFT_AILERON_OFFSET 0.0
+#define LEFT_AILERON_SCALE 1.0
+#define ELEVATOR_OFFSET 0.0
+#define ELEVATOR_SCALE 1.0
 
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
@@ -83,22 +94,25 @@ McuHandler::McuHandler(std::string name)
 	addProperty("rtMode", rtMode)
 		.doc("Real-time mode of the component.");
 
+#ifdef NONREALTIME_DEBUGGING
 	// Provide ability to manually set the flight surfaces, for testing,
 	// calibration, etc...
 	addOperation("setControlsRadians", &McuHandler::setControlsRadians, this, ClientThread)
 		.doc("Set the values for the flight surfaces, in units of Radians")
-		.arg("right_aileron", "Right Aileron, in Units of Radians, positive is DOWN")
-		.arg("left_aileron", "Left Aileron, in Units of Radians, positive is Up")
-		.arg("elevator", "Elevator position, in Units of Radians, positive is Up");
+		.arg("right_aileron", "Right Aileron, in units of Radians, positive is DOWN")
+		.arg("left_aileron", "Left Aileron, in units of Radians, positive is Up")
+		.arg("elevator", "Elevator, in units of Radians, positive is Up");
 	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, ClientThread)
 		.doc("Set the values for the flight surfaces, scaled from -1 to 1")
 		.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
 		.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
-		.arg("elevator", "Right Aileron, scaled from -1 to 1, positive is UP");
+		.arg("elevator", "Elevator, scaled from -1 to 1, positive is UP");
+#endif
 }
 	
 bool McuHandler::configureHook()
 {
+	pthread_setname_np(pthread_self(), "depl:McuHandler");
 	return true;
 }
 
@@ -243,14 +257,14 @@ void McuHandler::errorHook()
 {}
 
 
-void McuHandler::setControlsRadians(double left_aileron, double right_aileron, double elevator)
+void McuHandler::setControlsRadians(double right_aileron, double left_aileron, double elevator)
 {
 
 }
-void McuHandler::setControlsUnitless(double left_aileron, double right_aileron, double elevator)
+void McuHandler::setControlsUnitless(double right_aileron, double left_aileron, double elevator)
 {
-	controls[0] = left_aileron;
-	controls[1] = right_aileron;
+	controls[0] = right_aileron;
+	controls[1] = left_aileron;
 	controls[2] = elevator;
 	copy(controls.begin(), controls.end(), execControls.begin());
 	sendMotorReferences();

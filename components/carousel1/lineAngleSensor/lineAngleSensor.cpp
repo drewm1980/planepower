@@ -29,8 +29,10 @@ LineAngleSensor::LineAngleSensor( std::string name )
 	addProperty("angleVerOffset", angleVerOffset);
 
 	// Default values for gains and offsets
-	angleHorGain = angleVerGain = 1.0;
-	angleHorOffset = angleVerOffset = 0.0;
+	angleHorOffset = 1.22; // Volts
+	angleVerOffset = 0.53; // Volts
+	angleVerGain = 0.031; // Radians per volt
+	angleHorGain = 0.0448; // Radians per volt
 	
 	data.ts_trigger = TimeService::Instance()->getTicks();
 	portData.setDataSample( data );
