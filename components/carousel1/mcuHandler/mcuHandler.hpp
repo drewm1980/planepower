@@ -58,7 +58,7 @@ protected:
 	McuHandlerDataType data;
 	/// The data from the IMU.
 	RTT::OutputPort< McuHandlerDataType > portMcuData;
-	/// Port with control signals [ua1, ua2, ue]. Must be: -1..1
+	/// Port with control signals [ua1, ua2, ue]. Units are in radians
 	RTT::InputPort< std::vector< double > > portControls;	
 	/// Holder for the control action to be send
 	std::vector< double > controls;
