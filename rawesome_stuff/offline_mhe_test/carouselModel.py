@@ -50,7 +50,7 @@ def makeModel(conf,propertiesDir='../properties'):
     ddpIMU += aBridle
     ddpIMU = C.mul(RIMU,ddpIMU)
     # You can add a parameter to conf which will give the model 3 extra states with derivative 0 (to act as parameter) for the bias in the acceleration measurements. If that is present, it should be added to the measurement of the acceleration
-    if useIMUAccelerationBias in conf and conf['useIMUAccelerationBias']:
+    if 'useIMUAccelerationBias' in conf and conf['useIMUAccelerationBias']:
         IMUAccelerationBias = C.vertcat([dae['IMUAccelerationBias1'],dae['IMUAccelerationBias2'],dae['IMUAccelerationBias3']])
         ddpIMU += IMUAccelerationBias
 
