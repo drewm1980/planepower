@@ -107,12 +107,12 @@ McuHandler::McuHandler(std::string name)
 #ifdef NONREALTIME_DEBUGGING
 	// Provide ability to manually set the flight surfaces, for testing,
 	// calibration, etc...
-	addOperation("setControlsRadians", &McuHandler::setControlsRadians, this, ClientThread)
+	addOperation("setControlsRadians", &McuHandler::setControlsRadians, this, OwnThread)
 		.doc("Set the values for the flight surfaces, in units of Radians")
 		.arg("right_aileron", "Right Aileron, in units of Radians, positive is DOWN")
 		.arg("left_aileron", "Left Aileron, in units of Radians, positive is Up")
 		.arg("elevator", "Elevator, in units of Radians, positive is Up");
-	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, ClientThread)
+	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, OwnThread)
 		.doc("Set the values for the flight surfaces, scaled from -1 to 1")
 		.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
 		.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
