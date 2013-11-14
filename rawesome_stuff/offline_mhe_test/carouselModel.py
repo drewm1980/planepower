@@ -53,6 +53,11 @@ def makeModel(conf,propertiesDir='../properties'):
     # ... and for the gyroscopes
     dae['IMU_angular_velocity'] = C.mul(RIMU, dae['w_bn_b'])
 
+    if 'kinematicIMUAccelerationModel' in conf and conf['kinematicIMUAccelerationModel']:
+        dae['vel_error_x'] = dae['dx']-dae['dx_IMU']
+        dae['vel_error_y'] = dae['dy']-dae['dy_IMU']
+        dae['vel_error_z'] = dae['dz']-dae['dz_IMU']
+
 	############################################################################
 	#
 	# Stereo vision subsystem modeling
