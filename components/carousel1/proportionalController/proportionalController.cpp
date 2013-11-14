@@ -13,12 +13,13 @@ ProportionalController::ProportionalController(std::string name):TaskContext(nam
 	// Set up Input ports
 	addEventPort("lasData", portLASData)
 		.doc("Line angle sensor data in Radians");
-	addPort("encoderData",portEncoderData)
-		.doc("Encoder data");
 
 	// Set up Output port
 	addPort("controls", portControls)
 		.doc("Control values");
+	addPort("triggerOut", portTriggerOut)
+		.doc("Currently meaningless trigger value");
+	portTriggerOut.write(0);
 	controls.resize(3, 0.0);
 	portControls.setDataSample( controls );
 	portControls.write( controls );
@@ -32,6 +33,11 @@ ProportionalController::ProportionalController(std::string name):TaskContext(nam
 
 bool ProportionalController::configureHook()
 {
+	// Default values for the gains.  Good for testing!
+	azimuthAileron = 1.0;
+	azimuthElevator = 0.0;
+	elevationAileron = 0.0;
+	elevationElevator = 1.0;
 	return true;
 }
 
@@ -44,19 +50,20 @@ void  ProportionalController::updateHook()
 {
 	portLASData.read(lasData);
 	//portEncoderData.read(encoderData);
-	float az = lasData.angle_hor;
-	float el = lasData.angle_ver;
-	controls[0] = 0.0;
-	controls[1] = 0.0;
-	//controls[0] += 
-	controls[2] = controls[1];
+	float azimuth = lasData.angle_hor; 
+	float elevation = lasData.angle_ver;
+	controls[0] = azimuth*azimuthAileron + elevation*elevationAileron;
+	controls[1] = controls[0];
+	controls[2] = azimuth*azimuthElevator + elevation*elevationElevator;
 	portControls.write(controls);
+	portTriggerOut.write(0);
 }
 
 void  ProportionalController::stopHook()
 {
 	controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
 	portControls.write( controls );
+	portTriggerOut.write(0);
 }
 
 void  ProportionalController::cleanupHook()

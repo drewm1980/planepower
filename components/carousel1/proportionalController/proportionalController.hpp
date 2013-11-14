@@ -41,6 +41,7 @@ protected:
 	//
 	RTT::OutputPort< std::vector< double > > portControls;
 	std::vector< double > controls;
+	RTT::OutputPort< TIME_TYPE > portTriggerOut;
 
 	//
 	// Properties

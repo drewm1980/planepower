@@ -47,9 +47,15 @@ def makeModel(conf,propertiesDir='../properties'):
                 dddelta * C.vertcat([-y, x + rA, 0]) - C.vertcat([0, 0, g])
     ddpIMU = C.mul(R, ddpIMU_c)
     aBridle = C.cross(ddt_w_bn_b, pIMU)
-    
+    ddpIMU += aBridle
+    ddpIMU = C.mul(RIMU,ddpIMU)
+    # You can add a parameter to conf which will give the model 3 extra states with derivative 0 (to act as parameter) for the bias in the acceleration measurements. If that is present, it should be added to the measurement of the acceleration
+    if 'useIMUAccelerationBias' in conf and conf['useIMUAccelerationBias']:
+        IMUAccelerationBias = C.vertcat([dae['IMUAccelerationBias1'],dae['IMUAccelerationBias2'],dae['IMUAccelerationBias3']])
+        ddpIMU += IMUAccelerationBias
+
     # For the accelerometers
-    dae['IMU_acceleration'] = C.mul(RIMU, ddpIMU + aBridle)
+    dae['IMU_acceleration'] = ddpIMU
     # ... and for the gyroscopes
     dae['IMU_angular_velocity'] = C.mul(RIMU, dae['w_bn_b'])
 
