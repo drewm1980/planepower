@@ -1,0 +1,7 @@
+.gitignore
+
+names=Sensors.hs Servos.hs LineAngleSensor.hs
+
+PBDIR = ../../../components/carousel1/protobufBridge
+: $(PBDIR)/sensors.proto |> hprotoc -I$(PBDIR) --haskell_out=.. --include_imports sensors.proto |> $(names)
+
