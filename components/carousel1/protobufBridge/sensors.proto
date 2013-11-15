@@ -1,0 +1,19 @@
+package sensors;
+
+// By default units are: KG/m/s/rad
+
+message LineAngle {
+  required double hor = 1;
+  required double ver = 2;
+}
+
+message Servos {
+  required double right_aileron = 1;
+  required double left_aileron = 2;
+  required double elevator = 3;
+}
+
+message Sensors {
+	required LineAngle lineAngle = 1;
+	required Servos servos = 2;
+}
