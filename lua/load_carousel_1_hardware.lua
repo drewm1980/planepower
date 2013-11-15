@@ -64,7 +64,7 @@ set_property("LEDTracker","sigma_marker",20)
 ----------------- Set Priorities and activities
 
 deployer:setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
-deployer:setActivity("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT)
+deployer:setActivity("mcuHandler", 0.001, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)

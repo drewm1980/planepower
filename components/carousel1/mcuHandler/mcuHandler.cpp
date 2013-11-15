@@ -6,6 +6,8 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
+#include <pthread.h>
+
 #include <cmath>
 
 /// Packet tag filed
@@ -24,6 +26,15 @@
 /// Conversion from integer to m/s^2
 #define IMU_ACCL_SCALE( Value ) \
 		(float)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
+
+// For these conversion factors,
+// angle_radians = (angle_unitless - OFFSET) * SCALE
+#define RIGHT_AILERON_SCALE -0.50 
+#define LEFT_AILERON_SCALE  -0.47
+#define ELEVATOR_SCALE 0.83
+#define RIGHT_AILERON_OFFSET 0.0
+#define LEFT_AILERON_OFFSET 0.0
+#define ELEVATOR_OFFSET 0.0
 
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
@@ -44,6 +55,16 @@ enum McuHandlerErrorCodes
 	ERR_DEADLINE
 };
 
+// Convert units from radians to (-1,1)
+// angle_radians = (angle_unitless - OFFSET) * SCALE
+// angle_radians/SCALE + OFFSET = angle_unitless
+void convert_controls_radians_to_unitless(double * controls)
+{
+	controls[0] = controls[0]/RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
+	controls[1] = controls[1]/LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
+	controls[3] = controls[3]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
+}
+
 McuHandler::McuHandler(std::string name)
 	: RTT::TaskContext(name, PreOperational)
 {
@@ -55,7 +76,7 @@ McuHandler::McuHandler(std::string name)
 	addPort("data", portMcuData)
 		.doc("The MCU data");
 	addPort("controls", portControls)
-		.doc("Port with control signals [ua1, ua2, ue]. Valid range for all signals is -1..1");
+		.doc("Port with control signals [ua1, ua2, ue]. Units are in radians.");
 	
 	//
 	// Prepare ports
@@ -82,10 +103,26 @@ McuHandler::McuHandler(std::string name)
 	rtMode = false;
 	addProperty("rtMode", rtMode)
 		.doc("Real-time mode of the component.");
+
+#ifdef NONREALTIME_DEBUGGING
+	// Provide ability to manually set the flight surfaces, for testing,
+	// calibration, etc...
+	addOperation("setControlsRadians", &McuHandler::setControlsRadians, this, OwnThread)
+		.doc("Set the values for the flight surfaces, in units of Radians")
+		.arg("right_aileron", "Right Aileron, in units of Radians, positive is DOWN")
+		.arg("left_aileron", "Left Aileron, in units of Radians, positive is Up")
+		.arg("elevator", "Elevator, in units of Radians, positive is Up");
+	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, OwnThread)
+		.doc("Set the values for the flight surfaces, scaled from -1 to 1")
+		.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
+		.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
+		.arg("elevator", "Elevator, scaled from -1 to 1, positive is UP");
+#endif
 }
 	
 bool McuHandler::configureHook()
 {
+	pthread_setname_np(pthread_self(), "depl:McuHandler");
 	return true;
 }
 
@@ -141,20 +178,22 @@ void McuHandler::updateHook()
 	// If _NEW_ controls arrived, send them to the MCU
 	//
 	if (portControls.read( controls ) == NewData)
- 	{
+	{
 		// In case we received new commands and we are in the real-time mode
 		// we can send new commands to the plane if some checks are satisfied
- 		if (controls.size() != 3)
- 		{
- 			tcpStatus = ERR_BAD_DATA_SIZE;
- 			exception();
- 		}
- 		copy(controls.begin(), controls.end(), execControls.begin());
-		
+		if (controls.size() != 3)
+		{
+			tcpStatus = ERR_BAD_DATA_SIZE;
+			exception();
+		}
+		copy(controls.begin(), controls.end(), execControls.begin());
+
+		convert_controls_radians_to_unitless(&execControls[0]);
+
 		// Before calling the MCU operation, reset the tcpStatus flag.
 		tcpStatus = OK;
 		sendMotorReferences();
- 	}
+	}
 
 	data.ua1 = (float) execControls[ 0 ];
 	data.ua2 = (float) execControls[ 1 ];
@@ -228,6 +267,24 @@ void McuHandler::cleanupHook()
 
 void McuHandler::errorHook()
 {}
+
+void McuHandler::setControlsRadians(double right_aileron, double left_aileron, double elevator)
+{
+	controls[0] = right_aileron;
+	controls[1] = left_aileron;
+	controls[2] = elevator;
+	copy(controls.begin(), controls.end(), execControls.begin());
+	convert_controls_radians_to_unitless(&execControls[0]);
+	sendMotorReferences();
+}
+void McuHandler::setControlsUnitless(double right_aileron, double left_aileron, double elevator)
+{
+	controls[0] = right_aileron;
+	controls[1] = left_aileron;
+	controls[2] = elevator;
+	copy(controls.begin(), controls.end(), execControls.begin());
+	sendMotorReferences();
+}
 
 /// Method for sending the references. All input must be scaled to -1.. +1.
 void McuHandler::sendMotorReferences( void )

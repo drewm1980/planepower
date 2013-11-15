@@ -42,15 +42,27 @@ def makeModel(conf,propertiesDir='../properties'):
 
 	# Define IMU measurement functions
 	# TODO here is omitted the term: w x w pIMU 
+    # The sign of gravity is negative because of the NED convention (z points down!)
     ddpIMU_c = ddp - ddelta ** 2 * C.vertcat([x + rA, y, 0]) + 2 * ddelta * C.vertcat([-dy, dx, 0]) + \
                 dddelta * C.vertcat([-y, x + rA, 0]) - C.vertcat([0, 0, g])
     ddpIMU = C.mul(R, ddpIMU_c)
     aBridle = C.cross(ddt_w_bn_b, pIMU)
-    
+    ddpIMU += aBridle
+    ddpIMU = C.mul(RIMU,ddpIMU)
+    # You can add a parameter to conf which will give the model 3 extra states with derivative 0 (to act as parameter) for the bias in the acceleration measurements. If that is present, it should be added to the measurement of the acceleration
+    if 'useIMUAccelerationBias' in conf and conf['useIMUAccelerationBias']:
+        IMUAccelerationBias = C.vertcat([dae['IMUAccelerationBias1'],dae['IMUAccelerationBias2'],dae['IMUAccelerationBias3']])
+        ddpIMU += IMUAccelerationBias
+
     # For the accelerometers
-    dae['IMU_acceleration'] = C.mul(RIMU, ddpIMU + aBridle)
+    dae['IMU_acceleration'] = ddpIMU
     # ... and for the gyroscopes
     dae['IMU_angular_velocity'] = C.mul(RIMU, dae['w_bn_b'])
+
+    if 'kinematicIMUAccelerationModel' in conf and conf['kinematicIMUAccelerationModel']:
+        dae['vel_error_x'] = dae['dx']-dae['dx_IMU']
+        dae['vel_error_y'] = dae['dy']-dae['dy_IMU']
+        dae['vel_error_z'] = dae['dz']-dae['dz_IMU']
 
 	############################################################################
 	#
