@@ -1,1 +1,0 @@
-../CarouselRealFiles/Controls.hs

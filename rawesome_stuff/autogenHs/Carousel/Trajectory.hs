@@ -1,1 +1,0 @@
-../CarouselRealFiles/Trajectory.hs
