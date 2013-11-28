@@ -9,7 +9,8 @@ for i,symbol in ipairs({"load_component",
 	_G[symbol] = deployment_helpers[symbol]
 end
 require "running_helpers"
-for i,symbol in ipairs({ "set_voltage"}) do
+for i,symbol in ipairs({"set_voltage",
+						"get_ddelta"}) do
 	_G[symbol] = running_helpers[symbol]
 end
 

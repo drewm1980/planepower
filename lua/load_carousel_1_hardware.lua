@@ -14,7 +14,6 @@ PROPERTIES=PLANEPOWER.."properties/"
 soemPrio=99
 masterTimerPrio = 98
 sensorPrio = 97
-ocpPrio = 80
 LEDTrackerPrio = 70
 reporterPrio = 50
 

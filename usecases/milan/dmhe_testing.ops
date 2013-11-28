@@ -242,8 +242,8 @@ encoderReporter.reportComponent( "encoder" )
 connectPeers("lineAngleReporter", "lineAngleSensor")
 lineAngleReporter.reportComponent( "lineAngleSensor" )
 
-connectPeers("mheReporter", "mhe")
-mheReporter.reportComponent("mhe")
+#connectPeers("mheReporter", "mhe")
+#mheReporter.reportComponent("mhe")
 
 ################################################################################
 #
@@ -287,8 +287,8 @@ encoderReporter.start()
 lineAngleReporter.configure()
 lineAngleReporter.start()
 
-mheReporter.configure()
-mheReporter.start()
+#mheReporter.configure()
+#mheReporter.start()
 
 inputSignalGenerator.configure()
 inputSignalGenerator.start()

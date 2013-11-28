@@ -9,7 +9,7 @@ function P.load_component(libraryName,className,instanceName)
 	deployer:import(libraryName)
 	deployer:loadComponent(instanceName,className)
 	deployer:loadService(instanceName,"marshalling")
-	_G[instanceName]=deployer:getPeer(libraryName)
+	_G[instanceName]=deployer:getPeer(instanceName)
 end
 
 function P.load_reporter(reporterName)

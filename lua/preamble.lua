@@ -3,6 +3,9 @@
 require("rttlib")
 rtt.setLogLevel("Warning")
 
+require("io") -- enable loops to be broken with keyboard
+enterPressed = false -- global variable to enable detection of loop broken by return
+
 rttlib.color = true
 tc = rtt.getTC()
 deployer = tc:getPeer("Deployer")
