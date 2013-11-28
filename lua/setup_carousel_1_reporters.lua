@@ -1,5 +1,21 @@
 #!/usr/bin/env rttlua-i
 
+function get_output_ports(componentName)
+	c = _G[componentName]
+	--print(componentName)
+	pns = _G[componentName]:getPortNames()
+	outputPortNames = {}
+	for k,pn in ipairs(pns) do
+		p = c:getPort(pn)
+		pstring = tostring(p)
+		if string.find(pstring,"out",1) then
+			--print("Detected output port ".. pn)
+			table.insert(outputPortNames,pn)
+		end
+	end
+	return outputPortNames
+end
+
 -- Load and set up a reporter for each sensor type
 reporterBaseNames={"imu","camera","encoder","lineAngle"}
 reportedComponentNames={"mcuHandler","LEDTracker","encoder","lineAngleSensor"}
@@ -17,10 +33,16 @@ for i,reporterName in pairs(reporterNames) do
 	set_property(reporterName,"ReportFile",reporterFileNames[i])
 	set_property(reporterName,"ReportPolicy",rp)
 	set_property(reporterName,"ReportOnlyNewData",false)
-	deployer:connectPeers(reporterName,reportedComponentNames[i])
-	_G[reporterName]:reportComponent(reportedComponentNames[i])
+	componentName = reportedComponentNames[i]
+	deployer:connectPeers(reporterName,componentName)
+	r = _G[reporterName]
+	outputPortNames = get_output_ports(componentName)
+	for k,portName in ipairs(outputPortNames) do
+		r:reportPort(componentName, portName)
+		--print(reporterName.." is reporting component "..componentName.." port "..portName)
+	end
 	deployer:setActivity(reporterName,0.0,reporterPrio,ORO_SCHED_RT)
-	_G[reporterName]:configure()
-	_G[reporterName]:start()
+	r:configure()
+	r:start()
 end
 
