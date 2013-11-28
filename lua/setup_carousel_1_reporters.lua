@@ -1,5 +1,7 @@
 #!/usr/bin/env rttlua-i
 
+-- Return a list of strings containing just the names of the output
+-- ports of a component
 function get_output_ports(componentName)
 	c = _G[componentName]
 	--print(componentName)
