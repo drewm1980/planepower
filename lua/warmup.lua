@@ -1,4 +1,4 @@
-#!/usr/bin/env rttlua-i
+#!/usr/bin/env rttlua
 -- Sometimes the plane servos make an annoying noise when they get
 -- stuck just slightly uncentered.  This is harmless, but you can
 -- run this script to wiggle the servos just a bit to stop the noise.
