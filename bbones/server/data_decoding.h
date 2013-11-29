@@ -1,22 +1,18 @@
-/*
- * AUTHOR:Jonas Van Pelt and Maarten Arits
- */
- 
-/**************************************************************************************
-* LAYOUT OF INCOMING PACKAGES 
-* startbyte (0x99) - length - sender_id, message_id, message ... , checksumA, checksumB
-****************************************************************************************/
-
+#ifndef DATA_DECODING_H_ 
+#define DATA_DECODING_H_
 
 /**************************************************************************************
-This library is used to decode, encode and modify packages
+This library is used to decode, encode and modify packets that are sent between bbones
+* and the server over UDP
 * 
 * - for decoding (from incoming array to struct) the library ALWAYS expects the packages to be in the format listed above
 * - You can encode any type of package to the format listed above
 ****************************************************************************************/
 
-#ifndef DATA_DECODING_H_ 
-#define DATA_DECODING_H_
+/**************************************************************************************
+* LAYOUT OF INCOMING PACKAGES 
+* startbyte (0x99) - length - sender_id, message_id, message ... , checksumA, checksumB
+****************************************************************************************/
 
 #ifdef __cplusplus
 extern "C"

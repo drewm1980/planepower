@@ -19,9 +19,8 @@ import qualified Text.ProtocolBuffers as PB
 
 --import qualified System.Remote.Monitoring as EKG
 
-import qualified Carousel.Trajectory as CT
-import qualified Carousel.Dae as CD
-import qualified Carousel.MheMpcHorizons as MMH
+import qualified Sensors as SS
+{-import qualified Sensors.Servos as SS-}
 
 import ParseArgs ( getip )
 import Plotter ( runPlotter, newChannel, makeAccessors )
@@ -32,17 +31,11 @@ main = do
   ip <- getip "plot-ho-matic" "tcp://localhost:5563"
   putStrLn $ "using ip \""++ip++"\""
 
-  let zmqChan0 = "carousel trajectory"
-      zmqChan1 = "carousel state"
-      zmqChan2 = "mhe-mpc"
-  (c0, write0) <- newChannel zmqChan0 $(makeAccessors ''CT.Trajectory)
-  (c1, write1) <- newChannel zmqChan1 $(makeAccessors ''CD.Dae)
-  (c2, write2) <- newChannel zmqChan2 $(makeAccessors ''MMH.MheMpcHorizons)
+  let zmqChan0 = "Sensors"
+  (c0, write0) <- newChannel zmqChan0 $(makeAccessors ''SS)
   listenerTid0 <- CC.forkIO (sub ip write0 zmqChan0)
-  listenerTid1 <- CC.forkIO (sub ip write1 zmqChan1)
-  listenerTid2 <- CC.forkIO (sub ip write2 zmqChan2)
   
-  runPlotter [c0,c1,c2] [listenerTid0,listenerTid1,listenerTid2]
+  runPlotter [c0] [listenerTid0]
 
 withContext :: (ZMQ.Context -> IO a) -> IO a
 #if OSX

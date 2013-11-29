@@ -1,7 +1,3 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #include<string.h> //memset
 #include<stdlib.h> //exit
 #include <unistd.h> // close

@@ -8,6 +8,8 @@
 #define DEBUG 0
 #endif
 
+// This code is for logging data on the plane bbone
+
 static LOG_errCode mount_sd_card();
  
 FILE *lisa_log_file,*groundstation_log_file,*boneplane_log_file;

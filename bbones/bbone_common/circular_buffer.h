@@ -1,12 +1,9 @@
-/*
- * AUTHOR: Jonas Van Pelt
- * source: wikipedia
- */
-
 #ifndef CIRCULAR_BUFFER_H_ 
 #define CIRCULAR_BUFFER_H_
 
-/* Opaque buffer element type.  This would be defined by the application. */
+// source: wikipedia
+
+// Opaque buffer element type.  This would be defined by the application.
 typedef struct { char value[256];} ElemType;
  
 /* Circular buffer object */
