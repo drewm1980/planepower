@@ -270,7 +270,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
 
-	while ((numImuSamples < MAX_NUM_IMU_SAMPLES)) && (portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData))
+	while ((numImuSamples < MAX_NUM_IMU_SAMPLES) && (portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData))
 		numImuSamples++;
 
 	FlowStatus encStatus = portEncoderData.read( encData );
