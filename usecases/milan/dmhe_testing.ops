@@ -15,12 +15,12 @@ import("soem_ebox")
 loadComponent("soemMaster", "soem_master::SoemMasterComponent")
 
 # Configure
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
 
 # Set activivity
 var int soemPrio = 99
 setActivity("soemMaster", 0.001, soemPrio, ORO_SCHED_RT)
-soemMaster.setCpuAffinity( 7 )
+#soemMaster.setCpuAffinity( 7 )
 
 soemMaster.configure()
 soemMaster.start()
@@ -30,6 +30,10 @@ soemMaster.start()
 # Import and load components
 #
 ################################################################################
+
+# Dot Service
+import("rtt_dot_service")
+loadService("Deployer","dot")
 
 # Master Timer
 import("masterTimer")
@@ -150,42 +154,42 @@ var int LEDTrackerPrio = 70
 var int sineGenPrio = 60
 
 setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
-masterTimer.setCpuAffinity( 7 )
+#masterTimer.setCpuAffinity( 7 )
 
 setActivity("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT)
-mcuHandler.setCpuAffinity( 7 )
+#mcuHandler.setCpuAffinity( 7 )
 
 setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
-voltageController.setCpuAffinity( 7 )
+#voltageController.setCpuAffinity( 7 )
 
 setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
-encoder.setCpuAffinity( 7 )
+#encoder.setCpuAffinity( 7 )
 
 setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
-cameraTrigger.setCpuAffinity( 7 )
+#cameraTrigger.setCpuAffinity( 7 )
 
 setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
-lineAngleSensor.setCpuAffinity( 7 )
+#lineAngleSensor.setCpuAffinity( 7 )
 
 setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
-LEDTracker.setCpuAffinity( 7 )
+#LEDTracker.setCpuAffinity( 7 )
 
 setActivity("mhe", 0.0, ocpPrio, ORO_SCHED_RT)
-mhe.setCpuAffinity( 8 )
+#mhe.setCpuAffinity( 8 )
 
 setActivity("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT)
-inputSignalGenerator.setCpuAffinity( 7 )
+#inputSignalGenerator.setCpuAffinity( 7 )
 
 setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-imuReporter.setCpuAffinity( 7 )
+#imuReporter.setCpuAffinity( 7 )
 setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-cameraReporter.setCpuAffinity( 7 )
+#cameraReporter.setCpuAffinity( 7 )
 setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-encoderReporter.setCpuAffinity( 7 )
+#encoderReporter.setCpuAffinity( 7 )
 setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-lineAngleReporter.setCpuAffinity( 7 )
+#lineAngleReporter.setCpuAffinity( 7 )
 setActivity("mheReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-mheReporter.setCpuAffinity( 7 )
+#mheReporter.setCpuAffinity( 7 )
 
 ################################################################################
 #
@@ -242,8 +246,8 @@ encoderReporter.reportComponent( "encoder" )
 connectPeers("lineAngleReporter", "lineAngleSensor")
 lineAngleReporter.reportComponent( "lineAngleSensor" )
 
-#connectPeers("mheReporter", "mhe")
-#mheReporter.reportComponent("mhe")
+connectPeers("mheReporter", "mhe")
+mheReporter.reportComponent("mhe")
 
 ################################################################################
 #
@@ -287,8 +291,8 @@ encoderReporter.start()
 lineAngleReporter.configure()
 lineAngleReporter.start()
 
-#mheReporter.configure()
-#mheReporter.start()
+mheReporter.configure()
+mheReporter.start()
 
 inputSignalGenerator.configure()
 inputSignalGenerator.start()
