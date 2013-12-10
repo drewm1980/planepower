@@ -1,1 +1,0 @@
-../CarouselRealFiles/Parameters.hs

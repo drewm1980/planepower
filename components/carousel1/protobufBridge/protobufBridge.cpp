@@ -45,6 +45,7 @@ void  ProtobufBridge::updateHook()
 
 	sensors.mutable_lineangle()->set_hor(lineAngleData.angle_hor);
 	sensors.mutable_lineangle()->set_ver(lineAngleData.angle_ver);
+	cout << "hor = " << lineAngleData.angle_hor << endl;
 
 	sensors.mutable_servos()->set_right_aileron(controls[0]);
 	sensors.mutable_servos()->set_left_aileron(controls[1]);
@@ -54,7 +55,7 @@ void  ProtobufBridge::updateHook()
 		cerr << "Failed to serialize sensor." << endl;
 		return;
 	}
-	s_sendmore(*socket, "yummy-sensordata");
+	s_sendmore(*socket, "Sensors");
 	s_send(*socket, X_serialized);
 }
 

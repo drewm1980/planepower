@@ -5,7 +5,7 @@ import rawe
 import MHE
 from common_conf import Ts
 from rawe.models.arianne_conf import makeConf
-import carouselModel
+from offline_mhe_test import carouselModel
 
 mpcHorizonN = 15
 

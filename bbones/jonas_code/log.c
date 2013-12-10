@@ -1,29 +1,26 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
-
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "header_files/log.h"
+#include <unistd.h>
+#include "log.h"
 
 #ifndef DEBUG 
 #define DEBUG 0
 #endif
 
-/********************************
- * PROTOTYPES PRIVATE
- * ******************************/
- 
 static LOG_errCode mount_sd_card();
- 
-/********************************
- * GLOBALS
- * ******************************/
  
 FILE *lisa_log_file,*groundstation_log_file,*boneplane_log_file;
 
+const char FILE_PATH_LISA_LOG[] = "/media/rootfs/data_lisa_log.txt";
+const char FILE_PATH_GROUND_LOG[] = "/media/rootfs/data_groundstation_log.txt";
+const char FILE_PATH_BONEPLANE_LOG[] = "/media/rootfs/data_boneplane_log.txt";
 
+const char FILE_PATH_PROGRAM_LOG[]="log/log.txt";
+const char FILE_PATH_PROGRAM_ERROR[]="log/error.txt";
+
+const char SD_CARD_MOUNT_LOCATION[] = "/media/rootfs/";
+const char SD_CARD_DEVICE_LOCATION[] = "/dev/mmcblk0p2";
 /********************************
  * FUNCTIONS
  * ******************************/

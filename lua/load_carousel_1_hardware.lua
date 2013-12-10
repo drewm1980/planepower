@@ -14,7 +14,6 @@ PROPERTIES=PLANEPOWER.."properties/"
 soemPrio=99
 masterTimerPrio = 98
 sensorPrio = 97
-ocpPrio = 80
 LEDTrackerPrio = 70
 reporterPrio = 50
 
@@ -22,13 +21,12 @@ load_component("masterTimer","MasterTimer","masterTimer")
 load_properties("masterTimer",PROPERTIES.."masterTimer.cpf")
 base_hz = get_property("masterTimer","imu_target_hz")
 
-
 -- Fully start up soem hardware before anything else
 deployer:import("soem_master")
 deployer:import("soem_ebox")
 deployer:loadComponent("soemMaster","soem_master::SoemMasterComponent")
 soemMaster=deployer:getPeer("soemMaster")
-set_property("soemMaster","ifname","eth1")
+set_property("soemMaster","ifname","eth2")
 deployer:setActivity("soemMaster", 0.001, soemPrio, ORO_SCHED_RT)
 soemMaster:configure()
 soemMaster:start()

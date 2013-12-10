@@ -1,5 +1,4 @@
 *.swp
 *.o
-spi_status
 *.dtbo
-bitbanging
+test_spi

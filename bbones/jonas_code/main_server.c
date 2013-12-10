@@ -1,18 +1,14 @@
-/*
- * AUTHOR:Jonas Van Pelt
- */
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "header_files/udp_communication.h"
-#include "header_files/uart_communication.h"
-#include "header_files/data_decoding.h"
-#include "header_files/log.h"
-#include "header_files/analyze.h"
+#include "udp_communication.h"
+#include "uart_communication.h"
+#include "data_decoding.h"
+#include "log.h"
+#include "analyze.h"
 
 #define MAX_INPUT_STREAM_SIZE 255
 #define MAX_OUTPUT_STREAM_SIZE 36
@@ -668,7 +664,7 @@ static void *server_to_planebone(void *connection){
 		}
 	
 		//2. encode the data	
-		DEC_err_handler(data_encode(output.raw,sizeof(output.raw),encoded_data,1,72),write_error_ptr);
+		DEC_err_handler(data_encode(output.raw,sizeof(output.raw),encoded_data,SERVER,SERVO_COMMANDS),write_error_ptr);
 	
 		/*printf("OUTPUT RAW:");
 		int j;
