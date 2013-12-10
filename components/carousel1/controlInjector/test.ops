@@ -1,10 +1,53 @@
 #!/usr/bin/env deployer
 
 #Import libraries
+import("mcuHandler")
+import("masterTimer")
 import("controlInjector")
- 
+
 #Create components
+loadComponent("mcuHandler","McuHandler")
+loadComponent("masterTimer","MasterTimer")
 loadComponent("controlInjector","ControlInjector")
- 
+
+#Load properties
+loadService("mcuHandler","marshalling")
+mcuHandler.marshalling.loadProperties("../../../properties/tcp.cpf")
+mcuHandler.Ts = 1.0 / 500.0
+mcuHandler.rtMode = true
+
+loadService("masterTimer","marshalling")
+masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+
+#Set activities
+setActivity("mcuHandler", 0, HighestPriority, ORO_SCHED_RT)
+var double base_hz = masterTimer.imu_target_hz;
+setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
+
+#Connect ports
+var ConnPolicy cp
+connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
+
+mcuHandler.configure()
+mcuHandler.start()
+masterTimer.configure()
+masterTimer.start()
 controlInjector.configure()
 controlInjector.start()
+
+loadComponent("reporter","OCL::NetcdfReporting")
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+connectPeers("reporter", "mcuHandler")
+reporter.reportComponent("mcuHandler")
+reporter.ReportPolicy = rp
+ 
+#(optionally, overwrite the default report file name)
+reporter.ReportFile = "imuTest.nc"
+ 
+reporter.configure()
+reporter.start()

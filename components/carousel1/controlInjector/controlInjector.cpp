@@ -14,7 +14,7 @@ ControlInjector::ControlInjector(std::string name):TaskContext(name,PreOperation
 		        .doc("Trigger the component to write the controls");
 	addPort("portControls", portControls)
 		        .doc("Trigger the component to write the controls");
-	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, OwnThread)  
+	addOperation("setControlsUnitless", &ControlInjector::setControlsUnitless, this, OwnThread)  
 			.doc("Set the values for the flight surfaces, scaled from -1 to 1")
 			.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
 			.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
@@ -25,7 +25,6 @@ ControlInjector::ControlInjector(std::string name):TaskContext(name,PreOperation
 	portControls.setDataSample( controls );
 	portControls.write( controls );
 
-	log(Error) << "foooo" << endlog();
 }
 
 bool ControlInjector::configureHook()
@@ -41,7 +40,7 @@ bool  ControlInjector::startHook()
 void  ControlInjector::updateHook()
 {
 	portControls.write( controls );
-	convert_controls_radians_to_unitless(&controls[0])
+	convert_controls_radians_to_unitless(&controls[0]);
 }
 
 void  ControlInjector::stopHook()

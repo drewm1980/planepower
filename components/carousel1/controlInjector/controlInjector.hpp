@@ -29,7 +29,7 @@ public:
 	/// Connect this to the mcuHandler
 	RTT::OutputPort< std::vector< double > > portControls;
 
-	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
 	
 	// Holder for the control action to be send
 	std::vector< double > controls; 

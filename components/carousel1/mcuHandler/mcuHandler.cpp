@@ -46,16 +46,6 @@ enum McuHandlerErrorCodes
 	ERR_DEADLINE
 };
 
-// Convert units from radians to (-1,1)
-// angle_radians = (angle_unitless - OFFSET) * SCALE
-// angle_radians/SCALE + OFFSET = angle_unitless
-void convert_controls_radians_to_unitless(double * controls)
-{
-	controls[0] = controls[0]/RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
-	controls[1] = controls[1]/LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
-	controls[3] = controls[3]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
-}
-
 McuHandler::McuHandler(std::string name)
 	: RTT::TaskContext(name, PreOperational)
 {
