@@ -42,16 +42,16 @@ cd rFSM
 make
 )
 
-echo "Bootstrapping dot service..."
-if [ ! -d rtt_dot_service ]; then
-	git clone git@gitorious.org:rtt_dot_service/rtt_dot_service.git
-else
-	(
-	cd rtt_dot_service
-	git pull origin master
-	)
-fi
-(
-cd rtt_dot_service
-make
-)
+#echo "Bootstrapping dot service..."
+#if [ ! -d rtt_dot_service ]; then
+	#git clone git@gitorious.org:rtt_dot_service/rtt_dot_service.git
+#else
+	#(
+	#cd rtt_dot_service
+	#git pull origin master
+	#)
+#fi
+#(
+#cd rtt_dot_service
+#make
+#)
