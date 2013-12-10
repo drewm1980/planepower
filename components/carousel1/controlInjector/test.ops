@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("controlInjector")
+ 
+#Create components
+loadComponent("controlInjector","ControlInjector")
+ 
+controlInjector.configure()
+controlInjector.start()
