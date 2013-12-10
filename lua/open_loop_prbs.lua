@@ -23,6 +23,12 @@ end
 dofile("load_carousel_1_hardware.lua")
 dofile("setup_carousel_1_reporters.lua")
 
+-- Load up a component to set controls that are synchronized with
+-- the camera clock
+load_component("controlInjector","ControlInjector","controlInjector")
+deployer:connect("masterTimer.cameraClock","controlInjector.portTrigger")
+deployer:connect("controlInjector.portControls","mcuHandler.portControls")
+
 masterTimer:start()
 
 function random_control(min,max)

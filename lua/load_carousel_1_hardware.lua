@@ -21,7 +21,6 @@ load_component("masterTimer","MasterTimer","masterTimer")
 load_properties("masterTimer",PROPERTIES.."masterTimer.cpf")
 base_hz = get_property("masterTimer","imu_target_hz")
 
-
 -- Fully start up soem hardware before anything else
 deployer:import("soem_master")
 deployer:import("soem_ebox")
