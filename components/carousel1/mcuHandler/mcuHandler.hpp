@@ -40,7 +40,15 @@ void convert_controls_radians_to_unitless(double * controls)
 {
 	controls[0] = controls[0]/RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
 	controls[1] = controls[1]/LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
-	controls[3] = controls[3]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
+	controls[2] = controls[2]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
+}
+// Convert units from (-1,1) to radians
+// angle_radians = (angle_unitless - OFFSET) * SCALE
+void convert_controls_unitless_to_radians(double * controls)
+{
+	controls[0] = (controls[0] - RIGHT_AILERON_OFFSET) * RIGHT_AILERON_SCALE;
+	controls[1] = (controls[1] - LEFT_AILERON_OFFSET) * LEFT_AILERON_SCALE;
+	controls[2] = (controls[2] - ELEVATOR_OFFSET) * ELEVATOR_SCALE;
 }
 
 /// McuHandler class

@@ -18,15 +18,20 @@ mcuHandler.rtMode = true
 
 loadService("masterTimer","marshalling")
 masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
+# For testing, override the camera clock to be slow enough that we can see the delay, for testing purposes
+masterTimer.camera_target_hz = .2 
 
 #Set activities
 setActivity("mcuHandler", 0, HighestPriority, ORO_SCHED_RT)
 var double base_hz = masterTimer.imu_target_hz;
 setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
+setActivity("controlInjector", 0.0 , HighestPriority, ORO_SCHED_RT)
 
 #Connect ports
 var ConnPolicy cp
 connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
+connect("masterTimer.cameraClock","controlInjector.trigger",cp)
+connect("controlInjector.portControls", "mcuHandler.controls",cp)
 
 mcuHandler.configure()
 mcuHandler.start()
