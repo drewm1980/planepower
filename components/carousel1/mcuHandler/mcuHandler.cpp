@@ -27,15 +27,6 @@
 #define IMU_ACCL_SCALE( Value ) \
 		(float)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
 
-// For these conversion factors,
-// angle_radians = (angle_unitless - OFFSET) * SCALE
-#define RIGHT_AILERON_SCALE -0.50 
-#define LEFT_AILERON_SCALE  -0.47
-#define ELEVATOR_SCALE 0.83
-#define RIGHT_AILERON_OFFSET 0.0
-#define LEFT_AILERON_OFFSET 0.0
-#define ELEVATOR_OFFSET 0.0
-
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
 

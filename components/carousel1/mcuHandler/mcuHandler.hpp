@@ -22,6 +22,17 @@ typedef uint64_t TIME_TYPE;
 /// Size of the transmit buffer
 #define TRANSMIT_BUFFER_SIZE	64
 
+// For these conversion factors,
+// angle_radians = (angle_unitless - OFFSET) * SCALE
+#define RIGHT_AILERON_SCALE -0.50 
+#define LEFT_AILERON_SCALE  -0.47
+#define ELEVATOR_SCALE 0.83
+#define RIGHT_AILERON_OFFSET 0.0
+#define LEFT_AILERON_OFFSET 0.0
+#define ELEVATOR_OFFSET 0.0
+
+void convert_controls_radians_to_unitless(double * controls);
+
 /// McuHandler class
 class McuHandler
 	: public RTT::TaskContext
