@@ -47,6 +47,14 @@ public:
 	/// Error hook.
 	virtual void errorHook( );
 
+#ifdef NONREALTIME_DEBUGGING
+	// Commands for setting the references.
+	// Note:  These are intended to be used manually for debugging purposes!
+	// For actual control, you should use the provided input port!
+	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+#endif
+
 protected:
 
 	/// Trigger the component to get IMU data if there is an event on this port.
@@ -76,14 +84,6 @@ protected:
 	double Ts;
 	/// RT mode indicator
 	bool rtMode;
-
-#ifdef NONREALTIME_DEBUGGING
-	// Commands for setting the references.
-	// Note:  These are intended to be used manually for debugging purposes!
-	// For actual control, you should use the provided input port!
-	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
-	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
-#endif
 
 private:
 
