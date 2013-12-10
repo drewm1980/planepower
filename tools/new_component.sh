@@ -62,7 +62,7 @@ using namespace RTT::os;
 
 $COMPONENT_CLASS_NAME::$COMPONENT_CLASS_NAME(std::string name):TaskContext(name,PreOperational) 
 {
-	log(Error) << "foooo" << endlog();
+	//log(Error) << "Error in constructor of $COMPONENT_CLASS_NAME" << endlog();
 }
 
 bool $COMPONENT_CLASS_NAME::configureHook()
