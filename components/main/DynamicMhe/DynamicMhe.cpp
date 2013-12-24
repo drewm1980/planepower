@@ -173,7 +173,7 @@ void DynamicMhe::updateHook()
 	//
 
 	fdbStart = TimeService::Instance()->getTicks();
-	int mheStatus = 0;
+	mheStatus = 0;
 	if (runMhe == true)
 	{
 		//
@@ -184,12 +184,7 @@ void DynamicMhe::updateHook()
 		mheStatus = feedbackStep();
 
 		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
-	
-		debugData.solver_status = mheStatus;
-		debugData.kkt_value = getKKT();
-		debugData.obj_value = getObjective();
-		debugData.n_asc = getNWSR();
-		
+			
 		// Copy the current state estimate to the output port
 		for (unsigned i = 0; i < NX; ++i)
 			stateEstimate.x_hat[ i ] = acadoVariables.x[N * NX + i];
@@ -384,6 +379,11 @@ bool DynamicMhe::prepareMeasurements( void )
 
 bool DynamicMhe::prepareDebugData( void )
 {
+	debugData.solver_status = mheStatus;
+	debugData.kkt_value     = getKKT();
+	debugData.obj_value     = getObjective();
+	debugData.n_asc         = getNWSR();
+
 	debugData.x.assign(acadoVariables.x, acadoVariables.x + (N + 1) * NX);
 	debugData.u.assign(acadoVariables.u, acadoVariables.u + N * NU);
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
