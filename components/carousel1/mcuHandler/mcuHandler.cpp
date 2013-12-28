@@ -420,4 +420,6 @@ void McuHandler::ethernetTransmitReceive( void )
 		numErrors = 0; 
 }
 
-ORO_CREATE_COMPONENT( McuHandler )
+ORO_LIST_COMPONENT_TYPE( McuHandler )
+//ORO_CREATE_COMPONENT( McuHandler )
+
