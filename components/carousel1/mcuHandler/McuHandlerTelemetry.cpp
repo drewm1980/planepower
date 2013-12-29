@@ -52,7 +52,10 @@ void McuHandlerTelemetry::updateHook()
 		msg.set_ts_trigger( msgData.ts_trigger );
 		msg.set_ts_elapsed( msgData.ts_elapsed );
 
-		msg.SerializeToString( &msgRaw );
+		// NOTE At test run we need to determine byte size of the message
+		// NOTE Type of the zmqMsg will be zmq::message_t, ctor argument is the size
+		// NOTE SerializeToArray requires that all protobuf msg fields are set!
+		// msg.SerializeToArray(static_cast<void*>zmqMsg.data(), msg.ByteSize());
 	}
 }
 

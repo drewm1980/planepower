@@ -43,7 +43,6 @@ protected:
 private:
 
 	McuHandlerProto::McuHandlerMsg msg;
-	std::string msgRaw;
 };
 
 #endif // __MCU_HANDLER_TELEMETRY__
