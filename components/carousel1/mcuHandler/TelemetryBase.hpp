@@ -56,7 +56,7 @@ private:
 TelemetryBase::TelemetryBase(std::name name)
 	: RTT::TaskContext(name, PreOperational)
 {
-	addPort("msgData", portMsgData)
+	addPort("msgData", portData)
 		.doc("Message data");
 
 	addProperty("port", port)
