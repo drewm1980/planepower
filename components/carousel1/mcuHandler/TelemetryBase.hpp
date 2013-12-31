@@ -99,7 +99,7 @@ void TelemetryBase::updateHook()
 		// Serialize data
 		protobuf.SerializeToString( &raw );
 		// Transmit serialized data
-		if (s_sendmore(*zSocket, raw) == false)
+		if (s_send(*zSocket, raw) == false)
 			exception();
 	}
 }
