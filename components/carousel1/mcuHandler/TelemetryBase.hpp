@@ -47,6 +47,7 @@ protected:
 
 private:
 
+	// TODO make those guys shared pointers
 	zmq::context_t* zContext;
 	zmq::socket_t*  zSocket;
 
