@@ -10,15 +10,15 @@
 
 /// A base telemetry class
 template< typename D, class P >
-	: public RTT::TaskContext
 class TelemetryBase
+	: public RTT::TaskContext
 {
 public:
 	// Ctor
 	TelemetryBase(std::string name);
 
 	// Dtor
-	TelemetryBase()
+	~TelemetryBase()
 	{}
 
 	/// Configuration hook.
