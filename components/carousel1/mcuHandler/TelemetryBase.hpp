@@ -71,7 +71,7 @@ TelemetryBase::TelemetryBase(std::name name)
 	raw.resize(protobuf.ByteSize(), 0);
 }
 
-TelemetryBase::configureHook()
+bool TelemetryBase::configureHook()
 {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
