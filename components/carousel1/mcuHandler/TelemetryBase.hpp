@@ -69,13 +69,15 @@ TelemetryBase::TelemetryBase(std::name name)
 	//
 	fill();
 	raw.resize(protobuf.ByteSize(), 0);
+
+	zContext = zSocket = NULL;
 }
 
 bool TelemetryBase::configureHook()
 {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-	zContext = new zmq::context( 1 );
+	zContext = new zmq::context_t( 1 );
 
 	if (port.empty() == true)
 		return false;
@@ -109,12 +111,14 @@ void TelemetryBase::stopHook()
 {
 	s_send(*zSocket, raw);
 
-	delete zSocket;
+	if (zSocket != NULL)
+		delete zSocket;
 }
 
 void TelemetryBase::cleanupHook()
 {
-	delete zContext;
+	if (zContext != NULL)
+		delete zContext;
 }
 
 void TelemetryBase::errorHook()
