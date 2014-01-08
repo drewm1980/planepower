@@ -119,26 +119,30 @@ mhe.targetCableLength = 1.2
 # Set reporter policy: we use circular buffer connection with quite a long 
 # buffer
 var ConnPolicy rp
-//rp.type = DATA
+# rp.type = DATA
 rp.type = CIRCULAR_BUFFER
 rp.size = 100
 rp.lock_policy = LOCKED
-//rp.lock_policy = LOCK_FREE
+# rp.lock_policy = LOCK_FREE
+
+var ConnPolicy rp_sensors
+rp_sensors.type = CIRCULAR_BUFFER
+rp_sensors.size = 4000
 
 imuReporter.ReportFile = "imuData.nc"
-imuReporter.ReportPolicy = rp
+imuReporter.ReportPolicy = rp_sensors
 imuReporter.ReportOnlyNewData = false
 
 cameraReporter.ReportFile = "cameraData.nc"
-cameraReporter.ReportPolicy = rp
+cameraReporter.ReportPolicy = rp_sensors
 cameraReporter.ReportOnlyNewData = false
 
 encoderReporter.ReportFile = "encoderData.nc"
-encoderReporter.ReportPolicy = rp
+encoderReporter.ReportPolicy = rp_sensors
 encoderReporter.ReportOnlyNewData = false
 
 lineAngleReporter.ReportFile = "angleData.nc"
-lineAngleReporter.ReportPolicy = rp
+lineAngleReporter.ReportPolicy = rp_sensors
 lineAngleReporter.ReportOnlyNewData = false
 
 mheReporter.ReportFile = "dynamicMheData.nc"
