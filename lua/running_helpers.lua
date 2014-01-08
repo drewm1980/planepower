@@ -15,7 +15,7 @@ end
 
 function P.warmup()
 	print("Spinning up carousel...")
-	thresh_warm = 60.0  -- rpm
+	thresh_warm = 52.0  -- rpm
 	set_voltage(10)
 	repeat 
 		os.execute("sleep 0.2")

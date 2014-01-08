@@ -27,7 +27,7 @@ deployer:import("soem_ebox")
 deployer:loadComponent("soemMaster","soem_master::SoemMasterComponent")
 soemMaster=deployer:getPeer("soemMaster")
 set_property("soemMaster","ifname","eth2")
-deployer:setActivity("soemMaster", 0.001, soemPrio, ORO_SCHED_RT)
+deployer:setActivity("soemMaster", 0.002, soemPrio, ORO_SCHED_RT)
 soemMaster:configure()
 soemMaster:start()
 
@@ -52,7 +52,7 @@ set_property("mcuHandler","Ts",1.0/base_hz)
 set_property("mcuHandler","rtMode",true)
 
 set_property("encoder","encoderPort",0)
-set_property("encoder","Ts",0.001)
+set_property("encoder","Ts",0.002)
 
 -- LED tracker - hangs until frame arrival, does processing, and re-triggers itself.
 set_property("LEDTracker","useExternalTrigger",true)
@@ -62,7 +62,7 @@ set_property("LEDTracker","sigma_marker",20)
 ----------------- Set Priorities and activities
 
 deployer:setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
-deployer:setActivity("mcuHandler", 0.001, sensorPrio, ORO_SCHED_RT)
+deployer:setActivity("mcuHandler", 0.0, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
 deployer:setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
@@ -77,7 +77,7 @@ cpLT = rtt.Variable("ConnPolicy")
 cpLT.type = 1
 cpLT.size = 5
 
--- deployer:connect("masterTimer.imuClock","mcuHandler.trigger", cp)
+deployer:connect("masterTimer.imuClock","mcuHandler.trigger", cp)
 deployer:connect("masterTimer.cameraClock", "LEDTracker.triggerTimeStampIn", cpLT)
 deployer:connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 --deployer:connect("LEDTracker.markerPositions", "poseFromMarkers.markerPositions", cp)

@@ -8,7 +8,8 @@ require "deployment_helpers"
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
-						"set_property"}) do
+						"set_property",
+					    "set_up_reporters"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 
@@ -25,31 +26,33 @@ dofile("setup_carousel_1_reporters.lua")
 
 -- Load up a component to set controls that are synchronized with
 -- the camera clock
-load_component("controlInjector","ControlInjector","controlInjector")
-deployer:connect("masterTimer.cameraClock","controlInjector.portTrigger")
-deployer:connect("controlInjector.portControls","mcuHandler.portControls")
+load_component("controlInjector","ControlInjector","controlInjector",cp)
+deployer:connect("masterTimer.cameraClock","controlInjector.trigger",cp)
+deployer:connect("controlInjector.portControls","mcuHandler.controls",cp)
 
 masterTimer:start()
+controlInjector:start()
 
 function random_control(min,max)
 	r = math.random(0,1)
 	return r*(max-min) + min
 end
 
---warmup()
+warmup()
+set_up_reporters({"controls"},{"controlInjector"})
 
-os.execute("sleep ".. 10)
+--os.execute("sleep ".. 10)
 
-t = 0.1 -- seconds
-A = .25 
-
-for i =1,3 do
+t = 0.08 -- seconds
+A = 0.25 
+print "Starting to gather data"
+for i =1,3750 do
 	r_aileron = random_control(-A,A)
 	l_aileron = r_aileron
 	elevator = random_control(-A,A)
-	mcuHandler:setControlsUnitless(r_aileron,l_aileron,elevator)
+	--mcuHandler:setControlsUnitless(r_aileron,l_aileron,elevator)
 	os.execute("sleep " .. t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
 
---slowdown()
+slowdown()
