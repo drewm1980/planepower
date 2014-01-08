@@ -1,0 +1,19 @@
+package McuHandlerProto;
+
+message McuHandlerMsg
+{
+		required float gyro_x = 1;
+		required float gyro_y = 2;
+		required float gyro_z = 3;
+
+		required float accl_x = 4;
+		required float accl_y = 5;
+		required float accl_z = 6;
+
+		required float ua1 = 7;
+		required float ua2 = 8;
+		required float ue  = 9;
+
+		required double ts_trigger = 10;
+		required double ts_elapsed = 11;
+}
