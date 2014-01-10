@@ -5,7 +5,8 @@ import("mcuHandler")
 import("masterTimer")
 
 #Create components
-loadComponent("mcuHandler","McuHandler")
+loadComponent("mcuHandler", "McuHandler")
+loadComponent("telemetry", "McuHandlerTelemetry")
 loadComponent("masterTimer","MasterTimer")
 
 #Load properties
@@ -22,14 +23,19 @@ setActivity("mcuHandler", 0, HighestPriority, ORO_SCHED_RT)
 var double base_hz = masterTimer.imu_target_hz;
 setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
 
+setActivity("telemetry", 1.0 / 100.0, LowestPriority, ORO_SCHED_OTHER)
+
 #Connect ports
 var ConnPolicy cp
 connect("masterTimer.imuClock", "mcuHandler.trigger", cp)
+connect("mcuHandler.data", "telemetry.msgData", cp)
 
 mcuHandler.configure()
 mcuHandler.start()
 masterTimer.configure()
 masterTimer.start()
+telemetry.configure()
+telemetry.start()
 
 loadComponent("reporter","OCL::NetcdfReporting")
 setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
