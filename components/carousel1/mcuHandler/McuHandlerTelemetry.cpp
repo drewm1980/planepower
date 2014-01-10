@@ -12,24 +12,32 @@ using namespace RTT::os;
 using namespace McuHandlerProto;
 
 McuHandlerTelemetry::McuHandlerTelemetry(std::string name)
-	: RTT::TaskContext(name, PreOperational)
+	: RTT::TaskContext(name, PreOperational),
+	  zContext( NULL ), zSocket( NULL )
 {
 	//
 	// Add ports
 	//
 	addEventPort("msgData", portMsgData)
 		.doc("Message data");
+
+	port = "tcp://*:5563";
 }
 
 bool McuHandlerTelemetry::configureHook()
 {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+	zContext = new zmq::context_t( 1 );
+
 	return true;
 }
 
 bool McuHandlerTelemetry::startHook()
 {
+	zSocket = new zmq::socket_t(*zContext, ZMQ_PUB);
+	zSocket->bind( port.c_str() );
+
 	return true;
 }
 
@@ -52,6 +60,11 @@ void McuHandlerTelemetry::updateHook()
 		msg.set_ts_trigger( msgData.ts_trigger );
 		msg.set_ts_elapsed( msgData.ts_elapsed );
 
+		msg.SerializeToString( &raw );
+
+		if (s_send(*zSocket, raw) == false)
+			exception();
+
 		// NOTE At test run we need to determine byte size of the message
 		// NOTE Type of the zmqMsg will be zmq::message_t, ctor argument is the size
 		// NOTE SerializeToArray requires that all protobuf msg fields are set!
@@ -60,12 +73,18 @@ void McuHandlerTelemetry::updateHook()
 }
 
 void McuHandlerTelemetry::stopHook()
-{}
+{
+	if (zSocket != NULL)
+		delete zSocket;
+}
 
 void McuHandlerTelemetry::cleanupHook()
 {
 	// Optional, to be tested
 	google::protobuf::ShutdownProtobufLibrary();
+
+	if (zContext != NULL)
+		delete zContext;
 }
 
 void McuHandlerTelemetry::errorHook()
