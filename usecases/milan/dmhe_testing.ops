@@ -97,6 +97,8 @@ mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.Ts = 1.0 / base_hz
 mcuHandler.rtMode = true
 
+mcuHandlerTelemetry.port = "tcp://*:5563"
+
 # Voltage controller
 
 # Encoder
@@ -175,7 +177,7 @@ setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
 
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
 
-setActivityOnCPU("mcuHandlerTelemetry", 1/0 / 100.0, telemetryPrio, ORO_SCHED_OTHER,1)
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER,1)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
