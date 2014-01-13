@@ -9,5 +9,5 @@ mkdir ${timeStamp}
 cp imuData.nc ${timeStamp}/
 cp cameraData.nc ${timeStamp}/
 cp encoderData.nc ${timeStamp}/
-cp lineAngleData.nc ${timeStamp}/
+cp angleData.nc ${timeStamp}/
 cp dynamicMheData.nc ${timeStamp}/
