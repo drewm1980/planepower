@@ -4,14 +4,18 @@
 // OROCOS headers
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
+#include <rtt/Component.hpp>
+#include <rtt/Property.hpp>
 
 // ZMQ header
-#include <components/common/zhelpers.hpp>
+#include <zhelpers.hpp>
+// Protobuf
+#include <google/protobuf/stubs/common.h>
 
 /// A base telemetry class
 template< typename D, class P >
 class TelemetryBase
-	: public RTT::TaskContext
+  : public RTT::TaskContext
 {
 public:
 	// Ctor
@@ -31,8 +35,6 @@ public:
 	virtual void stopHook( );
 	/// Cleanup hook.
 	virtual void cleanupHook( );
-	/// Error hook.
-	virtual void errorHook( );
 
 protected:
 
@@ -41,7 +43,7 @@ protected:
 	RTT::InputPort< D > portData;
 	D data;
 
-	P protobuf;
+	P msg;
 
 	std::string port;
 
@@ -54,30 +56,33 @@ private:
 	std::string raw;
 };
 
-TelemetryBase::TelemetryBase(std::name name)
-	: RTT::TaskContext(name, PreOperational)
+template< typename D, class P >
+TelemetryBase<D, P>::TelemetryBase(std::string name)
+  : RTT::TaskContext(name, PreOperational)
 {
 	addPort("msgData", portData)
 		.doc("Message data");
 
 	addProperty("port", port)
-		.doc("Port for publishing the data");
+	  .doc("Port for publishing the data");
+
+	zContext = NULL;
+	zSocket = NULL;
+}
+
+template< typename D, class P >
+bool TelemetryBase<D, P>::configureHook()
+{
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+	zContext = new zmq::context_t( 1 );
 
 	//
 	// Execute a test run to reveal the message size
 	// and reserve memory for transport buffer
 	//
 	fill();
-	raw.resize(protobuf.ByteSize(), 0);
-
-	zContext = zSocket = NULL;
-}
-
-bool TelemetryBase::configureHook()
-{
-	GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-	zContext = new zmq::context_t( 1 );
+	raw.resize(msg.ByteSize(), 0);
 
 	if (port.empty() == true)
 		return false;
@@ -85,7 +90,8 @@ bool TelemetryBase::configureHook()
 	return true;
 }
 
-bool TelemetryBase::startHook()
+template< typename D, class P >
+bool TelemetryBase<D, P>::startHook()
 {
 	zSocket = new zmq::socket_t(*zContext, ZMQ_PUB);
 	zSocket->bind( port.c_str() );
@@ -93,35 +99,35 @@ bool TelemetryBase::startHook()
 	return true;
 }
 
-void TelemetryBase::updateHook()
+template< typename D, class P >
+void TelemetryBase<D, P>::updateHook()
 {
 	if (portData.read( data ) == RTT::NewData)
 	{
 		// Fill in the protobuf
 		fill();
 		// Serialize data
-		protobuf.SerializeToString( &raw );
+		msg.SerializeToString( &raw );
 		// Transmit serialized data
 		if (s_send(*zSocket, raw) == false)
 			exception();
 	}
 }
 
-void TelemetryBase::stopHook()
+template< typename D, class P >
+void TelemetryBase<D, P>::stopHook()
 {
-	s_send(*zSocket, raw);
-
 	if (zSocket != NULL)
 		delete zSocket;
 }
 
-void TelemetryBase::cleanupHook()
+template< typename D, class P >
+void TelemetryBase<D, P>::cleanupHook()
 {
+  google::protobuf::ShutdownProtobufLibrary();
+
 	if (zContext != NULL)
 		delete zContext;
 }
-
-void TelemetryBase::errorHook()
-{}
 
 #endif // __TELEMETRY_BASE__
