@@ -235,7 +235,7 @@ connectPeers("lineAngleReporter", "lineAngleSensor")
 lineAngleReporter.reportComponent( "lineAngleSensor" )
 
 connectPeers("mheReporter", "mhe")
-mheReporter.reportComponent("mhe")
+mheReporter.reportPort("mhe", "debugData")
 
 ################################################################################
 #
