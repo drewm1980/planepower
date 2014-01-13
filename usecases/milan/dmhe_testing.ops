@@ -40,9 +40,10 @@ loadService("Deployer","dot")
 import("masterTimer")
 loadComponent("masterTimer", "MasterTimer")
 
-# MCU Handler
+# MCU Handler and corresponding telemetry component
 import("mcuHandler")
 loadComponent("mcuHandler", "McuHandler")
+loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
 
 # Voltage controller
 import("voltageController")
@@ -160,6 +161,7 @@ var int sensorPrio = 97
 var int ocpPrio = 99
 var int LEDTrackerPrio = 70
 var int sineGenPrio = 60
+var int telemetryPrio = 50
 
 setActivityOnCPU("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT,2)
 
@@ -172,6 +174,8 @@ setActivityOnCPU("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
 
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
+
+setActivityOnCPU("mcuHandlerTelemetry", 1/0 / 100.0, telemetryPrio, ORO_SCHED_OTHER,1)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
@@ -216,6 +220,8 @@ connect("encoder.data", "mhe.encoderData", cp)
 connect("LEDTracker.data", "mhe.ledTrackerData", cp)
 connect("lineAngleSensor.data", "mhe.lasData", cp)
 
+connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
+
 ################################################################################
 #
 # Reporter configuration
@@ -248,6 +254,9 @@ masterTimer.configure()
 
 mcuHandler.configure()
 mcuHandler.start()
+
+mcuHandlerTelemetry.configure()
+mcuHandlerTelemetry.start()
 
 voltageController.configure()
 voltageController.start()
