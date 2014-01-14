@@ -27,8 +27,8 @@ protected:
 void EncoderTelemetry::fill()
 {
   msg.set_theta( data.theta );
-  msg.set_sin_theta( data.theta );
-  msg.set_cos_theta( data.theta );
+  msg.set_sin_theta( data.sin_theta );
+  msg.set_cos_theta( data.cos_theta );
 
   msg.set_omega_filt_rpm( data.omega_filt_rpm );
   msg.set_dbg_speed_voltage( data.dbg_speed_voltage );
