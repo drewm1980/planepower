@@ -1,0 +1,12 @@
+package LineAngleSensorProto;
+
+message LineAngleSensorMsg
+{
+	// Measured angles [rad]
+	required float angle_ver = 1;
+	required float angle_hor = 2;
+	
+	// Time-stamps: trigger [ticks] and elapsed [sec]
+	required double ts_trigger = 3;
+	required double ts_elapsed = 4;
+}

@@ -1,3 +1,12 @@
 include_rules
-: foreach *.cpp |> !cxx_orocos |>
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+
+# Generate the protobuf file
+: LineAngleSensorTelemetry.proto |> protoc --cpp_out=. LineAngleSensorTelemetry.proto |> LineAngleSensorTelemetry.pb.cc LineAngleSensorTelemetry.pb.h
+: LineAngleSensorTelemetry.proto |> protoc --python_out=. LineAngleSensorTelemetry.proto |> LineAngleSensorTelemetry_pb2.py
+
+# Compile the code
+: LineAngleSensorTelemetry.pb.cc | LineAngleSensorTelemetry.pb.h  |> !cxx_orocos |>
+: foreach *.cpp | LineAngleSensorTelemetry.pb.h |> !cxx_orocos |>
 : *.o |> !ld_orocos |> 
