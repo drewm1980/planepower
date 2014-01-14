@@ -212,4 +212,5 @@ void LEDTracker::poseFromMarkers(bool foundNaN)
 	data.pose.assign(cPose, cPose + NPOSE);
 }
 
-ORO_CREATE_COMPONENT( LEDTracker )
+//ORO_CREATE_COMPONENT( LEDTracker )
+ORO_LIST_COMPONENT_TYPE( LEDTracker )
