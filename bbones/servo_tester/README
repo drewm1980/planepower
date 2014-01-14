@@ -1,0 +1,16 @@
+This is for the little servo tester I rigged up.
+
+I'm loosely following: 
+
+http://learn.adafruit.com/controlling-a-servo-with-a-beaglebone-black/installing-the-python-library
+
+The beaglebone I'm using at the moment is labeled "4"
+
+
+Setting up Adafruit io python library:
+
+
+
+
+opkg update && opkg install python-pip python-setuptools python-smbus
+pip install Adafruit_BBIO
