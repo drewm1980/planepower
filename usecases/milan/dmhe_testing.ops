@@ -52,6 +52,7 @@ loadComponent("voltageController", "VoltageController")
 # Encoder
 import("encoder")
 loadComponent("encoder", "Encoder")
+loadComponent("encoderTelemetry", "EncoderTelemetry")
 
 # Camera trigger
 import("cameraTrigger")
@@ -105,6 +106,8 @@ mcuHandlerTelemetry.port = "tcp://*:5563"
 encoder.encoderPort = 0;
 # Same as for SOEM
 encoder.Ts = 0.001;
+
+encoderTelemetry.port = "tcp://*:5564"
 
 # Camera trigger
 
@@ -178,6 +181,7 @@ setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
 
 setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER,1)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER,1)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
@@ -223,6 +227,7 @@ connect("LEDTracker.data", "mhe.ledTrackerData", cp)
 connect("lineAngleSensor.data", "mhe.lasData", cp)
 
 connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
+connect("encoder.data", "encoderTelemetry.msgData", cp)
 
 ################################################################################
 #
@@ -265,6 +270,9 @@ voltageController.start()
 
 encoder.configure()
 encoder.start()
+
+encoderTelemetry.configure()
+encoderTelemetry.start()
 
 cameraTrigger.configure()
 cameraTrigger.start()
