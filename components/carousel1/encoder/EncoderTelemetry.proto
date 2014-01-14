@@ -1,0 +1,14 @@
+package EncoderProto;
+
+message EncoderMsg
+{
+	required float theta = 1;
+	required float sin_theta = 2;
+	required float cos_theta = 3;
+	
+	required float omega_filt_rpm = 4;
+	required float dbg_speed_voltage = 5;
+
+	required double ts_trigger = 6;
+	required double ts_elapsed = 7;
+}

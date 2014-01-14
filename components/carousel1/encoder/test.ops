@@ -16,7 +16,7 @@ masterTimer.start()
 import("soem_master")
 import("soem_ebox")
 loadComponent("soemMaster","soem_master::SoemMasterComponent") 
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
 setActivity("soemMaster", 0.001, 98, ORO_SCHED_RT)
 
 soemMaster.configure()
@@ -25,15 +25,22 @@ soemMaster.start()
 # Encoder
 import("encoder")
 loadComponent("encoder","Encoder")
+loadComponent("telemetry", "EncoderTelemetry")
+
 encoder.encoderPort = 0
+
+telemetry.port = "tcp://*:5564"
+
 # Same as for SOEM master
 encoder.Ts = 0.001
 setActivity("encoder", 0.0, 99, ORO_SCHED_RT)
+setActivity("telemetry", 1.0 / 100.0, 98, ORO_SCHED_RT)
 
 #connectPeers("encoder","soemMaster")
 #connect("encoder.trigger","masterTimer.cameraClock",cp)
 
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
+connect("encoder.data", "encoderTelemetry.msgData", cp)
 
 # voltageController
 import("voltageController")
@@ -67,6 +74,9 @@ voltageController.start()
 
 encoder.configure()
 encoder.start()
+
+telemetry.configure()
+telemetry.start()
  
 reporter.configure()
 reporter.start()
