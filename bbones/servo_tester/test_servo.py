@@ -18,7 +18,7 @@ duty_cw = pwm_cw * freq * .001
 
 PWM.start("P8_13", duty_center*100.0*fucked_up_bbone_clock_factor, freq)
 
-wave_period = 1
+wave_period = 2
 
 while True:
     PWM.set_duty_cycle("P8_13", duty_ccw*100.0*fucked_up_bbone_clock_factor)
