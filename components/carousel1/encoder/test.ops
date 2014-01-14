@@ -40,7 +40,7 @@ setActivity("telemetry", 1.0 / 100.0, 98, ORO_SCHED_RT)
 #connect("encoder.trigger","masterTimer.cameraClock",cp)
 
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
-connect("encoder.data", "encoderTelemetry.msgData", cp)
+connect("encoder.data", "telemetry.msgData", cp)
 
 # voltageController
 import("voltageController")
