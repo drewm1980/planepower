@@ -31,6 +31,18 @@
 #define E_MASTERENCODER -5 ///< EPOS operation mode:internal
 #define E_STEPDIRECTION -6 ///< EPOS operation mode:internal
 
+#define PI 3.14159265359
+#define DRUM_CIRCUMFERENCE PI*0.1
+#define GEAR_RATIO 3.7
+#define ENCODER_RESOLUTION 2000.0 // Number of encoder ticks per revolution
+
+//#define WINCH_SCALING GEAR_RATIO*ENCODER_RESOLUTION/DRUM_CIRCUMFERENCE // The scaling to go from tether lengt in meter to encoder ticks
+//#define WINCH_SCALING 2000.0*3.7/0.1/3.14159265359
+#define WINCH_SCALING 50000.0/2.100 // The scaling to go from tether length in meter to encoder ticks (ticks/meter)
+#define MIN_TETHER_LENGTH 0.1
+#define MAX_TETHER_LENGTH 2.2
+
+#define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
 
 typedef uint32_t DWORD; ///< \brief 32bit type for EPOS data exchange
 typedef uint16_t WORD; ///< \brief 16bit type for EPOS data exchange
@@ -58,7 +70,6 @@ using std::ifstream;
 
 using namespace std;
 using namespace RTT;
-using namespace BFL;
 using namespace Orocos;
 using namespace KDL;
 
@@ -104,8 +115,11 @@ namespace OCL
         	 */
 		bool openDevice();
 		unsigned int nodeId;
-		bool move(int steps);
-		bool vel(int vel);
+		bool setRelativePosition(int steps);
+		bool setAbsolutePosition(int steps);
+		bool setVelocity(int vel);
+		bool changeTetherLength(double length);
+		bool setTetherLength(double length);
 		void setPositionProfile(int vel, int acc);
 		void setVelocityProfile(int acc);
 		void enableBrake();
@@ -113,7 +127,12 @@ namespace OCL
 		int getPosition();
 		int getVelocity();
 		int getCurrent();
-
+		bool loadTetherLength(double& length);
+		bool saveTetherLength(double length);
+		void setCurrentTetherLength(double length);
+		double getTetherLength();
+		int length2ticks(double length);
+		double ticks2length(int ticks);
 	public:
 		WinchControl(std::string name);
 		~WinchControl();
