@@ -1,4 +1,15 @@
-#include_rules
+include_rules
 
-#: foreach *.cpp |> !cxx_orocos |>
-#: *.o |> !ld_orocos |> %d.so
+BOOST_LIBS = -lboost_system-mt -lboost_thread-mt 
+
+LDFLAGS += $(BOOST_LIBS)
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+LDFLAGS_OROCOS += $(BOOST_LIBS)
+
+# Compile all cpp files
+: foreach *.cpp |> !cxx_orocos |>
+# Create the component
+: winchControl.o Epos2.o |> !ld_orocos |> %d.so
+# Create the test file
+: configtest.o Epos2.o |> !ld |> configtest

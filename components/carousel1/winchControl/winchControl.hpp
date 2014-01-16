@@ -2,6 +2,7 @@
 #define __WINCHCONTROL__
 
 #include <rtt/TaskContext.hpp>
+#include <rtt/Component.hpp>
 #include <rtt/Logger.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/Attribute.hpp>
@@ -11,13 +12,6 @@
 #include <rtt/Port.hpp>
 #include <stdlib.h>
 #include <stdint.h>  /* int types with given size */
-
-#include <ocl/OCL.hpp>
-
-#include <fstream>
-
-#include <epos2/Definitions.h>
-
 
 /* EPOS modes of operation, firmware spec 14.1.59 (p.133, tbl. 72) */
 #define E_HOMING      6 ///< EPOS operation mode: homing
@@ -42,7 +36,7 @@
 #define MIN_TETHER_LENGTH 0.1
 #define MAX_TETHER_LENGTH 2.2
 
-#define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
+// #define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
 
 typedef uint32_t DWORD; ///< \brief 32bit type for EPOS data exchange
 typedef uint16_t WORD; ///< \brief 16bit type for EPOS data exchange
@@ -64,84 +58,49 @@ typedef uint16_t UNSIGNED16;
 //! unsigned 32-bit integer
 typedef uint32_t UNSIGNED32;
 
-
-
-using std::ifstream;
-
-using namespace std;
-using namespace RTT;
-using namespace Orocos;
-using namespace KDL;
-
-namespace OCL
+/// WinchControl class
+class WinchControl
+    : public RTT::TaskContext
 {
+public:
+    WinchControl(std::string name);
 
-	/// WinchControl class
-	/**
-	This class simulates the free motion of a ball attached to a pendulum.
-	The pendulum motion is executed in the x=0 plane of the pendulum reference
-	frame. The state of the ball in the pendulum plane is given by
-	[theta,omega,alpha]. The position of the ball in the world frame is given by
-	[x,y,z].
-	The pendulum reference frame wrt to the world reference frame gives the pose
-	of the pendulum motion plane wrt to the world.
-	*/
-	class WinchControl
-		: public TaskContext
-	{
-	protected:
-		/*********
-		PROPERTIES
-		*********/
-		//! Example of a property
-		Property<double>			_prop;
+    ~WinchControl();
 
-		/*********
-		DATAPORTS
-		*********/
-		//! Input port
-		InputPort<double>			_inPort;
-		//! Output port
-		OutputPort<double>			_outPort;
+    virtual bool configureHook();
+    virtual bool startHook();
+    virtual void updateHook();
+    virtual void stopHook();
+  //    virtual void cleanupHook();
 
-	private:
-		/// Handle for port access
-		void* keyHandle;
-		int NodeId;
-		// Error information about the executed function
-		long unsigned int ErrorCode;
-        	/** 
-        	 * Opens the connection with the EPOS2 device
-        	 */
-		bool openDevice();
-		unsigned int nodeId;
-		bool setRelativePosition(int steps);
-		bool setAbsolutePosition(int steps);
-		bool setVelocity(int vel);
-		bool changeTetherLength(double length);
-		bool setTetherLength(double length);
-		void setPositionProfile(int vel, int acc);
-		void setVelocityProfile(int acc);
-		void enableBrake();
-		void disableBrake();
-		int getPosition();
-		int getVelocity();
-		int getCurrent();
-		bool loadTetherLength(double& length);
-		bool saveTetherLength(double length);
-		void setCurrentTetherLength(double length);
-		double getTetherLength();
-		int length2ticks(double length);
-		double ticks2length(int ticks);
-	public:
-		WinchControl(std::string name);
-		~WinchControl();
-		bool		configureHook();
-		bool		startHook();
-		void		updateHook();
-		void		stopHook();
-		void		cleanUpHook();
-		
-	};
-}
+protected:
+
+private:
+    /// Handle for port access
+    void* keyHandle;
+    int NodeId;
+    // Error information about the executed function
+    long unsigned int ErrorCode;
+    bool openDevice();
+    unsigned int nodeId;
+    bool setRelativePosition(int steps);
+    bool setAbsolutePosition(int steps);
+    bool setVelocity(int vel);
+    bool changeTetherLength(double length);
+    bool setTetherLength(double length);
+    void setPositionProfile(int vel, int acc);
+    void setVelocityProfile(int acc);
+    void enableBrake();
+    void disableBrake();
+    int getPosition();
+    int getVelocity();
+    int getCurrent();
+    bool loadTetherLength(double& length);
+    bool saveTetherLength(double length);
+    void setCurrentTetherLength(double length);
+    double getTetherLength();
+    int length2ticks(double length);
+    double ticks2length(int ticks);
+};
+
 #endif // __WINCHCONTROL__

@@ -1661,7 +1661,7 @@ private:
      *
      *  \param Frame data
      */
-    void sendFrame(int16_t *frame);
+    void sendFrame(uint16_t *frame);
 
     /** \brief function receive a frame from EPOS2
      *
@@ -1683,7 +1683,7 @@ private:
      *  \param numberOfWords
      *  \return checksum (16 bits)
      */
-    int16_t computeChecksum(int16_t *pDataArray, int16_t numberOfWords);
+    uint16_t computeChecksum(uint16_t *pDataArray, uint16_t numberOfWords);
 
 	/// @}
 
@@ -1696,8 +1696,6 @@ private:
 	 *  \return signed number
 	 */
     long getNegativeLong(long number);
-
-    bool verbose;
 };
 
 #endif

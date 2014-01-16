@@ -4,6 +4,8 @@
 //
 // Copyright (C) 2013 Jochen Sprickerhof <jochen@sprickerhof.de>
 //
+// Copyright (C) 2014 Milan Vukov <milan.vukov@esat.kuleuven.be>
+//
 // This file is part of IRI EPOS2 Driver
 // IRI EPOS2 Driver is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -37,8 +39,8 @@ using namespace::boost::asio;  // save tons of typing
 	if (DEBUG == 0); else cout << "\n[EPOS2]\t"
 
 CEpos2::CEpos2(const std::string& _port, unsigned _baud, int8_t _nodeId)
-	: nodeId( _nodeId ), verbose( false ), io(), serialPort( io ),
-	  baud( _baud )
+  : port( _port ), baud( _baud ), nodeId( _nodeId ),
+    io(), serialPort( io )
 {}
 
 CEpos2::~CEpos2()
@@ -57,6 +59,9 @@ void CEpos2::close()
 
 void CEpos2::openDevice()
 {
+  if(serialPort.is_open() == true)
+    serialPort.close();
+
 	try
 	{
 		serialPort.open( port.c_str() );
@@ -67,6 +72,11 @@ void CEpos2::openDevice()
 		throw( e );
 	}
 
+	LOG() << "Device is created";
+
+	serialPort.cancel();
+	LOG() << "Cancel all asynchronous operations associated with the serial port.";
+
 	// Set option
 	serialPort.set_option( serial_port_base::baud_rate( baud ));
 	serialPort.set_option( serial_port_base::character_size( 8 ));
@@ -76,20 +86,22 @@ void CEpos2::openDevice()
 		serial_port_base::parity( serial_port_base::parity::none ));
 	serialPort.set_option(
 		serial_port_base::flow_control( serial_port_base::flow_control::none ));
+
+	LOG() << "Device is configured";
 }
 
 int32_t CEpos2::readObject(int16_t index, int8_t subindex)
 {
     int32_t result = 0x00000000;
-    int16_t req_frame[4];
-    uint16_t ans_frame[4];
+    uint16_t req_frame[ 4 ];
+    uint16_t ans_frame[ 4 ];
 
-    req_frame[0] = 0x0210;     // header (LEN,OPCODE)
-    req_frame[1] = index;      // data
-    req_frame[2] = ((0x0000 | this->nodeId) << 8) | subindex; // node_id subindex
-    req_frame[3] = 0x0000;     // CRC
+    req_frame[ 0 ] = 0x1001;     // header (LEN - 1,OPCODE)
+    req_frame[ 1 ] = index;      // data
+    req_frame[ 2 ] = ((0x0000 | this->nodeId) << 8) | subindex; // node_id subindex
+    req_frame[ 3 ] = 0x0000;     // CRC
 
-	// TODO Make this non-blocking one day
+    // TODO Make this non-blocking one day
     this->sendFrame(req_frame);
     this->receiveFrame(ans_frame);
 
@@ -105,7 +117,7 @@ int32_t CEpos2::readObject(int16_t index, int8_t subindex)
 int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
 {
     int32_t result = 0;
-    int16_t req_frame[6]= {0,0,0,0,0,0};
+    uint16_t req_frame[6]= {0,0,0,0,0,0};
     uint16_t ans_frame[40]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     req_frame[0] = 0x0411;     // header (LEN,OPCODE)
@@ -130,57 +142,73 @@ int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
 //     SEND FRAME
 // ----------------------------------------------------------------------------
 
-void CEpos2::sendFrame(int16_t *frame)
+void CEpos2::sendFrame(uint16_t *frame)
 {
     uint8_t trans_frame[80];                  // transmission frame
-    int16_t length = ((frame[0] & 0xFF00) >> 8 ) + 2;   // frame length
+    uint16_t length = (frame[0] & 0x00FF) + 2 + 1;   // frame length
 
     // Add checksum to the frame
-    frame[length-1] = this->computeChecksum(frame,length);
+    frame[length - 1] = this->computeChecksum(frame, length);
 
-    // add SYNC characters (DLE and STX)
-    trans_frame[0] = 0x90;
-    trans_frame[1] = 0x02;
+    // OPCODE
+    trans_frame[ 0 ] = frame[ 0 ] >> 8;
+    // LEN - 1
+    trans_frame[ 1 ] = frame[ 0 ] & 0x00FF;
 
     // Stuffing
-    int8_t i=0, tf_i=2;
+    uint8_t i = 1, tf_i = 2;
     while( i < length )
     {
-        // LSB
-        trans_frame[tf_i] = frame[i] & 0x00FF;
-        if( trans_frame[tf_i] == 0x90 )
-        {
-            tf_i++;
-            trans_frame[tf_i] = 0x90;
-        }
-        tf_i++;
+      // LSB
+      trans_frame[ tf_i++ ] = frame[ i ] & 0x00FF;
+      trans_frame[ tf_i++ ] = (frame[ i ] & 0xFF00) >> 8;
+      
+        //if( trans_frame[tf_i] == 0x90 )
+        //{
+	//     tf_i++;
+	//   trans_frame[tf_i] = 0x90;
+        //}
+        // tf_i++;
 
         // MSB
-        trans_frame[tf_i] = (frame[i] & 0xFF00) >> 8;
-        if( trans_frame[tf_i] == 0x90 )
-        {
-            tf_i++;
-            trans_frame[tf_i] = 0x90;
-        }
-        tf_i++;
+        
+        //if( trans_frame[tf_i] == 0x90 )
+        //{
+        //    tf_i++;
+        //    trans_frame[tf_i] = 0x90;
+        //}
+        //tf_i++;
         i++;
     }
 
-	try
-	{
-		write(serialPort, buffer(trans_frame, tf_i));
-	}
-	catch(boost::system::system_error& e)
-	{
-		LOG() << "Impossible to write Status Word.\nIs the controller powered ?";
-		throw( e );
-	}
+    LOG() << "sendFrame start";
+    try
+    {
+      char ack;
+      unsigned written, ack_len;
+
+      written = write(serialPort, buffer(trans_frame, 1));
+      //LOG() << "1) write OK!";
+      ack_len = read(serialPort, buffer(&ack, 1));
+      //LOG() << "1) written " << written << ", ack_len " << ack_len << ", ack " << ack;
+      
+      written = write(serialPort, buffer(trans_frame + 1, tf_i - 1));
+      //LOG() << "2) write OK!";
+      ack_len = read(serialPort, buffer(&ack, 1));
+      //LOG() << "2) written " << written << ", ack_len " << ack_len << ", ack " << ack;
+    }
+    catch(boost::system::system_error& e)
+    {
+      LOG() << "Impossible to write Status Word.\nIs the controller powered ?";
+      throw( e );
+    }
+    LOG() << "sendFrame end";
 }
 
 void CEpos2::receiveFrame(uint16_t* ans_frame)
 {
     // length variables
-    int read_desired         = 0;       // length of data that must read
+  //    int read_desired         = 0;       // length of data that must read
     int read_real            = 0;       // length of data read actually
     int Len                  = 0;       // Len header part in epos2 usb frame
     int read_point           = 0;       // Position of the data read
@@ -192,106 +220,140 @@ void CEpos2::receiveFrame(uint16_t* ans_frame)
     uint8_t data       [ 128 ];  // frame buffer unstuffed
     uint8_t cheksum[ 2 ];
 
-    // get data packet
-    do
+    LOG() << "readFrame start";
+    unsigned received = read(serialPort, buffer(read_buffer, 1));
+    if (read_buffer[ 0 ] == 0x00)
     {
-		try
-		{
-			// TODO Get first available chunk size!
-			read(serialPort, buffer(read_buffer, 1));
-		}
-		catch(boost::system::system_error& e)
-		{
-			LOG() << "Impossible to read Status Word.\nIs the controller powered ?" << endl;
-			throw( e );
-		}
-		
-        for(int i = 0; i < read_real; i++)
-        {
-            switch (state)
-            {
-            case 0:
-                // no sync
-                if(read_buffer[i] == 0x90)
-                    state = 1;
-                else
-                    state = 0;
-                break;
-            case 1:
-                // sync stx
-                if(read_buffer[i] == 0x02)
-                    state = 2;
-                else
-                    state = 0;
-                break;
-            case 2:
-                // opcode
-                state = 3;
-                break;
-            case 3:
-                // len (16 bits)
-                Len = read_buffer[i];
-				
-                read_point = -1;
-                state = 4;
-                break;
-            case 4:
-                read_point++;
-                data[read_point] = read_buffer[i];
-                if(data[read_point]==0x90)
-                {
-                    state = 5;
-                }
-                else
-                {
-                    if(read_point+1 == Len*2)
-                        state = 6;
-                    else
-                        state = 4;
-                }
-                break;
-            case 5:
-                // destuffing
-                state = 4;
-                break;
-            case 6:
-                // checksum 1
-                cheksum[1] = read_buffer[i];
-                if(cheksum[1]==0x90)
-                {
-                    state = 8;
-                }
-                else
-                {
-                    state = 7;
-                }
-                break;
-            case 7:
-                // checksum 0
-                cheksum[0] = read_buffer[i];
-                if(cheksum[0]==0x90)
-                {
-                    state = 9;
-                }
-                else
-                {
-                    state = 0;
-                    packet_complete = true;
-                }
-                break;
-            case 8:
-                // destuff checksum 1
-                state = 7;
-                break;
-            case 9:
-                // destuff checksum 0
-                state = 0;
-                packet_complete = true;
-                break;
-            }
-        }
+      char ack = 'O';
+
+      //LOG() << "Received 0x00";
+      
+      write(serialPort, buffer(&ack, 1));
+      //LOG() << "Written ack";
+      
+      received = read(serialPort, buffer(read_buffer, 1));
+      unsigned lenm1 = read_buffer[ 0 ];
+      //LOG() << "Received length " << lenm1;
+      received = read(serialPort, buffer(read_buffer, (lenm1 + 1) * 2 + 2));
+
+      write(serialPort, buffer(&ack, 1));
+      //LOG() << "Written ack";
     }
-    while( !packet_complete );
+    else
+      LOG() << "OH SHIT";
+
+    LOG() << "TODO decode the message";
+    
+    return;
+
+    // // get data packet
+    // do
+    // {
+    //   	try
+    // 	{
+    // 	  // TODO Get first available chunk size!
+    // 	  //	  read_real = serialPort.read_some(buffer(read_buffer, 128));
+
+    // 	  read_real = read(serialPort, buffer(read_buffer, 1));
+    // 	  LOG() << read_real << " byte(s) received ";
+    // 	  if ( DEBUG )
+    // 	  {
+    // 	    for (unsigned el = 0; el < read_real; ++el)
+    // 	      LOG() << hex << read_buffer[ el ] << dec;
+    // 	  }
+    // 	}
+    // 	catch(boost::system::system_error& e)
+    // 	{
+    // 	  LOG() << "Impossible to read Status Word.\nIs the controller powered ?" << endl;
+    // 	  throw( e );
+    // 	}
+		
+    //     for(int i = 0; i < read_real; i++)
+    //     {
+    //         switch (state)
+    //         {
+    //         case 0:
+    //             // no sync
+    //             if(read_buffer[i] == 0x90)
+    //                 state = 1;
+    //             else
+    //                 state = 0;
+    //             break;
+    //         case 1:
+    //             // sync stx
+    //             if(read_buffer[i] == 0x02)
+    //                 state = 2;
+    //             else
+    //                 state = 0;
+    //             break;
+    //         case 2:
+    //             // opcode
+    //             state = 3;
+    //             break;
+    //         case 3:
+    //             // len (16 bits)
+    //             Len = read_buffer[i];
+				
+    //             read_point = -1;
+    //             state = 4;
+    //             break;
+    //         case 4:
+    //             read_point++;
+    //             data[read_point] = read_buffer[i];
+    //             if(data[read_point]==0x90)
+    //             {
+    //                 state = 5;
+    //             }
+    //             else
+    //             {
+    //                 if(read_point+1 == Len*2)
+    //                     state = 6;
+    //                 else
+    //                     state = 4;
+    //             }
+    //             break;
+    //         case 5:
+    //             // destuffing
+    //             state = 4;
+    //             break;
+    //         case 6:
+    //             // checksum 1
+    //             cheksum[1] = read_buffer[i];
+    //             if(cheksum[1]==0x90)
+    //             {
+    //                 state = 8;
+    //             }
+    //             else
+    //             {
+    //                 state = 7;
+    //             }
+    //             break;
+    //         case 7:
+    //             // checksum 0
+    //             cheksum[0] = read_buffer[i];
+    //             if(cheksum[0]==0x90)
+    //             {
+    //                 state = 9;
+    //             }
+    //             else
+    //             {
+    //                 state = 0;
+    //                 packet_complete = true;
+    //             }
+    //             break;
+    //         case 8:
+    //             // destuff checksum 1
+    //             state = 7;
+    //             break;
+    //         case 9:
+    //             // destuff checksum 0
+    //             state = 0;
+    //             packet_complete = true;
+    //             break;
+    //         }
+    //     }
+    // }
+    // while( !packet_complete );
 
     int tf_i = 0;
     for(int i = 0; i < Len; i++)
@@ -304,21 +366,23 @@ void CEpos2::receiveFrame(uint16_t* ans_frame)
         ans_frame[ i ] = (data[tf_i]<<8) | ans_frame[i];
         tf_i++;
     }
+
+    LOG() << "readFrame end";
 }
 
 
-int16_t CEpos2::computeChecksum(int16_t *pDataArray, int16_t numberOfWords)
+uint16_t CEpos2::computeChecksum(uint16_t *pDataArray, uint16_t numberOfWords)
 {
     uint16_t shifter, c;
     uint16_t carry;
     uint16_t CRC = 0;
 
-    //Calculate pDataArray Word by Word
-    while(numberOfWords--)
+    for (uint16_t el = 0; el < numberOfWords; ++el)
     {
-        shifter = 0x8000;                 //Initialize BitX to Bit15
-        c = *pDataArray++;                //Copy next DataWord to c
-        do
+      c = *pDataArray++;
+      shifter = 0x8000;                 //Initialize BitX to Bit15 
+      
+      do
         {
             carry = CRC & 0x8000;    //Check if Bit15 of CRC is set
             CRC <<= 1;               //CRC = CRC * 2
@@ -328,8 +392,8 @@ int16_t CEpos2::computeChecksum(int16_t *pDataArray, int16_t numberOfWords)
         }
         while(shifter);
     }
-
-    return (int16_t)CRC;
+    
+    return CRC;
 }
 
 
@@ -811,8 +875,8 @@ void CEpos2::startProfilePosition(epos_posmodes mode, bool blocking, bool wait, 
 
         while( !this->isTargetReached() )
         {
-            if(this->verbose) this->getMovementInfo();
-            else usleep(1000);
+            this->getMovementInfo();
+            usleep(1000);
         }
     }
 
