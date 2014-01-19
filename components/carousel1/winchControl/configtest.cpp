@@ -554,10 +554,143 @@ void throwAction(char action)
 
 int main(int argc, char **argv)
 {
+  unsigned status;
+
   CEpos2 dev("/dev/ttyS3", 115200, 1);
   dev.init();
 
+  uint32_t sv = dev.readVersionSoftware();
+  cout << endl << "Software version: " << hex << sv << endl;
+
+  uint32_t hv = dev.readVersionHardware();
+  cout << endl << "Hardware version: " << hex << hv << endl;
+
+  long enc = dev.getEncoderPulseNumber();
+  cout << endl << "Number of encoder pulses: " << dec << enc << endl;
+
+  dev.shutdown();
+  status = dev.readStatusWord();
+  cout << endl << "STATUS\t" << status << endl;
+
+  dev.switchOn();
+  status = dev.readStatusWord();
+  cout << endl << "STATUS\t" << status << endl;
+
+  dev.enableOperation();
+  status = dev.readStatusWord();
+  cout << endl << "STATUS\t" << status << endl;
+
+  // dev.disableOperation();
+  // status = dev.readStatusWord();
+  // cout << endl << "STATUS\t" << status << endl;
+
+  // dev.shutdown();
+  // status = dev.readStatusWord();
+  // cout << endl << "STATUS\t" << status << endl;
+
+  dev.enableController();
+  //  sleep( 2 );
+
+  dev.enableMotor( dev.PROFILE_POSITION );
+  dev.setTargetProfilePosition( 1000 );
+
+  // dev.faultReset();
+  // dev.getState();
+  // dev.enableOperation();
+  // dev.getState();
+
+  // return 1;
+
+  // dev.getMovementInfo();
+
+  // dev.printControlParameters();
+
+  // dev.getState();
+
+  // uint16_t state, polarity, mask;
+  // dev.getDigOutInfoAdv(state, polarity, mask);
+  // cout << endl << "DIG OUT: State " << hex << state << ", Polarity: " << polarity
+  //      << ", Mask: " << mask << endl;
+
+  // dev.getState();
+
+  // // enable motor
+  // //  cout << endl << "  ConfigTest  enable controller\n\n";
+  // //  dev.enableController();
+
+  // cout << endl << "Switch on";
+  // dev.switchOn();
+  // dev.getState();
+
+  // cout << endl << "Enable operation";
+  // dev.enableOperation();
+  // dev.getState();
+
+  // cout << endl << "Set position profile";
+  // dev.setOperationMode( CEpos2::PROFILE_POSITION );
+  // dev.getState();
+
+  // cout << endl << "Operation mode: "
+  //      << dev.getOpModeDescription( dev.getOperationMode() );
+
+  // cout << endl;
+
+  uint16_t info;
+  long pos = dev.readPosition();
+  cout << endl << "Actual position: " << pos << endl;
+  
+  // for (unsigned el = 1; el < 6; ++el)
+  // {
+  //   info = dev.getDigOutInfo( el );
+  //   cout << endl << "Dig out " << el << ", val " << hex << info;
+  // }
+
+  // cout << endl;
+  // cout << endl;
+  // cout << endl;
+  // cout << endl;
+  // cout << endl;
+
+  // DISABLE BRAKE
+  uint16_t brakeNum = 4;
+
+  dev.setDigOut(brakeNum, false, false, true);
+  info = dev.getDigOutInfo( brakeNum );
+  cout << endl;
+  cout << endl << "Dig out " << brakeNum << ", val " << hex << info;
+  
+  // DO SOME MOVEMENT
+
+  int32_t value = 100;
+  dev.setTargetProfilePosition(value);
+  dev.startProfilePosition(CEpos2::ABSOLUTE, false, false);
+
+  sleep( 5 );
+
+  // ENABLE BRAKE
+  dev.setDigOut(brakeNum, true, false, true);
+  info = dev.getDigOutInfo( brakeNum );
+  cout << endl;
+  cout << endl << "Dig out " << brakeNum << ", val " << hex << info;
+  
+  cout << endl << "Disable operation" << endl;
+  dev.disableOperation();
+  dev.getState();
+
+  cout << endl << "Disable voltage" << endl;
+  dev.disableVoltage();
+  dev.getState();
+
+  dev.close();
+
   return 0;
+
+
+  ////////////////////// OLD CODE ////////////////////
+  ////////////////////// OLD CODE ////////////////////
+  ////////////////////// OLD CODE ////////////////////
+  ////////////////////// OLD CODE ////////////////////
+  ////////////////////// OLD CODE ////////////////////
 
 //  Variable declaration
     char action;

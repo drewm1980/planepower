@@ -36,27 +36,7 @@
 #define MIN_TETHER_LENGTH 0.1
 #define MAX_TETHER_LENGTH 2.2
 
-// #define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
-
-typedef uint32_t DWORD; ///< \brief 32bit type for EPOS data exchange
-typedef uint16_t WORD; ///< \brief 16bit type for EPOS data exchange
-//! signed 8-bit integer
-typedef int8_t INTEGER8;
-
-//! signed 16-bit integer
-typedef int16_t INTEGER16;
-
-//! signed 32-bit integer
-typedef int32_t INTEGER32;
-
-//! unsigned 8-bit integer
-typedef uint8_t UNSIGNED8;
-
-//! unsigned 16-bit integer
-typedef uint16_t UNSIGNED16;
-
-//! unsigned 32-bit integer
-typedef uint32_t UNSIGNED32;
+#define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
 
 /// WinchControl class
 class WinchControl

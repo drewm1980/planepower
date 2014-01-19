@@ -1,4 +1,5 @@
 #include "winchControl.hpp"
+#include <fstream>
 
 using namespace std;
 using namespace RTT;
@@ -57,10 +58,11 @@ bool  WinchControl::startHook()
     {
         return false;
     }
+    
     double tether_length_ticks;
-    if( loadTetherLength(tether_length_ticks) )
+    if( loadTetherLength( tether_length_ticks ) )
     {
-        cout << "My current tether length, based on previously stored tether length ticks, is " << ticks2length(tether_length_ticks) << " m" << endl;
+      log( Info ) << "My current tether length, based on previously stored tether length ticks, is " << ticks2length(tether_length_ticks) << " m" << endlog();
     }
     //  VCS_DefinePosition(keyHandle, NodeId, tether_length_ticks,&ErrorCode);
     return true;
@@ -172,8 +174,8 @@ void WinchControl::setCurrentTetherLength(double length)
 
 void WinchControl::enableBrake()
 {
-    WORD DigitalOutputNb = 4;
-    WORD Configuration = 14;
+    uint16_t DigitalOutputNb = 4;
+    uint16_t Configuration = 14;
     bool State = false;
     bool Mask = true;
     bool Polarity = 0;
@@ -182,8 +184,8 @@ void WinchControl::enableBrake()
 
 void WinchControl::disableBrake()
 {
-    WORD DigitalOutputNb = 4;
-    WORD Configuration = 14;
+    uint16_t DigitalOutputNb = 4;
+    uint16_t Configuration = 14;
     bool State = true;
     bool Mask = true;
     bool Polarity = 0;
@@ -219,90 +221,7 @@ int WinchControl::getCurrent()
 bool WinchControl::openDevice()
 {
     nodeId = 1;
-    /*	// This is only needed once for setup.
-    	int pEndOfSelection;
-    	// Get the device name
-    	char pDeviceNameSel[100];
-    	if( !VCS_GetDeviceNameSelection(true, (char*) &pDeviceNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    	{
-    		log(Error) << "Get device name failure, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    	}
-    	cout << "DeviceName: " << pDeviceNameSel << endl;
-    	while(!pEndOfSelection){
-    		if( !VCS_GetDeviceNameSelection(false, (char*) &pDeviceNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    		{
-    			log(Error) << "Get device name failure, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-    		cout << "DeviceName: " << pDeviceNameSel << endl;
-    	}
 
-    	// Get the protocol stack name
-    	char pProtocolNameSel[100];
-    	if( !VCS_GetProtocolStackNameSelection((char*) "EPOS2", true, (char*) &pProtocolNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    	{
-    		log(Error) << "Get protocol name failure, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    	}
-    	cout << "Protocol stack name: " << pProtocolNameSel << endl;
-    	while(!pEndOfSelection){
-    		if( !VCS_GetProtocolStackNameSelection((char*) "EPOS2", false, (char*) &pProtocolNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    		{
-    			log(Error) << "Get protocol name failure, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-    		cout << "Protocol stack name: " << pProtocolNameSel << endl;
-    	}
-
-
-    	// Get the interface name
-    	char pInterfaceNameSel[100];
-    	if( !VCS_GetInterfaceNameSelection((char*) "EPOS2", (char*) "MAXON_RS232", true, (char*) &pInterfaceNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    	{
-    		log(Error) << "Get interface name failure, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    	}
-    	cout << "Interface name: " << pInterfaceNameSel << endl;
-    	while(!pEndOfSelection){
-    		if( !VCS_GetInterfaceNameSelection((char*) "EPOS2", (char*) "MAXON_RS232", false, (char*) &pInterfaceNameSel, 90, &pEndOfSelection, &ErrorCode) )
-    		{
-    			log(Error) << "Get interface name failure, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-    		cout << "Interface name: " << pInterfaceNameSel << endl;
-    	}
-
-    	// Get the port name
-    	char pPortSel[100];
-    	bool PortName = VCS_GetPortNameSelection((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", true, (char*) &pPortSel, 90, &pEndOfSelection, &ErrorCode);
-    	cout << "Port name: " << pPortSel << endl;
-    	while(!pEndOfSelection){
-    		PortName = VCS_GetPortNameSelection((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", false, (char*) &pPortSel, 90, &pEndOfSelection, &ErrorCode);
-    		cout << "Port name: " << pPortSel << endl;
-    	}
-    	if( PortName == 0 )
-    	{
-    		log(Error) << "Get port name failure, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    	}
-
-
-    	// Get Baud rate selection
-    	long unsigned int pBaudrateSel;
-    	bool Baudrate = VCS_GetBaudrateSelection((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", (char*) "/dev/ttyS0", true, &pBaudrateSel, &pEndOfSelection, &ErrorCode);
-    	cout << "Baud rate: " << pBaudrateSel << " Bit/s" << endl;
-    	while(!pEndOfSelection){
-    		Baudrate = VCS_GetBaudrateSelection((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", (char*) "/dev/ttyS0", false, &pBaudrateSel, &pEndOfSelection, &ErrorCode);
-    		cout << "Baud rate: " << pBaudrateSel << " Bit/s" << endl;
-    	}
-    	if( Baudrate == 0 )
-    	{
-    		log(Error) << "Get Baudrate failure, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    	}
-    */
-    // Start with opening the device
     
     //    keyHandle = VCS_OpenDevice((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", (char*) "/dev/ttyS0", &ErrorCode);
     if( keyHandle == 0 )
@@ -328,102 +247,59 @@ bool WinchControl::openDevice()
 
     setPositionProfile(100,3000);
     //    VCS_SetMaxFollowingError(keyHandle, NodeId, 2e9, &ErrorCode);
-
-    // Initialise the new baud rate and timeout
-    /*
-    		if( !VCS_SetProtocolStackSettings( keyHandle, 115200, 10000, &ErrorCode) )
-    		{
-    			log(Error) << "Set protocol stack settings failed!, error code = 0x" << hex << ErrorCode << endlog();
-    		return false;
-    		}
-
-    		int clearFault = VCS_ClearFault(keyHandle, 1, &ErrorCode);
-    		if( ErrorCode != 0 )
-    		{
-    			log(Error) << "ClearFault failure, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-
-    		// Get Motor type
-    		short unsigned int pMotorType;
-    		int MotorType = VCS_GetMotorType(keyHandle, 1, &pMotorType, &ErrorCode);
-    		cout << "MotorType: " << pMotorType << endl;
-    		ErrorCode &= 0xFFFFFFFF;
-    		if( !MotorType )
-    		{
-    			log(Error) << "Get MotorType failure, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-
-    		int IsInFault;
-    		nodeId = 0;
-    		while( !VCS_GetFaultState(keyHandle, nodeId, &IsInFault, &ErrorCode) )
-    		{
-    			cout << nodeId << endl;
-    			log(Error) << "Get fault state failed!, error code = 0x" << hex << ErrorCode << endlog();
-    			//return false;
-    			nodeId++;
-    		}
-    		cout << "IsInFault: " << IsInFault << endl;
-
-    		if( !VCS_SetMotorType(keyHandle, nodeId, 10, &ErrorCode) )
-    		{
-    			log(Error) << "Set motor type failed!, error code = 0x" << hex << ErrorCode << endlog();
-    			return false;
-    		}
-    */
+    
     return true;
 }
 
 bool WinchControl::loadTetherLength(double& length)
 {
-    // ifstream file( TETHER_LENGTH_FILENAME );
-    // string line;
-    // unsigned numRows = 1;
-    // unsigned numCols = 1;
-    // vector< vector< double > > data;
+    ifstream file( TETHER_LENGTH_FILENAME );
+    string line;
+    unsigned numRows = 1;
+    unsigned numCols = 1;
+    vector< vector< double > > data;
 
-    // if ( file.is_open() )
-    // {
-    //     data.clear();
+    if ( file.is_open() )
+    {
+        data.clear();
 
-    //     while( getline(file, line) )
-    //     {
-    //         istringstream linestream( line );
-    //         vector< double > linedata;
-    //         double number;
+        while( getline(file, line) )
+        {
+            istringstream linestream( line );
+            vector< double > linedata;
+            double number;
 
-    //         while( linestream >> number )
-    //         {
-    //             linedata.push_back( number );
-    //         }
+            while( linestream >> number )
+            {
+                linedata.push_back( number );
+            }
 
-    //         if (linedata.size() != numCols && numCols > 0)
-    //         {
-    //             log( Error ) << "numCols is wrong: " << linedata.size() << " vs " << numCols << endl;
+            if (linedata.size() != numCols && numCols > 0)
+            {
+                log( Error ) << "numCols is wrong: " << linedata.size() << " vs " << numCols << endl;
 
-    //             file.close();
+                file.close();
 
-    //             return false;
-    //         }
+                return false;
+            }
 
-    //         data.push_back( linedata );
-    //     }
+            data.push_back( linedata );
+        }
 
-    //     file.close();
+        file.close();
 
-    //     if (data.size() != numRows && numRows > 0)
-    //     {
-    //         log( Error ) << "numRows is wrong: " << data.size() << " vs " << numRows << endl;
-    //         return false;
-    //     }
-    //     length = data[0][0];
-    // }
-    // else
-    // {
-    //     log( Error ) << "Could not open file " << TETHER_LENGTH_FILENAME << endl;
-    //     return false;
-    // }
+        if (data.size() != numRows && numRows > 0)
+        {
+            log( Error ) << "numRows is wrong: " << data.size() << " vs " << numRows << endl;
+            return false;
+        }
+        length = data[0][0];
+    }
+    else
+    {
+        log( Error ) << "Could not open file " << TETHER_LENGTH_FILENAME << endl;
+        return false;
+    }
 
     return true;
 }
@@ -431,18 +307,18 @@ bool WinchControl::loadTetherLength(double& length)
 
 bool WinchControl::saveTetherLength(double length)
 {
-    // ofstream file( TETHER_LENGTH_FILENAME );
+    ofstream file( TETHER_LENGTH_FILENAME );
 
-    // if ( file.is_open() )
-    // {
-    //     file << length;
-    //     file.close();
-    // }
-    // else
-    // {
-    //     log( Error ) << "Could not open file " << TETHER_LENGTH_FILENAME << endl;
-    //     return false;
-    // }
+    if ( file.is_open() )
+    {
+        file << length;
+        file.close();
+    }
+    else
+    {
+        log( Error ) << "Could not open file " << TETHER_LENGTH_FILENAME << endl;
+        return false;
+    }
 
     return true;
 }

@@ -1617,6 +1617,12 @@ public:
 
 	///@}
 
+    void getDigOutInfoAdv(uint16_t& state, uint16_t& polarity, uint16_t& mask);
+
+    uint16_t getDigOutInfo(uint8_t index);
+
+    void setDigOut(uint8_t index, bool state, bool polarity, bool mask);
+
 private:
 	/// Node ID
     int8_t  nodeId;

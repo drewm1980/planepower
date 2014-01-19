@@ -49,7 +49,8 @@ CEpos2::~CEpos2()
 void CEpos2::init()
 {
     this->openDevice();
-    this->readStatusWord();
+    uint32_t status = this->readStatusWord();
+    LOG() << "Status word: " << hex << status;
 }
 
 void CEpos2::close()
@@ -92,52 +93,49 @@ void CEpos2::openDevice()
 
 int32_t CEpos2::readObject(int16_t index, int8_t subindex)
 {
-    int32_t result = 0x00000000;
+  uint32_t ec, result;
     uint16_t req_frame[ 4 ];
-    uint16_t ans_frame[ 4 ];
+    uint16_t ans_frame[ 6 ];
 
     req_frame[ 0 ] = 0x1001;     // header (OPCODE, LEN - 1), RS232 specific
-    req_frame[ 1 ] = index;      // data
+    req_frame[ 1 ] = index;      // index
     req_frame[ 2 ] = ((0x0000 | this->nodeId) << 8) | subindex; // node_id subindex
     req_frame[ 3 ] = 0x0000;     // CRC
 
     // TODO Make this non-blocking one day
-    this->sendFrame(req_frame);
-    this->receiveFrame(ans_frame);
+    this->sendFrame( req_frame );
+    this->receiveFrame( ans_frame );
+    // TODO Checksum checking
 
-    // If 0x8090, its 16 bit answer else is 32 bit
-    if(ans_frame[3]==0x8090)
-        result = ans_frame[2];
-    else
-        result = (ans_frame[3] << 16) | ans_frame[2];
+    ec = (uint32_t)ans_frame[ 1 ] + ((uint32_t)ans_frame[ 2 ] << 16);
+    LOG() << "Error code: " << hex << ec;
+    result = (uint32_t)ans_frame[ 3 ] + ((uint32_t)ans_frame[ 4 ] << 16);
 
     return result;
 }
 
 int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
 {
-    int32_t result = 0;
-    uint16_t req_frame[6]= {0,0,0,0,0,0};
-    uint16_t ans_frame[40]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-//     req_frame[0] = 0x0411;     // header (LEN,OPCODE)
-	req_frame[0] = 0x1103;     // header (OPCODE, LEN - 1)
+  uint32_t ec;
+    uint16_t req_frame[ 6 ];
+    uint16_t ans_frame[ 4 ];
+    
+    req_frame[0] = 0x1103;     // header (OPCODE, LEN - 1)
     req_frame[1] = index;      // data
     req_frame[2] = ((0x0000 | this->nodeId) << 8) | subindex;
     req_frame[3] = data & 0x0000FFFF;
     req_frame[4] = data >> 16;
     req_frame[5] = 0x0000;     // checksum
 
-    this->sendFrame(req_frame);
-    this->receiveFrame(ans_frame);
+    // TODO Non-blocking
+    this->sendFrame( req_frame );
+    this->receiveFrame( ans_frame );
+    // TODO Checksum
 
-    // if 0x8090, its 16 bit answer else is 32 bit
-    if(ans_frame[3]==0x8090)
-        result = ans_frame[2];
-    else
-        result = (ans_frame[3] << 16) | ans_frame[2];
+    ec = (uint32_t)ans_frame[ 1 ] + ((uint32_t)ans_frame[ 2 ] << 16);
+    LOG() << "Error code: " << hex << ec;
 
-    return result;
+    return ec;
 }
 
 //     SEND FRAME
@@ -145,8 +143,8 @@ int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
 
 void CEpos2::sendFrame(uint16_t *frame)
 {
-    uint8_t trans_frame[80];                  // transmission frame
-    uint16_t length = (frame[0] & 0x00FF) + 2 + 1;   // frame length
+    uint8_t trans_frame[ 32 ];
+    uint16_t length = (frame[0] & 0x00FF) + 2 + 1;
 
     // Add checksum to the frame
     frame[length - 1] = this->computeChecksum(frame, length);
@@ -156,84 +154,54 @@ void CEpos2::sendFrame(uint16_t *frame)
     // LEN - 1
     trans_frame[ 1 ] = frame[ 0 ] & 0x00FF;
 
-    // Stuffing
-    uint8_t i = 1, tf_i = 2;
-    while( i < length )
+    unsigned tf_i = 2;
+    for (unsigned i = 1; i < length; ++i)
     {
-      // LSB
       trans_frame[ tf_i++ ] = frame[ i ] & 0x00FF;
-      trans_frame[ tf_i++ ] = (frame[ i ] & 0xFF00) >> 8;
-      
-        //if( trans_frame[tf_i] == 0x90 )
-        //{
-	//     tf_i++;
-	//   trans_frame[tf_i] = 0x90;
-        //}
-        // tf_i++;
-
-        // MSB
-        
-        //if( trans_frame[tf_i] == 0x90 )
-        //{
-        //    tf_i++;
-        //    trans_frame[tf_i] = 0x90;
-        //}
-        //tf_i++;
-        i++;
+      trans_frame[ tf_i++ ] = frame[ i ]  >> 8;
     }
 
     LOG() << "sendFrame start";
-    try
-    {
-      char ack;
-      unsigned written, ack_len;
 
-      written = write(serialPort, buffer(trans_frame, 1));
-      //LOG() << "1) write OK!";
-      ack_len = read(serialPort, buffer(&ack, 1));
-      //LOG() << "1) written " << written << ", ack_len " << ack_len << ", ack " << ack;
+#if DEBUG == 1
+    LOG() << "Sending frame (hex): ";
+    for (unsigned el = 0; el < tf_i; ++el)
+      cout << hex << int(trans_frame[ el ]) << ", ";
+#endif // DEBUG == 1
+
+    char ack;
+    unsigned written, ack_len;
+    
+    written = write(serialPort, buffer(trans_frame, 1));
+    ack_len = read(serialPort, buffer(&ack, 1));
+    if (ack != 'O')
+      throw runtime_error( "Wrong ACK received" );
+
+    written = write(serialPort, buffer(trans_frame + 1, tf_i - 1));
+    ack_len = read(serialPort, buffer(&ack, 1));
+    if (ack != 'O')
+      throw runtime_error( "Wrong ACK received" );
       
-      written = write(serialPort, buffer(trans_frame + 1, tf_i - 1));
-      //LOG() << "2) write OK!";
-      ack_len = read(serialPort, buffer(&ack, 1));
-      //LOG() << "2) written " << written << ", ack_len " << ack_len << ", ack " << ack;
-    }
-    catch(boost::system::system_error& e)
-    {
-      LOG() << "Impossible to write Status Word.\nIs the controller powered ?";
-      throw( e );
-    }
     LOG() << "sendFrame end";
 }
 
 void CEpos2::receiveFrame(uint16_t* ans_frame)
 {
-    // length variables
-  //    int read_desired         = 0;       // length of data that must read
-    int read_real            = 0;       // length of data read actually
-    int Len                  = 0;       // Len header part in epos2 usb frame
-    int read_point           = 0;       // Position of the data read
-    int state                = 0;       // state of the parsing state machine
-    bool packet_complete     = false;
-
-    // data holders
-    uint8_t read_buffer[ 128 ];  // frame buffer stuffed
-    uint8_t data       [ 128 ];  // frame buffer unstuffed
-    uint8_t cheksum[ 2 ];
+    uint8_t read_buffer[ 32 ];
+    uint8_t opcode, lenm1;
 
     LOG() << "readFrame start";
-    unsigned received = read(serialPort, buffer(read_buffer, 1));
-    if (read_buffer[ 0 ] == 0x00)
+    unsigned received = read(serialPort, buffer(&opcode, 1));
+    if (opcode == 0x00)
     {
-      char ack = 'O';
-
       //LOG() << "Received 0x00";
+
+      char ack = 'O';
       
       write(serialPort, buffer(&ack, 1));
       //LOG() << "Written ack";
       
-      received = read(serialPort, buffer(read_buffer, 1));
-      unsigned lenm1 = read_buffer[ 0 ];
+      received = read(serialPort, buffer(&lenm1, 1));
       //LOG() << "Received length " << lenm1;
       received = read(serialPort, buffer(read_buffer, (lenm1 + 1) * 2 + 2));
 
@@ -241,132 +209,24 @@ void CEpos2::receiveFrame(uint16_t* ans_frame)
       //LOG() << "Written ack";
     }
     else
-      LOG() << "OH SHIT";
+      runtime_error( "Wrong OPCODE received" );
 
-    LOG() << "TODO decode the message";
-    
-    return;
+    // First word in the frame
+    ans_frame[ 0 ] = ((uint16_t)opcode << 8) + lenm1;
 
-    // // get data packet
-    // do
-    // {
-    //   	try
-    // 	{
-    // 	  // TODO Get first available chunk size!
-    // 	  //	  read_real = serialPort.read_some(buffer(read_buffer, 128));
-
-    // 	  read_real = read(serialPort, buffer(read_buffer, 1));
-    // 	  LOG() << read_real << " byte(s) received ";
-    // 	  if ( DEBUG )
-    // 	  {
-    // 	    for (unsigned el = 0; el < read_real; ++el)
-    // 	      LOG() << hex << read_buffer[ el ] << dec;
-    // 	  }
-    // 	}
-    // 	catch(boost::system::system_error& e)
-    // 	{
-    // 	  LOG() << "Impossible to read Status Word.\nIs the controller powered ?" << endl;
-    // 	  throw( e );
-    // 	}
-		
-    //     for(int i = 0; i < read_real; i++)
-    //     {
-    //         switch (state)
-    //         {
-    //         case 0:
-    //             // no sync
-    //             if(read_buffer[i] == 0x90)
-    //                 state = 1;
-    //             else
-    //                 state = 0;
-    //             break;
-    //         case 1:
-    //             // sync stx
-    //             if(read_buffer[i] == 0x02)
-    //                 state = 2;
-    //             else
-    //                 state = 0;
-    //             break;
-    //         case 2:
-    //             // opcode
-    //             state = 3;
-    //             break;
-    //         case 3:
-    //             // len (16 bits)
-    //             Len = read_buffer[i];
-				
-    //             read_point = -1;
-    //             state = 4;
-    //             break;
-    //         case 4:
-    //             read_point++;
-    //             data[read_point] = read_buffer[i];
-    //             if(data[read_point]==0x90)
-    //             {
-    //                 state = 5;
-    //             }
-    //             else
-    //             {
-    //                 if(read_point+1 == Len*2)
-    //                     state = 6;
-    //                 else
-    //                     state = 4;
-    //             }
-    //             break;
-    //         case 5:
-    //             // destuffing
-    //             state = 4;
-    //             break;
-    //         case 6:
-    //             // checksum 1
-    //             cheksum[1] = read_buffer[i];
-    //             if(cheksum[1]==0x90)
-    //             {
-    //                 state = 8;
-    //             }
-    //             else
-    //             {
-    //                 state = 7;
-    //             }
-    //             break;
-    //         case 7:
-    //             // checksum 0
-    //             cheksum[0] = read_buffer[i];
-    //             if(cheksum[0]==0x90)
-    //             {
-    //                 state = 9;
-    //             }
-    //             else
-    //             {
-    //                 state = 0;
-    //                 packet_complete = true;
-    //             }
-    //             break;
-    //         case 8:
-    //             // destuff checksum 1
-    //             state = 7;
-    //             break;
-    //         case 9:
-    //             // destuff checksum 0
-    //             state = 0;
-    //             packet_complete = true;
-    //             break;
-    //         }
-    //     }
-    // }
-    // while( !packet_complete );
-
-    int tf_i = 0;
-    for(int i = 0; i < Len; i++)
+    // The rest of the frame
+    unsigned length = ((lenm1 + 1) * 2 + 2 * 2) / 2;
+    for(unsigned i = 1, tf_i = 0; i < length; ++i)
     {
-        ans_frame[ i ] = 0x0000;
-        // LSB to 0x__··
-        ans_frame[ i ] = data[tf_i];
-        tf_i++;
-        // MSB to 0x··__
-        ans_frame[ i ] = (data[tf_i]<<8) | ans_frame[i];
-        tf_i++;
+      	ans_frame[ i ] = read_buffer[ tf_i++ ];
+	ans_frame[ i ] += (uint16_t)read_buffer[ tf_i++ ] << 8;
     }
+
+#if DEBUG == 1
+    LOG() << "Received frame data (hex): ";
+    for (unsigned el = 0; el < length; ++ el)
+      cout << hex << ans_frame[ el ] << ", ";
+#endif // DEBUG == 1
 
     LOG() << "readFrame end";
 }
@@ -378,7 +238,7 @@ uint16_t CEpos2::computeChecksum(uint16_t *pDataArray, uint16_t numberOfWords)
     uint16_t carry;
     uint16_t CRC = 0;
 
-    for (uint16_t el = 0; el < numberOfWords; ++el)
+    while (numberOfWords--)
     {
       c = *pDataArray++;
       shifter = 0x8000;                 //Initialize BitX to Bit15 
@@ -408,8 +268,9 @@ long CEpos2::getState()
 {
     long ans = this->readObject(0x6041, 0x00);
 
-    LOG() << "Estat: " << ans << " /  std::dec= " << dec << ans;
+    LOG() << "ESTAT: " << hex << ans;
 
+#if DEBUG == 1
     // OBTENIR EL NUMERO D'ESTAT
     bool bits[16];
     bits[0]=  (ans & 0x0001);
@@ -447,8 +308,7 @@ long CEpos2::getState()
             << bits[3]
             << bits[2]
             << bits[1]
-            << bits[0]
-            << endl;
+            << bits[0];
 
     if(bits[14])
     {
@@ -542,6 +402,7 @@ long CEpos2::getState()
     }
     
     LOG() << this->searchErrorDescription( this->readError() ) << endl;
+#endif // DEBUG == 1
 }
 
 //     SHUTDOWN (transition)
@@ -608,13 +469,9 @@ void CEpos2::faultReset()
 
 long CEpos2::getOperationMode()
 {
-    long ans = this->readObject(0x6061, 0x00);
+  long ans = static_cast<int8_t>(this->readObject(0x6061, 0x00) >> 8);
 
-    // Rectificacio
-    /// \todo veure si això fa falta
-    //ans = this->getNegativeLong(ans);
-
-    return(ans);
+  return(ans);
 }
 
 //     GET OPERATION MODE DESCRIPTION
@@ -647,7 +504,6 @@ std::string CEpos2::getOpModeDescription(long opmode)
     }
 
     return(name);
-
 }
 
 //     SET OPERATION MODE
@@ -663,7 +519,7 @@ void CEpos2::setOperationMode(long opmode)
 
 void CEpos2::enableController()
 {
-    int estat=0,timeout=0;
+    int estat=0, timeout=0;
     bool controller_connected = false;
 
     estat = this->getState();
@@ -698,6 +554,7 @@ void CEpos2::enableController()
             break;
         case 6:
             // REFRESH
+	  controller_connected = true;
             break;
         case 7:
             // MEASURE_INIT
@@ -719,7 +576,6 @@ void CEpos2::enableController()
         }
         estat = this->getState();
     }
-
 }
 
 //     ENABLE MOTOR
@@ -1048,7 +904,7 @@ void CEpos2::printControlParameters()
 
 	this->getControlParameters(cp, ci, vp, vi, vspf, pp, pi, pd, pv, pa);
 
-    LOG()	<< "Control Parameters:" << endl
+	LOG()	<< dec << "Control Parameters:" << endl
 			<< "Current:  P = " << cp << "  I = " << ci << endl
 			<< "Velocity: P = " << vp << "  I = " << vi << "	SetPointFactorP = " << vspf << endl
 			<< "Position: P = " << pp << "  I = " << pi << "	D = "<< pd << endl
@@ -1312,7 +1168,7 @@ void CEpos2::readErrorHistory(long *error[5])
         error[i] = &ans;
         error_des = this->searchErrorDescription(ans);
 
-        LOG() << "Id: " << i << " : " << hex <<"0x"<< ans << " = " << error_des << std::endl;
+        LOG() << "Id: " << i << " : " << hex << "0x"<< ans << " = " << error_des << endl;
     }
 }
 
@@ -1824,3 +1680,40 @@ const std::string CEpos2::error_descriptions[]=
     "Interpolated Position Mode Error",
     "Autotuning Identification Error"
 };
+
+void CEpos2::getDigOutInfoAdv(uint16_t& state, uint16_t& polarity, uint16_t& mask)
+{
+  state = this->readObject(0x2078, 0x01);
+  mask = this->readObject(0x2078, 0x02);
+  polarity = this->readObject(0x2078, 0x03);
+}
+
+uint16_t CEpos2::getDigOutInfo(uint8_t index)
+{
+  return this->readObject(0x2079, index);
+}
+
+void CEpos2::setDigOut(uint8_t index, bool state, bool polarity, bool mask)
+{
+  uint16_t _state, _polarity, _mask;
+  this->getDigOutInfoAdv(_state, _polarity, _mask);
+  
+  if ( state )
+    _state |= (uint16_t)1 << (8 + 8 - index);
+  else
+    _state &= !((uint16_t)1 << (8 + 8 - index));
+
+  if ( polarity )
+    _polarity |= (uint16_t)1 << (8 + 8 - index);
+  else
+    _polarity &= !((uint16_t)1 << (8 + 8 - index));
+
+  if ( mask )
+    _mask |= (uint16_t)1 << (8 + 8 - index);
+  else
+    _mask &= !((uint16_t)1 << (8 + 8 - index));
+
+  mask = this->writeObject(0x2078, 0x02, _mask);
+  polarity = this->writeObject(0x2078, 0x03, _polarity);
+  state = this->writeObject(0x2078, 0x01, _state);
+}
