@@ -96,7 +96,7 @@ int32_t CEpos2::readObject(int16_t index, int8_t subindex)
     uint16_t req_frame[ 4 ];
     uint16_t ans_frame[ 4 ];
 
-    req_frame[ 0 ] = 0x1001;     // header (LEN - 1,OPCODE)
+    req_frame[ 0 ] = 0x1001;     // header (OPCODE, LEN - 1), RS232 specific
     req_frame[ 1 ] = index;      // data
     req_frame[ 2 ] = ((0x0000 | this->nodeId) << 8) | subindex; // node_id subindex
     req_frame[ 3 ] = 0x0000;     // CRC
@@ -120,7 +120,8 @@ int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
     uint16_t req_frame[6]= {0,0,0,0,0,0};
     uint16_t ans_frame[40]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    req_frame[0] = 0x0411;     // header (LEN,OPCODE)
+//     req_frame[0] = 0x0411;     // header (LEN,OPCODE)
+	req_frame[0] = 0x1103;     // header (OPCODE, LEN - 1)
     req_frame[1] = index;      // data
     req_frame[2] = ((0x0000 | this->nodeId) << 8) | subindex;
     req_frame[3] = data & 0x0000FFFF;
