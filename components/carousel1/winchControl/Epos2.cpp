@@ -993,15 +993,6 @@ void CEpos2::getProfileData(long &vel,long &maxvel,long &acc,long &dec,
     qsdec  = this->getProfileQuickStopDecel();
     maxacc = this->getMaxAcceleration();
     type   = this->getProfileType();
-
-	LOG()	<< "Profile data"
-			<< "vel: " << vel << ", "
-			<< "maxvel: " << maxvel << ", "
-			<< "acc: " << acc << ", "
-			<< "dec: " << dec << ", "
-			<< "qsdec: " << qsdec << ", "
-			<< "maxacc: " << maxacc << ", "
-			<< "type: " << type << endl;
 }
 
 void CEpos2::setProfileData(long vel,long maxvel,long acc,long dec,
@@ -1679,39 +1670,47 @@ const std::string CEpos2::error_descriptions[]=
     "Autotuning Identification Error"
 };
 
-void CEpos2::getDigOutInfoAdv(uint16_t& state, uint16_t& polarity, uint16_t& mask)
+void CEpos2::getDigOutFunc(uint16_t& state, uint16_t& mask, uint16_t& polarity)
 {
   state = this->readObject(0x2078, 0x01);
   mask = this->readObject(0x2078, 0x02);
   polarity = this->readObject(0x2078, 0x03);
 }
 
-uint16_t CEpos2::getDigOutInfo(uint8_t index)
+uint16_t CEpos2::getDigOutConf(uint8_t index)
 {
   return this->readObject(0x2079, index);
 }
 
-void CEpos2::setDigOut(uint8_t index, bool state, bool polarity, bool mask)
+void CEpos2::setDigOut(uint8_t index, bool state, bool mask, bool polarity)
 {
-  uint16_t _state, _polarity, _mask;
-  this->getDigOutInfoAdv(_state, _polarity, _mask);
+  static uint8_t defaults[ 5 ] = {0xF, 0xE, 0xD, 0xC, 0xB};
+
+  // First write default configuration
+  this->writeObject(0x2079, index, defaults[index - 1]);
   
+  // Read the functions
+  uint16_t _state, _polarity, _mask;
+  this->getDigOutFunc(_state, _mask, _polarity);
+  
+  // Configure the parameters
   if ( state )
-    _state |= (uint16_t)1 << (8 + 8 - index);
+    _state |= 0x0001 << (16 - index);
   else
-    _state &= !((uint16_t)1 << (8 + 8 - index));
+    _state &= !(0x0001 << (16 - index));
 
   if ( polarity )
-    _polarity |= (uint16_t)1 << (8 + 8 - index);
+    _polarity |= 0x0001 << (16 - index);
   else
-    _polarity &= !((uint16_t)1 << (8 + 8 - index));
+    _polarity &= !(0x0001 << (16 - index));
 
   if ( mask )
-    _mask |= (uint16_t)1 << (8 + 8 - index);
+    _mask |= 0x0001 << (16 - index);
   else
-    _mask &= !((uint16_t)1 << (8 + 8 - index));
+    _mask &= !(0x0001 << (16 - index));
 
-  mask = this->writeObject(0x2078, 0x02, _mask);
-  polarity = this->writeObject(0x2078, 0x03, _polarity);
-  state = this->writeObject(0x2078, 0x01, _state);
+  // Send parameters to the drive
+  this->writeObject(0x2078, 0x03, _polarity);
+  this->writeObject(0x2078, 0x02, _mask);
+  this->writeObject(0x2078, 0x01, _state);
 }

@@ -560,13 +560,34 @@ int main(int argc, char **argv)
   dev.init();
 
   uint32_t sv = dev.readVersionSoftware();
-  cout << endl << "Software version: " << hex << sv << endl;
+  cout << endl << "Software version: 0x" << hex << sv << endl;
 
   uint32_t hv = dev.readVersionHardware();
-  cout << endl << "Hardware version: " << hex << hv << endl;
+  cout << endl << "Hardware version: 0x" << hex << hv << endl;
 
   long enc = dev.getEncoderPulseNumber();
   cout << endl << "Number of encoder pulses: " << dec << enc << endl;
+
+  long v, m, a, d, q, ma, t;
+  dev.getProfileData(v, m, a, d, q, ma, t);
+
+  cout << endl << dec << "Profile data: "
+       << "vel: " << v << ", "
+       << "maxvel: " << m << ", "
+       << "acc: " << a << ", "
+       << "dec: " << d << ", "
+       << "qsdec: " << q << ", "
+       << "maxacc: " << ma << ", "
+       << "type: " << t << endl;
+
+  uint16_t info;
+  for (unsigned el = 1; el < 6; ++el)
+  {
+    info = dev.getDigOutConf( el );
+    cout << endl << "Dig out " << el << ", val 0x" << hex << info;
+  }
+  
+  //  return 1;
 
   dev.shutdown();
   status = dev.readStatusWord();
@@ -634,16 +655,9 @@ int main(int argc, char **argv)
   //      << dev.getOpModeDescription( dev.getOperationMode() );
 
   // cout << endl;
-
-  uint16_t info;
+  
   long pos = dev.readPosition();
   cout << endl << "Actual position: " << pos << endl;
-  
-  // for (unsigned el = 1; el < 6; ++el)
-  // {
-  //   info = dev.getDigOutInfo( el );
-  //   cout << endl << "Dig out " << el << ", val " << hex << info;
-  // }
 
   // cout << endl;
   // cout << endl;
@@ -654,22 +668,22 @@ int main(int argc, char **argv)
   // DISABLE BRAKE
   uint16_t brakeNum = 4;
 
-  dev.setDigOut(brakeNum, false, false, true);
-  info = dev.getDigOutInfo( brakeNum );
+  dev.setDigOut(brakeNum, true, true, false);
+  info = dev.getDigOutConf( brakeNum );
   cout << endl;
   cout << endl << "Dig out " << brakeNum << ", val " << hex << info;
   
   // DO SOME MOVEMENT
 
-  int32_t value = 100;
+  int32_t value = 1000;
   dev.setTargetProfilePosition(value);
   dev.startProfilePosition(CEpos2::ABSOLUTE, false, false);
 
   sleep( 5 );
 
   // ENABLE BRAKE
-  dev.setDigOut(brakeNum, true, false, true);
-  info = dev.getDigOutInfo( brakeNum );
+  dev.setDigOut(brakeNum, false, true, false);
+  info = dev.getDigOutConf( brakeNum );
   cout << endl;
   cout << endl << "Dig out " << brakeNum << ", val " << hex << info;
   
@@ -680,6 +694,8 @@ int main(int argc, char **argv)
   cout << endl << "Disable voltage" << endl;
   dev.disableVoltage();
   dev.getState();
+
+  dev.shutdown();
 
   dev.close();
 
