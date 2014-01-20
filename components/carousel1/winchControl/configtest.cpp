@@ -610,6 +610,7 @@ int main(int argc, char **argv)
   // cout << endl << "STATUS\t" << status << endl;
 
   dev.enableController();
+
   //  sleep( 2 );
 
   dev.enableMotor( dev.PROFILE_POSITION );
@@ -657,7 +658,7 @@ int main(int argc, char **argv)
   // cout << endl;
   
   long pos = dev.readPosition();
-  cout << endl << "Actual position: " << pos << endl;
+  cout << endl << "Actual position: " << dec << pos << endl;
 
   // cout << endl;
   // cout << endl;

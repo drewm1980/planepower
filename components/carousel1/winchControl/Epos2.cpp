@@ -32,7 +32,7 @@ using namespace std;
 
 using namespace::boost::asio;  // save tons of typing
 
-#define DEBUG 1
+#define DEBUG 0
 
 // Debugging macro
 #define LOG() \
@@ -270,7 +270,6 @@ long CEpos2::getState()
 
     LOG() << "ESTAT: " << hex << ans;
 
-#if DEBUG == 1
     // OBTENIR EL NUMERO D'ESTAT
     bool bits[16];
     bits[0]=  (ans & 0x0001);
@@ -402,7 +401,6 @@ long CEpos2::getState()
     }
     
     LOG() << this->searchErrorDescription( this->readError() ) << endl;
-#endif // DEBUG == 1
 }
 
 //     SHUTDOWN (transition)
