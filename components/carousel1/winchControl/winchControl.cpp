@@ -222,12 +222,12 @@ bool WinchControl::openDevice()
 
     
     //    keyHandle = VCS_OpenDevice((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", (char*) "/dev/ttyS0", &ErrorCode);
-    if( keyHandle == 0 )
+    //    if( keyHandle == 0 )
     {
         log(Error) << "Open device failure, error code = 0x" << hex << ErrorCode << endlog();
         return false;
     }
-    else
+    //    else
     {
         cout << "Houston, we have connection." << endlog();
     }

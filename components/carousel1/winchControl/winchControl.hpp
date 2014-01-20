@@ -38,6 +38,8 @@
 
 #define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
 
+#include "types/WinchControlDataType.hpp"
+
 /// WinchControl class
 class WinchControl
     : public RTT::TaskContext
@@ -55,9 +57,11 @@ public:
 
 protected:
 
+  RTT::OutputPort< WinchControlDataType > portData;
+  WinchControlDataType data;
+
 private:
     /// Handle for port access
-    void* keyHandle;
     int NodeId;
     // Error information about the executed function
     long unsigned int ErrorCode;
