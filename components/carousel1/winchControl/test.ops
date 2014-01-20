@@ -8,10 +8,10 @@ loadComponent("winch", "WinchControl")
 loadComponent("telemetry", "WinchControlTelemetry")
 
 # Set activities
-setActivity("winch", 1.0 / 5.0, 90, ORO_SCHED_RT)
+setActivity("winch", 1.0 / 10.0, 90, ORO_SCHED_RT)
 #setActivity("winch", 0.0, 90, ORO_SCHED_RT)
 
-setActivity("telemetry", 1.0 / 10.0, 80, ORO_SCHED_RT)
+setActivity("telemetry", 1.0 / 20.0, 80, ORO_SCHED_RT)
 
 telemetry.port = "tcp://*:5567"
 

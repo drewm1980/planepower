@@ -22,19 +22,19 @@ WinchControl::WinchControl(std::string name)
   portData.setDataSample( data );
   portData.write( data );
 
-  addOperation("changeTetherLength", &WinchControl::changeTetherLength, this)
+  addOperation("changeTetherLength", &WinchControl::changeTetherLength, this, OwnThread)
     .doc("Change the tether length relatively, with input in meter. Positive means extending tether");
 
-  addOperation("setTetherLength", &WinchControl::setTetherLength, this)
+  addOperation("setTetherLength", &WinchControl::setTetherLength, this, OwnThread)
     .doc("Change the tether length absolute, with input in meter. This is an absolute value!");
 
-  addOperation("getTetherLength", &WinchControl::getTetherLength, this)
+  addOperation("getTetherLength", &WinchControl::getTetherLength, this, OwnThread)
     .doc("Get the current tether length in meter");
 
-  addOperation("getPosition", &WinchControl::getPosition, this)
+  addOperation("getPosition", &WinchControl::getPosition, this, OwnThread)
     .doc("Get the current position in ticks");
 
-  addOperation("getVelocity", &WinchControl::getVelocity, this)
+  addOperation("getVelocity", &WinchControl::getVelocity, this, OwnThread)
     .doc("Get the current velocity, in rpm?");
 }
 
