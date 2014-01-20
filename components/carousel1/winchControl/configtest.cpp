@@ -580,6 +580,9 @@ int main(int argc, char **argv)
        << "maxacc: " << ma << ", "
        << "type: " << t << endl;
 
+  long offset = dev.getEncoderOffset();
+  cout << "Encoder offset " << dec << offset << endl;
+
   uint16_t info;
   for (unsigned el = 1; el < 6; ++el)
   {

@@ -1034,8 +1034,7 @@ long CEpos2::readVelocityActual	()
 
 long CEpos2::readCurrent()
 {
-    long ans = this->readObject(0x6078, 0x00);
-    return this->getNegativeLong(ans);
+  return static_cast<int32_t>( this->readObject(0x6078, 0x00) );
 }
 
 long CEpos2::readCurrentAveraged()
@@ -1711,4 +1710,14 @@ void CEpos2::setDigOut(uint8_t index, bool state, bool mask, bool polarity)
   this->writeObject(0x2078, 0x03, _polarity);
   this->writeObject(0x2078, 0x02, _mask);
   this->writeObject(0x2078, 0x01, _state);
+}
+
+int32_t CEpos2::getEncoderOffset()
+{
+  return this->readObject(0x2300, 0x05);
+}
+
+void CEpos2::setEncoderOffset(int32_t offset)
+{
+  this->writeObject(0x2300, 0x05, offset);
 }

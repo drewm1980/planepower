@@ -2,16 +2,11 @@
 #define __WINCHCONTROL__
 
 #include <rtt/TaskContext.hpp>
-#include <rtt/Component.hpp>
-#include <rtt/Logger.hpp>
-#include <rtt/Property.hpp>
-#include <rtt/Attribute.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/OperationCaller.hpp>
-#include <rtt/Operation.hpp>
 #include <rtt/Port.hpp>
-#include <stdlib.h>
-#include <stdint.h>  /* int types with given size */
+
+#include "types/WinchControlDataType.hpp"
+
+#include "Epos2.h"
 
 /* EPOS modes of operation, firmware spec 14.1.59 (p.133, tbl. 72) */
 #define E_HOMING      6 ///< EPOS operation mode: homing
@@ -38,7 +33,13 @@
 
 #define TETHER_LENGTH_FILENAME "tetherlengthticks.dat"
 
-#include "types/WinchControlDataType.hpp"
+#define NODE_ID 1
+#define RS232_DEV "/dev/ttyS3"
+#define RS232_BAUD 115200
+#define BRAKE_DO 4
+#define REF_LENGTH 1.2
+
+#define WINCH_DEBUG 666
 
 /// WinchControl class
 class WinchControl
@@ -53,7 +54,6 @@ public:
     virtual bool startHook();
     virtual void updateHook();
     virtual void stopHook();
-  //    virtual void cleanupHook();
 
 protected:
 
@@ -61,30 +61,32 @@ protected:
   WinchControlDataType data;
 
 private:
-    /// Handle for port access
-    int NodeId;
     // Error information about the executed function
-    long unsigned int ErrorCode;
     bool openDevice();
-    unsigned int nodeId;
+
     bool setRelativePosition(int steps);
     bool setAbsolutePosition(int steps);
-    bool setVelocity(int vel);
-    bool changeTetherLength(double length);
+  
+    bool changeTetherLength(double delta);
     bool setTetherLength(double length);
-    void setPositionProfile(int vel, int acc);
-    void setVelocityProfile(int acc);
+    double getTetherLength();
+
     void enableBrake();
     void disableBrake();
+
     int getPosition();
     int getVelocity();
-    int getCurrent();
-    bool loadTetherLength(double& length);
-    bool saveTetherLength(double length);
-    void setCurrentTetherLength(double length);
-    double getTetherLength();
+
     int length2ticks(double length);
     double ticks2length(int ticks);
+
+    bool loadTetherLength(double& length);
+    bool saveTetherLength(double length);
+
+  CEpos2 epos;
+
+  // The encoder reading at REF_LENGTH
+  int32_t refTicks;
 };
 
 #endif // __WINCHCONTROL__

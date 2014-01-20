@@ -1,146 +1,188 @@
 #include "winchControl.hpp"
+
+#include <rtt/Component.hpp>
+#include <rtt/Logger.hpp>
+#include <rtt/Property.hpp>
+#include <rtt/os/TimeService.hpp>
+#include <rtt/Time.hpp>
+
 #include <fstream>
 
 using namespace std;
 using namespace RTT;
+using namespace RTT::os;
 
 WinchControl::WinchControl(std::string name)
-    : TaskContext(name)
+  : TaskContext(name, PreOperational),
+    epos(RS232_DEV, RS232_BAUD, NODE_ID)
 {
-    addOperation("changeTetherLength", &WinchControl::changeTetherLength, this)
+  addPort("data", portData)
+    .doc("Data port");
+
+  portData.setDataSample( data );
+  portData.write( data );
+
+  addOperation("changeTetherLength", &WinchControl::changeTetherLength, this)
     .doc("Change the tether length relatively, with input in meter. Positive means extending tether");
 
-    addOperation("setTetherLength", &WinchControl::setTetherLength, this)
+  addOperation("setTetherLength", &WinchControl::setTetherLength, this)
     .doc("Change the tether length absolute, with input in meter. This is an absolute value!");
 
-    addOperation("setPositionProfile", &WinchControl::setPositionProfile, this)
-    .doc("Set the position profile, first max velocity in rpm???, second max acceleration in rpm^2??");
-
-    addOperation("setCurrentTetherLength", &WinchControl::setCurrentTetherLength,this)
-    .doc("Specify the current tether length. This means changing the current tetherlength in software, but not in hardware.");
-
-    addOperation("setVelocityProfile", &WinchControl::setVelocityProfile,this)
-    .doc("Set the velocity profile, max acceleration in rpm^2??");
-
-    addOperation("getPosition", &WinchControl::getPosition, this)
-    .doc("Get the current position in ticks");
-
-    addOperation("getTetherLength", &WinchControl::getTetherLength, this)
+  addOperation("getTetherLength", &WinchControl::getTetherLength, this)
     .doc("Get the current tether length in meter");
 
-    addOperation("getVelocity", &WinchControl::getVelocity, this)
+  addOperation("getPosition", &WinchControl::getPosition, this)
+    .doc("Get the current position in ticks");
+
+  addOperation("getVelocity", &WinchControl::getVelocity, this)
     .doc("Get the current velocity, in rpm?");
-
-    addOperation("getCurrent", &WinchControl::getCurrent,this)
-    .doc("Get the current current");
-
-    addOperation("enableBrake", &WinchControl::enableBrake,this)
-    .doc("Enable the brake");
-
-    addOperation("disableBrake", &WinchControl::disableBrake,this)
-    .doc("Disable the brake");
-
-    NodeId = 0;
 }
 
 
 WinchControl::~WinchControl()
 {}
 
-bool  WinchControl::configureHook()
+bool WinchControl::configureHook()
 {
     return true;
 }
 
-bool  WinchControl::startHook()
+bool WinchControl::startHook()
 {
-    if(openDevice() == false)
-        return false;
-    
-    double tether_length_ticks;
-    if( loadTetherLength( tether_length_ticks ) )
+  if(openDevice() == false)
+    return false;
+  
+  double foo;
+  if( loadTetherLength( foo ) )
+  {
+    log( Info ) << "My current tether length, based on previously stored tether length ticks, is " << REF_LENGTH << " m" << endlog();
+  }
+  else
     {
-      log( Info ) << "My current tether length, based on previously stored tether length ticks, is " << ticks2length(tether_length_ticks) << " m" << endlog();
+      log( Error ) << "Error in reading the tether length" << endlog();
+      return false;
     }
-    //  VCS_DefinePosition(keyHandle, NodeId, tether_length_ticks,&ErrorCode);
-    return true;
+
+  refTicks = foo;
+
+    //  VCS_DefinePosition(keyHandle, NODE_ID, tether_length_ticks,&ErrorCode);
+
+  disableBrake();
+    
+  epos.enableController();
+
+  epos.enableMotor( epos.PROFILE_POSITION );
+
+  setAbsolutePosition( refTicks );
+
+  return true;
 }
 
 void  WinchControl::updateHook()
-{}
+{
+  uint64_t tickStart = TimeService::Instance()->getTicks();
+
+  int32_t theta, omega, current;
+
+  theta = epos.readPosition();
+  omega = epos.readVelocity();
+  current = epos.readCurrent();
+
+  data.dbg_theta = theta;
+  data.dbg_omega = omega;
+  data.dbg_current = current;
+
+  data.ts_trigger = tickStart;
+  data.ts_elapsed = TimeService::Instance()->secondsSince( tickStart );
+
+  portData.write( data );
+}
 
 void  WinchControl::stopHook()
 {
-    int isInFault;
-    //  VCS_GetFaultState(keyHandle, NodeId, &IsInFault, &ErrorCode);
-    if(isInFault)
-    {
-        //VCS_ClearFault(keyHandle, NodeId, &ErrorCode);
-    }
-    enableBrake();
-    saveTetherLength((int) getPosition());
-    //  VCS_SetDisableState(keyHandle, NodeId, &ErrorCode);
-    //VCS_CloseDevice(keyHandle, &ErrorCode);
+  enableBrake();
+
+  epos.close();
+  epos.shutdown();
+  epos.faultReset();
+
+  // NOPE! We manually set the this value manually
+  //  saveTetherLength((int) getPosition());
 }
 
+bool WinchControl::openDevice()
+{
+  // Initialize the serial connection
+  epos.init();
+  // Reset all faults, if they exist
+  epos.faultReset();
+  // TODO, for now we use the defaults that are in the drive
+  // setPositionProfile(100, 3000);
+  
+  return true;
+}
 
 bool WinchControl::setRelativePosition(int steps)
 {
-    if(ticks2length(steps+getPosition()) < MIN_TETHER_LENGTH || ticks2length(steps+getPosition()) > MAX_TETHER_LENGTH)
-    {
-        cout << "Your move is invalid. Tether length should be between " << MIN_TETHER_LENGTH << " and " << MAX_TETHER_LENGTH << " m" << endl;
-        return false;
-    }
-    //  if( !VCS_SetOperationMode(keyHandle, NodeId, E_POSITIONPROFILE,&ErrorCode) ){
-    //return false;
-    //}
-    //if( !VCS_MoveToPosition(keyHandle, NodeId, steps, 0, 1, &ErrorCode ) ){
-    //  return false;
-    //}
+    epos.setTargetProfilePosition( steps );
+    epos.startProfilePosition(epos.RELATIVE, false, false);
+
     return true;
 }
 
 bool WinchControl::setAbsolutePosition(int steps)
 {
-    if(ticks2length(steps) < MIN_TETHER_LENGTH || ticks2length(steps) > MAX_TETHER_LENGTH)
-    {
-        cout << "Your move is invalid. Tether length should be between " << MIN_TETHER_LENGTH << " and " << MAX_TETHER_LENGTH << " m" << endl;
-        return false;
-    }
-    // if( !VCS_SetOperationMode(keyHandle, NodeId, E_POSITIONPROFILE,&ErrorCode) )
-    // {
-    //     return false;
-    // }
-    // if( !VCS_MoveToPosition(keyHandle, NodeId, steps, 1, 1, &ErrorCode ) )
-    // {
-    //     return false;
-    // }
+    epos.setTargetProfilePosition( steps );
+    epos.startProfilePosition(epos.ABSOLUTE, false, false);
+    
     return true;
 }
 
-bool WinchControl::setVelocity(int vel)
+bool WinchControl::changeTetherLength(double delta)
 {
-    // if( !VCS_SetOperationMode(keyHandle, NodeId, E_POSITIONVELOCITY,&ErrorCode) )
-    // {
-    //     return false;
-    // }
-    // if( !VCS_MoveWithVelocity(keyHandle, NodeId, vel, &ErrorCode ) )
-    // {
-    //     return false;
-    // }
-    return true;
-}
-
-bool WinchControl::changeTetherLength(double length)
-{
-    double ticks = length2ticks(length);
-    return setRelativePosition((int) ticks);
+#if WINCH_DEBUG != 666
+  double length = getTetherLength() + delta;
+  if (length < MIN_TETHER_LENGTH || length > MAX_TETHER_LENGTH)
+    return false;
+#endif // WINCH_DEBUG != 666
+  
+  return setRelativePosition( length2ticks( delta ) );
 }
 
 bool WinchControl::setTetherLength(double length)
 {
-    double ticks = length2ticks(length);
-    return setAbsolutePosition((int) ticks);
+#if WINCH_DEBUG != 666
+  if (length < MIN_TETHER_LENGTH || length > MAX_TETHER_LENGTH)
+    return false;
+#endif // WINCH_DEBUG != 666
+
+  int32_t ticks = length2ticks(length - REF_LENGTH);
+  return setAbsolutePosition(ticks + refTicks);
+}
+
+double WinchControl::getTetherLength()
+{
+    return REF_LENGTH + ticks2length(getPosition() - refTicks);
+}
+
+void WinchControl::enableBrake()
+{
+  epos.setDigOut(BRAKE_DO, false, true, false);
+}
+
+void WinchControl::disableBrake()
+{
+  epos.setDigOut(BRAKE_DO, true, true, false);
+}
+
+int WinchControl::getPosition()
+{
+    return epos.readPosition();
+}
+
+int WinchControl::getVelocity()
+{
+    return epos.readVelocity();
 }
 
 double WinchControl::ticks2length(int ticks)
@@ -152,101 +194,6 @@ int WinchControl::length2ticks(double length)
 {
     double ticks = length*((double) WINCH_SCALING);
     return (int) ticks;
-}
-
-void WinchControl::setPositionProfile(int vel, int acc)
-{
-  //    VCS_SetPositionProfile(keyHandle, NodeId, vel, acc, acc, &ErrorCode);
-}
-
-void WinchControl::setVelocityProfile(int acc)
-{
-  //    VCS_SetVelocityProfile(keyHandle, NodeId, acc, acc, &ErrorCode);
-}
-
-void WinchControl::setCurrentTetherLength(double length)
-{
-    int tether_length_ticks = length2ticks(length);
-    //    VCS_DefinePosition(keyHandle, NodeId, tether_length_ticks,&ErrorCode);
-}
-
-void WinchControl::enableBrake()
-{
-    uint16_t DigitalOutputNb = 4;
-    uint16_t Configuration = 14;
-    bool State = false;
-    bool Mask = true;
-    bool Polarity = 0;
-    //    VCS_DigitalOutputConfiguration(keyHandle, NodeId, DigitalOutputNb, Configuration, State, Mask, Polarity, &ErrorCode);
-}
-
-void WinchControl::disableBrake()
-{
-    uint16_t DigitalOutputNb = 4;
-    uint16_t Configuration = 14;
-    bool State = true;
-    bool Mask = true;
-    bool Polarity = 0;
-    //    VCS_DigitalOutputConfiguration(keyHandle, NodeId, DigitalOutputNb, Configuration, State, Mask, Polarity, &ErrorCode);
-}
-
-int WinchControl::getPosition()
-{
-    long pos;
-    //    VCS_GetPositionIs(keyHandle, NodeId, &pos, &ErrorCode);
-    return (int) pos;
-}
-
-double WinchControl::getTetherLength()
-{
-    return ticks2length(getPosition());
-}
-
-int WinchControl::getVelocity()
-{
-    long vel;
-    //    VCS_GetVelocityIs(keyHandle, NodeId, &vel, &ErrorCode);
-    return (int) vel;
-}
-
-int WinchControl::getCurrent()
-{
-    short cur;
-    //    VCS_GetCurrentIs(keyHandle, NodeId, &cur, &ErrorCode);
-    return (int) cur;
-}
-
-bool WinchControl::openDevice()
-{
-    nodeId = 1;
-
-    
-    //    keyHandle = VCS_OpenDevice((char*) "EPOS2", (char*) "MAXON_RS232", (char*) "RS232", (char*) "/dev/ttyS0", &ErrorCode);
-    //    if( keyHandle == 0 )
-    {
-        log(Error) << "Open device failure, error code = 0x" << hex << ErrorCode << endlog();
-        return false;
-    }
-    //    else
-    {
-        cout << "Houston, we have connection." << endlog();
-    }
-
-
-    int IsInFault = true;
-    //    VCS_GetFaultState(keyHandle, NodeId, &IsInFault, &ErrorCode);
-    if(IsInFault)
-    {
-      //        VCS_ClearFault(keyHandle, NodeId, &ErrorCode);
-    }
-
-    disableBrake();
-    //    VCS_SetEnableState(keyHandle,NodeId,&ErrorCode);
-
-    setPositionProfile(100,3000);
-    //    VCS_SetMaxFollowingError(keyHandle, NodeId, 2e9, &ErrorCode);
-    
-    return true;
 }
 
 bool WinchControl::loadTetherLength(double& length)

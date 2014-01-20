@@ -13,9 +13,9 @@ typedef struct
   	/// Time-stamps: trigger [ticks] and elapsed [sec]
 	double ts_trigger, ts_elapsed;
 	/// A few debug things
-	int32_t dbg_theta;
-	int32_t dbg_omega;
-  	int32_t dbg_current;
+  	float dbg_theta; // [?]
+  	float dbg_omega; // [rpm?]
+  	float dbg_current; // [mA?]
 } WinchControlDataType;
 
 #endif // __WINCH_CONTROL_DATA_TYPE__

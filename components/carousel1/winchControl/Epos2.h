@@ -1576,12 +1576,6 @@ public:
      */
     void doHoming(bool blocking=false);
 
-    /** \brief Thread listens to target reached
-	 *
-	 *  \param param
-	 */
-    static void *threadTargetReached(void *param);
-
     /** \brief stops a homing operation */
     void stopHoming();
 
@@ -1622,6 +1616,10 @@ public:
     uint16_t getDigOutConf(uint8_t index);
 
     void setDigOut(uint8_t index, bool state, bool mask, bool polarity);
+
+    int32_t getEncoderOffset();
+
+    void setEncoderOffset(int32_t offset);
 
 private:
 	/// Node ID
