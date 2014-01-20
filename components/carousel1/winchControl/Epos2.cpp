@@ -469,9 +469,7 @@ void CEpos2::faultReset()
 
 long CEpos2::getOperationMode()
 {
-  long ans = static_cast<int8_t>(this->readObject(0x6061, 0x00) >> 8);
-
-  return(ans);
+   return static_cast<int8_t>(this->readObject(0x6061, 0x00));
 }
 
 //     GET OPERATION MODE DESCRIPTION
