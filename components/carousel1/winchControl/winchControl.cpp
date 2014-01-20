@@ -268,4 +268,5 @@ bool WinchControl::saveTetherLength(double length)
     return true;
 }
 
-ORO_CREATE_COMPONENT( WinchControl )
+//ORO_CREATE_COMPONENT( WinchControl )
+ORO_LIST_COMPONENT_TYPE( WinchControl )
