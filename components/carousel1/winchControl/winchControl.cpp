@@ -54,10 +54,8 @@ bool  WinchControl::configureHook()
 
 bool  WinchControl::startHook()
 {
-    if(!openDevice())
-    {
+    if(openDevice() == false)
         return false;
-    }
     
     double tether_length_ticks;
     if( loadTetherLength( tether_length_ticks ) )
@@ -73,9 +71,9 @@ void  WinchControl::updateHook()
 
 void  WinchControl::stopHook()
 {
-    int IsInFault;
+    int isInFault;
     //  VCS_GetFaultState(keyHandle, NodeId, &IsInFault, &ErrorCode);
-    if(IsInFault)
+    if(isInFault)
     {
         //VCS_ClearFault(keyHandle, NodeId, &ErrorCode);
     }

@@ -1,6 +1,6 @@
 include_rules
 
-BOOST_LIBS = -lboost_system-mt -lboost_thread-mt 
+BOOST_LIBS = -lboost_system-mt -lboost_thread-mt -pthread
 
 LDFLAGS += $(BOOST_LIBS)
 
