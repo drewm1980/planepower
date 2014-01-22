@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-deployer-gnulinux -lwarning -s test.ops
+deployer-gnulinux -ldebug -s test.ops
