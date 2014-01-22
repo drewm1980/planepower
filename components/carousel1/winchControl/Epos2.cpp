@@ -214,7 +214,7 @@ void CEpos2::receiveFrame(uint16_t* ans_frame)
 
     // The rest of the frame
     unsigned length = ((lenm1 + 1) * 2 + 2 * 2) / 2;
-	unsigned i, tf;
+	unsigned i, tf_i;
     for (i = 1, tf_i = 0; i < length - 1; i++)
     {
       	ans_frame[ i ] = read_buffer[ tf_i++ ];
