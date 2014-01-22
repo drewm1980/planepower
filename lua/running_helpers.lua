@@ -17,6 +17,7 @@ function P.warmup()
 	print("Spinning up carousel...")
 	thresh_warm = 52.0  -- rpm
 	set_voltage(10)
+	ddelta = 0.0
 	repeat 
 		os.execute("sleep 0.2")
 		ddelta = get_ddelta()
