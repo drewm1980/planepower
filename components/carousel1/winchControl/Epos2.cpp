@@ -93,7 +93,7 @@ void CEpos2::openDevice()
 
 int32_t CEpos2::readObject(int16_t index, int8_t subindex)
 {
-  uint32_t ec, result;
+	uint32_t ec, result;
     uint16_t req_frame[ 4 ];
     uint16_t ans_frame[ 6 ];
 
@@ -105,8 +105,8 @@ int32_t CEpos2::readObject(int16_t index, int8_t subindex)
     // TODO Make this non-blocking one day
     this->sendFrame( req_frame );
     this->receiveFrame( ans_frame );
-    // TODO Checksum checking
 
+	// TODO Return the error code somehow...
     ec = (uint32_t)ans_frame[ 1 ] + ((uint32_t)ans_frame[ 2 ] << 16);
     LOG() << "Error code: " << hex << ec;
     result = (uint32_t)ans_frame[ 3 ] + ((uint32_t)ans_frame[ 4 ] << 16);
@@ -116,7 +116,7 @@ int32_t CEpos2::readObject(int16_t index, int8_t subindex)
 
 int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
 {
-  uint32_t ec;
+	uint32_t ec;
     uint16_t req_frame[ 6 ];
     uint16_t ans_frame[ 4 ];
     
@@ -130,8 +130,8 @@ int32_t CEpos2::writeObject(int16_t index, int8_t subindex, int32_t data)
     // TODO Non-blocking
     this->sendFrame( req_frame );
     this->receiveFrame( ans_frame );
-    // TODO Checksum
 
+	// TODO This function should somehow return the error code
     ec = (uint32_t)ans_frame[ 1 ] + ((uint32_t)ans_frame[ 2 ] << 16);
     LOG() << "Error code: " << hex << ec;
 
@@ -187,40 +187,44 @@ void CEpos2::sendFrame(uint16_t *frame)
 
 void CEpos2::receiveFrame(uint16_t* ans_frame)
 {
-    uint8_t read_buffer[ 32 ];
-    uint8_t opcode, lenm1;
+	uint8_t read_buffer[ 32 ];
+	uint8_t opcode, lenm1;
 
-    LOG() << "readFrame start";
-    unsigned received = read(serialPort, buffer(&opcode, 1));
+	LOG() << "readFrame start";
+	unsigned received = read(serialPort, buffer(&opcode, 1));
     if (opcode == 0x00)
     {
-      //LOG() << "Received 0x00";
-
-      char ack = 'O';
+		char ack = 'O';
       
-      write(serialPort, buffer(&ack, 1));
-      //LOG() << "Written ack";
+		write(serialPort, buffer(&ack, 1));
+		//LOG() << "Written ack";
       
-      received = read(serialPort, buffer(&lenm1, 1));
-      //LOG() << "Received length " << lenm1;
-      received = read(serialPort, buffer(read_buffer, (lenm1 + 1) * 2 + 2));
+		received = read(serialPort, buffer(&lenm1, 1));
+		//LOG() << "Received length " << lenm1;
+		received = read(serialPort, buffer(read_buffer, (lenm1 + 1) * 2 + 2));
 
-      write(serialPort, buffer(&ack, 1));
-      //LOG() << "Written ack";
-    }
-    else
-      runtime_error( "Wrong OPCODE received" );
+		write(serialPort, buffer(&ack, 1));
+		//LOG() << "Written ack";
+	}
+	else
+		throw runtime_error( "Wrong OPCODE received" );
 
     // First word in the frame
     ans_frame[ 0 ] = ((uint16_t)opcode << 8) + lenm1;
 
     // The rest of the frame
     unsigned length = ((lenm1 + 1) * 2 + 2 * 2) / 2;
-    for(unsigned i = 1, tf_i = 0; i < length; ++i)
+	unsigned i, tf;
+    for (i = 1, tf_i = 0; i < length - 1; i++)
     {
       	ans_frame[ i ] = read_buffer[ tf_i++ ];
+		ans_frame[ i ] += (uint16_t)read_buffer[ tf_i++ ] << 8;
+    }	
+	ans_frame[ i ] = 0x0000;
+	uint16_t crc = this->computeChecksum(ans_frame, length);
+	
+	ans_frame[ i ] = read_buffer[ tf_i++ ];
 	ans_frame[ i ] += (uint16_t)read_buffer[ tf_i++ ] << 8;
-    }
 
 #if DEBUG == 1
     LOG() << "Received frame data (hex): ";
@@ -228,6 +232,9 @@ void CEpos2::receiveFrame(uint16_t* ans_frame)
       cout << hex << ans_frame[ el ] << ", ";
 #endif // DEBUG == 1
 
+	if (crc != ans_frame[ i ])
+		throw runtime_error("CRC of the received frame is wrong!");
+	
     LOG() << "readFrame end";
 }
 
