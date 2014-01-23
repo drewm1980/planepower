@@ -9,7 +9,8 @@ require "deployment_helpers"
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
-						"set_property"}) do
+						"set_property",
+					    "sleep"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 
@@ -23,8 +24,8 @@ A = 0.04
 
 for i =1,3 do
 	mcuHandler:setControlsUnitless(A,A,A)
-	os.execute("sleep " .. t)
+	sleep(t)
 	mcuHandler:setControlsUnitless(-A,-A,-A)
-	os.execute("sleep " .. t)
+	sleep(t)
 end
 mcuHandler:setControlsUnitless(0,0,0)

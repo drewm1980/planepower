@@ -5,7 +5,8 @@ require "deployment_helpers"
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
-						"set_property"}) do
+						"set_property",
+						"sleep"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 require "running_helpers"
@@ -22,7 +23,7 @@ masterTimer:start()
 p=encoder:getPort("data")
 
 --set_voltage(4)
---os.execute("sleep 5")
+--sleep(5)
 --set_voltage(0)
 
 dofile("postamble.lua")

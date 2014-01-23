@@ -5,7 +5,8 @@ require "deployment_helpers"
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
-						"set_property"}) do
+						"set_property",
+						"sleep"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 
@@ -24,36 +25,36 @@ trials = 3
 print "Checking full scale movement of all servos..."
 t2 = 1
 mcuHandler:setControlsUnitless(1,1,1)
-os.execute("sleep " .. t2)
+sleep(t2)
 mcuHandler:setControlsUnitless(-1,-1,-1)
-os.execute("sleep " .. t2)
+sleep(t2)
 mcuHandler:setControlsUnitless(0,0,0)
-os.execute("sleep " .. t2)
+sleep(t2)
 
 -- Check servos individually
 print "Checking servos individually so you can observe the sign..."
 for i =1,trials do
 	mcuHandler:setControlsUnitless(A,0,0)
-	os.execute("sleep " .. t)
+	sleep(t)
 	mcuHandler:setControlsUnitless(-A,0,0)
-	os.execute("sleep " .. t)
+	sleep(t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
-os.execute("sleep " .. t)
+sleep(t)
 for i =1,trials do
 	mcuHandler:setControlsUnitless(0,A,0)
-	os.execute("sleep " .. t)
+	sleep(t)
 	mcuHandler:setControlsUnitless(0,-A,0)
-	os.execute("sleep " .. t)
+	sleep(t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
 for i =1,trials do
 	mcuHandler:setControlsUnitless(0,0,A)
-	os.execute("sleep " .. t)
+	sleep(t)
 	mcuHandler:setControlsUnitless(0,0,-A)
-	os.execute("sleep " .. t)
+	sleep(t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
-os.execute("sleep " .. t)
+sleep(t)
 print "done"
 

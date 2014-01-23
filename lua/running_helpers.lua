@@ -19,7 +19,7 @@ function P.warmup()
 	set_voltage(10)
 	ddelta = 0.0
 	repeat 
-		os.execute("sleep 0.2")
+		sleep(0.2)
 		ddelta = get_ddelta()
 		print("Speed is ".. ddelta .. " RPM")
 		--io.stdout:flush()
@@ -38,7 +38,7 @@ function P.slowdown()
 	set_voltage(0)
 	thresh_stopped = 1.0 
 	repeat
-		os.execute("sleep 0.1")
+		sleep(0.1)
 		ddelta = get_ddelta()
 		print("Speed is " .. ddelta .. " RPM")
 		io.stdout:flush()

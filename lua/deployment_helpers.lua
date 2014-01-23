@@ -59,5 +59,10 @@ function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
 	end
 end
 
+-- Sleep for a certain amount of time, in seconds.
+function P.sleep(t)
+	os.execute("sleep " .. t)
+end
+
 return deployment_helpers
 

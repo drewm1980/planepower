@@ -9,7 +9,8 @@ for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
 						"set_property",
-					    "set_up_reporters"}) do
+					    "set_up_reporters",
+						"sleep"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 
@@ -41,7 +42,7 @@ end
 dofile("setup_carousel_1_reporters.lua")
 set_up_reporters({"controls"},{"controlInjector"})
 
-os.execute("sleep ".. 3)
+sleep(3)
 
 t = 0.08 -- seconds
 A = 0.25 
@@ -51,10 +52,10 @@ for i =1,3750 do
 	l_aileron = r_aileron
 	elevator = random_control(-A,A)
 	mcuHandler:setControlsUnitless(r_aileron,l_aileron,elevator)
-	os.execute("sleep " .. t)
+	sleep(t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
 print "finished gathering data. Slowing down"
-os.execute("sleep ".. 3)
+sleep(3)
 
 slowdown()
