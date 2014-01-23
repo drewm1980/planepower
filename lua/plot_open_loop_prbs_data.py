@@ -26,7 +26,6 @@ plt.plot(ts_camera)
 plt.subplot(224)
 plt.plot(ts_encoder)
 plt.show()
-assert 1==0
 t = array(f.variables['lineAngleSensor.data.ts_trigger'].data) # ns
 t = t*1e-6 # ms
 
