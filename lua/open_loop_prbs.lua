@@ -22,7 +22,6 @@ for i,symbol in ipairs({"set_voltage",
 end
 
 dofile("load_carousel_1_hardware.lua")
-dofile("setup_carousel_1_reporters.lua")
 
 -- Load up a component to set controls that are synchronized with
 -- the camera clock
@@ -38,10 +37,11 @@ function random_control(min,max)
 	return r*(max-min) + min
 end
 
-warmup()
+--warmup()
+dofile("setup_carousel_1_reporters.lua")
 set_up_reporters({"controls"},{"controlInjector"})
 
---os.execute("sleep ".. 10)
+os.execute("sleep ".. 3)
 
 t = 0.08 -- seconds
 A = 0.25 
@@ -50,9 +50,11 @@ for i =1,3750 do
 	r_aileron = random_control(-A,A)
 	l_aileron = r_aileron
 	elevator = random_control(-A,A)
-	--mcuHandler:setControlsUnitless(r_aileron,l_aileron,elevator)
+	mcuHandler:setControlsUnitless(r_aileron,l_aileron,elevator)
 	os.execute("sleep " .. t)
 end
 mcuHandler:setControlsUnitless(0,0,0)
+print "finished gathering data. Slowing down"
+os.execute("sleep ".. 3)
 
 slowdown()

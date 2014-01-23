@@ -53,7 +53,7 @@ function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
 			r:reportPort(componentName, portName)
 			--print(reporterName.." is reporting component "..componentName.." port "..portName)
 		end
-		deployer:setActivity(reporterName,0.0,reporterPrio,ORO_SCHED_RT)
+		deployer:setActivityOnCPU(reporterName,0.0,reporterPrio,ORO_SCHED_RT,0)
 		r:configure()
 		r:start()
 	end

@@ -27,7 +27,7 @@ deployer:import("soem_ebox")
 deployer:loadComponent("soemMaster","soem_master::SoemMasterComponent")
 soemMaster=deployer:getPeer("soemMaster")
 set_property("soemMaster","ifname","eth2")
-deployer:setActivity("soemMaster", 0.002, soemPrio, ORO_SCHED_RT)
+deployer:setActivityOnCPU("soemMaster", 0.002, soemPrio, ORO_SCHED_RT,2)
 soemMaster:configure()
 soemMaster:start()
 
@@ -61,14 +61,15 @@ set_property("LEDTracker","sigma_marker",20)
 
 ----------------- Set Priorities and activities
 
-deployer:setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
-deployer:setActivity("mcuHandler", 0.0, sensorPrio, ORO_SCHED_RT)
-deployer:setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
-deployer:setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
-deployer:setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
-deployer:setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
-deployer:setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
---deployer:setActivity("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
+deployer:setActivityOnCPU("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT,2)
+
+deployer:setActivityOnCPU("mcuHandler", 0.0, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("voltageController", 0.01, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("encoder", 0.0, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
+--deployer:setActivityOnCPU("poseFromMarkers", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
 
 ---------------- Connect Components
 
