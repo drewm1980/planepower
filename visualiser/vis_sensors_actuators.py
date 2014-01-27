@@ -131,11 +131,11 @@ mcuNames.extend( acclNames )
 # Winch control
 #
 winchTitle = "Winch data (" + \
-			redBoldText("theta") + ", " + greenBoldText("omega") + \
-			", " + blueBoldText("current") + \
+			redBoldText("t. len. [m]") + ", " + greenBoldText("t. sp. [m/s]") + \
+			", " + blueBoldText("m. curr. [A]") + \
 			") vs Timestamp [s]"
 
-winchNames = ["dbg_theta", "dbg_omega", "dbg_current"]
+winchNames = ["length", "speed", "dbg_current"]
 winchPlots = addPlotsToLayout(layout.addLayout( ), winchTitle, winchNames)
 
 layout.nextRow()
