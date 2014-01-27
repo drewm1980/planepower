@@ -242,6 +242,7 @@ connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
 connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
+connect("voltageController.eboxAnalog", "encoder.eboxAnalog", cp)
 
 connect("inputSignalGenerator.data", "mcuHandler.controls", cp)
 
@@ -282,7 +283,7 @@ connectPeers("lineAngleReporter", "lineAngleSensor")
 lineAngleReporter.reportComponent( "lineAngleSensor" )
 
 connectPeers("winchReporter", "winch")
-lineAngleReporter.reportComponent( "winch" )
+winchReporter.reportComponent( "winch" )
 
 connectPeers("mheReporter", "mhe")
 mheReporter.reportPort("mhe", "debugData")
