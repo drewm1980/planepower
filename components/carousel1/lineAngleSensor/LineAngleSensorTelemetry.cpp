@@ -29,7 +29,7 @@ void LineAngleSensorTelemetry::fill()
   msg.set_angle_ver( data.angle_ver );
   msg.set_angle_hor( data.angle_hor );
 
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 

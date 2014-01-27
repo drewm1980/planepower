@@ -57,7 +57,7 @@ void LEDTrackerTelemetry::fill()
     frame->mutable_b()->set_v( data.positions[ el++ ] );
   }
 
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 

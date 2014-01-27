@@ -39,7 +39,7 @@ void McuHandlerTelemetry::fill()
   msg.set_ua2( data.ua2 );
   msg.set_ue( data.ue );
 
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 
