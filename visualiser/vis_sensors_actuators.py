@@ -98,6 +98,11 @@ class LedTrackerWorker( ZmqSubProtobufWorker ):
 					updateBuffer(name, val)
 
 #
+# Generic fields, that all protobufs _must_ have
+#
+genNames = ["ts_trigger", "ts_elapsed"]
+
+#
 # MCU handler structure init
 #
 mcuNames = []
@@ -182,8 +187,6 @@ for frame in ["left", "right"]:
 		for coord in ["u", "v"]:
 			ledNames.append(frame + "_" + clr + "_" + coord)
 
-ledNamesExt = ledNames + ["ts_trigger", "ts_elapsed"]
-
 ledPlots = dict()
 for f in ["left", "right"]:
 	for coord in ["u", "v"]:
@@ -203,6 +206,16 @@ for col in xrange( 4 ):
 		a = l.getItem(row + 1, 0).getAxis( "left" )
 		a.setRange(-1, 1200)
 		a.linkToView(l.getItem(row + 1, 0).getViewBox())
+
+#
+# Extended name lists
+#
+
+mcuNamesExt = mcuNames + genNames
+encNamesExt = encNames + genNames
+winchNamesExt = winchNames + genNames
+lasNamesExt = lasNames + genNames
+ledNamesExt = ledNames + genNames
 
 #
 # Setup update of the plotter
@@ -226,7 +239,9 @@ def updatePlots():
 	def updateGroup(q, plots, names):
 		try:
 			data = q.get_nowait()
+			#timeStamps = data[ "ts_trigger" ]
 			map(lambda name: plots[ name ].setData( data[ name ] ), names)
+			#map(lambda name: plots[ name ].setData(timeStamps, data[ name ] ), names)
 			
 		except:
 			Queue.Empty
@@ -261,16 +276,16 @@ workers = []
 # NOTE: All buffer lenghts are set to correspond to last 20 sec.
 # TODO: Somehow we should automate this...
 
-workers.append(ZmqSubProtobufWorker(host + ":" + McuHandlerPort, McuHandlerMsg, gyroNames + acclNames + ctrlNames,
+workers.append(ZmqSubProtobufWorker(host + ":" + McuHandlerPort, McuHandlerMsg, mcuNamesExt,
 									q1, bufferSize = 20 * 100))
 
-workers.append(ZmqSubProtobufWorker(host + ":" + EncoderPort, EncoderMsg, encNames,
+workers.append(ZmqSubProtobufWorker(host + ":" + EncoderPort, EncoderMsg, encNamesExt,
 									q2, bufferSize = 20 * 100))
 
-workers.append(ZmqSubProtobufWorker(host + ":" + WinchPort, WinchControlMsg, winchNames,
+workers.append(ZmqSubProtobufWorker(host + ":" + WinchPort, WinchControlMsg, winchNamesExt,
 									q3, bufferSize = int(20 * 12.5)))
 
-workers.append(ZmqSubProtobufWorker(host + ":" + LasPort, LineAngleSensorMsg, lasNames,
+workers.append(ZmqSubProtobufWorker(host + ":" + LasPort, LineAngleSensorMsg, lasNamesExt,
 									q4, bufferSize = 20 * 100))
 
 workers.append(LedTrackerWorker(host + ":" + LedTrackerPort, LEDTrackerMsg, ledNamesExt,
