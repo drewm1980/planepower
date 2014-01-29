@@ -36,18 +36,21 @@ soemMaster:start()
 libraryNames={"mcuHandler","voltageController","encoder","cameraTrigger","lineAngleSensor","LEDTracker"}
 classNames={  "McuHandler","VoltageController","Encoder","CameraTrigger","LineAngleSensor","LEDTracker"}
 instanceNames=libraryNames
+print "HEEEEEEEEEEEEEEERE 0"
 
 for i=1,#libraryNames do
 	load_component(libraryNames[i],classNames[i],instanceNames[i])
 end
+print "HEEEEEEEEEEEEEEERE 1"
 
 -- Several components need to be peered with soemMaster component
 for i,name in ipairs({"encoder","cameraTrigger","lineAngleSensor"}) do
 	deployer:connectPeers("soemMaster", name)
 end
 
+
 -- Configure the hardware components
-load_properties("mcuHandler",PROPERTIES.."tcp.cpf")
+load_properties("mcuHandler",PROPERTIES.."tcp.cpf") -- Throwing "TinyDemarshaller" type warnings
 
 set_property("mcuHandler","Ts",1.0/base_hz)
 set_property("mcuHandler","rtMode",true)
@@ -95,5 +98,10 @@ masterTimer:configure()
 for i=1,#instanceNames do
 	_G[instanceNames[i]]:configure()
 	_G[instanceNames[i]]:start()
+	if instanceNames[i]=="encoder" then
+		print "Sleeping for 5 seconds after starting of encoder component, because its velocity estimate starts way off sometimes."
+		sleep(5)
+		print "Done sleeping, continuing loading the other components."
+	end
 end
 

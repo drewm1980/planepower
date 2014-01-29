@@ -10,45 +10,26 @@ f_camera = netcdf.netcdf_file('cameraData.nc', 'r')
 f_controls = netcdf.netcdf_file('controlsData.nc', 'r')
 f_encoder = netcdf.netcdf_file('encoderData.nc', 'r')
 
-ts_lineAngle = array(f_lineAngle.variables['lineAngleSensor.data.ts_trigger'].data) # ns
 ts_imu = array(f_imu.variables['mcuHandler.data.ts_trigger'].data) # ns
-ts_camera = array(f_camera.variables['LEDTracker.data.ts_trigger'].data) # ns
-ts_encoder = array(f_encoder.variables['encoder.data.ts_trigger'].data) # ns
 
 plt.ion()
 plt.figure()
-plt.subplot(221)
-plt.plot(ts_lineAngle)
-plt.subplot(222)
-plt.plot(ts_imu)
-plt.subplot(223)
-plt.plot(ts_camera)
-plt.subplot(224)
-plt.plot(ts_encoder)
+plt.subplot(321)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.accl_x'].data))
+plt.ylabel('acc x')
+plt.subplot(323)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.accl_y'].data))
+plt.ylabel('acc y')
+plt.subplot(325)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.accl_z'].data))
+plt.ylabel('acc z')
+plt.subplot(322)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.gyro_x'].data))
+plt.ylabel('gyro x')
+plt.subplot(324)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.gyro_y'].data))
+plt.ylabel('gyro y')
+plt.subplot(326)
+plt.plot(ts_imu,array(f_imu.variables['mcuHandler.data.gyro_z'].data))
+plt.ylabel('gyro z')
 plt.show()
-t = array(f.variables['lineAngleSensor.data.ts_trigger'].data) # ns
-t = t*1e-6 # ms
-
-figure()
-title('Compare the two clocks')
-t2 = array(f.variables['TimeStamp'].data)
-plot(t*1e6,t2)
-xlabel('lineAngleSensor.data.ts_trigger')
-ylabel('Trigger')
-
-# Horizontal
-# See lineAngleSensor component for sign documentation
-angle_hor = array(f.variables['lineAngleSensor.data.angle_hor'].data) * (180.0/pi)
-
-# Vertical
-angle_ver = array(f.variables['lineAngleSensor.data.angle_ver'].data) * (180.0/pi)
-
-f.close()
-
-figure()
-plot(t,angle_hor,t,angle_ver) 
-xlabel('timestamp [ms]')
-ylabel('Tether angle [Radians]')
-legend(['Horizontal Angle','Vertical Angle'])
-show()
-

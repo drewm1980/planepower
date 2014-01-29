@@ -4,6 +4,6 @@ import("soem_master")
 import("soem_ebox")
 loadComponent("soemMaster","soem_master::SoemMasterComponent")
 setActivity("soemMaster",.005,HighestPriority,ORO_SCHED_RT)
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
 soemMaster.configure()
 soemMaster.start()

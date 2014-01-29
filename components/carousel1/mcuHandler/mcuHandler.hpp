@@ -24,9 +24,9 @@ typedef uint64_t TIME_TYPE;
 
 // For these conversion factors,
 // angle_radians = (angle_unitless - OFFSET) * SCALE
-#define RIGHT_AILERON_SCALE -0.50 
-#define LEFT_AILERON_SCALE  -0.47
-#define ELEVATOR_SCALE 0.83
+#define RIGHT_AILERON_SCALE -0.468
+#define LEFT_AILERON_SCALE  -0.468
+#define ELEVATOR_SCALE 0.78
 #define RIGHT_AILERON_OFFSET 0.0
 #define LEFT_AILERON_OFFSET 0.0
 #define ELEVATOR_OFFSET 0.0
