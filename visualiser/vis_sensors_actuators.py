@@ -254,7 +254,7 @@ def updatePlots():
 
 timer = QtCore.QTimer()
 timer.timeout.connect( updatePlots )
-timer.start( 10 )
+timer.start( 100 )
 
 #
 # ZMQ part:
