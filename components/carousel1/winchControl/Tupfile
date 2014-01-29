@@ -1,0 +1,20 @@
+include_rules
+
+BOOST_LIBS = -lboost_system-mt -lboost_thread-mt -pthread
+
+LDFLAGS += $(BOOST_LIBS)
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+LDFLAGS_OROCOS += $(BOOST_LIBS)
+
+# Generate the protobuf file
+: WinchControlTelemetry.proto |> protoc --cpp_out=. WinchControlTelemetry.proto |> WinchControlTelemetry.pb.cc WinchControlTelemetry.pb.h
+: WinchControlTelemetry.proto |> protoc --python_out=. WinchControlTelemetry.proto |> WinchControlTelemetry_pb2.py
+
+# Compile all cpp files
+: foreach *.cpp | WinchControlTelemetry.pb.h |> !cxx_orocos |>
+: foreach *.cc | WinchControlTelemetry.pb.h |> !cxx_orocos |>
+# Create the component
+: winchControl.o Epos2.o WinchControlTelemetry.o WinchControlTelemetry.pb.o |> !ld_orocos |> %d.so
+# Create the test file
+: configtest.o Epos2.o |> !ld |> configtest

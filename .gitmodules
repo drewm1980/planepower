@@ -20,3 +20,6 @@
 [submodule "extern/rawesome"]
 	path = extern/rawesome
 	url = git://github.com/ghorn/rawesome.git
+;[submodule "extern/stdint_typekit"]
+;	path = extern/stdint_typekit
+;	url = https://github.com/orocos-toolchain/stdint_typekit

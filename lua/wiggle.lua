@@ -9,8 +9,14 @@ require "deployment_helpers"
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
-						"set_property"}) do
+						"set_property",
+					    "sleep"}) do
 	_G[symbol] = deployment_helpers[symbol]
+end
+
+require "running_helpers"
+for i,symbol in ipairs({"set_controls_unitless"}) do
+	_G[symbol] = running_helpers[symbol]
 end
 
 dofile("load_carousel_1_hardware.lua")
@@ -22,9 +28,9 @@ t = 0.04
 A = 0.04
 
 for i =1,3 do
-	mcuHandler:setControlsUnitless(A,A,A)
-	os.execute("sleep " .. t)
-	mcuHandler:setControlsUnitless(-A,-A,-A)
-	os.execute("sleep " .. t)
+	set_controls_unitless(A,A,A)
+	sleep(t)
+	set_controls_unitless(-A,-A,-A)
+	sleep(t)
 end
-mcuHandler:setControlsUnitless(0,0,0)
+set_controls_unitless(0,0,0)

@@ -158,4 +158,4 @@ void  Encoder::errorHook()
 void  Encoder::cleanupHook()
 {}
 
-ORO_CREATE_COMPONENT( Encoder )
+ORO_LIST_COMPONENT_TYPE( Encoder )

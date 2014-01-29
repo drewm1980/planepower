@@ -10,7 +10,7 @@ loadComponent("soemMaster","soem_master::SoemMasterComponent")
 loadComponent("voltageController","VoltageController")
  
 #Load properties
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
  
 #Set activities
 setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)

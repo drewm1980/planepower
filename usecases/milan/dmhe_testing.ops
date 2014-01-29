@@ -5,6 +5,14 @@
 
 ################################################################################
 #
+# Import our own plugins
+#
+################################################################################
+import( "HighwindStuff" )
+require( "HighwindServices" )
+
+################################################################################
+#
 # Start with import, config and starting of the SOEM master
 #
 ################################################################################
@@ -15,12 +23,12 @@ import("soem_ebox")
 loadComponent("soemMaster", "soem_master::SoemMasterComponent")
 
 # Configure
-soemMaster.ifname = "eth1"
+# TODO Move this property to a .cpf file
+soemMaster.ifname = "eth2"
 
 # Set activivity
-var int soemPrio = 99
-setActivity("soemMaster", 0.001, soemPrio, ORO_SCHED_RT)
-soemMaster.setCpuAffinity( 7 )
+var int soemPrio = 98
+setActivityOnCPU("soemMaster", 0.001, soemPrio, ORO_SCHED_RT,2)
 
 soemMaster.configure()
 soemMaster.start()
@@ -31,33 +39,46 @@ soemMaster.start()
 #
 ################################################################################
 
+# Dot Service
+import("rtt_dot_service")
+loadService("Deployer","dot")
+
 # Master Timer
 import("masterTimer")
 loadComponent("masterTimer", "MasterTimer")
 
-# MCU Handler
+# MCU Handler & telemetry
 import("mcuHandler")
 loadComponent("mcuHandler", "McuHandler")
+loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
 
 # Voltage controller
 import("voltageController")
 loadComponent("voltageController", "VoltageController")
 
-# Encoder
+# Encoder & telemetry
 import("encoder")
 loadComponent("encoder", "Encoder")
+loadComponent("encoderTelemetry", "EncoderTelemetry")
 
 # Camera trigger
 import("cameraTrigger")
-loadComponent("cameraTrigger","CameraTrigger")
+loadComponent("cameraTrigger", "CameraTrigger")
 
-# Line Angle Sensor
+# Line Angle Sensor & telemetry
 import("lineAngleSensor")
-loadComponent("lineAngleSensor","LineAngleSensor")
+loadComponent("lineAngleSensor", "LineAngleSensor")
+loadComponent("lineAngleSensorTelemetry", "LineAngleSensorTelemetry")
 
-# LEDTracker
+# LEDTracker & telemetry
 import("LEDTracker")
-loadComponent("LEDTracker","LEDTracker")
+loadComponent("LEDTracker", "LEDTracker")
+loadComponent("ledTrackerTelemetry", "LEDTrackerTelemetry")
+
+# Winch & telemetry
+import("winchControl")
+loadComponent("winch", "WinchControl")
+loadComponent("winchTelemetry", "WinchControlTelemetry")
 
 # Dynamic MHE component
 import("DynamicMhe")
@@ -72,6 +93,8 @@ loadComponent("imuReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
 loadComponent("encoderReporter", "OCL::NetcdfReporting")
 loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
+loadComponent("winchReporter", "OCL::NetcdfReporting")
+
 loadComponent("mheReporter", "OCL::NetcdfReporting")
 
 ################################################################################
@@ -104,8 +127,34 @@ encoder.Ts = 0.001;
 LEDTracker.useExternalTrigger = true;
 LEDTracker.sigma_marker = 20;
 
+# Winch communication
+# TODO All configuration is hard-coded in C++, move some of them to properties
+
 # Dynamic MHE
+# TODO This is now a measurement, from the winch component, thus measure this!
 mhe.targetCableLength = 1.2
+
+#
+# Telemetry
+#
+
+mcuHandlerTelemetry.port = "tcp://*:5563"
+encoderTelemetry.port = "tcp://*:5564"
+ledTrackerTelemetry.port = "tcp://*:5565"
+lineAngleSensorTelemetry.port = "tcp://*:5566"
+winchTelemetry.port = "tcp://*:5567"
+
+# OK, so here we take the current timestamp and set
+# it to all telemetry components so that time on the
+# live plots begins from approx the start of the
+# experiments...
+var uint64_t startTime = HighwindServices.getTimestamp()
+
+mcuHandlerTelemetry.startTime = startTime
+encoderTelemetry.startTime = startTime
+ledTrackerTelemetry.startTime = startTime
+lineAngleSensorTelemetry.startTime = startTime
+winchTelemetry.startTime = startTime
 
 #
 # Reporters
@@ -114,24 +163,35 @@ mhe.targetCableLength = 1.2
 # Set reporter policy: we use circular buffer connection with quite a long 
 # buffer
 var ConnPolicy rp
-rp.type = 2
-rp.size = 4096
+# rp.type = DATA
+rp.type = CIRCULAR_BUFFER
+rp.size = 100
+rp.lock_policy = LOCKED
+# rp.lock_policy = LOCK_FREE
+
+var ConnPolicy rp_sensors
+rp_sensors.type = CIRCULAR_BUFFER
+rp_sensors.size = 4000
 
 imuReporter.ReportFile = "imuData.nc"
-imuReporter.ReportPolicy = rp
+imuReporter.ReportPolicy = rp_sensors
 imuReporter.ReportOnlyNewData = false
 
 cameraReporter.ReportFile = "cameraData.nc"
-cameraReporter.ReportPolicy = rp
+cameraReporter.ReportPolicy = rp_sensors
 cameraReporter.ReportOnlyNewData = false
 
 encoderReporter.ReportFile = "encoderData.nc"
-encoderReporter.ReportPolicy = rp
+encoderReporter.ReportPolicy = rp_sensors
 encoderReporter.ReportOnlyNewData = false
 
 lineAngleReporter.ReportFile = "angleData.nc"
-lineAngleReporter.ReportPolicy = rp
+lineAngleReporter.ReportPolicy = rp_sensors
 lineAngleReporter.ReportOnlyNewData = false
+
+winchReporter.ReportFile = "winchData.nc"
+winchReporter.ReportPolicy = rp_sensors
+winchReporter.ReportOnlyNewData = false
 
 mheReporter.ReportFile = "dynamicMheData.nc"
 mheReporter.ReportPolicy = rp
@@ -147,45 +207,38 @@ var int masterTimerPrio = 98
 var int sensorPrio = 97
 var int ocpPrio = 99
 var int LEDTrackerPrio = 70
+var int winchPrio = 65
 var int sineGenPrio = 60
+var int telemetryPrio = 50
 
-setActivity("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT)
-masterTimer.setCpuAffinity( 7 )
+setActivityOnCPU("masterTimer", 1.0 / base_hz, masterTimerPrio, ORO_SCHED_RT,2)
 
-setActivity("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT)
-mcuHandler.setCpuAffinity( 7 )
+setActivityOnCPU("mcuHandler", 0.002, sensorPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("voltageController", 0.01, sensorPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("encoder", 0.0, sensorPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
+# TODO set period of the winch to the same or <int> * LED tracker period
+#      in a conf file
+setActivityOnCPU("winch", 1.0 / 12.5, winchPrio, ORO_SCHED_RT,6)
 
-setActivity("voltageController", 0.01, sensorPrio, ORO_SCHED_RT)
-voltageController.setCpuAffinity( 7 )
+setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
 
-setActivity("encoder", 0.0, sensorPrio, ORO_SCHED_RT)
-encoder.setCpuAffinity( 7 )
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+# TODO Same as for the winch component
+setActivityOnCPU("winchTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 
-setActivity("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT)
-cameraTrigger.setCpuAffinity( 7 )
-
-setActivity("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT)
-lineAngleSensor.setCpuAffinity( 7 )
-
-setActivity("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT)
-LEDTracker.setCpuAffinity( 7 )
-
-setActivity("mhe", 0.0, ocpPrio, ORO_SCHED_RT)
-mhe.setCpuAffinity( 8 )
-
-setActivity("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT)
-inputSignalGenerator.setCpuAffinity( 7 )
-
-setActivity("imuReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-imuReporter.setCpuAffinity( 7 )
-setActivity("cameraReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-cameraReporter.setCpuAffinity( 7 )
-setActivity("encoderReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-encoderReporter.setCpuAffinity( 7 )
-setActivity("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-lineAngleReporter.setCpuAffinity( 7 )
-setActivity("mheReporter", 0.0, LowestPriority, ORO_SCHED_RT)
-mheReporter.setCpuAffinity( 7 )
+setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 
 ################################################################################
 #
@@ -209,6 +262,7 @@ connect("masterTimer.cameraClock", "cameraTrigger.Trigger", cp)
 connect("voltageController.eboxAnalog", "soemMaster.Slave_1001.AnalogIn", cp)
 connect("soemMaster.Slave_1001.Measurements", "encoder.eboxOut", cp)
 connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
+connect("voltageController.eboxAnalog", "encoder.eboxAnalog", cp)
 
 connect("inputSignalGenerator.data", "mcuHandler.controls", cp)
 
@@ -223,6 +277,12 @@ connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
 connect("encoder.data", "mhe.encoderData", cp)
 connect("LEDTracker.data", "mhe.ledTrackerData", cp)
 connect("lineAngleSensor.data", "mhe.lasData", cp)
+
+connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
+connect("encoder.data", "encoderTelemetry.msgData", cp)
+connect("LEDTracker.data", "ledTrackerTelemetry.msgData", cp)
+connect("lineAngleSensor.data", "lineAngleSensorTelemetry.msgData", cp)
+connect("winch.data", "winchTelemetry.msgData", cp)
 
 ################################################################################
 #
@@ -242,8 +302,11 @@ encoderReporter.reportComponent( "encoder" )
 connectPeers("lineAngleReporter", "lineAngleSensor")
 lineAngleReporter.reportComponent( "lineAngleSensor" )
 
+connectPeers("winchReporter", "winch")
+winchReporter.reportComponent( "winch" )
+
 connectPeers("mheReporter", "mhe")
-mheReporter.reportComponent("mhe")
+mheReporter.reportPort("mhe", "debugData")
 
 ################################################################################
 #
@@ -251,11 +314,15 @@ mheReporter.reportComponent("mhe")
 #
 ################################################################################
 
-# Just conifgure the master timer component.
+# Just configure the master timer component.
+# NOTE This must be the first component to be configured
 masterTimer.configure()
 
 mcuHandler.configure()
 mcuHandler.start()
+
+mcuHandlerTelemetry.configure()
+mcuHandlerTelemetry.start()
 
 voltageController.configure()
 voltageController.start()
@@ -263,16 +330,31 @@ voltageController.start()
 encoder.configure()
 encoder.start()
 
+encoderTelemetry.configure()
+encoderTelemetry.start()
+
 cameraTrigger.configure()
 cameraTrigger.start()
 
 lineAngleSensor.configure()
 lineAngleSensor.start()
 
+lineAngleSensorTelemetry.configure()
+lineAngleSensorTelemetry.start()
+
 LEDTracker.configure()
 LEDTracker.start()
 
-#mhe.configure()
+ledTrackerTelemetry.configure()
+ledTrackerTelemetry.start()
+
+winch.configure()
+winch.start()
+
+winchTelemetry.configure()
+winchTelemetry.start()
+
+mhe.configure()
 #mhe.start()
 
 imuReporter.configure()
@@ -286,6 +368,9 @@ encoderReporter.start()
 
 lineAngleReporter.configure()
 lineAngleReporter.start()
+
+winchReporter.configure()
+winchReporter.start()
 
 mheReporter.configure()
 mheReporter.start()

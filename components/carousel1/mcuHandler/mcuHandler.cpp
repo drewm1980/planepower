@@ -27,15 +27,6 @@
 #define IMU_ACCL_SCALE( Value ) \
 		(float)Value / 4.0 * 3.333 * 9.81 / 1000.0 * -1.0
 
-// For these conversion factors,
-// angle_radians = (angle_unitless - OFFSET) * SCALE
-#define RIGHT_AILERON_SCALE -0.50 
-#define LEFT_AILERON_SCALE  -0.47
-#define ELEVATOR_SCALE 0.83
-#define RIGHT_AILERON_OFFSET 0.0
-#define LEFT_AILERON_OFFSET 0.0
-#define ELEVATOR_OFFSET 0.0
-
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
 
@@ -54,16 +45,6 @@ enum McuHandlerErrorCodes
 	ERR_BAD_DATA_SIZE,
 	ERR_DEADLINE
 };
-
-// Convert units from radians to (-1,1)
-// angle_radians = (angle_unitless - OFFSET) * SCALE
-// angle_radians/SCALE + OFFSET = angle_unitless
-void convert_controls_radians_to_unitless(double * controls)
-{
-	controls[0] = controls[0]/RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
-	controls[1] = controls[1]/LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
-	controls[3] = controls[3]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
-}
 
 McuHandler::McuHandler(std::string name)
 	: RTT::TaskContext(name, PreOperational)
@@ -429,4 +410,6 @@ void McuHandler::ethernetTransmitReceive( void )
 		numErrors = 0; 
 }
 
-ORO_CREATE_COMPONENT( McuHandler )
+ORO_LIST_COMPONENT_TYPE( McuHandler )
+//ORO_CREATE_COMPONENT( McuHandler )
+

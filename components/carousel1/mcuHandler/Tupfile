@@ -1,7 +1,16 @@
 include_rules
-: foreach *.cpp |> !cxx_orocos |>
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+
+# Generate the protobuf file
+: McuHandlerTelemetry.proto |> protoc --cpp_out=. McuHandlerTelemetry.proto |> McuHandlerTelemetry.pb.cc McuHandlerTelemetry.pb.h
+
+# Compile the code
+: McuHandlerTelemetry.pb.cc | McuHandlerTelemetry.pb.h  |> !cxx_orocos |>
+: foreach *.cpp | McuHandlerTelemetry.pb.h |> !cxx_orocos |>
 : *.o |> !ld_orocos |> 
 
 # Build finder app, that will search for the MCU board
 : finder.c |> !cc |>
 : finder.o |> $(CC) finder.o -o finder |> finder
+

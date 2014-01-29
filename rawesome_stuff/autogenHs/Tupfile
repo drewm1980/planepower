@@ -1,9 +1,9 @@
-.gitignore
+#.gitignore
 
-#PBDIR = ../../bufStuff
-#: $(PBDIR)/Carousel.proto |> hprotoc -I$(PBDIR) --haskell_out=.. --include_imports Carousel.proto |> Carousel.hs $(names)
+##PBDIR = ../../bufStuff
+##: $(PBDIR)/Carousel.proto |> hprotoc -I$(PBDIR) --haskell_out=.. --include_imports Carousel.proto |> Carousel.hs $(names)
 
-PBDIR2 = ../../components/carousel1/protobufBridge
-paths=Sensors.hs Sensors/Sensors.hs Sensors/Servos.hs Sensors/LineAngle.hs
-: $(PBDIR2)/sensors.proto |> hprotoc -I$(PBDIR2) --haskell_out=. --include_imports sensors.proto |> $(paths)
+#PBDIR2 = ../../components/carousel1/protobufBridge
+#paths=Sensors.hs Sensors/Sensors.hs Sensors/Servos.hs Sensors/LineAngle.hs
+#: $(PBDIR2)/sensors.proto |> hprotoc -I$(PBDIR2) --haskell_out=. --include_imports sensors.proto |> $(paths)
 

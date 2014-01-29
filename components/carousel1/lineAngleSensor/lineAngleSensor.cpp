@@ -81,4 +81,5 @@ void LineAngleSensor::errorHook()
 void LineAngleSensor::cleanupHook()
 {}
 
-ORO_CREATE_COMPONENT( LineAngleSensor )
+//ORO_CREATE_COMPONENT( LineAngleSensor )
+ORO_LIST_COMPONENT_TYPE( LineAngleSensor )

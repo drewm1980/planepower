@@ -1,0 +1,22 @@
+package LEDTrackerProto;
+
+message LEDTrackerMsg
+{
+	message	Frame
+	{
+		message uvPair
+		{
+			required float u = 1;
+			required float v = 2;
+		}
+
+		required uvPair r = 1;
+		required uvPair g = 2;
+		required uvPair b = 3;
+	}
+
+	repeated Frame frames = 1;
+
+	required double ts_trigger = 2;
+	required double ts_elapsed = 3;
+}

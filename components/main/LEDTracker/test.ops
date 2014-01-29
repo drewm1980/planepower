@@ -7,7 +7,7 @@ import("soem_ebox")
 import("LEDTracker")
 
 loadComponent("soemMaster","soem_master::SoemMasterComponent") 
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
 setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
 
 soemMaster.configure()
@@ -16,20 +16,27 @@ soemMaster.start()
 loadComponent("masterTimer","MasterTimer")
 loadComponent("cameraTrigger","CameraTrigger")
 loadComponent("LEDTracker","LEDTracker")
+loadComponent("telemetry", "LEDTrackerTelemetry")
 LEDTracker.useExternalTrigger = true
 
 loadService("masterTimer", "marshalling")
 masterTimer.marshalling.loadProperties("../../../properties/masterTimer.cpf")
 var double base_hz = masterTimer.imu_target_hz
 
+telemetry.port = "tcp://*:5565"
+
 setActivity("LEDTracker",0.0,HighestPriority,ORO_SCHED_RT)
 setActivity("masterTimer", 1.0 / base_hz, HighestPriority, ORO_SCHED_RT)
 setActivity("cameraTrigger", 0.0,HighestPriority,ORO_SCHED_RT)
+
+setActivity("telemetry", 1.0 / 50.0,LowestPriority,ORO_SCHED_RT)
 
 connectPeers("cameraTrigger","soemMaster")
 var ConnPolicy cp
 connect("masterTimer.cameraClock","LEDTracker.triggerTimeStampIn",cp)
 connect("masterTimer.cameraClock","cameraTrigger.Trigger",cp)
+
+connect("LEDTracker.data", "telemetry.msgData", cp)
 
 # voltageController
 import("voltageController")
@@ -59,8 +66,10 @@ cameraTrigger.configure()
 LEDTracker.configure()
 masterTimer.configure()
 reporter.configure()
+telemetry.configure()
 
 cameraTrigger.start()
 LEDTracker.start()
 masterTimer.start()
 reporter.start()
+telemetry.start()

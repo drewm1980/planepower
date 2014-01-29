@@ -63,13 +63,6 @@ protected:
 	RTT::OutputPort<TIME_TYPE> *portPointers[ CLOCK_COUNT ];
 	/// IMU/Camera clock's ratio
 	RTT::OutputPort<int>	_imuCameraRatio;
-	
-	/// Mistery?
-	RTT::InputPort<double> _deltaIn;
-	/// Mistery?
-	RTT::OutputPort<double> _deltaOut;
-	/// Mistery?
-	double delta;
 
 private:
 	uint64_t base_clock_index;

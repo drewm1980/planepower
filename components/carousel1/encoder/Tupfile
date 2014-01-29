@@ -1,3 +1,12 @@
 include_rules
-: foreach *.cpp |> !cxx_orocos |>
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+
+# Generate the protobuf file
+: EncoderTelemetry.proto |> protoc --cpp_out=. EncoderTelemetry.proto |> EncoderTelemetry.pb.cc EncoderTelemetry.pb.h
+: EncoderTelemetry.proto |> protoc --python_out=. EncoderTelemetry.proto |> EncoderTelemetry_pb2.py
+
+# Compile the code
+: EncoderTelemetry.pb.cc | EncoderTelemetry.pb.h  |> !cxx_orocos |>
+: foreach *.cpp | EncoderTelemetry.pb.h |> !cxx_orocos |>
 : *.o |> !ld_orocos |> 
