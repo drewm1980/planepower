@@ -30,7 +30,7 @@ function P.warmup()
 		print("Enter Pressed!")
 		enterPressed=false 
 	else 
-		print("Carousel is warm; spinning down...")
+		print("Carousel is warm;")
 	end
 end
 
@@ -50,6 +50,10 @@ function P.slowdown()
 	else
 		print("Done spinning down!")
 	end
+end
+
+function P.set_controls_unitless(a,b,c)
+	mcuHandler:setControlsUnitless(a,b,c)
 end
 
 return running_helpers

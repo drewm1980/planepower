@@ -59,9 +59,14 @@ function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
 	end
 end
 
--- Sleep for a certain amount of time, in seconds.
+-- Sleep for a certain amount of time, in seconds, can be fractional.
 function P.sleep(t)
-	os.execute("sleep " .. t)
+	floor = math.floor
+	ceil = math.ceil
+	--os.execute("sleep " .. t) -- Can deadlock!
+	sec = floor(t)
+	nsec = ceil((t-floor(t))*1.0e9)
+	rtt.sleep(sec,nsec) -- (s,ns)
 end
 
 return deployment_helpers
