@@ -242,8 +242,8 @@ def updatePlots():
 			timeStamps = data[ "ts_trigger" ]
 			map(lambda name: plots[ name ].setData(timeStamps, data[ name ] ), names)
 			
-		except:
-			Queue.Empty
+		except Queue.Empty:
+			pass
 		
 	# Update all plots
 	updateGroup(q1, mcuPlots, mcuNames)
