@@ -5,6 +5,14 @@
 
 ################################################################################
 #
+# Import our own plugins
+#
+################################################################################
+import( "HighwindStuff" )
+require( "HighwindServices" )
+
+################################################################################
+#
 # Start with import, config and starting of the SOEM master
 #
 ################################################################################
@@ -135,6 +143,18 @@ encoderTelemetry.port = "tcp://*:5564"
 ledTrackerTelemetry.port = "tcp://*:5565"
 lineAngleSensorTelemetry.port = "tcp://*:5566"
 winchTelemetry.port = "tcp://*:5567"
+
+# OK, so here we take the current timestamp and set
+# it to all telemetry components so that time on the
+# live plots begins from approx the start of the
+# experiments...
+var uint64_t startTime = HighwindServices.getTimestamp()
+
+mcuHandlerTelemetry.startTime = startTime
+encoderTelemetry.startTime = startTime
+ledTrackerTelemetry.startTime = startTime
+lineAngleSensorTelemetry.startTime = startTime
+winchTelemetry.startTime = startTime
 
 #
 # Reporters
@@ -294,7 +314,8 @@ mheReporter.reportPort("mhe", "debugData")
 #
 ################################################################################
 
-# Just conifgure the master timer component.
+# Just configure the master timer component.
+# NOTE This must be the first component to be configured
 masterTimer.configure()
 
 mcuHandler.configure()
