@@ -1,4 +1,4 @@
-To get started with a Beaglebone:
+To get started with a Beaglebone running Angstrom:
 
 You ~could plug in with an hdmi monitor, but we never seem to have the cables on hand.  
 

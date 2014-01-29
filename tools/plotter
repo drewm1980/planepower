@@ -4,7 +4,9 @@
 # rapidly evolving 3d visualizer in haskell
 
 # Our DNS is fucked up... pull carousl ip address from /etc/hosts
-ip=`egrep 'carousel|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f1`
+ip=`egrep 'planepower-pc|planepower-pc' /etc/hosts | head -1 | cut --delimiter=' ' -f1`
+
+echo "Plotter script using ip address $ip"
 
 CMD="$PLANEPOWER_ROOT/rawesome_stuff/plot-ho-matic/dist/build/plot-ho-matic/plot-ho-matic --ip tcp://$ip:5563"
 

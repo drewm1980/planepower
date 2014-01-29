@@ -1,0 +1,32 @@
+/*! \page arm_toolchain_linux Toolchain for building the software and programming the MCU
+
+\note Notes made by Milan Vukov, milan.vukov@esat.kuleuven.be
+
+\section arm_installation Installation
+
+Linux installation:
+
+	-# Install ARM toolchain from Codesourcery, now Mentor Graphics:\n
+		https://sourcery.mentor.com/sgpp/lite/arm/portal/release1802.\n
+		You should download IA32 GNU/Linux Installer.
+	-# Ubuntu: install via Synaptics: libftdi1.
+	-# Ubuntu: install via Synaptics: openocd.
+
+This is enough to perform compilation and downloading the code.\n
+\n
+BUT, for more comfort I use Eclipse as an IDE, http://www.eclipse.org. As I remember, you need:
+	-# Eclipse CDT, the newest version. Download it from the mentioned website,
+			do NOT install via Synaptics in Ubuntu.
+	-# C/C++ GDB Hardware debugging, I use version 7.0.0.x.
+
+In the project root folder there is an Eclipse project file which you can import
+to Eclipse workspace.
+
+\section arm_compilation_download Code compilation and programming of the device
+
+Building the software from Eclipse:
+	-# Ctrl+B, or Project->Build
+
+Downloading the code:
+	-# TODO
+*/
