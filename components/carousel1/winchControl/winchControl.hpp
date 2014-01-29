@@ -37,9 +37,11 @@
 #define RS232_DEV "/dev/ttyS3"
 #define RS232_BAUD 115200
 #define BRAKE_DO 4
-#define REF_LENGTH 1.2
+#define REF_LENGTH 1.275
 
-#define WINCH_DEBUG 666
+// Enable this for debugging purposes only
+// and handle winch with care...
+//#define WINCH_DEBUG 666
 
 /// WinchControl class
 class WinchControl
