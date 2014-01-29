@@ -26,15 +26,15 @@ protected:
 
 void WinchControlTelemetry::fill()
 {
-  msg.set_length( data.length );
-  msg.set_speed( data.speed );
+	msg.set_length( data.length );
+	msg.set_speed( data.speed );
 
-  msg.set_dbg_theta( data.dbg_theta );
-  msg.set_dbg_omega( data.dbg_omega );
-  msg.set_dbg_current( data.dbg_current );
-  
-  msg.set_ts_trigger(data.ts_trigger * 1e-9);
-  msg.set_ts_elapsed( data.ts_elapsed );
+	msg.set_dbg_theta( data.dbg_theta );
+	msg.set_dbg_omega( data.dbg_omega );
+	msg.set_dbg_current( data.dbg_current );
+	
+	msg.set_ts_trigger( (double)((uint64_t)data.ts_trigger - startTime) * 1e-9);
+	msg.set_ts_elapsed( data.ts_elapsed );
 }
 
 ORO_CREATE_COMPONENT_LIBRARY()

@@ -26,11 +26,11 @@ protected:
 
 void LineAngleSensorTelemetry::fill()
 {
-  msg.set_angle_ver( data.angle_ver );
-  msg.set_angle_hor( data.angle_hor );
+	msg.set_angle_ver( data.angle_ver );
+	msg.set_angle_hor( data.angle_hor );
 
-  msg.set_ts_trigger(data.ts_trigger * 1e-9);
-  msg.set_ts_elapsed( data.ts_elapsed );
+	msg.set_ts_trigger( (double)((uint64_t)data.ts_trigger - startTime) * 1e-9);
+	msg.set_ts_elapsed( data.ts_elapsed );
 }
 
 ORO_CREATE_COMPONENT_LIBRARY()

@@ -46,6 +46,8 @@ protected:
 	P msg;
 
 	std::string port;
+	
+	uint64_t startTime;
 
 private:
 
@@ -58,10 +60,14 @@ private:
 
 template< typename D, class P >
 TelemetryBase<D, P>::TelemetryBase(std::string name)
-  : RTT::TaskContext(name, PreOperational)
+	: RTT::TaskContext(name, PreOperational),
+	  startTime( 0 )
 {
 	addPort("msgData", portData)
 		.doc("Message data");
+
+	addProperty("startTime", startTime)
+		.doc("Zero-time time-stamp");
 
 	addProperty("port", port)
 	  .doc("Port for publishing the data");
