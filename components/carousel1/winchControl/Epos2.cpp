@@ -1041,13 +1041,12 @@ long CEpos2::readVelocityActual	()
 
 long CEpos2::readCurrent()
 {
-  return static_cast<int32_t>( this->readObject(0x6078, 0x00) );
+  return static_cast<int16_t>( this->readObject(0x6078, 0x00) );
 }
 
 long CEpos2::readCurrentAveraged()
 {
-    long ans = this->readObject(0x2027, 0x00);
-    return this->getNegativeLong(ans);
+    return static_cast<int16_t>( this->readObject(0x2027, 0x00) );
 }
 
 long CEpos2::readCurrentDemanded()

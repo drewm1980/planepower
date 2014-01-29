@@ -31,9 +31,18 @@ protected:
 
 };
 
+using namespace RTT;
+
 void LEDTrackerTelemetry::fill()
 {
   unsigned el = 0;
+
+  if (data.positions.size() != CAMERA_COUNT * LED_COUNT * 2)
+  {
+	  log( Debug ) << "Data size is wrong: " << data.positions.size() << endlog();
+	  return;
+  }
+
   for (unsigned cnt = 0; cnt < CAMERA_COUNT; ++cnt)
   {
     LEDTrackerProto::LEDTrackerMsg_Frame* frame = msg.mutable_frames( cnt );
@@ -48,7 +57,7 @@ void LEDTrackerTelemetry::fill()
     frame->mutable_b()->set_v( data.positions[ el++ ] );
   }
 
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 

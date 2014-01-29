@@ -82,15 +82,16 @@ void  WinchControl::updateHook()
 {
   uint64_t tickStart = TimeService::Instance()->getTicks();
 
-  int32_t theta, omega, current;
-
-  theta = epos.readPosition();
-  omega = epos.readVelocity();
-  current = epos.readCurrent();
+  int32_t theta = epos.readPosition(); // [ticks]
+  int32_t omega_rpm = epos.readVelocity(); // [rpm]
+  double  omega_ticks_per_ms = (double)omega_rpm * (double)ENCODER_RESOLUTION / 60000.0;
 
   data.dbg_theta = theta;
-  data.dbg_omega = omega;
-  data.dbg_current = current;
+  data.dbg_omega = omega_rpm;
+  data.dbg_current = 1e-3 * (double)epos.readCurrent();
+
+  data.length = REF_LENGTH + ticks2length(theta - refTicks); // [m]
+  data.speed = ticks2length( omega_ticks_per_ms * 1e3 ); // [m/s]
 
   data.ts_trigger = tickStart;
   data.ts_elapsed = TimeService::Instance()->secondsSince( tickStart );

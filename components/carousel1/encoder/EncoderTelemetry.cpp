@@ -33,7 +33,7 @@ void EncoderTelemetry::fill()
   msg.set_omega_filt_rpm( data.omega_filt_rpm );
   msg.set_dbg_speed_voltage( data.dbg_speed_voltage );
 
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 

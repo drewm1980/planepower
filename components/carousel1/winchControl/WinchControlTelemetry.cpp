@@ -33,7 +33,7 @@ void WinchControlTelemetry::fill()
   msg.set_dbg_omega( data.dbg_omega );
   msg.set_dbg_current( data.dbg_current );
   
-  msg.set_ts_trigger( data.ts_trigger );
+  msg.set_ts_trigger(data.ts_trigger * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );
 }
 
