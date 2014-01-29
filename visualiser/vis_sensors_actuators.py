@@ -239,9 +239,8 @@ def updatePlots():
 	def updateGroup(q, plots, names):
 		try:
 			data = q.get_nowait()
-			#timeStamps = data[ "ts_trigger" ]
-			map(lambda name: plots[ name ].setData( data[ name ] ), names)
-			#map(lambda name: plots[ name ].setData(timeStamps, data[ name ] ), names)
+			timeStamps = data[ "ts_trigger" ]
+			map(lambda name: plots[ name ].setData(timeStamps, data[ name ] ), names)
 			
 		except:
 			Queue.Empty
