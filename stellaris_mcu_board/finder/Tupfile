@@ -1,0 +1,3 @@
+:finder.c |> make finder |> finder.o finder finder.d
+
+.gitignore

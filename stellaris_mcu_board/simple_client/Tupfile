@@ -1,0 +1,3 @@
+:simple_client.c |> make simple_client |> simple_client.o simple_client simple_client.d
+
+.gitignore
