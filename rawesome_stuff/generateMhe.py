@@ -138,6 +138,10 @@ if __name__=='__main__':
     fw.write("#endif // MHE_CONFIGURATION\n")
     fw.close()
     
+    #
+    # Generate protobuf specs for the MHE
+    #
+    
     xNames = ""
     for k, name in enumerate( mhe.dae.xNames() ):
         xNames = xNames + "idx_" + str( name ) + " = " + str( k ) + "; "
@@ -150,9 +154,6 @@ if __name__=='__main__':
     for k, name in enumerate( mhe.dae.uNames() ):
         uNames = uNames + "idx_" + str( name ) + " = " + str( k ) + "; "
     
-    #
-    # Generate protobuf specs for the MHE
-    #
     proto = """
 package DynamicMheProto;
 
@@ -190,7 +191,7 @@ message DynamicMheMsg
     repeated Horizon y  = 4;
     repeated float   yN = 5;
     
-    required int32 status    = 6;
+    required int32 solver_status    = 6;
     required float kkt_value = 7;
     required float obj_value = 8;
     
