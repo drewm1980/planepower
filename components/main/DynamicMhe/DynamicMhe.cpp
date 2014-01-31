@@ -49,8 +49,8 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.z.resize(N * NXA, 0.0);
 	debugData.y.resize(N * NY, 0.0);
 	debugData.yN.resize(NYN, 0.0);
-//	debugData.S.resize(N * NY * NY, 0.0);
-//	debugData.SN.resize(NYN * NYN, 0.0);
+//	debugData.W.resize(N * NY * NY, 0.0);
+//	debugData.WN.resize(NYN * NYN, 0.0);
 
 	debugData.imu_first.resize(6, 0.0);
 	debugData.imu_avg.resize(6, 0.0);
@@ -139,7 +139,7 @@ void DynamicMhe::updateHook()
 			for (unsigned i = 0; i < mhe_num_markers; ++i)
 				acadoVariables.y[ledInd * NY + i] = ledData[ i ];
 			for (unsigned i = 0; i < mhe_num_markers; ++i)
-				acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+				acadoVariables.W[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
 		}
 
 		if (++runCnt == N)
@@ -163,7 +163,7 @@ void DynamicMhe::updateHook()
 		for (unsigned i = 0; i < mhe_num_markers; ++i)
 			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
 		for (unsigned i = 0; i < mhe_num_markers; ++i)
-			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+			acadoVariables.W[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
 		
 		runMhe = true;
 	}
@@ -211,8 +211,8 @@ void DynamicMhe::updateHook()
 		// Shift weighting matrices
 		for (unsigned blk = 0; blk < N - 1; ++blk)
 			for (unsigned el = 0; el < NY; ++ el)
-				acadoVariables.S[blk * NY * NY + el * NY + el] = 
-					acadoVariables.S[(blk + 1) * NY * NY + el * NY + el];
+				acadoVariables.W[blk * NY * NY + el * NY + el] = 
+					acadoVariables.W[(blk + 1) * NY * NY + el * NY + el];
 		
 		// Shift measurements
 		for (unsigned blk = 0; blk < N - 1; ++blk)
@@ -389,8 +389,8 @@ bool DynamicMhe::prepareDebugData( void )
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
-//	debugData.S.assign(acadoVariables.S, acadoVariables.S + N * NY * NY);
-//	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
+//	debugData.S.assign(acadoVariables.W, acadoVariables.W + N * NY * NY);
+//	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
 
 	debugData.enc_data[ 0 ] = encData.theta;
 	debugData.enc_data[ 1 ] = encData.sin_theta;
@@ -433,10 +433,10 @@ bool DynamicMhe::prepareWeights( void )
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
 		for (unsigned el = 0; el < NY; ++el)
-			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
+			acadoVariables.W[blk * NY * NY + el * NY + el] = mheWeights[ el ];
 
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
+		acadoVariables.WN[el * NYN + el] = mheWeights[ el ];
 
 	// XXX A bit off topic, but must be done somewhere :p
 	for (unsigned el = 0; el < NY; execY[ el++ ] = 0.0);
@@ -496,4 +496,5 @@ bool DynamicMhe::prepareInitialGuess( void )
 	return true;
 }
 
-ORO_CREATE_COMPONENT( DynamicMhe )
+ORO_LIST_COMPONENT_TYPE( DynamicMhe )
+//ORO_CREATE_COMPONENT( DynamicMhe )
