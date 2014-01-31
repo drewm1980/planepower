@@ -195,7 +195,7 @@ message DynamicMheMsg
     required float kkt_value = 7;
     required float obj_value = 8;
     
-    required float exec_fbd  = 9;
+    required float exec_fdb  = 9;
     required float exec_prep = 10;
     
     required double ts_trigger = 11;
