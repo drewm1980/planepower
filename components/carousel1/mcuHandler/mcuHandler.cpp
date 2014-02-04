@@ -169,11 +169,15 @@ void McuHandler::updateHook()
 		}
 		copy(controls.begin(), controls.end(), execControls.begin());
 
-		convert_controls_radians_to_unitless(&execControls[0]);
+		// Controls that we received are in radians, scale them
+		convert_controls_radians_to_unitless( &execControls[ 0 ] );
 
 		// Before calling the MCU operation, reset the tcpStatus flag.
 		tcpStatus = OK;
 		sendMotorReferences();
+
+		// Now, scale the (trimmed) controls back to radians
+		convert_controls_unitless_to_radians( &execControls[ 0 ] );
 	}
 
 	data.ua1 = (float) execControls[ 0 ];
