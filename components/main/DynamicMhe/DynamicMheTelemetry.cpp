@@ -79,6 +79,35 @@ void DynamicMheTelemetry::fill()
 				hor->set_h(h, data.x[h * ACADO_NX + el]);
 		}
 
+	if (data.u.size() == ACADO_N * ACADO_NU)
+		for (el = 0; el < ACADO_NU; ++el)
+		{
+			DynamicMheMsg::Horizon* hor = msg.mutable_u( el );
+			for (unsigned h = 0; h < ACADO_N; ++h)
+				hor->set_h(h, data.x[h * ACADO_NU + el]);
+		}
+
+	if (data.z.size() == ACADO_N * ACADO_NXA)
+		for (el = 0; el < ACADO_NXA; ++el)
+		{
+			DynamicMheMsg::Horizon* hor = msg.mutable_z( el );
+			for (unsigned h = 0; h < ACADO_N; ++h)
+				hor->set_h(h, data.z[h * ACADO_NXA + el]);
+		}
+
+	if (data.y.size() == ACADO_N * ACADO_NY)
+		for (el = 0; el < ACADO_NY; ++el)
+		{
+			DynamicMheMsg::Horizon* hor = msg.mutable_y( el );
+			for (unsigned h = 0; h < ACADO_N; ++h)
+				hor->set_h(h, data.z[h * ACADO_NY + el]);
+		}
+
+
+	if (data.yN.size() == ACADO_NYN)
+		for (el = 0; el < ACADO_NYN; ++el)
+			msg.set_yn(el, data.yN[ el ]);
+
 	msg.set_solver_status( data.solver_status );
 	msg.set_kkt_value( data.kkt_value );
 	msg.set_obj_value( data.obj_value );
