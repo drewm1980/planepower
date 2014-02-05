@@ -34,6 +34,8 @@ DynamicMhe::DynamicMhe(std::string name)
 		.doc("LED Tracker data");
 	addPort("lasData", portLASData)
 		.doc("Line angle sensor data");
+	addPort("winchData", portWinchData)
+		.doc("Winch data");
 	addPort("stateEstimate", portStateEstimate)
 		.doc("Current state estimate");
 	addPort("debugData", portDebugData)
@@ -64,24 +66,16 @@ DynamicMhe::DynamicMhe(std::string name)
 	portDebugData.write( debugData );
 
 	imuData.resize( MAX_NUM_IMU_SAMPLES );
-
-	targetCableLength = 0;
-	addProperty("targetCableLength", targetCableLength);
 }
 
 bool DynamicMhe::configureHook()
 {
-	if (targetCableLength == 0)
-	{
-		log( Error ) << "Target cable length must be greater than 0!!!" << endlog();
-		return false;
-	}
-
 	checkPortConnection( portTrigger );
 	checkPortConnection( portMcuHandlerData );
 	checkPortConnection( portEncoderData );
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
+	checkPortConnection( portWinchData );
 	
 	return true;
 }
@@ -142,6 +136,13 @@ void DynamicMhe::updateHook()
 				acadoVariables.W[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
 		}
 
+		int cableInd = runCnt - debugData.dbg_winch_delay;
+		if (cableInd >= 0)
+		{
+			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
+			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
+		}
+
 		if (++runCnt == N)
 		{
 			// Prepare initial guess
@@ -155,10 +156,27 @@ void DynamicMhe::updateHook()
 	}
 	else if (runCnt >= N)
 	{
-		// Put new measurements
+		// Embed winch measurement
+		if (debugData.dbg_winch_delay == 0)
+		{
+			execYN[ offset_r ] = cableLength;
+			acadoVariables.WN[offset_r * NYN + offset_r] = cableLengthWeight;
+		}
+		else
+		{
+			int cableInd = N - debugData.dbg_winch_delay;	
+			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
+			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
+			// Reset weight on the last node
+			acadoVariables.WN[offset_r * NYN + offset_r] = 0.0;
+		}
+
+		// Embed new measurements, the simple ones
 		for (unsigned i = 0; i < NYN; ++i)
 			acadoVariables.yN[ i ] = execYN[ i ];
 
+		// Embed marker positions
+		// TODO In principle, we do not need mhe_ndelay, it is calculated
 		int ledInd = N - mhe_ndelay;
 		for (unsigned i = 0; i < mhe_num_markers; ++i)
 			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
@@ -213,6 +231,10 @@ void DynamicMhe::updateHook()
 			for (unsigned el = 0; el < NY; ++ el)
 				acadoVariables.W[blk * NY * NY + el * NY + el] = 
 					acadoVariables.W[(blk + 1) * NY * NY + el * NY + el];
+
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.W[(N - 1) * NY * NY + el * NY + el] =
+				acadoVariables.WN[el * NYN + el];
 		
 		// Shift measurements
 		for (unsigned blk = 0; blk < N - 1; ++blk)
@@ -296,6 +318,10 @@ bool DynamicMhe::prepareMeasurements( void )
 	
 	FlowStatus lasStatus = portLASData.read( lasData );
 
+	FlowStatus winchStatus = portWinchData.read( winchData );
+	cableLength = winchData.length;
+	cableLengthWeight = winchStatus == NewData ? weight_r : 0.0;
+
 	//
 	// Average data that come from MCU handler component
 	//
@@ -327,11 +353,16 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ i ] /= (double)numImuSamples;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
 		debugData.controls_avg[ i ] /= (double)numImuSamples;
+
+	//
+	// Some debug stuff, record number of measurements we got
+	//
 	
 	debugData.num_imu_samples = numImuSamples;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
 	debugData.num_las_samples = (lasStatus == NewData);
+	debugData.num_winch_samples = (winchStatus == NewData);
 	
 	//
 	// Prepare the sensor data
@@ -349,7 +380,10 @@ bool DynamicMhe::prepareMeasurements( void )
 	execY[ offset++ ] = debugData.controls_avg[ 2 ]; // TODO check signs
 	
 	// r, dr, ddr
-	execY[ offset++ ] = targetCableLength;
+	// Measurement for cable length "r" is embedded the same way we do
+	// for cameras
+	offset++;
+//	execY[ offset++ ] = targetCableLength;
 	execY[ offset++ ] = 0.0;
 	execY[ offset++ ] = 0.0;
 	
@@ -373,6 +407,10 @@ bool DynamicMhe::prepareMeasurements( void )
 	debugData.dbg_enc_delay =
 		(int)round((debugData.ts_entry - encData.ts_trigger)  * 1e-9 / mhe_sampling_time) *
 		debugData.num_enc_samples;
+
+	debugData.dbg_winch_delay =
+		(int)round((debugData.ts_entry - winchData.ts_trigger)  * 1e-9 / mhe_sampling_time) *
+		debugData.num_winch_samples;
 
 	return true;
 }
@@ -408,6 +446,7 @@ bool DynamicMhe::prepareDebugData( void )
 bool DynamicMhe::prepareWeights( void )
 {
 	// XXX Weights for markers are done in a different way, by dflt = 0.0
+	// TODO Now that we generate offsets, remove offset inc stuff
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
@@ -420,7 +459,8 @@ bool DynamicMhe::prepareWeights( void )
 	mheWeights[ offset++ ] = weight_aileron;
 	mheWeights[ offset++ ] = weight_elevator;
 
-	mheWeights[ offset++ ] = weight_r;
+	// Weight for cable length is dynamically updated
+	mheWeights[ offset++ ] = 0.0;
 	mheWeights[ offset++ ] = weight_dr;
 	mheWeights[ offset++ ] = weight_ddr;
 
