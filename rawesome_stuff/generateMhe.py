@@ -69,8 +69,20 @@ if __name__=='__main__':
     fw.write("#define mhe_num_markers " + repr( numMarkers ) + "\n");
     fw.write("\n\n")
 
+    # Write weights
     for k, v in MHE.mheWeights.items():
         fw.write("#define weight_" + str( k ) + " " + repr( v ) + "\n")
+    fw.write("\n\n")
+    
+    # Output offsets for measurements
+    fw.write("// Measurement offsets\n")
+    yOffset = 0
+    for name in mhe.yxNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += mhe[ name ].shape[ 0 ]
+    for name in mhe.yuNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += mhe[ name ].shape[ 0 ]
     fw.write("\n\n")
 
     #
@@ -94,14 +106,13 @@ if __name__=='__main__':
     conf = makeConf()
     daeSim = carouselModel.makeModel(conf, propsDir)
     
-    # Cable length which we are going to supply to the MHE as a fake measurement
-    measCableLength = 2.0
-    
+    # Cable length for steady state calculation
+    steadyStateCableLength = 1.275
     # Speed for the steady state calculation
     steadyStateSpeed = -4.0
 
     # Reference parameters
-    refP = {'r0': measCableLength,
+    refP = {'r0': steadyStateCableLength,
             'ddelta0': steadyStateSpeed,
             }
 
