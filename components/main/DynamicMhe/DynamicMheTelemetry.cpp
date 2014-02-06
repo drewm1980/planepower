@@ -84,7 +84,7 @@ void DynamicMheTelemetry::fill()
 		{
 			DynamicMheMsg::Horizon* hor = msg.mutable_u( el );
 			for (unsigned h = 0; h < ACADO_N; ++h)
-				hor->set_h(h, data.x[h * ACADO_NU + el]);
+				hor->set_h(h, data.u[h * ACADO_NU + el]);
 		}
 
 	if (data.z.size() == ACADO_N * ACADO_NXA)
@@ -100,7 +100,7 @@ void DynamicMheTelemetry::fill()
 		{
 			DynamicMheMsg::Horizon* hor = msg.mutable_y( el );
 			for (unsigned h = 0; h < ACADO_N; ++h)
-				hor->set_h(h, data.z[h * ACADO_NY + el]);
+				hor->set_h(h, data.y[h * ACADO_NY + el]);
 		}
 
 
