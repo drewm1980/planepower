@@ -60,6 +60,7 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.cam_markers.resize(12, 0.0);
 	debugData.cam_pose.resize(12, 0.0);
 	debugData.las_data.resize(2, 0.0);
+	debugData.winch_data.resize(3, 0.0);
 	debugData.controls_avg.resize(3, 0.0);
 
 	portDebugData.setDataSample( debugData );
@@ -130,10 +131,10 @@ void DynamicMhe::updateHook()
 		int ledInd = runCnt - mhe_ndelay;
 		if (ledInd >= 0)
 		{
-			for (unsigned i = 0; i < mhe_num_markers; ++i)
-				acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-			for (unsigned i = 0; i < mhe_num_markers; ++i)
-				acadoVariables.W[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
 		}
 
 		int cableInd = runCnt - debugData.dbg_winch_delay;
@@ -178,10 +179,10 @@ void DynamicMhe::updateHook()
 		// Embed marker positions
 		// TODO In principle, we do not need mhe_ndelay, it is calculated
 		int ledInd = N - mhe_ndelay;
-		for (unsigned i = 0; i < mhe_num_markers; ++i)
-			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-		for (unsigned i = 0; i < mhe_num_markers; ++i)
-			acadoVariables.W[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+			acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+			acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
 		
 		runMhe = true;
 	}
@@ -319,8 +320,10 @@ bool DynamicMhe::prepareMeasurements( void )
 	FlowStatus lasStatus = portLASData.read( lasData );
 
 	FlowStatus winchStatus = portWinchData.read( winchData );
-	cableLength = winchData.length;
-	cableLengthWeight = winchStatus == NewData ? weight_r : 0.0;
+	cableLength = winchData.length * (double)(winchStatus == NewData);
+	cableLengthWeight = (winchStatus == NewData) ? weight_r : 0.0;
+	
+	debugData.winch_data[ 0 ] = cableLength;
 
 	//
 	// Average data that come from MCU handler component
@@ -368,28 +371,29 @@ bool DynamicMhe::prepareMeasurements( void )
 	// Prepare the sensor data
 	//
 	
-	unsigned offset = mhe_num_markers;
-	execY[ offset++ ] = encData.cos_theta;
-	execY[ offset++ ] = -encData.sin_theta; // !!! Sign is inverted !!!
+	execY[ offset_cos_delta ] = encData.cos_theta;
+	execY[ offset_sin_delta ] = -encData.sin_theta; // !!! Sign is inverted !!!
 	// gyro_xyz, accl_xyz
-	for (unsigned i = 0; i < 6; ++i)
-		execY[ offset++ ] = debugData.imu_avg[ i ];
+	for (unsigned i = 0, el = offset_IMU_angular_velocity; i < 3; ++i, ++el)
+		execY[ el ] = debugData.imu_avg[ i ];
+	for (unsigned i = 3, el = offset_IMU_acceleration; i < 6; ++i, ++el)
+		execY[ el ] = debugData.imu_avg[ i ];
 
 	// Control surfaces; TODO we might skip this!
-	execY[ offset++ ] = debugData.controls_avg[ 0 ]; // TODO check signs
-	execY[ offset++ ] = debugData.controls_avg[ 2 ]; // TODO check signs
+	execY[ offset_aileron  ] = debugData.controls_avg[ 0 ]; // TODO check signs
+	execY[ offset_elevator ] = debugData.controls_avg[ 2 ]; // TODO check signs
 	
 	// r, dr, ddr
 	// Measurement for cable length "r" is embedded the same way we do
-	// for cameras
-	offset++;
-//	execY[ offset++ ] = targetCableLength;
-	execY[ offset++ ] = 0.0;
-	execY[ offset++ ] = 0.0;
+	// for cameras, calculating the delays...
+	execY[ offset_dr ] = 0.0;
+	execY[ offset_ddr ] = 0.0;
 	
 	// controls
-	for (unsigned i = 0; i < NU; ++i)
-		execY[ offset++ ] = 0.0;
+	execY[ offset_daileron ] = 0.0;
+	execY[ offset_delevator ] = 0.0;
+	execY[ offset_dmotor_torque ] = 0.0;
+	execY[ offset_dddr ] = 0.0;
 
 	// Copy to execYN
 	for (unsigned i = 0; i < NYN; execYN[ i ] = execY[ i ], i++);
@@ -450,25 +454,24 @@ bool DynamicMhe::prepareWeights( void )
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
-	unsigned offset = mhe_num_markers;
-	mheWeights[ offset++ ] = weight_cos_delta;
-	mheWeights[ offset++ ] = weight_sin_delta;
-	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_angular_velocity, el++);
-	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_acceleration, el++);
+	mheWeights[ offset_cos_delta ] = weight_cos_delta;
+	mheWeights[ offset_sin_delta ] = weight_sin_delta;
+	for (unsigned el = offset_IMU_angular_velocity; el < offset_IMU_angular_velocity + 3; mheWeights[ el++ ] = weight_IMU_angular_velocity);
+	for (unsigned el = offset_IMU_acceleration; el < offset_IMU_acceleration + 3; mheWeights[ el++ ] = weight_IMU_acceleration);
 
-	mheWeights[ offset++ ] = weight_aileron;
-	mheWeights[ offset++ ] = weight_elevator;
+	mheWeights[ offset_aileron ] = weight_aileron;
+	mheWeights[ offset_elevator ] = weight_elevator;
 
 	// Weight for cable length is dynamically updated
-	mheWeights[ offset++ ] = 0.0;
-	mheWeights[ offset++ ] = weight_dr;
-	mheWeights[ offset++ ] = weight_ddr;
+	mheWeights[ offset_r ] = 0.0;
+	mheWeights[ offset_dr ] = weight_dr;
+	mheWeights[ offset_dddr ] = weight_ddr;
 
-	mheWeights[ offset++ ] = weight_daileron;
-	mheWeights[ offset++ ] = weight_delevator;
+	mheWeights[ offset_daileron ] = weight_daileron;
+	mheWeights[ offset_delevator ] = weight_delevator;
 
-	mheWeights[ offset++ ] = weight_dmotor_torque;
-	mheWeights[ offset++ ] = weight_dddr;
+	mheWeights[ offset_dmotor_torque ] = weight_dmotor_torque;
+	mheWeights[ offset_dddr ] = weight_dddr;
 
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
