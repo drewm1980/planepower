@@ -7,6 +7,8 @@
 typedef struct
 {
 	/// Measured angles [rad]
+	/// Angles are positive for plane BELOW horizontal and plane LAGGING behind the arm.
+	//  (Assuming rotation Counter-clockwise when viewed from above)
 	float angle_hor, angle_ver;
 	/// Time-stamps: trigger [ticks] and elapsed [sec]
 	double ts_trigger, ts_elapsed;

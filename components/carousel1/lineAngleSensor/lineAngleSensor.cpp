@@ -21,7 +21,12 @@ LineAngleSensor::LineAngleSensor( std::string name )
 		.doc("Ebox port with measurements.");
 	
 	addPort("data", portData)
-		.doc("Line angle sensor data");
+		.doc("Line angle sensor data. See types/LineAngleSensorDataType.hpp for meaning");
+
+	addPort("voltageHorizontal",portVoltageHorizontal)
+		.doc("Horizontal line angle sensor voltage, for calibration");
+	addPort("voltageVertical",portVoltageVertical)
+		.doc("Vertical line angle sensor voltage, for calibration");
 
 	addProperty("angleHorGain", angleHorGain);
 	addProperty("angleHorOffset", angleHorOffset);
@@ -29,10 +34,10 @@ LineAngleSensor::LineAngleSensor( std::string name )
 	addProperty("angleVerOffset", angleVerOffset);
 
 	// Default values for gains and offsets
-	angleHorOffset = 1.22; // Volts
-	angleVerOffset = 0.53; // Volts
-	angleVerGain = 0.031; // Radians per volt
-	angleHorGain = 0.0448; // Radians per volt
+	angleVerOffset = -0.7; // Volts
+	angleHorOffset = .69; // Volts
+	angleVerGain = -0.029; // Radians per volt
+	angleHorGain = -0.0428; // Radians per volt
 	
 	data.ts_trigger = TimeService::Instance()->getTicks();
 	portData.setDataSample( data );
@@ -70,6 +75,9 @@ void LineAngleSensor::updateHook()
 	data.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 
 	portData.write( data );
+
+	portVoltageHorizontal.write(eboxOut.analog[0]);
+	portVoltageVertical.write(eboxOut.analog[1]);
 }
 
 void LineAngleSensor::stopHook()
