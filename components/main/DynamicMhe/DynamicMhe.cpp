@@ -157,22 +157,7 @@ void DynamicMhe::updateHook()
 	}
 	else if (runCnt >= N)
 	{
-		// Embed winch measurement
-		if (debugData.dbg_winch_delay == 0)
-		{
-			execYN[ offset_r ] = cableLength;
-			acadoVariables.WN[offset_r * NYN + offset_r] = cableLengthWeight;
-		}
-		else
-		{
-			int cableInd = N - debugData.dbg_winch_delay;	
-			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
-			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
-			// Reset weight on the last node
-			acadoVariables.WN[offset_r * NYN + offset_r] = 0.0;
-		}
-
-		// Embed new measurements, the simple ones
+		// Embed new measurements, the "default ones"
 		for (unsigned i = 0; i < NYN; ++i)
 			acadoVariables.yN[ i ] = execYN[ i ];
 
@@ -183,6 +168,20 @@ void DynamicMhe::updateHook()
 			acadoVariables.y[ledInd * NY + el] = ledData[ i ];
 		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
 			acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+
+		// Embed winch measurement
+		int cableInd = N - debugData.dbg_winch_delay;
+		if (cableInd < N)
+		{
+			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
+			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
+			acadoVariables.WN[offset_r * NYN + offset_r] = 0.0;
+		}
+		else
+		{
+			acadoVariables.yN[ offset_r ] = cableLength;
+			acadoVariables.WN[offset_r * NYN + offset_r] = cableLengthWeight;
+		}
 		
 		runMhe = true;
 	}
@@ -386,6 +385,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	// r, dr, ddr
 	// Measurement for cable length "r" is embedded the same way we do
 	// for cameras, calculating the delays...
+	execY[ offset_r ] = 0.0;
 	execY[ offset_dr ] = 0.0;
 	execY[ offset_ddr ] = 0.0;
 	
