@@ -465,7 +465,7 @@ bool DynamicMhe::prepareWeights( void )
 	// Weight for cable length is dynamically updated
 	mheWeights[ offset_r ] = 0.0;
 	mheWeights[ offset_dr ] = weight_dr;
-	mheWeights[ offset_dddr ] = weight_ddr;
+	mheWeights[ offset_ddr ] = weight_ddr;
 
 	mheWeights[ offset_daileron ] = weight_daileron;
 	mheWeights[ offset_delevator ] = weight_delevator;
