@@ -8,6 +8,7 @@ import numpy as np
 
 import pyqtgraph as pg
 
+from vis_helpers import *
 from zmq_protobuf_helpers import *
 
 protobufs = ["McuHandler", "Encoder", "WinchControl", "LineAngleSensor", "LEDTracker"]
@@ -29,37 +30,6 @@ ledView.setCentralItem( ledLayout )
 ledView.show()
 ledView.setWindowTitle( "Telemetry - LED Tracker" )
 ledView.resize(1024, 768)
-
-colors = ["#FF0000", "#ADFF2F", "#00BFFF", "#FFFF00", "#FAA460"]
-
-def redBoldText( txt ):
-	t = "<span style='color: " + colors[ 0 ] + "; font-weight: bold'>" + str( txt ) + "</span>"
-	return t
-
-def greenBoldText( txt ):
-	t = "<span style='color: " + colors[ 1 ] + "; font-weight: bold'>" + str( txt ) + "</span>"
-	return t
-
-def blueBoldText( txt ):
-	t = "<span style='color: " + colors[ 2 ] + "; font-weight: bold'>" + str( txt ) + "</span>"
-	return t
-
-def addPlotsToLayout(layout, title, names):
-	layout.setContentsMargins(10, 10, 10, 10)
-	layout.addLabel( title )
-	layout.nextRow()
-	
-	d = dict()
-	for k, v in enumerate( names ):
-		plt = layout.addPlot()
-		if k < len( names ) - 1:
-			plt.hideAxis( "bottom" )
-			layout.nextRow()
-		
-		d[ v ] = plt.plot()
-		d[ v ].setPen( colors[ k ] )
-
-	return d
 
 #
 # LED tracker deserialization, a very specific case
@@ -234,8 +204,6 @@ def updatePlots():
 	global mcuPlots, encPlots, winchPlots, lasPlots, ledPlots
 	global mcuNames, encNames, winchNames, lasNames, ledNames
 
-	# TODO Use this guy to make code shorter
-	#      but first create mcuPlots
 	def updateGroup(q, plots, names):
 		try:
 			data = q.get_nowait()

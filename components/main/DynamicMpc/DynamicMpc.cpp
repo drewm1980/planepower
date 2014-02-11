@@ -221,9 +221,9 @@ bool DynamicMpc::prepareInitialGuess( void )
 bool DynamicMpc::prepareWeights( void )
 {
 	for (unsigned el = 0; el < NY; ++el)
-		acadoVariables.S[el * NY + el] = mpc_weights[ el ];
+		acadoVariables.W[el * NY + el] = mpc_weights[ el ];
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = mpc_weights[ el ];
+		acadoVariables.WN[el * NYN + el] = mpc_weights[ el ];
 	
 	return true;
 }
@@ -268,8 +268,8 @@ bool DynamicMpc::prepareDebugData( void )
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
-	debugData.S.assign(acadoVariables.S, acadoVariables.S + NY * NY);
-	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
+	debugData.S.assign(acadoVariables.W, acadoVariables.W + NY * NY);
+	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
 
 	return true;
 }

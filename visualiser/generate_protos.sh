@@ -4,10 +4,7 @@
 C1=$PLANEPOWER_ROOT/components/carousel1
 MAIN=../components/main
 
-echo $C1
-echo $MAIN
-
-# Specify proto files
+# Generate Python protobuf bindings
 
 protoc --python_out=. -I$C1/mcuHandler $C1/mcuHandler/McuHandlerTelemetry.proto
 
@@ -18,3 +15,7 @@ protoc --python_out=. -I$C1/lineAngleSensor $C1/lineAngleSensor/LineAngleSensorT
 protoc --python_out=. -I$C1/winchControl $C1/winchControl/WinchControlTelemetry.proto
 
 protoc --python_out=. -I$MAIN/LEDTracker $MAIN/LEDTracker/LEDTrackerTelemetry.proto
+
+# For the MHE, this is done in a very ugly way at the moment
+python -B ../rawesome_stuff/generateMhe.py ../properties
+protoc --python_out=. DynamicMheTelemetry.proto

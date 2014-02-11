@@ -83,6 +83,7 @@ loadComponent("winchTelemetry", "WinchControlTelemetry")
 # Dynamic MHE component
 import("DynamicMhe")
 loadComponent("mhe", "DynamicMhe")
+loadComponent("mheTelemetry", "DynamicMheTelemetry")
 
 # Input signal generator
 import("inputSignalGenerator")
@@ -130,9 +131,7 @@ LEDTracker.sigma_marker = 20;
 # Winch communication
 # TODO All configuration is hard-coded in C++, move some of them to properties
 
-# Dynamic MHE
-# TODO This is now a measurement, from the winch component, thus measure this!
-mhe.targetCableLength = 1.2
+# Dynamic MHE -- everything is hard-coded
 
 #
 # Telemetry
@@ -143,6 +142,7 @@ encoderTelemetry.port = "tcp://*:5564"
 ledTrackerTelemetry.port = "tcp://*:5565"
 lineAngleSensorTelemetry.port = "tcp://*:5566"
 winchTelemetry.port = "tcp://*:5567"
+mheTelemetry.port = "tcp://*:5570"
 
 # OK, so here we take the current timestamp and set
 # it to all telemetry components so that time on the
@@ -155,6 +155,7 @@ encoderTelemetry.startTime = startTime
 ledTrackerTelemetry.startTime = startTime
 lineAngleSensorTelemetry.startTime = startTime
 winchTelemetry.startTime = startTime
+mheTelemetry.startTime = startTime
 
 #
 # Reporters
@@ -230,8 +231,8 @@ setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OT
 setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-# TODO Same as for the winch component
 setActivityOnCPU("winchTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
@@ -277,12 +278,15 @@ connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
 connect("encoder.data", "mhe.encoderData", cp)
 connect("LEDTracker.data", "mhe.ledTrackerData", cp)
 connect("lineAngleSensor.data", "mhe.lasData", cp)
+connect("winch.data", "mhe.winchData", cp)
 
 connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
 connect("encoder.data", "encoderTelemetry.msgData", cp)
 connect("LEDTracker.data", "ledTrackerTelemetry.msgData", cp)
 connect("lineAngleSensor.data", "lineAngleSensorTelemetry.msgData", cp)
 connect("winch.data", "winchTelemetry.msgData", cp)
+
+connect("mhe.debugData", "mheTelemetry.msgData", cp)
 
 ################################################################################
 #
@@ -356,6 +360,9 @@ winchTelemetry.start()
 
 mhe.configure()
 #mhe.start()
+
+mheTelemetry.configure()
+mheTelemetry.start()
 
 imuReporter.configure()
 imuReporter.start()

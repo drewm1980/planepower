@@ -42,7 +42,7 @@ typedef struct
 	//
 
 	/// Number of data samples
-	int num_imu_samples, num_enc_samples, num_cam_samples, num_las_samples;
+	int num_imu_samples, num_enc_samples, num_cam_samples, num_las_samples, num_winch_samples;
 	/// First sample and averaged IMU samples
 	std::vector< double > imu_first, imu_avg;
 	/// Encoder measurement
@@ -53,6 +53,8 @@ typedef struct
 	std::vector< double > cam_pose;
 	/// Horizontal and vertical angle from LAS [V]; TODO Convert to [rad]
 	std::vector< double > las_data;
+	/// Winch data: length, speed and motor current
+	std::vector< double > winch_data;
 	/// Averaged controls
 	std::vector< double > controls_avg;
 
@@ -66,6 +68,8 @@ typedef struct
 	int dbg_imu_delay;
 	// Encoder sample delay
 	int dbg_enc_delay;
+	// Winch sample delay
+	int dbg_winch_delay;
 
 } DynamicMheHorizon;
 

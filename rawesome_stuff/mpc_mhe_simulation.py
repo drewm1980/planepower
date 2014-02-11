@@ -8,15 +8,21 @@ import matplotlib.pyplot as plt
 import NMPC
 import MHE
 
-useProtobufBridge = False
-
-if useProtobufBridge:
+try:
     from bufStuff.protobufBridgeWrapper import ProtobufBridge
+    useProtobufBridge = True
+except ImportError:
+    useProtobufBridge = False
 
 from mpc_mhe_utils import Plotter
 from rawe.models.arianne_conf import makeConf
-import carouselModel
+
 from rawekite.carouselSteadyState import getSteadyState
+
+# This is the new one, used in experiments.
+# from offline_mhe_test import carouselModel
+# This is the old one, created by Mario, Greg and friends.
+import carouselModel
 
 from common_conf import Ts
 
@@ -258,7 +264,7 @@ while current_time < Tf:
     current_time += Ts
 
 #import sys; sys.exit()
-plt.ion()
+#plt.ion()
 
 plotter = Plotter(sim,mheRT,mpcRT)
 
