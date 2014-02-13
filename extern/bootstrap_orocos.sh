@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 echo "Bootstrapping OROCOS..."
 
+echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ro-latest.list
 sudo apt-get update
 sudo apt-get install ros-hydro-orocos-toolchain
 source /opt/ros/hydro/setup.bash
