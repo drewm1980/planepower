@@ -4,6 +4,7 @@ echo -e "If build fails you will need to configure Ubuntu repos as follows: "
 echo -e "1) Setup your sources.list:\n\t sudo sh -c 'echo \"""deb http://packages.ros.org/ros/ubuntu precise main\""" > /etc/apt/sources.list.d/ros-latest.list'"
 echo -e "2) Set up your keys:\n\t wget http://packages.ros.org/ros.key -O - | sudo apt-key add -"
 
+sudo sh -c "echo 'deb http://packages.ros.org/ros/ubuntu precise main' > /etc/apt/sources.list.d/ro-latest.list"
 sudo apt-get update
 sudo apt-get install ros-hydro-orocos-toolchain
 source /opt/ros/hydro/setup.bash

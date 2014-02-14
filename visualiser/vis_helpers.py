@@ -44,6 +44,9 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 		if k < len( names ) - 1:
 			plt.hideAxis( "bottom" )
 			layout.nextRow()
+
+		assert isinstance(name, str), \
+			"All items in the list of names must be strings!"
 		
 		d[ name ] = plt.plot()
 		d[ name ].setPen( colors[ k ] )

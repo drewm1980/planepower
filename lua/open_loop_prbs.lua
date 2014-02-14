@@ -24,6 +24,7 @@ for i,symbol in ipairs({"set_voltage",
 end
 
 dofile("load_carousel_1_hardware.lua")
+dofile("setup_carousel_1_telemetry.lua")
 
 -- Load up a component to set controls that are synchronized with
 -- the camera clock
