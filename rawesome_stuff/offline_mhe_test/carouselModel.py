@@ -15,6 +15,13 @@ def makeModel(conf,propertiesDir='../properties'):
     ddt_w_bn_b  = C.vertcat([xDotSol['w_bn_b_x'],xDotSol['w_bn_b_y'],xDotSol['w_bn_b_z']])
     x =   dae['x']
     y =   dae['y']
+    z =   dae['z']
+
+    e31 = dae['e31']
+    e32 = dae['e32']
+    e33 = dae['e33']
+
+    zt = conf['zt']
 
     dx  =  dae['dx']
     dy  =  dae['dy']
@@ -81,6 +88,11 @@ def makeModel(conf,propertiesDir='../properties'):
 
 	# Construction of the measurement functions
     dae['marker_positions'] = camModel.fullCamModel(dae, camConf)
+    x_tether = (x + zt*e31)
+    y_tether = (y + zt*e32)
+    z_tether = (z + zt*e33)
+
+    dae['lineAngles'] = C.vertcat([C.arctan(y_tether/x_tether),C.arctan(z_tether/x_tether)])
 
 	############################################################################
 	#
