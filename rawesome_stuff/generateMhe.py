@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import shutil
@@ -35,14 +37,10 @@ if __name__=='__main__':
     exportpath = mhe.exportCode(MHE.mheOpts, MHE.mheIntOpts, cgOptions, {})
 
     # Copy the library and the headers to output location
-    for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
-        if filename == 'solver.hpp':
-            fullname = os.path.join(exportpath, 'qpoases/' + filename)
-        else:
-            fullname = os.path.join(exportpath, filename)
-        assert os.path.isfile(fullname), fullname+' is not a file'
+    for filename in ['acado_common.h', 'acado_qpoases_interface.hpp', 'ocp.o']:
+        fullname = os.path.join(exportpath, filename)
+        assert os.path.isfile(fullname), fullname + ' is not a file'
         shutil.copy(fullname, filename)
-
     
     # Generate info file 
     f = open('whereami.txt','w')
@@ -71,8 +69,20 @@ if __name__=='__main__':
     fw.write("#define mhe_num_markers " + repr( numMarkers ) + "\n");
     fw.write("\n\n")
 
+    # Write weights
     for k, v in MHE.mheWeights.items():
         fw.write("#define weight_" + str( k ) + " " + repr( v ) + "\n")
+    fw.write("\n\n")
+    
+    # Output offsets for measurements
+    fw.write("// Measurement offsets\n")
+    yOffset = 0
+    for name in mhe.yxNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += mhe[ name ].shape[ 0 ]
+    for name in mhe.yuNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += mhe[ name ].shape[ 0 ]
     fw.write("\n\n")
 
     #
@@ -87,7 +97,6 @@ if __name__=='__main__':
     for k, name in enumerate( mhe.dae.uNames() ):
         fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
     fw.write("\n\n")
-
     
     #
     # Generate steady state for MHE
@@ -97,14 +106,13 @@ if __name__=='__main__':
     conf = makeConf()
     daeSim = carouselModel.makeModel(conf, propsDir)
     
-    # Cable length which we are going to supply to the MHE as a fake measurement
-    measCableLength = 2.0
-    
+    # Cable length for steady state calculation
+    steadyStateCableLength = 1.275
     # Speed for the steady state calculation
     steadyStateSpeed = -4.0
 
     # Reference parameters
-    refP = {'r0': measCableLength,
+    refP = {'r0': steadyStateCableLength,
             'ddelta0': steadyStateSpeed,
             }
 
@@ -139,4 +147,73 @@ if __name__=='__main__':
     fw.write("};\n\n")
     
     fw.write("#endif // MHE_CONFIGURATION\n")
+    fw.close()
+    
+    #
+    # Generate protobuf specs for the MHE
+    #
+    
+    xNames = ""
+    for k, name in enumerate( mhe.dae.xNames() ):
+        xNames = xNames + "idx_" + str( name ) + " = " + str( k ) + "; "
+        
+    zNames = ""
+    for k, name in enumerate( mhe.dae.zNames() ):
+        zNames = zNames + "idx_" + str( name ) + " = " + str( k ) + "; "
+        
+    uNames = ""
+    for k, name in enumerate( mhe.dae.uNames() ):
+        uNames = uNames + "idx_" + str( name ) + " = " + str( k ) + "; "
+    
+    proto = """
+package DynamicMheProto;
+
+message DynamicMheMsg
+{
+    enum Configuration
+    {
+        N = %(N)d;
+    }
+
+    enum xNames
+    {
+        %(xNames)s
+    }
+    
+    enum zNames
+    {
+        %(zNames)s
+    }
+    
+    enum uNames
+    {
+        %(uNames)s
+    }
+
+    message Horizon
+    {
+        repeated float h = 1;
+    }
+
+    repeated Horizon x = 1;
+    repeated Horizon z = 2;
+    repeated Horizon u = 3;
+    
+    repeated Horizon y  = 4;
+    repeated float   yN = 5;
+    
+    required int32 solver_status    = 6;
+    required float kkt_value = 7;
+    required float obj_value = 8;
+    
+    required float exec_fdb  = 9;
+    required float exec_prep = 10;
+    
+    required double ts_trigger = 11;
+    required double ts_elapsed = 12;
+}
+""" % {"N": MHE.mheHorizonN, "xNames": xNames, "zNames": zNames, "uNames": uNames}
+    
+    fw = open("DynamicMheTelemetry.proto", "w")
+    fw.write( proto )
     fw.close()

@@ -45,7 +45,7 @@ do
 	else
 		sze=`du -k $x | cut -f1` # Size of the file in K
 	fi
-	if [ $sze -gt 100 ] 
+	if [ $sze -gt 800 ] 
 	then
 		echo "$x is `du -h $x | cut -f1`!"
 		foundbigfile=1

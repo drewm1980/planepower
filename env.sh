@@ -17,9 +17,8 @@ done
 tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
-source $PLANEPOWER_ROOT/extern/orocos/env.sh
+. /opt/ros/hydro/setup.bash
 
-export LUA_PATH=";;;$PLANEPOWER_ROOT/extern/orocos/ocl/lua/modules/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rFSM/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"

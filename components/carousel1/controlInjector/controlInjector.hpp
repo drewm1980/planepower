@@ -20,6 +20,7 @@ public:
 	virtual bool configureHook();
 	virtual bool startHook();
 	virtual void updateHook();
+	virtual void applyControls();
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
@@ -29,10 +30,10 @@ public:
 	/// Connect this to the mcuHandler
 	RTT::OutputPort< std::vector< double > > portControls;
 
-	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
 	
 	// Holder for the control action to be send
-	std::vector< double > controls; 
+	std::vector< double > controls; // In radians!!!
 
 };
 

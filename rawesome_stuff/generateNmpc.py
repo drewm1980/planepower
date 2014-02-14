@@ -30,11 +30,8 @@ if __name__=='__main__':
     exportpath =  nmpc.exportCode(NMPC.mpcOpts, NMPC.mpcIntOpts, cgOptions, {})
 
     # Copy the library and the headers to output location
-    for filename in ['acado_common.h', 'solver.hpp', 'ocp.o']:
-        if filename == 'solver.hpp':
-            fullname = os.path.join(exportpath, 'qpoases/' + filename)
-        else:
-            fullname = os.path.join(exportpath, filename)
+    for filename in ['acado_common.h', 'acado_qpoases_interface.hpp', 'ocp.o']:
+        fullname = os.path.join(exportpath, filename)
         assert os.path.isfile(fullname), fullname+' is not a file'
         shutil.copy(fullname, filename)
     
@@ -79,7 +76,7 @@ if __name__=='__main__':
     fw.write("\n\n")
     
     #
-    # Generate steady state for MHE
+    # Generate steady state for NMPC
     #
     
     # Get the plane configuration parameters
@@ -129,4 +126,3 @@ if __name__=='__main__':
     
     fw.write("#endif // NMPC_CONFIGURATION\n")
     fw.close()
-    

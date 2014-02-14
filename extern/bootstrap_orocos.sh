@@ -1,15 +1,10 @@
 #! /usr/bin/env bash
 echo "Bootstrapping OROCOS..."
 
-mkdir -p orocos
-(
-cd orocos
-wget http://rock-robotics.org/stable/autoproj_bootstrap
-ruby autoproj_bootstrap $@ git git://gitorious.org/orocos-toolchain/build.git branch=toolchain-2.6 push_to=git@gitorious.org:orocos-toolchain/build.git
-. $PWD/env.sh
-autoproj update
-autoproj fast-build
-)
+sudo echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ro-latest.list
+sudo apt-get update
+sudo apt-get install ros-hydro-orocos-toolchain
+source /opt/ros/hydro/setup.bash
 
 echo "Giving special rights to OROCOS deployer..."
 sh setcap.sh

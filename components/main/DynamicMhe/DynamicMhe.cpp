@@ -34,6 +34,8 @@ DynamicMhe::DynamicMhe(std::string name)
 		.doc("LED Tracker data");
 	addPort("lasData", portLASData)
 		.doc("Line angle sensor data");
+	addPort("winchData", portWinchData)
+		.doc("Winch data");
 	addPort("stateEstimate", portStateEstimate)
 		.doc("Current state estimate");
 	addPort("debugData", portDebugData)
@@ -49,8 +51,8 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.z.resize(N * NXA, 0.0);
 	debugData.y.resize(N * NY, 0.0);
 	debugData.yN.resize(NYN, 0.0);
-//	debugData.S.resize(N * NY * NY, 0.0);
-//	debugData.SN.resize(NYN * NYN, 0.0);
+//	debugData.W.resize(N * NY * NY, 0.0);
+//	debugData.WN.resize(NYN * NYN, 0.0);
 
 	debugData.imu_first.resize(6, 0.0);
 	debugData.imu_avg.resize(6, 0.0);
@@ -58,30 +60,23 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.cam_markers.resize(12, 0.0);
 	debugData.cam_pose.resize(12, 0.0);
 	debugData.las_data.resize(2, 0.0);
+	debugData.winch_data.resize(3, 0.0);
 	debugData.controls_avg.resize(3, 0.0);
 
 	portDebugData.setDataSample( debugData );
 	portDebugData.write( debugData );
 
 	imuData.resize( MAX_NUM_IMU_SAMPLES );
-
-	targetCableLength = 0;
-	addProperty("targetCableLength", targetCableLength);
 }
 
 bool DynamicMhe::configureHook()
 {
-	if (targetCableLength == 0)
-	{
-		log( Error ) << "Target cable length must be greater than 0!!!" << endlog();
-		return false;
-	}
-
 	checkPortConnection( portTrigger );
 	checkPortConnection( portMcuHandlerData );
 	checkPortConnection( portEncoderData );
 	checkPortConnection( portLEDTrackerData );
 	checkPortConnection( portLASData );
+	checkPortConnection( portWinchData );
 	
 	return true;
 }
@@ -136,10 +131,17 @@ void DynamicMhe::updateHook()
 		int ledInd = runCnt - mhe_ndelay;
 		if (ledInd >= 0)
 		{
-			for (unsigned i = 0; i < mhe_num_markers; ++i)
-				acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-			for (unsigned i = 0; i < mhe_num_markers; ++i)
-				acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+		}
+
+		int cableInd = runCnt - debugData.dbg_winch_delay;
+		if (cableInd >= 0)
+		{
+			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
+			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
 		}
 
 		if (++runCnt == N)
@@ -155,15 +157,31 @@ void DynamicMhe::updateHook()
 	}
 	else if (runCnt >= N)
 	{
-		// Put new measurements
+		// Embed new measurements, the "default ones"
 		for (unsigned i = 0; i < NYN; ++i)
 			acadoVariables.yN[ i ] = execYN[ i ];
 
+		// Embed marker positions
+		// TODO In principle, we do not need mhe_ndelay, it is calculated
 		int ledInd = N - mhe_ndelay;
-		for (unsigned i = 0; i < mhe_num_markers; ++i)
-			acadoVariables.y[ledInd * NY + i] = ledData[ i ];
-		for (unsigned i = 0; i < mhe_num_markers; ++i)
-			acadoVariables.S[ledInd * NY * NY + i * NY + i] = ledWeights[ i ];
+		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+			acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+			acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+
+		// Embed winch measurement
+		int cableInd = N - debugData.dbg_winch_delay;
+		if (cableInd < N)
+		{
+			acadoVariables.y[cableInd * NY + offset_r] = cableLength;
+			acadoVariables.W[cableInd * NY * NY + offset_r * NY + offset_r] = cableLengthWeight;
+			acadoVariables.WN[offset_r * NYN + offset_r] = 0.0;
+		}
+		else
+		{
+			acadoVariables.yN[ offset_r ] = cableLength;
+			acadoVariables.WN[offset_r * NYN + offset_r] = cableLengthWeight;
+		}
 		
 		runMhe = true;
 	}
@@ -211,8 +229,12 @@ void DynamicMhe::updateHook()
 		// Shift weighting matrices
 		for (unsigned blk = 0; blk < N - 1; ++blk)
 			for (unsigned el = 0; el < NY; ++ el)
-				acadoVariables.S[blk * NY * NY + el * NY + el] = 
-					acadoVariables.S[(blk + 1) * NY * NY + el * NY + el];
+				acadoVariables.W[blk * NY * NY + el * NY + el] = 
+					acadoVariables.W[(blk + 1) * NY * NY + el * NY + el];
+
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.W[(N - 1) * NY * NY + el * NY + el] =
+				acadoVariables.WN[el * NYN + el];
 		
 		// Shift measurements
 		for (unsigned blk = 0; blk < N - 1; ++blk)
@@ -296,6 +318,12 @@ bool DynamicMhe::prepareMeasurements( void )
 	
 	FlowStatus lasStatus = portLASData.read( lasData );
 
+	FlowStatus winchStatus = portWinchData.read( winchData );
+	cableLength = winchData.length * (double)(winchStatus == NewData);
+	cableLengthWeight = (winchStatus == NewData) ? weight_r : 0.0;
+	
+	debugData.winch_data[ 0 ] = cableLength;
+
 	//
 	// Average data that come from MCU handler component
 	//
@@ -327,35 +355,45 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ i ] /= (double)numImuSamples;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
 		debugData.controls_avg[ i ] /= (double)numImuSamples;
+
+	//
+	// Some debug stuff, record number of measurements we got
+	//
 	
 	debugData.num_imu_samples = numImuSamples;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
 	debugData.num_las_samples = (lasStatus == NewData);
+	debugData.num_winch_samples = (winchStatus == NewData);
 	
 	//
 	// Prepare the sensor data
 	//
 	
-	unsigned offset = mhe_num_markers;
-	execY[ offset++ ] = encData.cos_theta;
-	execY[ offset++ ] = -encData.sin_theta; // !!! Sign is inverted !!!
+	execY[ offset_cos_delta ] = encData.cos_theta;
+	execY[ offset_sin_delta ] = -encData.sin_theta; // !!! Sign is inverted !!!
 	// gyro_xyz, accl_xyz
-	for (unsigned i = 0; i < 6; ++i)
-		execY[ offset++ ] = debugData.imu_avg[ i ];
+	for (unsigned i = 0, el = offset_IMU_angular_velocity; i < 3; ++i, ++el)
+		execY[ el ] = debugData.imu_avg[ i ];
+	for (unsigned i = 3, el = offset_IMU_acceleration; i < 6; ++i, ++el)
+		execY[ el ] = debugData.imu_avg[ i ];
 
 	// Control surfaces; TODO we might skip this!
-	execY[ offset++ ] = debugData.controls_avg[ 0 ]; // TODO check signs
-	execY[ offset++ ] = debugData.controls_avg[ 2 ]; // TODO check signs
+	execY[ offset_aileron  ] = debugData.controls_avg[ 0 ]; // TODO check signs
+	execY[ offset_elevator ] = debugData.controls_avg[ 2 ]; // TODO check signs
 	
 	// r, dr, ddr
-	execY[ offset++ ] = targetCableLength;
-	execY[ offset++ ] = 0.0;
-	execY[ offset++ ] = 0.0;
+	// Measurement for cable length "r" is embedded the same way we do
+	// for cameras, calculating the delays...
+	execY[ offset_r ] = 0.0;
+	execY[ offset_dr ] = 0.0;
+	execY[ offset_ddr ] = 0.0;
 	
 	// controls
-	for (unsigned i = 0; i < NU; ++i)
-		execY[ offset++ ] = 0.0;
+	execY[ offset_daileron ] = 0.0;
+	execY[ offset_delevator ] = 0.0;
+	execY[ offset_dmotor_torque ] = 0.0;
+	execY[ offset_dddr ] = 0.0;
 
 	// Copy to execYN
 	for (unsigned i = 0; i < NYN; execYN[ i ] = execY[ i ], i++);
@@ -374,6 +412,10 @@ bool DynamicMhe::prepareMeasurements( void )
 		(int)round((debugData.ts_entry - encData.ts_trigger)  * 1e-9 / mhe_sampling_time) *
 		debugData.num_enc_samples;
 
+	debugData.dbg_winch_delay =
+		(int)round((debugData.ts_entry - winchData.ts_trigger)  * 1e-9 / mhe_sampling_time) *
+		debugData.num_winch_samples;
+
 	return true;
 }
 
@@ -389,8 +431,8 @@ bool DynamicMhe::prepareDebugData( void )
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
-//	debugData.S.assign(acadoVariables.S, acadoVariables.S + N * NY * NY);
-//	debugData.SN.assign(acadoVariables.SN, acadoVariables.SN + NYN * NYN);
+//	debugData.S.assign(acadoVariables.W, acadoVariables.W + N * NY * NY);
+//	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
 
 	debugData.enc_data[ 0 ] = encData.theta;
 	debugData.enc_data[ 1 ] = encData.sin_theta;
@@ -408,35 +450,36 @@ bool DynamicMhe::prepareDebugData( void )
 bool DynamicMhe::prepareWeights( void )
 {
 	// XXX Weights for markers are done in a different way, by dflt = 0.0
+	// TODO Now that we generate offsets, remove offset inc stuff
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
-	unsigned offset = mhe_num_markers;
-	mheWeights[ offset++ ] = weight_cos_delta;
-	mheWeights[ offset++ ] = weight_sin_delta;
-	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_angular_velocity, el++);
-	for (unsigned el = 0; el < 3; mheWeights[ offset++ ] = weight_IMU_acceleration, el++);
+	mheWeights[ offset_cos_delta ] = weight_cos_delta;
+	mheWeights[ offset_sin_delta ] = weight_sin_delta;
+	for (unsigned el = offset_IMU_angular_velocity; el < offset_IMU_angular_velocity + 3; mheWeights[ el++ ] = weight_IMU_angular_velocity);
+	for (unsigned el = offset_IMU_acceleration; el < offset_IMU_acceleration + 3; mheWeights[ el++ ] = weight_IMU_acceleration);
 
-	mheWeights[ offset++ ] = weight_aileron;
-	mheWeights[ offset++ ] = weight_elevator;
+	mheWeights[ offset_aileron ] = weight_aileron;
+	mheWeights[ offset_elevator ] = weight_elevator;
 
-	mheWeights[ offset++ ] = weight_r;
-	mheWeights[ offset++ ] = weight_dr;
-	mheWeights[ offset++ ] = weight_ddr;
+	// Weight for cable length is dynamically updated
+	mheWeights[ offset_r ] = 0.0;
+	mheWeights[ offset_dr ] = weight_dr;
+	mheWeights[ offset_ddr ] = weight_ddr;
 
-	mheWeights[ offset++ ] = weight_daileron;
-	mheWeights[ offset++ ] = weight_delevator;
+	mheWeights[ offset_daileron ] = weight_daileron;
+	mheWeights[ offset_delevator ] = weight_delevator;
 
-	mheWeights[ offset++ ] = weight_dmotor_torque;
-	mheWeights[ offset++ ] = weight_dddr;
+	mheWeights[ offset_dmotor_torque ] = weight_dmotor_torque;
+	mheWeights[ offset_dddr ] = weight_dddr;
 
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
 		for (unsigned el = 0; el < NY; ++el)
-			acadoVariables.S[blk * NY * NY + el * NY + el] = mheWeights[ el ];
+			acadoVariables.W[blk * NY * NY + el * NY + el] = mheWeights[ el ];
 
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.SN[el * NYN + el] = mheWeights[ el ];
+		acadoVariables.WN[el * NYN + el] = mheWeights[ el ];
 
 	// XXX A bit off topic, but must be done somewhere :p
 	for (unsigned el = 0; el < NY; execY[ el++ ] = 0.0);
@@ -496,4 +539,5 @@ bool DynamicMhe::prepareInitialGuess( void )
 	return true;
 }
 
-ORO_CREATE_COMPONENT( DynamicMhe )
+ORO_LIST_COMPONENT_TYPE( DynamicMhe )
+//ORO_CREATE_COMPONENT( DynamicMhe )

@@ -31,6 +31,7 @@ typedef uint64_t TIME_TYPE;
 #include "encoder/types/EncoderDataType.hpp"
 #include "LEDTracker/types/LEDTrackerDataType.hpp"
 #include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
+#include "winchControl/types/WinchControlDataType.hpp"
 
 #include "types/DynamicMheDataTypes.hpp"
 
@@ -83,6 +84,10 @@ protected:
 	RTT::InputPort< LineAngleSensorDataType > portLASData;
 	/// LAS data holder
 	LineAngleSensorDataType lasData;
+	/// Winch data input
+	RTT::InputPort< WinchControlDataType > portWinchData;
+	/// Winch data holder
+	WinchControlDataType winchData;
 
 	//
 	// Output ports
@@ -101,9 +106,6 @@ protected:
 	//
 	// Properties
 	//
-
-	/// Target cable length, for which we fake the measurement
-	double targetCableLength;
 	
 private:
 	bool prepareInitialGuess( void );
@@ -114,6 +116,8 @@ private:
 	double mheWeights[ NY ];
 	double ledData[ mhe_num_markers ];
 	double ledWeights[ mhe_num_markers ];
+
+	double cableLength, cableLengthWeight;
 
 	unsigned runCnt;
 	double execY[ NY ], execYN[ NYN ];

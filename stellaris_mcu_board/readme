@@ -1,0 +1,18 @@
+-Andrew
+
+This is the code Milan Vukov wrote to run on the Stellaris EKK-LM3S9B92 development board
+that we use in the indoor plane. 
+
+The guys who developed this board (CodeSourcery) got bought by MentorGraphics, and then by TI itself,
+and the board has been discontinued in 2012.  However, it has advantages over all other similar boards
+available:
+
+* The LM3S9B92 chip has INTEGRATED ethernet, including the PHY (ethernet hardware layer)
+* It is narrow enough to fit in our small indoor plane
+* It really doesn't have any other crap on the board taking up space unnecessarily.
+* It is oriented towards bare metal programming, whereas most new boards are running a non-hard real time
+version of linux.
+* It is programmable directly with the USB JTAG interface that came with the kit; less bootloader bs.
+
+We still have several spare boards left, and the code already works, so it may make sense to continue
+using in future planes as well.

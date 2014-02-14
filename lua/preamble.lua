@@ -16,6 +16,7 @@ rtt.logl("Info", "Loading PLANEPOWER components...")
 deployer:import("ocl")
 
 ORO_SCHED_RT=rtt.globals.ORO_SCHED_RT
+ORO_SCHED_OTHER=rtt.globals.ORO_SCHED_OTHER
 
 
 

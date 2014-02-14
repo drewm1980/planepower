@@ -10,11 +10,11 @@ using namespace RTT::os;
 
 ControlInjector::ControlInjector(std::string name):TaskContext(name,PreOperational) 
 {
-	addEventPort("trigger", portTrigger)
+	addEventPort("trigger", portTrigger, boost::bind(&ControlInjector::applyControls,this))
 		        .doc("Trigger the component to write the controls");
 	addPort("portControls", portControls)
 		        .doc("Trigger the component to write the controls");
-	addOperation("setControlsUnitless", &McuHandler::setControlsUnitless, this, OwnThread)  
+	addOperation("setControlsUnitless", &ControlInjector::setControlsUnitless, this, OwnThread)  
 			.doc("Set the values for the flight surfaces, scaled from -1 to 1")
 			.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
 			.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
@@ -25,7 +25,6 @@ ControlInjector::ControlInjector(std::string name):TaskContext(name,PreOperation
 	portControls.setDataSample( controls );
 	portControls.write( controls );
 
-	log(Error) << "foooo" << endlog();
 }
 
 bool ControlInjector::configureHook()
@@ -40,8 +39,11 @@ bool  ControlInjector::startHook()
 
 void  ControlInjector::updateHook()
 {
+}
+
+void  ControlInjector::applyControls()
+{
 	portControls.write( controls );
-	convert_controls_radians_to_unitless(&controls[0])
 }
 
 void  ControlInjector::stopHook()
@@ -53,11 +55,20 @@ void  ControlInjector::cleanupHook()
 void  ControlInjector::errorHook()
 {}
 
+// Warning, this function NOT hard real-time safe.
+// But, this should be fine if you're running this component
+// in it's own thread.
 void ControlInjector::setControlsUnitless(double right_aileron, double left_aileron, double elevator)
 {
-	    controls[0] = right_aileron;
-	    controls[1] = left_aileron; 
-	    controls[2] = elevator;
+	vector<double> temp;
+	temp.resize(3,0.0);
+	temp[0] = right_aileron;
+	temp[1] = left_aileron; 
+	temp[2] = elevator;
+	convert_controls_unitless_to_radians(&temp[0]);
+	controls[0]=temp[0];
+	controls[1]=temp[1];
+	controls[2]=temp[2];
 }
 
 ORO_CREATE_COMPONENT( ControlInjector )

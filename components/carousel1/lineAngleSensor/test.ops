@@ -5,20 +5,30 @@ import("soem_master")
 import("soem_ebox")
  
 loadComponent("soemMaster","soem_master::SoemMasterComponent") 
-soemMaster.ifname = "eth1"
+soemMaster.ifname = "eth2"
 setActivity("soemMaster", 0.001, HighestPriority, ORO_SCHED_RT)
 
 soemMaster.configure()
 soemMaster.start()
 
 loadComponent("lineAngleSensor","LineAngleSensor")
-setActivity("lineAngleSensor", 0.0, HighestPriority, ORO_SCHED_RT)
+loadComponent("telemetry", "LineAngleSensorTelemetry")
+
+telemetry.port = "tcp://*:5566"
+
+setActivity("lineAngleSensor", 0.0, 90, ORO_SCHED_RT)
+setActivity("telemetry", 1.0 / 100.0, 80, ORO_SCHED_RT)
 
 var ConnPolicy cp
 connect("soemMaster.Slave_1001.Measurements", "lineAngleSensor.eboxOut", cp)
 
+connect("lineAngleSensor.data", "telemetry.msgData", cp)
+
 lineAngleSensor.configure()
 lineAngleSensor.start()
+
+telemetry.configure()
+telemetry.start()
 
 # voltageController
 import("voltageController")

@@ -27,13 +27,22 @@ import scipy.io as sio
 # data = sio.loadmat('dataset_20130827_130807_kmhe_timings.mat')
 
 # Warmed up
-data = sio.loadmat('dataset_20130827_130802_kmhe_timings.mat')
+#data = sio.loadmat('dataset_20130827_130802_kmhe_timings.mat')
 
 # #samples, representing camera delay
-nDelay = 4
+#nDelay = 4
+
+#
+# New data set @ 25 Hz
+#
+#data = sio.loadmat('dataset_20130831_200853_kmhe_timings.mat')
+data = sio.loadmat('dataset_20140206_185035_dmhe_testing.mat')
+
+# #samples, representing camera delay
+nDelay = 2
 
 # Sampling time, 50 Hz as in the datasets
-Ts = 0.02
+Ts = 0.04
 
 # Read data to temporary data structures
 time         = numpy.array(data['dataset'][0,0]['time'])
@@ -43,7 +52,6 @@ enc_data     = numpy.array(data['dataset'][0,0]['enc_data'])
 cam_led      = numpy.array(data['dataset'][0,0]['cam_led'])
 cam_pose     = numpy.array(data['dataset'][0,0]['cam_pose'])
 cam_flag     = numpy.array(data['dataset'][0,0]['cam_flag'])
-las_data     = numpy.array(data['dataset'][0,0]['las_data'])
 control_surf = numpy.array(data['dataset'][0,0]['controls'])
 
 R_nwu2ned = numpy.eye( 3 )
@@ -57,9 +65,9 @@ cam_rpy = numpy.zeros([time.shape[ 0 ], 3])
 for k in range( time.shape[ 0 ] ):
 	R = cam_pose[k, 3:].reshape((3, 3))
 	
-	yaw = numpy.arctan2(R[0, 1], R[0, 0])
-	pitch = numpy.arcsin(-R[0, 2])
-	roll = numpy.arctan2(R[1, 2], R[2, 2]) 
+	yaw = numpy.arctan2(R[0, 1], R[0, 0]) * cam_flag[ k ]
+	pitch = numpy.arcsin(-R[0, 2]) * cam_flag[ k ]
+	roll = numpy.arctan2(R[1, 2], R[2, 2])  * cam_flag[ k ]
 	
 	cam_rpy[k, :] = [roll, pitch, yaw]
 	cam_rpy[k, :] *= 180 / numpy.pi
@@ -73,15 +81,15 @@ cam_time = time - Ts * nDelay
 print "Printing plots..."
 	
 plt.figure()
-plt.plot(logR)
+plt.plot(logR * cam_flag[ k ], 'or') 
 
 plt.figure()
 plt.subplot(3, 1, 1)
-plt.plot(cam_time, cam_rpy[:, 0])
+plt.plot(cam_time, cam_rpy[:, 0], 'or')
 plt.subplot(3, 1, 2)
-plt.plot(cam_time, cam_rpy[:, 1])
+plt.plot(cam_time, cam_rpy[:, 1], 'og')
 plt.subplot(3, 1, 3)
-plt.plot(cam_time, cam_rpy[:, 2])
+plt.plot(cam_time, cam_rpy[:, 2], 'ob')
 
 plt.show()
 

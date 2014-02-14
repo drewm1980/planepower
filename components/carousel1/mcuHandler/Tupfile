@@ -1,6 +1,6 @@
 include_rules
 
-LDFLAGS_OROCOS += -lprotobuf
+LDFLAGS_OROCOS += -lprotobuf -lzmq
 
 # Generate the protobuf file
 : McuHandlerTelemetry.proto |> protoc --cpp_out=. McuHandlerTelemetry.proto |> McuHandlerTelemetry.pb.cc McuHandlerTelemetry.pb.h

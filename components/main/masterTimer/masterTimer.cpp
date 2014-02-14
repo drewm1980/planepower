@@ -33,9 +33,6 @@ MasterTimer::MasterTimer(string name)
 	addPort("imuCameraRatio" , _imuCameraRatio)
 		.doc("The ratio of imu freq. on camera freq.");
 
-	addPort("deltaIn",_deltaIn);
-	addPort("deltaOut",_deltaOut);
-
 	// Get current time
 	myticks = TimeService::Instance()->getTicks();
 
@@ -49,8 +46,6 @@ MasterTimer::MasterTimer(string name)
 	_masterClock.write( myticks );
 	_imuCameraRatio.setDataSample( 0 );
 	_imuCameraRatio.write( 0 );
-	_deltaOut.setDataSample( 0 );
-	_deltaOut.write( 0 );
 
 	base_clock_index = 0;
 }
@@ -94,6 +89,7 @@ bool MasterTimer::configureHook()
 	}
 	// Write the ratio of IMU measurements on camera measurements on a port
 	_imuCameraRatio.write(dividers[ 1 ] / dividers[ 0 ]);
+
 	return true;
 }
 
@@ -111,13 +107,6 @@ void  MasterTimer::updateHook()
 	{
 		if (base_clock_index % dividers[ i ]==0)
 		{
-			// Trigger event port i
-			if (i == 1)
-			{
-				// Camera clock
-				_deltaIn.read(delta);
-				_deltaOut.write(delta);
-			}
 			portPointers[i]->write(myticks);
 		}
 	}

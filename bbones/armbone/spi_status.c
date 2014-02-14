@@ -21,6 +21,7 @@
 int main(int argc, const char *argv[])
 {
 	// Change status gpio pins to inputs
+	// ... should be done in device tree overlay...
 	gpio_export(AZIMUTH_STATUS_PIN);
 	gpio_export(ELEVATION_STATUS_PIN);
 	gpio_set_dir(AZIMUTH_STATUS_PIN, INPUT_PIN);

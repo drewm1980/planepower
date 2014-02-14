@@ -42,7 +42,11 @@ protected:
 	RTT::OutputPort< LineAngleSensorDataType > portData;
 	/// Sensor data holder
 	LineAngleSensorDataType data;
-		
+	
+	// The raw voltages, for use during calibration
+	RTT::OutputPort<double>  portVoltageHorizontal;
+	RTT::OutputPort<double>  portVoltageVertical;
+
 	/// Horizontal angle offset
 	double angleHorOffset;
 	/// Horizontal angle gain

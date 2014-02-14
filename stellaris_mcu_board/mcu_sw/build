@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+(
+cd driverlib
+make
+)
+make
+

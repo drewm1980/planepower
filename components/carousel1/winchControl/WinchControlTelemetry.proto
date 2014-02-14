@@ -1,0 +1,14 @@
+package WinchControlProto;
+
+message WinchControlMsg
+{
+	required float length = 1;
+	required float speed = 2;
+	
+	required float dbg_theta = 4;
+	required float dbg_omega = 5;
+	required float dbg_current = 6;
+
+	required double ts_trigger = 7;
+	required double ts_elapsed = 8;
+}

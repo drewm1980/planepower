@@ -4,4 +4,8 @@ include_rules
 propsdir = $(PLANEPOWER_ROOT)/properties
 export PYTHONPATH
 genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateMhe.py
-: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.o solver.hpp whereami.txt mhe_configuration.h
+: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.o acado_qpoases_interface.hpp whereami.txt mhe_configuration.h DynamicMheTelemetry.proto
+
+# Generate the protobuf file
+: DynamicMheTelemetry.proto |> protoc --cpp_out=. DynamicMheTelemetry.proto |> DynamicMheTelemetry.pb.cc DynamicMheTelemetry.pb.h
+: DynamicMheTelemetry.proto |> protoc --python_out=. DynamicMheTelemetry.proto |> DynamicMheTelemetry_pb2.py

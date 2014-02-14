@@ -40,6 +40,7 @@ CXXFLAGS_OROCOS_PLUGIN = $(CXXFLAGS)
 CXXFLAGS_OROCOS_PLUGIN += -fno-strict-aliasing
 
 # Add components paths to include paths
+CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/common
 CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/main
 CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/carousel1
 CPPFLAGS_OROCOS += -I$(TUP_CWD)/components/carousel2

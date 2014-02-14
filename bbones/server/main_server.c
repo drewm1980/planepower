@@ -1,7 +1,3 @@
-/*
- * AUTHOR:Jonas Van Pelt
- */
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

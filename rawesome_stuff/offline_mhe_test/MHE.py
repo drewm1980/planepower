@@ -53,36 +53,36 @@ measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 
 # Mario's
 # mheSigmas = {'cos_delta':1e-1, 'sin_delta':1e-1,
-#              'IMU_angular_velocity':1.0,
-#              'IMU_acceleration':10.0,
-#              'marker_positions':1e2,
-#              'aileron':1e-2,
-#              'elevator':1e-2,
-#              'daileron':1e-4,
-#              'delevator':1e-4,
-#              'dmotor_torque':1e-4,
-#              'dddr':1e-4}
+#			   'IMU_angular_velocity':1.0,
+#			   'IMU_acceleration':10.0,
+#			   'marker_positions':1e2,
+#			   'aileron':1e-2,
+#			   'elevator':1e-2,
+#			   'daileron':1e-4,
+#			   'delevator':1e-4,
+#			   'dmotor_torque':1e-4,
+#			   'dddr':1e-4}
 
 # New, verified with experimental data
 # DO NOT change the order !!!
 mheSigmas = {
-				'marker_positions': 5e0,
+				'marker_positions': 2e1,
 				
 				'cos_delta': 1e-2, 'sin_delta': 1e-2,
 				
 				'IMU_angular_velocity': 1e-2,
 				'IMU_acceleration': 1e-2,
-             
-             	'aileron': 1e-2,
-			 	'elevator': 1e-2,
-             
-             	'r': 1e-2, 'dr': 1e-2, 'ddr': 1e-2,
-			 	
-			 	'daileron': 1e-2, 'delevator': 1e-2,
-             
-             	'dmotor_torque': 1e0,
-             
-			 	'dddr': 1e-4
+			 
+				'aileron': 1e-2,
+				'elevator': 1e-2,
+			 
+				'r': 1e-3, 'dr': 1e-2, 'ddr': 1e-2,
+				
+				'daileron': 1e-2, 'delevator': 1e-2,
+			 
+				'dmotor_torque': 1e0,
+			 
+				'dddr': 1e-4
 			 }
 
 # Weights
@@ -93,57 +93,49 @@ for sigma in mheSigmas:
 	mheWeights[ sigma ] = mheWeightScaling / mheSigmas[ sigma ] ** 2
 
 def makeMhe(Ts = None, propertiesDir = '../../properties', ):
-    conf = makeConf()
-    conf['stabilize_invariants'] = False
-    dae = carouselModel.makeModel(conf, propertiesDir = propertiesDir)
-    
-    if Ts is None:
-    	execSamplingTime = samplingTime
-    else:
+	conf = makeConf()
+	conf['stabilize_invariants'] = False
+	dae = carouselModel.makeModel(conf, propertiesDir = propertiesDir)
+	
+	if Ts is None:
+		execSamplingTime = samplingTime
+	else:
 		execSamplingTime = Ts
 
-    mhe = rawe.Mhe(dae, N = mheHorizonN, ts = execSamplingTime, yxNames = measX, yuNames = measU)
-    
-    mheConstraintsWhen = 'AT_START'
-#     mheConstraintsWhen = 'AT_END'
+	mhe = rawe.Mhe(dae, N = mheHorizonN, ts = execSamplingTime, yxNames = measX, yuNames = measU)
+	
+	mheConstraintsWhen = 'AT_START'
+#	  mheConstraintsWhen = 'AT_END'
 
-    mhe.constrain(mhe['ConstR1'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['ConstR2'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['ConstR3'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['ConstR4'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['ConstR5'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['ConstR6'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR1'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR2'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR3'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR4'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR5'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['ConstR6'], '==', 0, when=mheConstraintsWhen)
 
-    mhe.constrain(mhe['c'], '==', 0, when=mheConstraintsWhen)
-    mhe.constrain(mhe['cdot'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['c'], '==', 0, when=mheConstraintsWhen)
+	mhe.constrain(mhe['cdot'], '==', 0, when=mheConstraintsWhen)
 
-    mhe.constrain(mhe['ConstDelta'],'==',0, when=mheConstraintsWhen)
-    
-#     mhe.constrain(mhe['r'], '==', 1.2, when='AT_START')
-#     mhe.constrain(mhe['r'], '>=', 0.0, when='AT_START')
-#     mhe.constrain(mhe['dr'], '==', 0.0, when='AT_START')
-#     mhe.constrain(mhe['ddr'], '==', 0.0, when='AT_START')
-#     mhe.constrain(mhe['dddr'], '==', 0.0)
+	mhe.constrain(mhe['ConstDelta'],'==',0, when=mheConstraintsWhen)
+	
+#	  mhe.constrain(mhe['r'], '==', 1.2, when='AT_START')
+#	  mhe.constrain(mhe['r'], '>=', 0.0, when='AT_START')
+#	  mhe.constrain(mhe['dr'], '==', 0.0, when='AT_START')
+#	  mhe.constrain(mhe['ddr'], '==', 0.0, when='AT_START')
+#	  mhe.constrain(mhe['dddr'], '==', 0.0)
 
-    return mhe
+	return mhe
 
 def makeMheRT(Ts=0.1,propertiesDir='../../properties', cgOptions = None):
-    if cgOptions is None:
-        cgOptions= {'CXX':'clang++', 'CC':'clang',
-                    'CXXFLAGS':'-O3 -fPIC -finline-functions -march=native',
-                    'CFLAGS':'-O3 -fPIC -finline-functions -march=native'}
-#                     , 'force_export_path':'export_here'}
-    mhe = makeMhe(Ts=Ts,propertiesDir=propertiesDir)
-    return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
+	if cgOptions is None:
+		cgOptions= {'CXX':'clang++', 'CC':'clang',
+					'CXXFLAGS':'-O3 -fPIC -finline-functions -march=native',
+					'CFLAGS':'-O3 -fPIC -finline-functions -march=native'}
+#					  , 'force_export_path':'export_here'}
 
-def milan_check_this_out():
-    mhe = makeMhe()
-    cgOptions= {'CXX':'clang++', 'CC':'clang',
-                'CXXFLAGS':'-O3 -fPIC -finline-functions',
-                'CFLAGS':'-O3 -fPIC -finline-functions',
-                'export_without_build_path':'so_cool_i_do_it_myself'}
-    phase1Options = {}
-    mhe.exportCode(mheOpts, mheIntOpts, cgOptions, phase1Options)
+	# If we want to export to a specific part, we would need the following option:
+	# 'export_without_build_path': '<path>'
 
-if __name__ == '__main__':
-    milan_check_this_out()
+	mhe = makeMhe(Ts=Ts,propertiesDir=propertiesDir)
+	return rawe.MheRT(mhe, ocpOptions=mheOpts, integratorOptions=mheIntOpts, codegenOptions=cgOptions)
