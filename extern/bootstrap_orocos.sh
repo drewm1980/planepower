@@ -1,5 +1,8 @@
 #! /usr/bin/env bash
-echo "Bootstrapping OROCOS..."
+echo -e "Bootstrapping OROCOS...\n\n"
+echo -e "If build fails you will need to configure Ubuntu repos as follows: "
+echo -e "1) Setup your sources.list:\n\t sudo sh -c 'echo \"""deb http://packages.ros.org/ros/ubuntu precise main\""" > /etc/apt/sources.list.d/ros-latest.list'"
+echo -e "2) Set up your keys:\n\t wget http://packages.ros.org/ros.key -O - | sudo apt-key add -"
 
 sudo apt-get update
 sudo apt-get install ros-hydro-orocos-toolchain
@@ -34,6 +37,14 @@ fi
 (
 cd rFSM
 make
+)
+
+echo "Building the Jitter service from Intermodalics"
+(
+mkdir -p jitter/build
+cd jitter/build
+cmake -DCMAKE_INSTALL_PREFIX:STRING=`pwd`/../install ..
+make install
 )
 
 #echo "Bootstrapping dot service..."
