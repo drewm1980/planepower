@@ -24,6 +24,7 @@ end
 
 dofile("load_carousel_1_hardware.lua")
 --dofile("setup_carousel_1_reporters.lua")
+dofile("setup_carousel_1_telemetry.lua")
 
 masterTimer:start()
 

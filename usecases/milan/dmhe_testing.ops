@@ -11,6 +11,8 @@
 import( "HighwindStuff" )
 require( "HighwindServices" )
 
+#import("jitter")
+
 ################################################################################
 #
 # Start with import, config and starting of the SOEM master
@@ -40,8 +42,8 @@ soemMaster.start()
 ################################################################################
 
 # Dot Service
-import("rtt_dot_service")
-loadService("Deployer","dot")
+#import("rtt_dot_service")
+#loadService("Deployer","dot")
 
 # Master Timer
 import("masterTimer")
@@ -51,6 +53,7 @@ loadComponent("masterTimer", "MasterTimer")
 import("mcuHandler")
 loadComponent("mcuHandler", "McuHandler")
 loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
+#loadService("mcuHandler", "jitter")
 
 # Voltage controller
 import("voltageController")
@@ -91,6 +94,7 @@ loadComponent("inputSignalGenerator", "InputSignalGenerator")
 
 # OCL NETcdf reporter
 loadComponent("imuReporter", "OCL::NetcdfReporting")
+#loadComponent("imuJitterReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
 loadComponent("encoderReporter", "OCL::NetcdfReporting")
 loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
@@ -178,6 +182,10 @@ imuReporter.ReportFile = "imuData.nc"
 imuReporter.ReportPolicy = rp_sensors
 imuReporter.ReportOnlyNewData = false
 
+#imuJitterReporter.ReportFile = "imuJitterData.nc"
+#imuJitterReporter.ReportPolicy = rp_sensors
+#imuJitterReporter.ReportOnlyNewData = false
+
 cameraReporter.ReportFile = "cameraData.nc"
 cameraReporter.ReportPolicy = rp_sensors
 cameraReporter.ReportOnlyNewData = false
@@ -223,7 +231,7 @@ setActivityOnCPU("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
 # TODO set period of the winch to the same or <int> * LED tracker period
 #      in a conf file
-setActivityOnCPU("winch", 1.0 / 12.5, winchPrio, ORO_SCHED_RT,6)
+setActivityOnCPU("winch", 1.0 / 50, winchPrio, ORO_SCHED_RT,6)
 
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
 
@@ -231,7 +239,7 @@ setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OT
 setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("winchTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 1)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
@@ -295,7 +303,9 @@ connect("mhe.debugData", "mheTelemetry.msgData", cp)
 ################################################################################
 
 connectPeers("imuReporter", "mcuHandler")
+#connectPeers("imuJitterReporter", "mcuHandler")
 imuReporter.reportComponent( "mcuHandler" )
+#imuJitterReporter.reportPort( "mcuHandler", "jitter.jitter" )
 
 connectPeers("cameraReporter", "LEDTracker")
 cameraReporter.reportComponent( "LEDTracker" )
@@ -366,6 +376,9 @@ mheTelemetry.start()
 
 imuReporter.configure()
 imuReporter.start()
+
+#imuJitterReporter.configure()
+#imuJitterReporter.start()
 
 cameraReporter.configure()
 cameraReporter.start()
