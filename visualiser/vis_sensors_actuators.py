@@ -169,13 +169,13 @@ for f in ["left", "right"]:
 
 		ledPlots.update( plots )
 
-# TODO does not work yet
 for col in xrange( 4 ):
 	l = ledLayout.getItem(0, col)
 	for row in xrange( 3 ):
-		a = l.getItem(row + 1, 0).getAxis( "left" )
-		a.setRange(-1, 1200)
-		a.linkToView(l.getItem(row + 1, 0).getViewBox())
+		# +1 because the 1st is the group title
+		item = l.getItem(row + 1, 0)
+#		item.setXRange(-1, 1200)
+		item.setYRange(-1, 1200)
 
 #
 # Extended name lists
