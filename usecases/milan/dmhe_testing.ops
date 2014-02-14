@@ -324,6 +324,22 @@ mheReporter.reportPort("mhe", "debugData")
 
 ################################################################################
 #
+# Define some functions
+#
+################################################################################
+
+global bool setSpeed(double voltage)
+{
+	return voltageController.setVoltage(0, voltage)
+}
+
+global bool setTetherLength(double length)
+{
+	return winch.setTetherLength( length )
+}
+
+################################################################################
+#
 # Configure and start components
 #
 ################################################################################
