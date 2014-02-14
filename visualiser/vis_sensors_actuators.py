@@ -250,7 +250,7 @@ workers.append(ZmqSubProtobufWorker(host + ":" + EncoderPort, EncoderMsg, encNam
 									q2, bufferSize = 20 * 100))
 
 workers.append(ZmqSubProtobufWorker(host + ":" + WinchPort, WinchControlMsg, winchNamesExt,
-									q3, bufferSize = int(20 * 12.5)))
+									q3, bufferSize = 20 * 50))
 
 workers.append(ZmqSubProtobufWorker(host + ":" + LasPort, LineAngleSensorMsg, lasNamesExt,
 									q4, bufferSize = 20 * 100))
