@@ -157,25 +157,66 @@ for frame in ["left", "right"]:
 		for coord in ["u", "v"]:
 			ledNames.append(frame + "_" + clr + "_" + coord)
 
-ledPlots = dict()
-for f in ["left", "right"]:
-	for coord in ["u", "v"]:
-		names = []
-		for clr in ["r", "g", "b"]:
-			names.append(f + "_" + clr + "_" + coord)
+def setupLedTrackerPlots( layout ):
+	"""
+	Customized way to plot LED tracker data, where we here plot (v, u) pairs
+	for all markers.
+
+	The function returns a dictionary of data plot items which we fill in
+	with the data in the main thread.
+	"""
+	d = dict()
+
+	for frame in ["left", "right"]:
+		l = layout.addLayout()
+		l.setContentsMargins(10, 10, 10, 10)
+		l.addLabel(frame + " frame, v vs u components")
+		l.nextRow()
+
+		plt = l.addPlot();
+		plt.setXRange(0, 1200)
+		plt.setYRange(0, 1200)
+		plt.showGrid(x = True, y = True)
+
+		for k, clr in enumerate( ["r", "g", "b"] ):
+			name = frame + "_" + clr
+			
+			symbols = ['o', 'd']
+			for s, variant in enumerate( ["prev", "curr"] ):
+				vName = name + "_" + variant
+				# XXX Pay attention that here we use a scatter plot!
+				item = pg.ScatterPlotItem()
+				item.setSymbol( symbols[ s ] )
+
+				if variant == "curr":
+					# the current point is in color
+					item.setBrush( colors[ k ] )
+					item.setPen( colors[ k ] )
+					item.setSize( 10 )
+				else:
+					# the past points are in grey
+					item.setBrush( 0.5 )
+					item.setPen( 0.5 )
+
+				plt.addItem( item )
+				d[ vName ] = item
+	
+	return d			
+
+# Old way to plot LED tracker data, like all other plots			
+# ledPlots = dict()
+# for f in ["left", "right"]:
+# 	for coord in ["u", "v"]:
+# 		names = []
+# 		for clr in ["r", "g", "b"]:
+# 			names.append(f + "_" + clr + "_" + coord)
 		
-		plots = addPlotsToLayout(ledLayout.addLayout(),
-								 f + " frame, coord: " + coord, names)
+# 		plots = addPlotsToLayout(ledLayout.addLayout(),
+# 								 f + " frame, coord: " + coord, names)
 
-		ledPlots.update( plots )
+# 		ledPlots.update( plots )
 
-for col in xrange( 4 ):
-	l = ledLayout.getItem(0, col)
-	for row in xrange( 3 ):
-		# +1 because the 1st is the group title
-		item = l.getItem(row + 1, 0)
-#		item.setXRange(-1, 1200)
-		item.setYRange(-1, 1200)
+ledPlots = setupLedTrackerPlots( ledLayout )
 
 #
 # Extended name lists
@@ -213,16 +254,39 @@ def updatePlots():
 		except Queue.Empty:
 			pass
 		
-	# Update all plots
+	# Update almost plots
 	updateGroup(q1, mcuPlots, mcuNames)
 	updateGroup(q2, encPlots, encNames)
 	updateGroup(q3, winchPlots, winchNames)
 	updateGroup(q4, lasPlots, lasNames)
-	updateGroup(q5, ledPlots, ledNames)
 
+	def updateLedPlots(q, plots):
+		try:
+			data = q.get_nowait()
+
+			# TODO Optimize!
+			for frame in ["left", "right"]:
+				for clr in ["r", "g", "b"]:
+					uName = frame + "_" + clr + "_u"
+					vName = frame + "_" + clr + "_v"
+
+					curr = frame + "_" + clr + "_curr"
+					prev = frame + "_" + clr + "_prev"
+
+					plots[ prev ].setData(data[ vName ], data[ uName ])
+					plots[ curr ].setData([data[ vName ][ -1 ]], [data[ uName ][ -1 ]])
+			
+		except Queue.Empty:
+			pass
+
+	updateLedPlots(q5, ledPlots)
+	# This is old way to plot LED tracker data, like all other plots...
+#	updateGroup(q5, ledPlots, ledNames)
+
+# Set up a timer to update the plots
 timer = QtCore.QTimer()
 timer.timeout.connect( updatePlots )
-timer.start( 100 )
+timer.start( 100 ) # Tick in [ms]
 
 #
 # ZMQ part:
@@ -256,7 +320,7 @@ workers.append(ZmqSubProtobufWorker(host + ":" + LasPort, LineAngleSensorMsg, la
 									q4, bufferSize = 20 * 100))
 
 workers.append(LedTrackerWorker(host + ":" + LedTrackerPort, LEDTrackerMsg, ledNamesExt,
-									q5, bufferSize = int(20 * 12.5)))
+									q5, bufferSize = 20))
 
 #
 # Start Qt event loop unless running in interactive mode.
