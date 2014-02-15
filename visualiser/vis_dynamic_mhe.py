@@ -21,7 +21,8 @@ layout = pg.GraphicsLayout(border = (100, 100, 100))
 view = pg.GraphicsView()
 view.setCentralItem( layout )
 view.show()
-view.setWindowTitle( "Telemetry for MHE" )
+view.setWindowTitle(
+	"Telemetry for MHE; Horizons of states and controls and history of performance indicators" )
 view.resize(1024, 768)
 
 #
@@ -69,6 +70,10 @@ class DynamicMheWorker( ZmqSubProtobufWorker ):
 		updateHorizonBuffers(self._xMap, "x")
 		updateHorizonBuffers(self._zMap, "z")
 		updateHorizonBuffers(self._uMap, "u")
+
+		#
+		# And now do some unit conversions to make our lives easier
+		#
 		
 		for n in xrange(self._msg.N + 1):
 			# yaw = atan2(e12, e11)
@@ -77,6 +82,11 @@ class DynamicMheWorker( ZmqSubProtobufWorker ):
 			self._buffer["pitch"][ n ] = np.rad2deg( np.arcsin( -self._buffer["e13"][ n ] ) )
 			# roll = atan2(e23, e33)
 			self._buffer["roll"][ n ] = np.rad2deg( np.arctan2(self._buffer["e23"][ n ], self._buffer["e33"][ n ]) )
+
+		for name in ["aileron", "daileron", "elevator", "delevator"]:
+			self._buffer[ name ] = np.rad2deg( self._buffer[ name ] )
+
+		self._buffer[ "ddelta" ] *= 60.0 / (2.0 * np.pi)
 
 	def getSimpleFieldNames( self ):
 		return self._simpleFieldNames
@@ -96,31 +106,31 @@ genNames = ["ts_trigger", "ts_elapsed"]
 mhePlots = dict()
 
 # x, y, z
-posNames = ["x", "y", "z"]
+posNames = [("x", "m"), ("y", "m"), ("z", "m")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), posNames, posNames) )
 # RPY, or e11_...e33
-rpyNames = ["roll", "pitch", "yaw"]
+rpyNames = [("roll", "deg"), ("pitch", "deg"), ("yaw", "deg")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), rpyNames, rpyNames) )
 # dx, dy, dz
-velNames = ["dx", "dy", "dz"]
+velNames = [("dx", "m/s"), ("dy", "m/s"), ("dz", "m/s")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), velNames, velNames) )
 # w_... x, y, z
-gyroNames = ["w_bn_b_x", "w_bn_b_y", "w_bn_b_z"]
+gyroNames = [("w_bn_b_x", "rad/s"), "w_bn_b_y", "w_bn_b_z"]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
 
 layout.nextRow()
 
 # aileron, elevator; daileron, delevator
-ctrlNames = ["aileron", "daileron", "elevator", "delevator"]
+ctrlNames = [("aileron", "deg"), ("daileron", "deg/s"), "elevator", "delevator"]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), ctrlNames, ctrlNames) )
 # ddelta, motor_torque, dmotor_torque, [cos, sin delta]
-carNames = ["ddelta", "motor_torque", "dmotor_torque"]
+carNames = [("ddelta", "rpm"), ("motor_torque", "Nm"), ("dmotor_torque", "Nm/s")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), carNames, carNames) )
 # r, dr, ddr, dddr
-cableNames = ["r", "dr", "ddr", "dddr"]
+cableNames = [("r", "m"), ("dr", "m/s"), ("ddr", "m/s^2"), ("dddr", "m/s^3")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), cableNames, cableNames) )
 # obj_value, kkt_value, exec_prep, exec_fdb
-perfNames = ["obj_value", "kkt_value", "exec_prep", "exec_fdb"]
+perfNames = ["obj_value", "kkt_value", ("exec_prep", "ms"), ("exec_fdb", "ms")]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
 				options = {"obj_value": ["semilogy"],
 						   "kkt_value": ["semilogy"]}) )
@@ -172,12 +182,6 @@ DynamicMhePort = "5570"
 
 # Create workers
 workers = []
-
-# NOTE: All buffer lenghts are set to correspond to last 20 sec.
-# TODO: Somehow we should automate this...
-
-#workers.append(ZmqSubProtobufWorker(host + ":" + DynamicMhePort, mheProto.DynamicMheMsg, mheNamesExt,
-#									q1, bufferSize = 20 * 25))
 
 workers.append(DynamicMheWorker(host + ":" + DynamicMhePort, q1, bufferSize = 20 * 25))
 

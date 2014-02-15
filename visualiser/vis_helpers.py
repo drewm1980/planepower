@@ -28,7 +28,16 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 	elif isinstance(title, list):
 		t = ""
 		for n, v in enumerate( title ):
-			t = t + coloredText(v, colors[ n ])
+			if isinstance(v, str):
+				_v = v
+			elif isinstance (v, tuple):
+				# First element of the tuple is taken as the name and
+				# the second one as unit
+				_v = v[ 0 ] + " [" + v[ 1 ] + "]"
+			else:
+				raise TypeError("Title item can be a string or a tuple")
+			
+			t = t + coloredText(_v, colors[ n ])
 			if n < len( title ) - 1:
 				t = t + ", "
 		
@@ -45,14 +54,18 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 			plt.hideAxis( "bottom" )
 			layout.nextRow()
 
-		assert isinstance(name, str), \
-			"All items in the list of names must be strings!"
+		if isinstance(name, str):
+			_name = name
+		elif isinstance(name, tuple):
+			_name = name[ 0 ]
+		else:
+			raise TypeError("Items in the list of names can be either strings or tuples")
 		
-		d[ name ] = plt.plot()
-		d[ name ].setPen( colors[ k ] )
+		d[ _name ] = plt.plot()
+		d[ _name ].setPen( colors[ k ] )
 
 		if name in options:
-			if "semilogy" in options[ name ]:
+			if "semilogy" in options[ _name ]:
 				plt.setLogMode(y = True)
 
 	return d
