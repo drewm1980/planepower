@@ -35,8 +35,8 @@ namespace boost
 			a & make_nvp("z", l.z);
 			a & make_nvp("y", l.y);
 			a & make_nvp("yN", l.yN);
-			a & make_nvp("S", l.S);
-			a & make_nvp("SN", l.SN);
+//			a & make_nvp("S", l.S);
+//			a & make_nvp("SN", l.SN);
 		}
 	}
 }

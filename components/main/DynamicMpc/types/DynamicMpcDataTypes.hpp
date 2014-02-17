@@ -26,8 +26,8 @@ typedef struct
 	std::vector< double > z; 
 	std::vector< double > y;
 	std::vector< double > yN;
-	std::vector< double > S;
-	std::vector< double > SN;
+//	std::vector< double > S;
+//	std::vector< double > SN;
 } DynamicMpcHorizon;
 
 #endif // __DYNAMIC_MPC_DATA_TYPES__
