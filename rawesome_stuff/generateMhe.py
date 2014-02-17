@@ -202,7 +202,7 @@ message DynamicMheMsg
     repeated Horizon y  = 4;
     repeated float   yN = 5;
     
-    required int32 solver_status    = 6;
+    required int32 solver_status = 6;
     required float kkt_value = 7;
     required float obj_value = 8;
     
