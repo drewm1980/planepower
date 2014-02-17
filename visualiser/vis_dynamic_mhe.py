@@ -86,7 +86,7 @@ class DynamicMheWorker( ZmqSubProtobufWorker ):
 		for name in ["aileron", "daileron", "elevator", "delevator"]:
 			self._buffer[ name ] = np.rad2deg( self._buffer[ name ] )
 
-		self._buffer[ "ddelta" ] *= 60.0 / (2.0 * np.pi)
+		self._buffer[ "ddelta" ] = np.array(self._buffer[ "ddelta" ]) * 60.0 / (2.0 * np.pi)
 
 	def getSimpleFieldNames( self ):
 		return self._simpleFieldNames
@@ -135,9 +135,25 @@ mhePlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
 				options = {"obj_value": ["semilogy"],
 						   "kkt_value": ["semilogy"]}) )
 
-horizonNames = posNames + rpyNames + velNames + gyroNames + \
-			   ctrlNames + carNames + cableNames
-historyNames = perfNames
+horizonNamesAlt = posNames + rpyNames + velNames + gyroNames + \
+				  ctrlNames + carNames + cableNames
+historyNamesAlt = perfNames
+
+horizonNames = []
+for v in horizonNamesAlt:
+	print v, isinstance(v, tuple)
+	if isinstance(v, tuple):
+		horizonNames.extend( [ v[ 0 ] ] )
+	else:
+		assert isinstance(v, str)
+		horizonNames.extend( [ v ] )
+historyNames = []
+for v in historyNamesAlt:
+	if isinstance(v, tuple):
+		historyNames.extend( [ v[ 0 ] ] )
+	else:
+		assert isinstance(v, str)
+		historyNames.extend( [ v ] )
 
 #
 # Setup update of the plotter
