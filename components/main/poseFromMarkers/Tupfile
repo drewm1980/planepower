@@ -1,5 +1,0 @@
-CPPFLAGS += `pkg-config --cflags opencv`
-LDFLAGS += `pkg-config --libs opencv`
-include_rules
-: foreach *.cpp | ../../../pythonCodegen/pose_from_markers.h |> !cxx_orocos |>
-: *.o |> !ld_orocos |> 
