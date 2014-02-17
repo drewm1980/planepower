@@ -58,8 +58,8 @@ DynamicMpc::DynamicMpc(std::string name)
 	debugData.z.resize(N * NXA, 0.0);
 	debugData.y.resize(N * NY, 0.0);
 	debugData.yN.resize(NYN, 0.0);
-	debugData.S.resize(NY * NY, 0.0);
-	debugData.SN.resize(NYN * NYN, 0.0);
+//	debugData.S.resize(NY * NY, 0.0);
+//	debugData.SN.resize(NYN * NYN, 0.0);
 
 	portDebugData.setDataSample( debugData );
 	portDebugData.write( debugData );
@@ -268,8 +268,8 @@ bool DynamicMpc::prepareDebugData( void )
 	debugData.z.assign(acadoVariables.z, acadoVariables.z + N * NXA);
 	debugData.y.assign(acadoVariables.y, acadoVariables.y + N * NY);
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
-	debugData.S.assign(acadoVariables.W, acadoVariables.W + NY * NY);
-	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
+//	debugData.S.assign(acadoVariables.W, acadoVariables.W + NY * NY);
+//	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
 
 	return true;
 }
@@ -615,4 +615,5 @@ bool DynamicMpc::prepareDebugData( void )
 // 	return dataSizeValid;
 // }
 
-ORO_CREATE_COMPONENT( DynamicMpc )
+ORO_LIST_COMPONENT_TYPE( DynamicMpc )
+//ORO_CREATE_COMPONENT( DynamicMpc )
