@@ -91,9 +91,8 @@ if __name__=='__main__':
 	# Write the steady state to the file
 	names = {"x": nmpc.dae.xNames(), "u": nmpc.dae.uNames(), "z": nmpc.dae.zNames()}
 	for k, v in names.items():
-		fw.write("// " + str( v ) + "\n");
 		fw.write("const double ss_" + k + "[ " + str( len( v ) ) + " ] = {")
-		fw.write(", ".join([repr( steadyState[ name ] ) for name in v]))
+		fw.write(", ".join([repr( steadyState[ name ] ) + " /*" + name + "*/" for name in v]))
 		fw.write("};\n\n")
 	
 	fw.write("#endif // NMPC_CONFIGURATION\n")
