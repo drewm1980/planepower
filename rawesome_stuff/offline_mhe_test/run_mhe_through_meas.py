@@ -7,10 +7,8 @@ import scipy.io as sio
 from sys import exit
 
 # Rawesome deps
-import rawe
 from rawe.models.arianne_conf import makeConf
 from rawekite.carouselSteadyState import getSteadyState
-from mpc_mhe_utils import Plotter
 
 # Local imports from this folder
 import MHE
@@ -62,9 +60,12 @@ import carouselModel
 #
 
 # Warmed up, 2013
-data = sio.loadmat('dataset_20130831_200853_kmhe_timings.mat')
+#data = sio.loadmat('dataset_20130831_200853_kmhe_timings.mat')
 # New, from 2014
-data = sio.loadmat('dataset_20140206_185035_dmhe_testing.mat')
+#data = sio.loadmat('dataset_20140206_185035_dmhe_testing.mat')
+# With high-speed winch data
+data = sio.loadmat('dataset_20140211_175800_dmhe_testing.mat')
+data = sio.loadmat('dataset_20140211_200325_dmhe_testing.mat')
 
 # #samples, representing camera delay
 nDelay = 2
@@ -107,8 +108,8 @@ winch_flag   = data['dataset'][0,0]['winch_flag']
 #measEnd   = measStart + 1000
 
 # @ 25 Hz, from 2014
-measStart = 100
-measEnd	  = measStart + 1000
+measStart = 12400 # + 500 #25 * 80
+measEnd	  = measStart + 2000
 
 while cam_flag[measStart] != 1:
 	measStart += 1
@@ -143,6 +144,12 @@ measurements['elevator'] = control_surf[measStart: measEnd, 2]
 measurements['r'] = winch_data[measStart: measEnd, 0]
 measurements['r_delay'] = winch_delay[measStart: measEnd, 0]
 measurements['r_flag'] = winch_flag[measStart: measEnd, 0]
+
+#### Just testing
+#plt.figure()
+#p, = plt.plot(measurements['r'])
+#plt.show()
+#exit( 1 )
 
 measurements['dr'] = control_surf[measStart: measEnd, 2] * 0
 measurements['ddr'] = control_surf[measStart: measEnd, 2] * 0
@@ -520,7 +527,6 @@ mhe_sanity_check = 0
 #
 visualise_steps = False
 
-
 #
 # Arrival cost settings
 #
@@ -533,7 +539,7 @@ if use_arrival_cost:
 	mheRT.WL  = 1e2 * numpy.eye(mheRT.x[0, :].shape[ 0 ])
 
 # Number of simulations steps
-nSim = MHE.mheHorizonN	+ 250
+nSim = MHE.mheHorizonN	+ 200
 # Maximum number of SQP iterations
 nSqp = 1
 # Initialized flag
@@ -613,6 +619,7 @@ for itSim in range( nSim ):
 		if cableInd < MHE.mheHorizonN:
 			mheRT.y[cableInd, 22] = cableMeas
 			mheRT.S[cableInd * mheNY + 22, 22]  = cableMeasWeight
+			mheRT.SN[22, 22] = 0.0
 		else:
 			mheRT.yN[ 22 ] = cableMeas
 			mheRT.SN[22, 22]  = cableMeasWeight
@@ -649,6 +656,7 @@ for itSim in range( nSim ):
 		if cableInd < MHE.mheHorizonN:
 			mheRT.y[cableInd, 22] = cableMeas
 			mheRT.S[cableInd * mheNY + 22, 22]  = cableMeasWeight
+			mheRT.SN[22, 22] = 0.0
 		else:
 			mheRT.yN[ 22 ] = cableMeas
 			mheRT.SN[22, 22]  = cableMeasWeight
@@ -760,76 +768,78 @@ if mhe_sanity_check:
 
 plt.ioff()
 
-# This is just a quick hack to make the class constructor happy
-sim = rawe.RtIntegrator(daeSim, ts = Ts, options = MHE.mheIntOpts)
+mheRT.subplot([['x', 'y', 'z'], ['dx', 'dy', 'dz']])
+mheRT.subplot([['e11', 'e12', 'e13'], ['e21', 'e22', 'e23'], ['e31', 'e32', 'e33']])
+mheRT.plot(['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z'])
 
-plotter = Plotter(sim, mheRT, sim)
+mheRT.subplot([['aileron', 'elevator'], ['daileron', 'delevator']])
+mheRT.subplot([['cos_delta', 'sin_delta'], ['ddelta'], ['motor_torque']])
 
-plotter.subplot([['x', 'y', 'z'], ['dx', 'dy', 'dz']], what = ['mhe'])
-plotter.subplot([['e11', 'e12', 'e13'], ['e21', 'e22', 'e23'], ['e31', 'e32', 'e33']], what = ['mhe'])
-plotter.subplot(['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z'], what = ['mhe'])
- 
-plotter.subplot([['aileron', 'elevator'], ['daileron', 'delevator']], what = ['mhe'])
-plotter.subplot([['cos_delta', 'sin_delta'], ['ddelta'], ['motor_torque']], what = ['mhe'])
-  
-plotter.subplot([['r'], ['dr'], ['ddr'], ['dddr']], what = ['mhe'])
-  
-plotter.subplot([['c'], ['cdot'], ['ConstDelta']], what = ['mhe'])
-plotter.plot(['ConstR1', 'ConstR2', 'ConstR3', 'ConstR4', 'ConstR5', 'ConstR6'], what = ['mhe'])
-plotter.subplot([['_kkt'], ['_objective'], ['_prep_time', '_fb_time']], what = ['mhe'])
+# Measurements for cable length are usually delayed by one sample
+mheRT.subplot([['r'], ['dr'], ['ddr'], ['dddr']], when = MHE.mheHorizonN - 1)
 
-N = MHE.mheHorizonN
-plt.figure()
-plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 0], 'ob')
-plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 1], 'og')
-plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 2], 'or')
+mheRT.subplot([['c'], ['cdot'], ['ConstDelta']])
+mheRT.plot(['ConstR1', 'ConstR2', 'ConstR3', 'ConstR4', 'ConstR5', 'ConstR6'])
+mheRT.subplot([['_kkt'], ['_objective'], ['_prep_time', '_fb_time']])
 
-def getLogLast(name):
-	return [x[-1] for x in mheRT.getLog(name)]
+mheRT.plot(['IMU_acceleration'])
+mheRT.plot(['IMU_angular_velocity'])
+# Marker positions are usually delayed by 2 sample (@25 Hz samling rate)
+mheRT.plot(['marker_positions'], when = MHE.mheHorizonN - 2)
 
-plt.figure()
-plt.subplot(2, 1, 1)
-plt.plot(getLogLast('aileron'), 'ob')
-plt.plot(getLogLast('elevator'), 'or')
-plt.subplot(2, 1, 2)
-plt.plot(measurements['aileron'][N: nSim], 'xb')
 
-plt.figure()
-plt.subplot(2, 1, 1)
-plt.plot(getLogLast('aileron'), 'ob')
-plt.plot(getLogLast('elevator'), 'or')
-plt.subplot(2, 1, 2)
-plt.plot(measurements['aileron'][N: nSim], 'xb')
-
-plt.figure()
-plt.plot(control_surf)
-
-plt.figure()
-plt.subplot(2, 1, 1)
-plt.semilogy(mheRT._log["_kkt"], '-k')
-plt.ylabel("KKT tolerance")
-plt.subplot(2, 1, 2)
-plt.semilogy(mheRT._log["_objective"], '-k')
-plt.ylabel("Objective value")
-plt.xlabel("Simulation steps")
-plt.savefig("mhe_perf_kkt_obj.png", transparent=True)
-
-plt.figure()
-plt.subplot(2, 1, 1)
-plt.plot(1e3 * numpy.array(mheRT._log["_prep_time"]), '-k')
-plt.ylabel("Preparation time [ms]")
-plt.subplot(2, 1, 2)
-plt.plot(1e3 * numpy.array(mheRT._log["_fb_time"]), '-k')
-plt.ylabel("Feedback time [ms]")
-plt.xlabel("Simulation steps")
-plt.savefig("mhe_perf_exec.png", transparent=True)
-
-plt.figure()
-p1, = plt.plot(getLogLast('x'), '-r')
-p2, = plt.plot(getLogLast('y'), '-g')
-p3, = plt.plot(getLogLast('z'), '-b')
-plt.legend([p1, p2, p3], ['x [m]', 'y [m]', 'z [m]'])
-plt.xlabel("Simulation steps")
-plt.savefig("mhe_est_xyz.png", transparent=True)
-
+#N = MHE.mheHorizonN
+#plt.figure()
+#plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 0], 'ob')
+#plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 1], 'og')
+#plt.plot(cam_time[N: nSim], cam_xyz[N: nSim, 2], 'or')
+#
+#def getLogLast(name):
+#	return [x[-1] for x in mheRT.getLog(name)]
+#
+#plt.figure()
+#plt.subplot(2, 1, 1)
+#plt.plot(getLogLast('aileron'), 'ob')
+#plt.plot(getLogLast('elevator'), 'or')
+#plt.subplot(2, 1, 2)
+#plt.plot(measurements['aileron'][N: nSim], 'xb')
+#
+#plt.figure()
+#plt.subplot(2, 1, 1)
+#plt.plot(getLogLast('aileron'), 'ob')
+#plt.plot(getLogLast('elevator'), 'or')
+#plt.subplot(2, 1, 2)
+#plt.plot(measurements['aileron'][N: nSim], 'xb')
+#
+#plt.figure()
+#plt.plot(control_surf)
+#
+#plt.figure()
+#plt.subplot(2, 1, 1)
+#plt.semilogy(mheRT._log["_kkt"], '-k')
+#plt.ylabel("KKT tolerance")
+#plt.subplot(2, 1, 2)
+#plt.semilogy(mheRT._log["_objective"], '-k')
+#plt.ylabel("Objective value")
+#plt.xlabel("Simulation steps")
+#plt.savefig("mhe_perf_kkt_obj.png", transparent=True)
+#
+#plt.figure()
+#plt.subplot(2, 1, 1)
+#plt.plot(1e3 * numpy.array(mheRT._log["_prep_time"]), '-k')
+#plt.ylabel("Preparation time [ms]")
+#plt.subplot(2, 1, 2)
+#plt.plot(1e3 * numpy.array(mheRT._log["_fb_time"]), '-k')
+#plt.ylabel("Feedback time [ms]")
+#plt.xlabel("Simulation steps")
+#plt.savefig("mhe_perf_exec.png", transparent=True)
+#
+#plt.figure()
+#p1, = plt.plot(getLogLast('x'), '-r')
+#p2, = plt.plot(getLogLast('y'), '-g')
+#p3, = plt.plot(getLogLast('z'), '-b')
+#plt.legend([p1, p2, p3], ['x [m]', 'y [m]', 'z [m]'])
+#plt.xlabel("Simulation steps")
+#plt.savefig("mhe_est_xyz.png", transparent=True)
+#
 plt.show()
