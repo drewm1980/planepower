@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# Send "Hello World!" over two locally connected serial modems
+# Send a random over two locally connected serial modems,
+# benchmark transmission latency
 
 import serial
 from rm024 import *
@@ -9,6 +10,7 @@ import random
 import string
 from time import time, sleep
 import numpy
+import realtime
 
 timeout = .015 # s
 ser1 = serial.Serial(
@@ -63,6 +65,8 @@ sleeptimes = numpy.linspace(11,11,256)
 #sender,reciever=ser1,ser2
 sender,reciever=ser2,ser1
 
+realtime.enable()
+
 trials = len(sleeptimes)
 print "Will do " + str(trials) + " trials"
 latencies = numpy.ones(trials)*numpy.nan
@@ -77,7 +81,7 @@ while i<trials:
 	GPIO.wait_for_edge(PIN, GPIO.FALLING)
 
 	t0 = time()
-	sleep(sleeptimes[i]*.001)
+	realtime.busy_sleep(sleeptimes[i]*.001)
 	t00 = time()
 	sleeptimes[i] = (t00-t0) * 1000.0
 
@@ -106,6 +110,8 @@ while i<trials:
 		print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Last: " + str(latency) + " Worst: " + str(worstCase)
 		updated = 0
 	i += 1
+
+realtime.disable()
 
 print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Median: " + str(numpy.median(latencies)) + " Worst: " + str(worstCase)
 
