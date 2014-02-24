@@ -30,16 +30,22 @@ ser2 = serial.Serial(
 		)
 ser2.open()
 
+import Adafruit_BBIO.GPIO as GPIO
+PIN = 'P9_23'
+print "Setting up pin" + PIN + " as an input to trigger off of hop frame indicator..."
+GPIO.setup(PIN, GPIO.IN)
+
 # worst case packet size
 imu_bytes = 6*4
 line_angle_bytes = 2*2
 servo_bytes = 7*2
-msg_bytes = imu_bytes + line_angle_bytes + servo_bytes
-msg_bytes = 16 # 32 not working for some reason...
-set_rf_packet_size_on_fly(ser1,msg_bytes)
-set_rf_packet_size_on_fly(ser2,msg_bytes)
+packet_size = imu_bytes + line_angle_bytes + servo_bytes
+packet_size = 16
 
-print "Packet size for test: " + str(msg_bytes) + " bytes"
+set_rf_packet_size_on_fly(ser1,packet_size)
+set_rf_packet_size_on_fly(ser2,packet_size)
+
+print "Packet size for test: " + str(packet_size) + " bytes"
 
 def randomword(length):
 	   return ''.join(random.choice(string.lowercase) for i in range(length))
@@ -47,11 +53,11 @@ def randomword(length):
 bestCase = 999999999
 worstCase = -1
 
-sleeptimes = numpy.linspace(0,15,16)
-sleeptimes = numpy.linspace(4.0,6.0,16)
-sleeptimes = numpy.linspace(6.0,7.0,10)
-sleeptimes = numpy.linspace(6,6.5,4)
-sleeptimes = numpy.repeat(sleeptimes,64)
+sleeptimes = numpy.linspace(0,13.2,256)
+sleeptimes = numpy.linspace(11,11,256)
+#sleeptimes = numpy.linspace(6.0,7.0,10)
+#sleeptimes = numpy.linspace(6,6.5,4)
+#sleeptimes = numpy.repeat(sleeptimes,64)
 
 # The choice of sender doesn't seem to make a difference:
 #sender,reciever=ser1,ser2
@@ -65,7 +71,10 @@ recieved = 0
 dropped = 0
 while i<trials:
 	reciever.flushInput()
-	msg=randomword(msg_bytes)
+	msg=randomword(packet_size)
+
+	#print "Waiting for hop frame indicator..."
+	GPIO.wait_for_edge(PIN, GPIO.FALLING)
 
 	t0 = time()
 	sleep(sleeptimes[i]*.001)
@@ -75,6 +84,9 @@ while i<trials:
 	t1 = time()
 	sender.write(msg)
 	sender.flushOutput()
+
+	# RF latency happens here
+
 	response = reciever.read(len(msg))
 	if not (msg == response):
 		print "Error in packet transmission!"
@@ -106,3 +118,5 @@ import pickle
 foo = sleeptimes,latencies
 pickle.dump(foo,open('latencies.pickle','wb'))
 
+import os
+os.system('scp latencies.pickle awagner@192.168.7.1:planepower/bbones/rf_laird/')
