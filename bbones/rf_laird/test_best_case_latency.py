@@ -12,7 +12,8 @@ from time import time, sleep
 import numpy
 import realtime
 
-timeout = .015 # s
+#timeout = .015 # s
+timeout = .1 # s
 ser1 = serial.Serial(
 		port='/dev/ttyO2',
 		baudrate=115200,
@@ -42,6 +43,7 @@ imu_bytes = 6*4
 line_angle_bytes = 2*2
 servo_bytes = 7*2
 packet_size = imu_bytes + line_angle_bytes + servo_bytes
+
 packet_size = 16
 
 set_rf_packet_size_on_fly(ser1,packet_size)
@@ -54,12 +56,12 @@ def randomword(length):
 
 bestCase = 999999999
 worstCase = -1
+best_intended_sleep_time = 999999999999999999
 
-sleeptimes = numpy.linspace(0,13.2,256)
-sleeptimes = numpy.linspace(11,11,256)
-#sleeptimes = numpy.linspace(6.0,7.0,10)
-#sleeptimes = numpy.linspace(6,6.5,4)
-#sleeptimes = numpy.repeat(sleeptimes,64)
+lastbest_intended = 12
+margin = .1
+intended_sleeptimes = numpy.linspace(lastbest_intended-margin,lastbest_intended-margin,256)
+intended_sleeptimes = numpy.linspace(0,13.2,256) # ms
 
 # The choice of sender doesn't seem to make a difference:
 #sender,reciever=ser1,ser2
@@ -67,9 +69,10 @@ sender,reciever=ser2,ser1
 
 realtime.enable()
 
-trials = len(sleeptimes)
+trials = len(intended_sleeptimes)
 print "Will do " + str(trials) + " trials"
 latencies = numpy.ones(trials)*numpy.nan
+actual_sleeptimes = numpy.ones(trials)*numpy.nan
 i = 0
 recieved = 0
 dropped = 0
@@ -81,9 +84,9 @@ while i<trials:
 	GPIO.wait_for_edge(PIN, GPIO.FALLING)
 
 	t0 = time()
-	realtime.busy_sleep(sleeptimes[i]*.001)
+	realtime.busy_sleep(intended_sleeptimes[i]*.001)
 	t00 = time()
-	sleeptimes[i] = (t00-t0) * 1000.0
+	actual_sleeptimes[i] = (t00-t0) * 1000.0
 
 	t1 = time()
 	sender.write(msg)
@@ -103,6 +106,7 @@ while i<trials:
 	if latency < bestCase:
 		bestCase = latency
 		updated = 1
+		best_intended_sleep_time = intended_sleeptimes[i]
 	if latency > worstCase:
 		worstCase = latency
 		updated = 1
@@ -117,11 +121,13 @@ print "Trial: " + str(i+1) + " Latency (ms) Best: " + str(bestCase) + " Median: 
 
 print "Recieved: " + str(recieved) + " Dropped: " + str(dropped)
 
+print "Best (intended) sleep time was: " + str(best_intended_sleep_time)
+
 ser1.close()
 ser2.close()
 
 import pickle
-foo = sleeptimes,latencies
+foo = actual_sleeptimes,latencies
 pickle.dump(foo,open('latencies.pickle','wb'))
 
 import os

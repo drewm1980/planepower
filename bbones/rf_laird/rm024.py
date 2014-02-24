@@ -133,7 +133,7 @@ def get_autoconfig(device):
 # enable is a python boolean.
 # Requires reset to take effect.
 def set_autoconfig(device,enable):
-	eeprom_setbit(device, EEPROM_AUTO_CONFIG, boou(enable))
+	eeprom_setbit(device, EEPROM_AUTO_CONFIG, bool(enable))
 
 # Determine if the hop indicator pin is currently enabled.
 # Returns True if the indicator pin is enabled.

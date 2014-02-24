@@ -26,6 +26,8 @@ ser2.open()
 
 set_autoconfig(ser1,False)
 set_autoconfig(ser2,False)
+#set_autoconfig(ser1,True)
+#set_autoconfig(ser2,True)
 
 ser1.close()
 ser2.close()
