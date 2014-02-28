@@ -10,6 +10,20 @@ namespace boost
 	namespace serialization
 	{
 		template< class Archive >
+		void serialize(Archive& a, ControlSurfacesValues& l, unsigned int)
+		{
+			using boost::serialization::make_nvp;
+			
+			a & make_nvp("ua1", l.ua1);
+			a & make_nvp("ua2", l.ua2);
+			a & make_nvp("ue", l.ue);
+
+			a & make_nvp("d_ua1", l.d_ua1);
+			a & make_nvp("d_ua2", l.d_ua2);
+			a & make_nvp("d_ue", l.d_ue);
+		}
+
+		template< class Archive >
 		void serialize(Archive& a, McuHandlerDataType& mht, unsigned int)
 		{
 			using boost::serialization::make_nvp;
@@ -37,6 +51,14 @@ struct McuHandlerDataTypeInfo
 {
 	McuHandlerDataTypeInfo()
 		: RTT::types::StructTypeInfo< McuHandlerDataType >( "McuHandlerData" )
+	{}
+};
+
+struct ControlSurfacesValuesTypeInfo
+	: public RTT::types::StructTypeInfo< ControlSurfacesValues >
+{
+    ControlSurfacesValuesTypeInfo()
+		: RTT::types::StructTypeInfo< ControlSurfacesValues >( "ControlSurfacesValues" )
 	{}
 };
 
