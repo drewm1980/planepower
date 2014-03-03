@@ -198,7 +198,7 @@ if plot_meas:
 # Get the plane configuration parameters
 conf = makeConf()
 # conf['stabilize_invariants'] = True
-daeSim = carouselModel.makeModel(conf, propertiesDir = '../../properties')
+dae = carouselModel.makeModel(conf, propertiesDir = '../../properties')
 
 # Create the MHE class
 mheRT = MHE.makeMheRT(Ts = Ts)
@@ -235,7 +235,7 @@ refP = {'r0': 1.275, # [m], cable length used for SS calculations
 #			 }
 
 # Get the steady state
-steadyState,dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
+steadyState,dSS = getSteadyState(dae, conf, refP['ddelta0'], refP['r0'])
 
 # Utility functions
 def getDeltaRange(delta0, kRange):
@@ -393,7 +393,7 @@ for row in range( 2 ):
 	for col in range( 6 ):
 		ledPlt.append(fig4.add_subplot(2, 6, row * 6 + col + 1))
 		
-def visualize(projY, projYN, measY, measYN, num):
+def visualizeMhe(projY, projYN, measY, measYN, num):
 	
 	def joinStuff(a, b):
 		return numpy.concatenate((a.flatten(), numpy.array([b])))
@@ -449,7 +449,7 @@ def visualize(projY, projYN, measY, measYN, num):
 	acclPlt.set_ylim(-60, 10)
 	
 	fig1.canvas.draw()
-	fig1.savefig("mhe_sin_cos_gyro_accl" + str( num) + ".png", transparent=True)
+#	fig1.savefig("mhe_sin_cos_gyro_accl" + str( num) + ".png", transparent=True)
 	
 	colors = ['r', 'g', 'b']		
 	for f in range( 2 ):
@@ -469,7 +469,7 @@ def visualize(projY, projYN, measY, measYN, num):
 				ledPlt[ ind ].set_ylim(-1, 1200)
 	
 	fig4.canvas.draw()
-	fig4.savefig("mhe_cam_" + str( num) + ".png", transparent=True)
+#	fig4.savefig("mhe_cam_" + str( num) + ".png", transparent=True)
 			
 	raw_input("Press enter to continue")
 
@@ -539,9 +539,9 @@ if use_arrival_cost:
 	mheRT.WL  = 1e2 * numpy.eye(mheRT.x[0, :].shape[ 0 ])
 
 # Number of simulations steps
-nSim = MHE.mheHorizonN	+ 200
+nSim = MHE.mheHorizonN	+ 250
 # Maximum number of SQP iterations
-nSqp = 1
+nSqpMhe = 1
 # Initialized flag
 initialized = False
 
@@ -670,7 +670,7 @@ for itSim in range( nSim ):
 	
 	mheFailed = False
 	if runMhe:
-		for itSqp in range( nSqp ):
+		for itSqp in range( nSqpMhe ):
 			try:
 				mheRT.preparationStep()
 				mheRT.feedbackStep()
@@ -706,7 +706,7 @@ for itSim in range( nSim ):
 						])
 				scYN = mheRT.computeYX(mheRT.x[-1, :])
 				
-				visualize(scY, scYN, mheRT.y, mheRT.yN, itSim)
+				visualizeMhe(scY, scYN, mheRT.y, mheRT.yN, itSim)
 			
 			#
 			# Update arrival cost for the next run
