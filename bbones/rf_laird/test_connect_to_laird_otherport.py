@@ -4,7 +4,7 @@ import serial
 from rm024 import test_device_alive
 
 ser = serial.Serial(
-		port='/dev/ttyO2',
+		port='/dev/ttyO4',
 		baudrate=115200,
 		parity=serial.PARITY_NONE,
 		stopbits=serial.STOPBITS_ONE,

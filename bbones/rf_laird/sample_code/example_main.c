@@ -34,7 +34,10 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************/
+#ifdef __windows__
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "rm024.h"
