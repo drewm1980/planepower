@@ -30,8 +30,31 @@ typedef uint64_t TIME_TYPE;
 #include "mcuHandler/types/McuHandlerDataType.hpp"
 #include "encoder/types/EncoderDataType.hpp"
 #include "LEDTracker/types/LEDTrackerDataType.hpp"
-#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
+//#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
 #include "winchControl/types/WinchControlDataType.hpp"
+
+/// A class for manipulation of sensor data
+template<class T>
+struct SensorTiming
+{
+	SensorTiming()
+		: cnt_ts( 0 ), cnt_td( 0 ), ts( 0 ), td( 0 )
+	{}
+
+	void reset()
+	{
+		cnt_ts = cnt_td = 0;
+	}
+
+	/// Counters, RW
+	unsigned cnt_ts, cnt_td;
+	/// Sampling time in number of ticks of the simulator period, R
+	unsigned ts;
+	/// Delay time in number of ticks of the simulator period, R
+	unsigned td;
+	/// Samples
+	std::deque< T > samples;
+};
 
 /// A class for simulation of the indoors carousel
 class IndoorsCarouselSimulator
@@ -83,9 +106,9 @@ protected:
 	/// Camera data holder
 	LEDTrackerDataType camData;
 	/// LAS data output
-	RTT::OutputPort< LineAngleSensorDataType > portLASData;
+//	RTT::OutputPort< LineAngleSensorDataType > portLASData;
 	/// LAS data holder
-	LineAngleSensorDataType lasData;
+//	LineAngleSensorDataType lasData;
 	/// Winch data output
 	RTT::OutputPort< WinchControlDataType > portWinchData;
 	/// Winch data holder
@@ -96,7 +119,16 @@ protected:
 	//
 	
 private:
-	
+
+	SensorTiming< McuHandlerDataType > mcuTime;
+	SensorTiming< EncoderDataType > encTime;
+	SensorTiming< LEDTrackerDataType > camTime;
+	SensorTiming< WinchControlDataType > winchTime;
+
+	void updateMcuData();
+	void updateEncData();
+	void updateCamData();
+	void updateWinchData();
 };
 
 #endif // INDOORS_CAROUSEL_SIMULATOR_HPP

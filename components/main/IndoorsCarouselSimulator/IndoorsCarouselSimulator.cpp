@@ -27,8 +27,6 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 		.doc("Encoder data");
 	addPort("ledTrackerData", portLEDTrackerData)
 		.doc("LED Tracker data");
-	addPort("lasData", portLASData)
-		.doc("Line angle sensor data");
 	addPort("winchData", portWinchData)
 		.doc("Winch data");
 
@@ -50,9 +48,6 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	camData.ts_trigger = trigger;
 	portLEDTrackerData.setDataSample( camData );
 
-	lasData.ts_trigger = trigger;
-	portLASData.setDataSample( lasData );
-
 	winchData.ts_trigger = trigger;
 	portWinchData.setDataSample( winchData );
 
@@ -63,6 +58,29 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	// this->addConstant( "pi", pi );
 	//
 
+	mcuTime.ts = unsigned(mcu_ts / sim_sampling_time);
+	mcuTime.td = unsigned(mcu_td / sim_sampling_time);
+
+	addConstant("mcu_ts", mcuTime.ts);
+	addConstant("mcu_td", mcuTime.td);
+
+	encTime.ts = unsigned(enc_ts / sim_sampling_time);
+	encTime.td = unsigned(enc_td / sim_sampling_time);
+
+	addConstant("enc_ts", encTime.ts);
+	addConstant("enc_td", encTime.td);
+
+	camTime.ts = unsigned(cam_ts / sim_sampling_time);
+	camTime.td = unsigned(cam_td / sim_sampling_time);
+
+	addConstant("cam_ts", camTime.ts);
+	addConstant("cam_td", camTime.td);
+
+	winchTime.ts = unsigned(winch_ts / sim_sampling_time);
+	winchTime.td = unsigned(winch_td / sim_sampling_time);
+
+	addConstant("winch_ts", winchTime.ts);
+	addConstant("winch_td", winchTime.td);;
 }
 
 
@@ -74,6 +92,11 @@ bool IndoorsCarouselSimulator::configureHook( )
 
 bool IndoorsCarouselSimulator::startHook( )
 {
+	mcuTime.reset();
+	encTime.reset();
+	camTime.reset();
+	winchTime.reset();
+
 	return true;
 }
 
@@ -83,6 +106,10 @@ void IndoorsCarouselSimulator::updateHook( )
 	// 1) Take the step
 
 	// 2) Put outputs to the ports according to the specs (from python codegen)
+	updateMcuData();
+	updateEncData();
+	updateCamData();
+	updateWinchData();
 }
 
 
@@ -100,3 +127,25 @@ void IndoorsCarouselSimulator::errorHook( )
 
 void IndoorsCarouselSimulator::exceptionHook()
 {}
+
+void IndoorsCarouselSimulator::updateMcuData()
+{
+
+}
+
+void IndoorsCarouselSimulator::updateEncData()
+{
+
+}
+
+void IndoorsCarouselSimulator::updateCamData()
+{
+
+}
+
+void IndoorsCarouselSimulator::updateWinchData()
+{
+
+}
+
+ORO_CREATE_COMPONENT( IndoorsCarouselSimulator )
