@@ -19,6 +19,7 @@ if __name__=='__main__':
     options = rawe.RtIntegratorOptions()
     options['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
     options['NUM_INTEGRATOR_STEPS'] = 2
+    options['DYNAMIC_SENSITIVITY'] = 'NO_SENSITIVITY'
     
     Ts = 1e-3
     
