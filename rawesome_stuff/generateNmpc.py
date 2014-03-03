@@ -1,18 +1,11 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import shutil
 
-import rawe
-import NMPC
-
-import numpy as np
-
 from rawe.models.arianne_conf import makeConf
-
-#
-# We import the MHE that is tested on real measurements, not the one used in simulations
-#
-from offline_mhe_test import carouselModel
+from offline_mhe_test import NMPC
 
 from rawekite.carouselSteadyState import getSteadyState
 
@@ -75,7 +68,7 @@ if __name__=='__main__':
 	#
 	
 	# Cable length which we are going to supply to the MHE as a fake measurement
-	measCableLength = 2.0
+	measCableLength = 1.275
 	
 	# Speed for the steady state calculation
 	steadyStateSpeed = -4.0
