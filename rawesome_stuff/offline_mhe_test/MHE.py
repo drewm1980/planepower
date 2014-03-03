@@ -105,7 +105,7 @@ def makeMhe(Ts = None, propertiesDir = '../../properties', ):
 	mhe = rawe.Mhe(dae, N = mheHorizonN, ts = execSamplingTime, yxNames = measX, yuNames = measU)
 	
 	mheConstraintsWhen = 'AT_START'
-#	  mheConstraintsWhen = 'AT_END'
+#	mheConstraintsWhen = 'AT_END'
 
 	mhe.constrain(mhe['ConstR1'], '==', 0, when=mheConstraintsWhen)
 	mhe.constrain(mhe['ConstR2'], '==', 0, when=mheConstraintsWhen)
