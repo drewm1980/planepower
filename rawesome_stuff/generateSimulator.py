@@ -91,7 +91,7 @@ if __name__=='__main__':
     SensorConf = namedtuple('SensorConf', ['name', 'ts', 'td'])
     
     ### LED Tracker
-    LedConf = SensorConf("led", 1 / 12.5, 2 / 12.5)
+    LedConf = SensorConf("cam", 1 / 12.5, 1 / 12.5)
     
     ### MCU handler
     McuConf = SensorConf("mcu", 1 / 500.0, 1e-3)
