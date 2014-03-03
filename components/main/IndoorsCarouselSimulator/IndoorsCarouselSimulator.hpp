@@ -33,6 +33,9 @@ typedef uint64_t TIME_TYPE;
 //#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
 #include "winchControl/types/WinchControlDataType.hpp"
 
+// Components' typekit
+#include "types/IndoorsCarouselSimulatorDataType.hpp"
+
 /// A class for manipulation of sensor data
 template<class T>
 struct SensorTiming
@@ -114,6 +117,11 @@ protected:
 	/// Winch data holder
 	WinchControlDataType winchData;
 
+	/// Debug port
+	RTT::OutputPort< IndoorsCarouselSimulatorDataType > portDebugData;
+	/// Debug data
+	IndoorsCarouselSimulatorDataType debugData;
+
 	//
 	// Properties
 	//
@@ -129,6 +137,10 @@ private:
 	void updateEncData();
 	void updateCamData();
 	void updateWinchData();
+
+	std::vector< double > integratorIO, outputs;
+
+	bool firstRun;
 };
 
 #endif // INDOORS_CAROUSEL_SIMULATOR_HPP
