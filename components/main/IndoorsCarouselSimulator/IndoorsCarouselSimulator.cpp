@@ -14,6 +14,7 @@ using namespace RTT;
 using namespace RTT::os;
 
 #define CAM_DATA_SIZE 12
+#define TRIGGER_OFFSET 1
 
 IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	: TaskContext(name, PreOperational)
@@ -89,14 +90,15 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	addConstant("winch_td", winchTime.td);
 
 	trigger_ts = mhe_ts / sim_sampling_time;
+	// The delay is the max of all delays, here camTime
+	trigger_td = camTime.td + TRIGGER_OFFSET;
+	trigger_enable = false;
+	
 	addConstant("trigger_ts", trigger_ts);
 
 	//
 	// Set-up ACADO stuff
 	//
-
-	// integratorIO.resize((NX + NXA) * (NX + NU + 1) + NU, 0.0);
-	// outputs.resize(ACADO_NOUT[ 0 ] * (1 + NX + NU), 0.0);
 
 	integratorIO.resize(NX + NXA + NU, 0.0);
 	outputs.resize(ACADO_NOUT[ 0 ], 0.0);
@@ -132,7 +134,8 @@ bool IndoorsCarouselSimulator::startHook( )
 
 	firstRun = true;
 
-	trigger_cnt = 0;
+	trigger_cnt = trigger_td;
+	trigger_enable =  false;
 
 	return true;
 }
@@ -186,9 +189,14 @@ void IndoorsCarouselSimulator::exceptionHook()
 
 void IndoorsCarouselSimulator::updateTrigger()
 {
-	if (++trigger_cnt == trigger_ts)
+	if (trigger_enable == false && --trigger_cnt <= 0)
 	{
-		trigger_cnt = 0;
+		trigger_enable = true;
+	}
+
+	if (trigger_enable == true && --trigger_cnt <= 0)
+	{
+		trigger_cnt = trigger_ts;
 
 		portTrigger.write( trigger );
 	}
@@ -197,7 +205,7 @@ void IndoorsCarouselSimulator::updateTrigger()
 
 void IndoorsCarouselSimulator::updateMcuData()
 {
-	if (--mcuTime.cnt_ts < 0)
+	if (--mcuTime.cnt_ts <= 0)
 	{
 		mcuTime.cnt_ts = mcuTime.ts;
 
@@ -217,14 +225,14 @@ void IndoorsCarouselSimulator::updateMcuData()
 		mcuData.ts_elapsed = 0.0;
 
 		mcuTime.samples.push_back( mcuData );
+
+		if (mcuTime.cnt_td_enable == false)
+		{
+			mcuTime.cnt_td_enable = true;
+		}
 	}
 
-	if (mcuTime.cnt_td_enable == false && --mcuTime.cnt_td < 0)
-	{
-		mcuTime.cnt_td_enable = true;
-	}
-
-	if (mcuTime.cnt_td_enable == true && --mcuTime.cnt_td < 0)
+	if (mcuTime.cnt_td_enable == true && --mcuTime.cnt_td <= 0)
 	{
 		mcuTime.cnt_td = mcuTime.ts;
 
@@ -238,7 +246,7 @@ void IndoorsCarouselSimulator::updateMcuData()
 
 void IndoorsCarouselSimulator::updateEncData()
 {
-	if (--encTime.cnt_ts < 0)
+	if (--encTime.cnt_ts <= 0)
 	{
 		encTime.cnt_ts = encTime.ts;
 
@@ -251,14 +259,14 @@ void IndoorsCarouselSimulator::updateEncData()
 		encData.ts_elapsed = 0.0;
 
 		encTime.samples.push_back( encData );
+
+		if (encTime.cnt_td_enable == false)
+		{
+			encTime.cnt_td_enable = true;
+		}
 	}
 
-	if (encTime.cnt_td_enable == false && --encTime.cnt_td < 0)
-	{
-		encTime.cnt_td_enable = true;
-	}
-
-	if (encTime.cnt_td_enable == true && --encTime.cnt_td < 0)
+	if (encTime.cnt_td_enable == true && --encTime.cnt_td <= 0)
 	{
 		encTime.cnt_td = encTime.ts;
 
@@ -275,7 +283,7 @@ void IndoorsCarouselSimulator::updateEncData()
 
 void IndoorsCarouselSimulator::updateCamData()
 {
-	if (--camTime.cnt_ts < 0)
+	if (--camTime.cnt_ts <= 0)
 	{
 		camTime.cnt_ts = camTime.ts;
 
@@ -286,14 +294,14 @@ void IndoorsCarouselSimulator::updateCamData()
 		camData.ts_elapsed = 0.0;
 
 		camTime.samples.push_back( camData );
+
+		if (camTime.cnt_td_enable == false)
+		{
+			camTime.cnt_td_enable = true;
+		}
 	}
 
-	if (camTime.cnt_td_enable == false && --camTime.cnt_td < 0)
-	{
-		camTime.cnt_td_enable = true;
-	}
-
-	if (camTime.cnt_td_enable == true && --camTime.cnt_td < 0)
+	if (camTime.cnt_td_enable == true && --camTime.cnt_td <= 0)
 	{
 		camTime.cnt_td = camTime.ts;
 
@@ -307,7 +315,7 @@ void IndoorsCarouselSimulator::updateCamData()
 
 void IndoorsCarouselSimulator::updateWinchData()
 {
-	if (--winchTime.cnt_ts < 0)
+	if (--winchTime.cnt_ts <= 0)
 	{
 		winchTime.cnt_ts = winchTime.ts;
 
@@ -318,14 +326,14 @@ void IndoorsCarouselSimulator::updateWinchData()
 		winchData.ts_elapsed = 0.0;
 
 		winchTime.samples.push_back( winchData );
+
+		if (winchTime.cnt_td_enable == false)
+		{
+			winchTime.cnt_td_enable = true;
+		}
 	}
 
-	if (winchTime.cnt_td_enable == false && --winchTime.cnt_td < 0)
-	{
-		winchTime.cnt_td_enable = true;
-	}
-
-	if (winchTime.cnt_td_enable == true && --winchTime.cnt_td < 0)
+	if (winchTime.cnt_td_enable == true && --winchTime.cnt_td <= 0)
 	{
 		winchTime.cnt_td = winchTime.ts;
 
