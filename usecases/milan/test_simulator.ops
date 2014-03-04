@@ -198,25 +198,23 @@ connect("mhe.debugData", "mheTelemetry.msgData", cp)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// gconnectPeers("imuReporter", "mcuHandler")
-// //connectPeers("imuJitterReporter", "mcuHandler")
-// imuReporter.reportComponent( "mcuHandler" )
-// //imuJitterReporter.reportPort( "mcuHandler", "jitter.jitter" )
+connectPeers("imuReporter", "simulator")
+imuReporter.reportPort("simulator", "mcuData")
 
-// connectPeers("cameraReporter", "LEDTracker")
-// cameraReporter.reportComponent( "LEDTracker" )
+connectPeers("cameraReporter", "simulator")
+cameraReporter.reportPort("simulator", "ledTrackerData")
 
-// connectPeers("encoderReporter", "encoder")
-// encoderReporter.reportComponent( "encoder" )
+connectPeers("encoderReporter", "simulator")
+encoderReporter.reportPort("simulator", "encoderData")
 
-// connectPeers("lineAngleReporter", "lineAngleSensor")
-// lineAngleReporter.reportComponent( "lineAngleSensor" )
+connectPeers("lineAngleReporter", "simulator")
+lineAngleReporter.reportPort("simulator", "lasData")
 
-// connectPeers("winchReporter", "winch")
-// winchReporter.reportComponent( "winch" )
+connectPeers("winchReporter", "simulator")
+winchReporter.reportPort("simulator", "winchData")
 
-// connectPeers("mheReporter", "mhe")
-// mheReporter.reportPort("mhe", "debugData")
+connectPeers("mheReporter", "mhe")
+mheReporter.reportPort("mhe", "debugData")
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -224,15 +222,7 @@ connect("mhe.debugData", "mheTelemetry.msgData", cp)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// global bool setSpeed(double voltage)
-// {
-// 	return voltageController.setVoltage(0, voltage)
-// }
-
-// global bool setTetherLength(double length)
-// {
-// 	return winch.setTetherLength( length )
-// }
+// NONE
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -264,29 +254,23 @@ mhe.configure()
 mheTelemetry.configure()
 mheTelemetry.start()
 
-// imuReporter.configure()
-// imuReporter.start()
+imuReporter.configure()
+imuReporter.start()
 
-// //imuJitterReporter.configure()
-// //imuJitterReporter.start()
+cameraReporter.configure()
+cameraReporter.start()
 
-// cameraReporter.configure()
-// cameraReporter.start()
+encoderReporter.configure()
+encoderReporter.start()
 
-// encoderReporter.configure()
-// encoderReporter.start()
+lineAngleReporter.configure()
+lineAngleReporter.start()
 
-// lineAngleReporter.configure()
-// lineAngleReporter.start()
+winchReporter.configure()
+winchReporter.start()
 
-// winchReporter.configure()
-// winchReporter.start()
-
-// mheReporter.configure()
-// mheReporter.start()
-
-// inputSignalGenerator.configure()
-// inputSignalGenerator.start()
+mheReporter.configure()
+mheReporter.start()
 
 // Now, when all other components are started, start the simulator
 simulator.start()
