@@ -24,6 +24,8 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 		.doc("Encoder data");
 	addPort("ledTrackerData", portLEDTrackerData)
 		.doc("LED Tracker data");
+	addPort("lasData", portLASData)
+		.doc("Line angle sensor data");
 	addPort("winchData", portWinchData)
 		.doc("Winch data");
 	addPort("debugData", portDebugData)
@@ -262,6 +264,9 @@ void IndoorsCarouselSimulator::updateEncData()
 		{
 			portEncoderData.write( encTime.samples.front() );
 			encTime.samples.pop_front();
+
+			// It's not implemented yet, but MHE requires connection to this source
+			portLASData.write( lasData );
 		}
 	}
 }

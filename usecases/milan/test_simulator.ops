@@ -178,19 +178,19 @@ var ConnPolicy cpImuMhe
 cpImuMhe.type = 1
 cpImuMhe.size = 1000
 
-// connect("masterTimer.controlsPlaybackClock", "mhe.trigger", cp)
-// connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
-// connect("encoder.data", "mhe.encoderData", cp)
-// connect("LEDTracker.data", "mhe.ledTrackerData", cp)
-// connect("lineAngleSensor.data", "mhe.lasData", cp)
-// connect("winch.data", "mhe.winchData", cp)
+connect("simulator.trigger", "mhe.trigger", cp)
+connect("simulator.mcuData", "mhe.mcuData", cpImuMhe)
+connect("simulator.encoderData", "mhe.encoderData", cp)
+connect("simulator.ledTrackerData", "mhe.ledTrackerData", cp)
+connect("simulator.lasData", "mhe.lasData", cp)
+connect("simulator.winchData", "mhe.winchData", cp)
 
 connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
 connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
 connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
 connect("simulator.winchData", "winchTelemetry.msgData", cp)
 
-// connect("mhe.debugData", "mheTelemetry.msgData", cp)
+connect("mhe.debugData", "mheTelemetry.msgData", cp)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -258,7 +258,7 @@ ledTrackerTelemetry.start()
 winchTelemetry.configure()
 winchTelemetry.start()
 
-// mhe.configure()
+mhe.configure()
 // mhe.start()
 
 mheTelemetry.configure()

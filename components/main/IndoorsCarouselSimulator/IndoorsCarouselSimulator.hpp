@@ -30,7 +30,7 @@ typedef uint64_t TIME_TYPE;
 #include "mcuHandler/types/McuHandlerDataType.hpp"
 #include "encoder/types/EncoderDataType.hpp"
 #include "LEDTracker/types/LEDTrackerDataType.hpp"
-//#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
+#include "lineAngleSensor/types/LineAngleSensorDataType.hpp"
 #include "winchControl/types/WinchControlDataType.hpp"
 
 // Components' typekit
@@ -115,9 +115,9 @@ protected:
 	/// Camera data holder
 	LEDTrackerDataType camData;
 	/// LAS data output
-//	RTT::OutputPort< LineAngleSensorDataType > portLASData;
+	RTT::OutputPort< LineAngleSensorDataType > portLASData;
 	/// LAS data holder
-//	LineAngleSensorDataType lasData;
+	LineAngleSensorDataType lasData;
 	/// Winch data output
 	RTT::OutputPort< WinchControlDataType > portWinchData;
 	/// Winch data holder
