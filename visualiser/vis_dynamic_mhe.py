@@ -75,7 +75,6 @@ historyNamesAlt = perfNames
 
 horizonNames = []
 for v in horizonNamesAlt:
-	print v, isinstance(v, tuple)
 	if isinstance(v, tuple):
 		horizonNames.extend( [ v[ 0 ] ] )
 	else:
@@ -127,6 +126,7 @@ mheNamesExt = genNames + historyNames + horizonNames
 #
 
 host = "192.168.1.110"
+#host = "localhost"
 
 DynamicMhePort = "5570"
 
