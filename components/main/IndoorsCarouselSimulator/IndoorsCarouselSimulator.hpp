@@ -41,20 +41,24 @@ template<class T>
 struct SensorTiming
 {
 	SensorTiming()
-		: cnt_ts( 0 ), cnt_td( 0 ), ts( 0 ), td( 0 )
+		: cnt_ts( 0 ), cnt_td( 0 ), cnt_td_enable( false ), ts( 0 ), td( 0 )
 	{}
 
 	void reset()
 	{
-		cnt_ts = cnt_td = 0;
+		cnt_ts = ts;
+		cnt_td = td;
+		cnt_td_enable = false;
 	}
 
 	/// Counters, RW
-	unsigned cnt_ts, cnt_td;
+	int cnt_ts, cnt_td;
+	/// Enable of delay counter
+	bool cnt_td_enable;
 	/// Sampling time in number of ticks of the simulator period, R
-	unsigned ts;
+	int ts;
 	/// Delay time in number of ticks of the simulator period, R
-	unsigned td;
+	int td;
 	/// Samples
 	std::deque< T > samples;
 };
@@ -96,6 +100,8 @@ protected:
 
 	/// Output trigger port, used to trigger the MHE
 	RTT::OutputPort< TIME_TYPE > portTrigger;
+	/// Trigger value
+	TIME_TYPE trigger;
 	/// MCU handler data outputs
 	RTT::OutputPort< McuHandlerDataType > portMcuHandlerData;
 	/// MCU handler data holder
@@ -144,6 +150,7 @@ private:
 	std::vector< double > integratorIO, outputs;
 
 	bool firstRun;
+	double samplingTime;
 };
 
 #endif // INDOORS_CAROUSEL_SIMULATOR_HPP

@@ -1,0 +1,293 @@
+// Description: OROCOS simulator test file
+//
+// Author:      Milan Vukov, milan.vukov@esat.kuleuven.be
+// Date:        March, 2014.
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import our own plugins
+//
+////////////////////////////////////////////////////////////////////////////////
+import( "HighwindStuff" )
+require( "HighwindServices" )
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import and load components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// The simulator
+import("IndoorsCarouselSimulator")
+loadComponent("simulator", "IndoorsCarouselSimulator")
+
+// MCU Handler & telemetry
+import("mcuHandler")
+loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
+
+// Encoder & telemetry
+import("encoder")
+loadComponent("encoderTelemetry", "EncoderTelemetry")
+
+// Line Angle Sensor & telemetry
+import("lineAngleSensor")
+loadComponent("lineAngleSensorTelemetry", "LineAngleSensorTelemetry")
+
+// LEDTracker & telemetry
+import("LEDTracker")
+loadComponent("ledTrackerTelemetry", "LEDTrackerTelemetry")
+
+// Winch & telemetry
+import("winchControl")
+loadComponent("winchTelemetry", "WinchControlTelemetry")
+
+// Dynamic MHE component
+import("DynamicMhe")
+loadComponent("mhe", "DynamicMhe")
+loadComponent("mheTelemetry", "DynamicMheTelemetry")
+
+// OCL NETcdf reporter
+loadComponent("imuReporter", "OCL::NetcdfReporting")
+loadComponent("cameraReporter", "OCL::NetcdfReporting")
+loadComponent("encoderReporter", "OCL::NetcdfReporting")
+loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
+loadComponent("winchReporter", "OCL::NetcdfReporting")
+
+loadComponent("mheReporter", "OCL::NetcdfReporting")
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure components' properties
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Master timer
+
+//
+// Telemetry
+//
+
+mcuHandlerTelemetry.port = "tcp://*:5563"
+encoderTelemetry.port = "tcp://*:5564"
+ledTrackerTelemetry.port = "tcp://*:5565"
+lineAngleSensorTelemetry.port = "tcp://*:5566"
+winchTelemetry.port = "tcp://*:5567"
+mheTelemetry.port = "tcp://*:5570"
+
+// OK, so here we take the current timestamp and set
+// it to all telemetry components so that time on the
+// live plots begins from approx the start of the
+// experiments...
+var uint64_t startTime = HighwindServices.getTimestamp()
+
+mcuHandlerTelemetry.startTime = startTime
+encoderTelemetry.startTime = startTime
+ledTrackerTelemetry.startTime = startTime
+lineAngleSensorTelemetry.startTime = startTime
+winchTelemetry.startTime = startTime
+mheTelemetry.startTime = startTime
+
+//
+// Reporters
+//
+
+// Set reporter policy: we use circular buffer connection with quite a long 
+// buffer
+var ConnPolicy rp
+// rp.type = DATA
+rp.type = CIRCULAR_BUFFER
+rp.size = 100
+rp.lock_policy = LOCKED
+// rp.lock_policy = LOCK_FREE
+
+var ConnPolicy rp_sensors
+rp_sensors.type = CIRCULAR_BUFFER
+rp_sensors.size = 4000
+
+imuReporter.ReportFile = "imuData.nc"
+imuReporter.ReportPolicy = rp_sensors
+imuReporter.ReportOnlyNewData = false
+
+cameraReporter.ReportFile = "cameraData.nc"
+cameraReporter.ReportPolicy = rp_sensors
+cameraReporter.ReportOnlyNewData = false
+
+encoderReporter.ReportFile = "encoderData.nc"
+encoderReporter.ReportPolicy = rp_sensors
+encoderReporter.ReportOnlyNewData = false
+
+lineAngleReporter.ReportFile = "angleData.nc"
+lineAngleReporter.ReportPolicy = rp_sensors
+lineAngleReporter.ReportOnlyNewData = false
+
+winchReporter.ReportFile = "winchData.nc"
+winchReporter.ReportPolicy = rp_sensors
+winchReporter.ReportOnlyNewData = false
+
+mheReporter.ReportFile = "dynamicMheData.nc"
+mheReporter.ReportPolicy = rp
+mheReporter.ReportOnlyNewData = false
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Set activities and priorities
+//
+////////////////////////////////////////////////////////////////////////////////
+
+var int masterTimerPrio = 98
+var int sensorPrio = 97
+var int ocpPrio = 99
+var int LEDTrackerPrio = 70
+var int winchPrio = 65
+var int sineGenPrio = 60
+var int telemetryPrio = 50
+
+setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT,2)
+
+setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
+
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+
+setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Connect components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+var ConnPolicy cp
+
+var ConnPolicy cpLT
+cpLT.type = 1
+cpLT.size = 5
+
+// MHE connections
+
+var ConnPolicy cpImuMhe
+cpImuMhe.type = 1
+cpImuMhe.size = 1000
+
+// connect("masterTimer.controlsPlaybackClock", "mhe.trigger", cp)
+// connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
+// connect("encoder.data", "mhe.encoderData", cp)
+// connect("LEDTracker.data", "mhe.ledTrackerData", cp)
+// connect("lineAngleSensor.data", "mhe.lasData", cp)
+// connect("winch.data", "mhe.winchData", cp)
+
+connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
+// connect("encoder.data", "encoderTelemetry.msgData", cp)
+// connect("LEDTracker.data", "ledTrackerTelemetry.msgData", cp)
+// connect("lineAngleSensor.data", "lineAngleSensorTelemetry.msgData", cp)
+// connect("winch.data", "winchTelemetry.msgData", cp)
+
+// connect("mhe.debugData", "mheTelemetry.msgData", cp)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Reporter configuration
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// gconnectPeers("imuReporter", "mcuHandler")
+// //connectPeers("imuJitterReporter", "mcuHandler")
+// imuReporter.reportComponent( "mcuHandler" )
+// //imuJitterReporter.reportPort( "mcuHandler", "jitter.jitter" )
+
+// connectPeers("cameraReporter", "LEDTracker")
+// cameraReporter.reportComponent( "LEDTracker" )
+
+// connectPeers("encoderReporter", "encoder")
+// encoderReporter.reportComponent( "encoder" )
+
+// connectPeers("lineAngleReporter", "lineAngleSensor")
+// lineAngleReporter.reportComponent( "lineAngleSensor" )
+
+// connectPeers("winchReporter", "winch")
+// winchReporter.reportComponent( "winch" )
+
+// connectPeers("mheReporter", "mhe")
+// mheReporter.reportPort("mhe", "debugData")
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Define some functions
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// global bool setSpeed(double voltage)
+// {
+// 	return voltageController.setVoltage(0, voltage)
+// }
+
+// global bool setTetherLength(double length)
+// {
+// 	return winch.setTetherLength( length )
+// }
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure and start components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Just configure the simulator
+simulator.configure()
+
+mcuHandlerTelemetry.configure()
+mcuHandlerTelemetry.start()
+
+encoderTelemetry.configure()
+encoderTelemetry.start()
+
+lineAngleSensorTelemetry.configure()
+lineAngleSensorTelemetry.start()
+
+ledTrackerTelemetry.configure()
+ledTrackerTelemetry.start()
+
+winchTelemetry.configure()
+winchTelemetry.start()
+
+// mhe.configure()
+// mhe.start()
+
+mheTelemetry.configure()
+mheTelemetry.start()
+
+// imuReporter.configure()
+// imuReporter.start()
+
+// //imuJitterReporter.configure()
+// //imuJitterReporter.start()
+
+// cameraReporter.configure()
+// cameraReporter.start()
+
+// encoderReporter.configure()
+// encoderReporter.start()
+
+// lineAngleReporter.configure()
+// lineAngleReporter.start()
+
+// winchReporter.configure()
+// winchReporter.start()
+
+// mheReporter.configure()
+// mheReporter.start()
+
+// inputSignalGenerator.configure()
+// inputSignalGenerator.start()
+
+// Now, when all other components are started, start the simulator
+simulator.start()

@@ -9,9 +9,6 @@
 #include <algorithm>
 #include <cmath>
 
-// We need this for loading some constants
-#include "LEDTracker/LEDTracker.hpp"
-
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
@@ -44,9 +41,10 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	encData.ts_trigger = trigger;
 	portEncoderData.setDataSample( encData );
 
-	camData.positions.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
-	camData.weights.resize(CAMERA_COUNT * LED_COUNT * 2, 0.0);
-	camData.pose.resize(NPOSE, 0.0);
+	// NOTE: Dimensions are hard-coded, should be compatible with LEDTracker component
+	camData.positions.resize(12, 0.0);
+	camData.weights.resize(12, 0.0);
+	camData.pose.resize(12, 0.0);
 	camData.ts_trigger = trigger;
 	portLEDTrackerData.setDataSample( camData );
 
@@ -58,6 +56,9 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	//
 	// Add constants for the configuration of the simulator
 	//
+
+	samplingTime = sim_sampling_time;
+	addConstant("sim_sampling_time", samplingTime);
 
 	mcuTime.ts = mcu_ts / sim_sampling_time;
 	mcuTime.td = mcu_td / sim_sampling_time;
@@ -90,8 +91,11 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	// Set-up ACADO stuff
 	//
 
+	// integratorIO.resize((NX + NXA) * (NX + NU + 1) + NU, 0.0);
+	// outputs.resize(ACADO_NOUT[ 0 ] * (1 + NX + NU), 0.0);
+
 	integratorIO.resize(NX + NXA + NU, 0.0);
-	outputs.resize(ACADO_NOUT[ 0 ] * (1 + NX + NU), 0.0);
+	outputs.resize(ACADO_NOUT[ 0 ], 0.0);
 
 	//
 	// Debug data conf
@@ -119,8 +123,8 @@ bool IndoorsCarouselSimulator::startHook( )
 
 	// Initialize integrator with steady state
 	for (unsigned el = 0; el < NX; integratorIO[ el ] = ss_x[ el ], el++);
-	for (unsigned el = NX; el < NX + NXA; integratorIO[ el ] = ss_z[ el ], el++);
-	for (unsigned el = NX + NXA; el < NX + NXA+ NU; integratorIO[ el ] = ss_u[ el ], el++);
+	for (unsigned el = 0; el < NXA; integratorIO[NX + el] = ss_z[ el ], el++);
+	for (unsigned el = 0; el < NU; integratorIO[NX + NXA + el] = ss_u[ el ], el++);
 
 	firstRun = true;
 
@@ -132,7 +136,7 @@ bool IndoorsCarouselSimulator::startHook( )
 
 void IndoorsCarouselSimulator::updateHook( )
 {
-	int status;
+	int status = 0;
 
 	trigger = TimeService::Instance()->getTicks();
 
@@ -189,9 +193,9 @@ void IndoorsCarouselSimulator::updateTrigger()
 
 void IndoorsCarouselSimulator::updateMcuData()
 {
-	if (++mcuTime.cnt_ts >= mcuTime.ts)
+	if (--mcuTime.cnt_ts < 0)
 	{
-		mcuTime.cnt_ts = 0;
+		mcuTime.cnt_ts = mcuTime.ts;
 
 		mcuData.accl_x = outputs[offset_IMU_acceleration + 0];
 		mcuData.accl_y = outputs[offset_IMU_acceleration + 1];
@@ -211,9 +215,14 @@ void IndoorsCarouselSimulator::updateMcuData()
 		mcuTime.samples.push_back( mcuData );
 	}
 
-	if (++mcuTime.cnt_td >= mcuTime.td)
+	if (mcuTime.cnt_td_enable == false && --mcuTime.cnt_td < 0)
 	{
-		mcuTime.cnt_td = 0;
+		mcuTime.cnt_td_enable = true;
+	}
+
+	if (mcuTime.cnt_td_enable == true && --mcuTime.cnt_td < 0)
+	{
+		mcuTime.cnt_td = mcuTime.ts;
 
 		if (mcuTime.samples.size() > 0)
 		{
