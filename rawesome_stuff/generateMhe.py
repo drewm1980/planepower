@@ -4,9 +4,7 @@ import sys
 import os
 import shutil
 
-import rawe
-
-import numpy as np
+from rawe.ocp.Ocp import generateProto
 
 from rawe.models.arianne_conf import makeConf
 
@@ -19,11 +17,22 @@ from offline_mhe_test import carouselModel
 from rawekite.carouselSteadyState import getSteadyState
 
 if __name__=='__main__':
-    assert len(sys.argv) == 2, \
+    assert len(sys.argv) == 2 or len(sys.argv) == 3, \
         'need to call generateMhe.py with the properties directory'
     propsDir = sys.argv[1]
 
     mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = propsDir)
+    
+    #
+    # Generate protobuf specs for the MHE
+    #
+    fw = open("DynamicMheTelemetry.proto", "w")
+    fw.write( generateProto(mhe, "DynamicMhe") )
+    fw.close()
+    
+    if len(sys.argv) == 3 and sys.argv[ 2 ] == "proto_only":
+        print "MHE protobuf is generated and I am out..."
+        sys.exit( 0 )
 
     # Options for code compilation
     cgOptions = {
@@ -147,73 +156,4 @@ if __name__=='__main__':
     fw.write("};\n\n")
     
     fw.write("#endif // MHE_CONFIGURATION\n")
-    fw.close()
-    
-    #
-    # Generate protobuf specs for the MHE
-    #
-    
-    xNames = ""
-    for k, name in enumerate( mhe.dae.xNames() ):
-        xNames = xNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-        
-    zNames = ""
-    for k, name in enumerate( mhe.dae.zNames() ):
-        zNames = zNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-        
-    uNames = ""
-    for k, name in enumerate( mhe.dae.uNames() ):
-        uNames = uNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-    
-    proto = """
-package DynamicMheProto;
-
-message DynamicMheMsg
-{
-    enum Configuration
-    {
-        N = %(N)d;
-    }
-
-    enum xNames
-    {
-        %(xNames)s
-    }
-    
-    enum zNames
-    {
-        %(zNames)s
-    }
-    
-    enum uNames
-    {
-        %(uNames)s
-    }
-
-    message Horizon
-    {
-        repeated float h = 1;
-    }
-
-    repeated Horizon x = 1;
-    repeated Horizon z = 2;
-    repeated Horizon u = 3;
-    
-    repeated Horizon y  = 4;
-    repeated float   yN = 5;
-    
-    required int32 solver_status = 6;
-    required float kkt_value = 7;
-    required float obj_value = 8;
-    
-    required float exec_fdb  = 9;
-    required float exec_prep = 10;
-    
-    required double ts_trigger = 11;
-    required double ts_elapsed = 12;
-}
-""" % {"N": MHE.mheHorizonN, "xNames": xNames, "zNames": zNames, "uNames": uNames}
-    
-    fw = open("DynamicMheTelemetry.proto", "w")
-    fw.write( proto )
     fw.close()

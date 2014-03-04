@@ -4,14 +4,12 @@ import sys, time
 
 from PyQt4 import QtCore, QtGui
 
-import numpy as np
-
 import pyqtgraph as pg
 
 from vis_helpers import *
 from zmq_protobuf_helpers import *
 
-import DynamicMheTelemetry_pb2 as mheProto
+import DynamicMpcTelemetry_pb2 as mpcProto
 
 from vis_helpers import OcpWorker
 
@@ -37,45 +35,43 @@ genNames = ["ts_trigger", "ts_elapsed"]
 #
 # Window organization
 #
-mhePlots = dict()
+mpcPlots = dict()
 
 # x, y, z
 posNames = [("x", "m"), ("y", "m"), ("z", "m")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), posNames, posNames) )
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), posNames, posNames) )
 # RPY, or e11_...e33
 rpyNames = [("roll", "deg"), ("pitch", "deg"), ("yaw", "deg")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), rpyNames, rpyNames) )
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), rpyNames, rpyNames) )
 # dx, dy, dz
 velNames = [("dx", "m/s"), ("dy", "m/s"), ("dz", "m/s")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), velNames, velNames) )
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), velNames, velNames) )
 # w_... x, y, z
 gyroNames = [("w_bn_b_x", "rad/s"), "w_bn_b_y", "w_bn_b_z"]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
 
 layout.nextRow()
 
 # aileron, elevator; daileron, delevator
-ctrlNames = [("aileron", "deg"), ("daileron", "deg/s"), "elevator", "delevator"]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), ctrlNames, ctrlNames) )
-# ddelta, motor_torque, dmotor_torque, [cos, sin delta]
-carNames = [("ddelta", "rpm"), ("motor_torque", "Nm"), ("dmotor_torque", "Nm/s")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), carNames, carNames) )
-# r, dr, ddr, dddr
-cableNames = [("r", "m"), ("dr", "m/s"), ("ddr", "m/s^2"), ("dddr", "m/s^3")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), cableNames, cableNames) )
+uaNames = [("aileron", "deg"), ("daileron", "deg/s")]
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), uaNames, uaNames) )
+ueNames = [("elevator", "deg"), ("delevator", "deg/s")]
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), ueNames, ueNames) )
 # obj_value, kkt_value, exec_prep, exec_fdb
-perfNames = ["obj_value", "kkt_value", ("exec_prep", "s"), ("exec_fdb", "s")]
-mhePlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
+perfNames = ["n_asc", "obj_value", "kkt_value"]
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
 				options = {"obj_value": ["semilogy"],
 						   "kkt_value": ["semilogy"]}) )
+execNames = [("exec_prep", "s"), ("exec_fdb", "s")]
+mpcPlots.update( addPlotsToLayout(layout.addLayout( ), execNames, execNames) )
 
 horizonNamesAlt = posNames + rpyNames + velNames + gyroNames + \
-				  ctrlNames + carNames + cableNames
-historyNamesAlt = perfNames
+				  uaNames + ueNames
+# 				  + carNames + cableNames
+historyNamesAlt = perfNames + execNames
 
 horizonNames = []
 for v in horizonNamesAlt:
-	print v, isinstance(v, tuple)
 	if isinstance(v, tuple):
 		horizonNames.extend( [ v[ 0 ] ] )
 	else:
@@ -99,7 +95,7 @@ q1 = Queue.Queue(maxsize = 10)
 
 def updatePlots():
 	global q1
-	global mhePlots
+	global mpcPlots
 	global horizonNames, historyNames
 
 	def updateGroup(q, plots):
@@ -114,7 +110,7 @@ def updatePlots():
 			pass
 		
 	# Update all plots
-	updateGroup(q1, mhePlots)
+	updateGroup(q1, mpcPlots)
 
 timer = QtCore.QTimer()
 timer.timeout.connect( updatePlots )
@@ -133,7 +129,7 @@ DynamicMhePort = "5570"
 # Create workers
 workers = []
 
-workers.append(OcpWorker(mheProto, host + ":" + DynamicMhePort, q1, bufferSize = 20 * 25))
+workers.append(OcpWorker(mpcProto, host + ":" + DynamicMhePort, q1, bufferSize = 20 * 25))
 
 # Start Qt event loop unless running in interactive mode.
 #

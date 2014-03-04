@@ -4,17 +4,31 @@ import sys
 import os
 import shutil
 
+from rawe.ocp.Ocp import generateProto
+
 from rawe.models.arianne_conf import makeConf
 from offline_mhe_test import NMPC
 
 from rawekite.carouselSteadyState import getSteadyState
 
 if __name__=='__main__':
-	assert len(sys.argv) == 2, \
+	assert len(sys.argv) == 2 or len(sys.argv) == 3, \
 		'need to call generateNmpc.py with the properties directory'
 	propsDir = sys.argv[1]
 
 	nmpc = NMPC.makeNmpc(propertiesDir=propsDir)
+	
+	#
+	# Generate protobuf specs for the NMPC
+	#
+	fw = open("DynamicMpcTelemetry.proto", "w")
+	fw.write( generateProto(nmpc, "DynamicMpc") )
+	fw.close()
+	
+	if len(sys.argv) == 3 and sys.argv[ 2 ] == "proto_only":
+		print "NMPC protobuf is generated and I am out..."
+		sys.exit( 0 )
+	
 	cgOptions= {'CXX':'clang++', 'CC':'clang',
 				'CXXFLAGS':'-O3 -fPIC -finline-functions -march=native',
 				'CFLAGS':'-O3 -fPIC -finline-functions -march=native',
@@ -89,73 +103,4 @@ if __name__=='__main__':
 		fw.write("};\n\n")
 	
 	fw.write("#endif // NMPC_CONFIGURATION\n")
-	fw.close()
-	
-	#
-	# Generate protobuf specs for the NMPC
-	#
-	
-	xNames = ""
-	for k, name in enumerate( nmpc.dae.xNames() ):
-		xNames = xNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-		
-	zNames = ""
-	for k, name in enumerate( nmpc.dae.zNames() ):
-		zNames = zNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-		
-	uNames = ""
-	for k, name in enumerate( nmpc.dae.uNames() ):
-		uNames = uNames + "idx_" + str( name ) + " = " + str( k ) + "; "
-	
-	proto = """
-package DynamicMpcProto;
-
-message DynamicMpcMsg
-{
-	enum Configuration
-	{
-		N = %(N)d;
-	}
-
-	enum xNames
-	{
-		%(xNames)s
-	}
-	
-	enum zNames
-	{
-		%(zNames)s
-	}
-	
-	enum uNames
-	{
-		%(uNames)s
-	}
-
-	message Horizon
-	{
-		repeated float h = 1;
-	}
-
-	repeated Horizon x = 1;
-	repeated Horizon z = 2;
-	repeated Horizon u = 3;
-	
-	repeated Horizon y	= 4;
-	repeated float	 yN = 5;
-	
-	required int32 solver_status = 6;
-	required float kkt_value = 7;
-	required float obj_value = 8;
-	
-	required float exec_fdb	 = 9;
-	required float exec_prep = 10;
-	
-	required double ts_trigger = 11;
-	required double ts_elapsed = 12;
-}
-""" % {"N": NMPC.mpcHorizonN, "xNames": xNames, "zNames": zNames, "uNames": uNames}
-	
-	fw = open("DynamicMpcTelemetry.proto", "w")
-	fw.write( proto )
 	fw.close()
