@@ -106,7 +106,7 @@ class OcpWorker( zmq_protobuf_helpers.ZmqSubProtobufWorker ):
 		self._uMap = dict((v.name.split("_", 1)[ 1 ], v.number) for v in uNames.values)
 		self._yMap = dict((v.name.split("_", 1)[ 1 ], v.number) for v in yNames.values)
 
-		self._simpleFieldNames = ["solver_status", "kkt_value", "obj_value", "n_asc"
+		self._simpleFieldNames = ["solver_status", "kkt_value", "obj_value", "n_asc",
 								  "exec_fdb", "exec_prep", "ts_trigger", "ts_elapsed"]
 
 		msgClass = getattr(protoModule, msgName)
