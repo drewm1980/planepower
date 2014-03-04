@@ -59,29 +59,32 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	// Add constants for the configuration of the simulator
 	//
 
-	mcuTime.ts = mcu_ts / sim_sampling_time);
-	mcuTime.td = mcu_td / sim_sampling_time);
+	mcuTime.ts = mcu_ts / sim_sampling_time;
+	mcuTime.td = mcu_td / sim_sampling_time;
 
 	addConstant("mcu_ts", mcuTime.ts);
 	addConstant("mcu_td", mcuTime.td);
 
-	encTime.ts = enc_ts / sim_sampling_time);
-	encTime.td = enc_td / sim_sampling_time);
+	encTime.ts = enc_ts / sim_sampling_time;
+	encTime.td = enc_td / sim_sampling_time;
 
 	addConstant("enc_ts", encTime.ts);
 	addConstant("enc_td", encTime.td);
 
-	camTime.ts = cam_ts / sim_sampling_time);
-	camTime.td = cam_td / sim_sampling_time);
+	camTime.ts = cam_ts / sim_sampling_time;
+	camTime.td = cam_td / sim_sampling_time;
 
 	addConstant("cam_ts", camTime.ts);
 	addConstant("cam_td", camTime.td);
 
-	winchTime.ts = winch_ts / sim_sampling_time);
-	winchTime.td = winch_td / sim_sampling_time);
+	winchTime.ts = winch_ts / sim_sampling_time;
+	winchTime.td = winch_td / sim_sampling_time;
 
 	addConstant("winch_ts", winchTime.ts);
 	addConstant("winch_td", winchTime.td);
+
+	trigger_ts = mhe_ts / sim_sampling_time;
+	addConstant("trigger_ts", trigger_ts);
 
 	//
 	// Set-up ACADO stuff
@@ -96,6 +99,8 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = 0.0;
 	portDebugData.write( debugData );
+	
+	trigger_cnt = 0;
 }
 
 
@@ -118,6 +123,8 @@ bool IndoorsCarouselSimulator::startHook( )
 	for (unsigned el = NX + NXA; el < NX + NXA+ NU; integratorIO[ el ] = ss_u[ el ], el++);
 
 	firstRun = true;
+
+	trigger_cnt = 0;
 
 	return true;
 }
@@ -143,6 +150,9 @@ void IndoorsCarouselSimulator::updateHook( )
 	updateCamData();
 	updateWinchData();
 
+	// Update trigegr at the end, so that the delayed measurements get sent to corr. port
+	updateTrigger();
+
 	// 3) Set some debug info
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
@@ -164,6 +174,18 @@ void IndoorsCarouselSimulator::errorHook( )
 
 void IndoorsCarouselSimulator::exceptionHook()
 {}
+
+
+void IndoorsCarouselSimulator::updateTrigger()
+{
+	if (++trigger_cnt == trigger_ts)
+	{
+		trigger_cnt = 0;
+
+		portTrigger.write( trigger );
+	}
+}
+
 
 void IndoorsCarouselSimulator::updateMcuData()
 {

@@ -133,6 +133,9 @@ private:
 	SensorTiming< LEDTrackerDataType > camTime;
 	SensorTiming< WinchControlDataType > winchTime;
 
+	unsigned trigger_cnt, trigger_ts;
+
+	void updateTrigger();
 	void updateMcuData();
 	void updateEncData();
 	void updateCamData();

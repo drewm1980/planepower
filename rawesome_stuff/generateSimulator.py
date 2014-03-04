@@ -88,24 +88,28 @@ if __name__=='__main__':
     #
     
     # Name, sampling time and delay time
-    SensorConf = namedtuple('SensorConf', ['name', 'ts', 'td'])
+    TimeConf = namedtuple('Time', ['name', 'ts', 'td'])
     
     ### LED Tracker
-    LedConf = SensorConf("cam", 1 / 12.5, 1 / 12.5)
+    LedConf = TimeConf("cam", 1 / 12.5, 1 / 12.5)
     
     ### MCU handler
-    McuConf = SensorConf("mcu", 1 / 500.0, 1e-3)
+    McuConf = TimeConf("mcu", 1 / 500.0, 1e-3)
     
     ### Encoder
-    EncConf = SensorConf("enc", 1 / 1000.0, 0)
+    EncConf = TimeConf("enc", 1 / 1000.0, 0)
     
     ### TODO Line Angle Sensor
     
     ### Winch
-    WinchConf = SensorConf("winch", 1 / 50.0, 10e-3)
+    WinchConf = TimeConf("winch", 1 / 50.0, 10e-3)
+    
+    ### MHE
+    # XXX This should be somewhere in the common conf
+    MheConf = TimeConf("mhe", 1/ 25.0, 0)
     
     fw.write("// Sensor configuration -- sampling times and delays in [sec]\n")
-    for k in [LedConf, McuConf, EncConf, WinchConf]:
+    for k in [LedConf, McuConf, EncConf, WinchConf, MheConf]:
         name = k.name
         ts = k.ts
         td = k.td
