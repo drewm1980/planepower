@@ -234,17 +234,100 @@ void IndoorsCarouselSimulator::updateMcuData()
 
 void IndoorsCarouselSimulator::updateEncData()
 {
+	if (--encTime.cnt_ts < 0)
+	{
+		encTime.cnt_ts = encTime.ts;
 
+		encData.sin_theta = -integratorIO[ idx_sin_delta ]; // !!! Sign is inverted!
+		encData.cos_theta = integratorIO[ idx_cos_delta ];
+		encData.omega = integratorIO[ idx_ddelta ];
+		encData.omega_filt_rpm = encData.omega / (2.0 * M_PI) * 60.0;
+
+		encData.ts_trigger = trigger;
+		encData.ts_elapsed = 0.0;
+
+		encTime.samples.push_back( encData );
+	}
+
+	if (encTime.cnt_td_enable == false && --encTime.cnt_td < 0)
+	{
+		encTime.cnt_td_enable = true;
+	}
+
+	if (encTime.cnt_td_enable == true && --encTime.cnt_td < 0)
+	{
+		encTime.cnt_td = encTime.ts;
+
+		if (encTime.samples.size() > 0)
+		{
+			portEncoderData.write( encTime.samples.front() );
+			encTime.samples.pop_front();
+		}
+	}
 }
 
 void IndoorsCarouselSimulator::updateCamData()
 {
+	if (--camTime.cnt_ts < 0)
+	{
+		camTime.cnt_ts = camTime.ts;
 
+		for (unsigned el = 0; el < 12; ++el)
+			camData.positions[ el ] = outputs[offset_marker_positions + el];
+
+		camData.ts_trigger = trigger;
+		camData.ts_elapsed = 0.0;
+
+		camTime.samples.push_back( camData );
+	}
+
+	if (camTime.cnt_td_enable == false && --camTime.cnt_td < 0)
+	{
+		camTime.cnt_td_enable = true;
+	}
+
+	if (camTime.cnt_td_enable == true && --camTime.cnt_td < 0)
+	{
+		camTime.cnt_td = camTime.ts;
+
+		if (camTime.samples.size() > 0)
+		{
+			portLEDTrackerData.write( camTime.samples.front() );
+			camTime.samples.pop_front();
+		}
+	}
 }
 
 void IndoorsCarouselSimulator::updateWinchData()
 {
+	if (--winchTime.cnt_ts < 0)
+	{
+		winchTime.cnt_ts = winchTime.ts;
 
+		winchData.length = integratorIO[ idx_r ];
+		winchData.speed = integratorIO[ idx_dr ];
+
+		winchData.ts_trigger = trigger;
+		winchData.ts_elapsed = 0.0;
+
+		winchTime.samples.push_back( winchData );
+	}
+
+	if (winchTime.cnt_td_enable == false && --winchTime.cnt_td < 0)
+	{
+		winchTime.cnt_td_enable = true;
+	}
+
+	if (winchTime.cnt_td_enable == true && --winchTime.cnt_td < 0)
+	{
+		winchTime.cnt_td = winchTime.ts;
+
+		if (winchTime.samples.size() > 0)
+		{
+			portWinchData.write( winchTime.samples.front() );
+			winchTime.samples.pop_front();
+		}
+	}
 }
 
 ORO_CREATE_COMPONENT( IndoorsCarouselSimulator )

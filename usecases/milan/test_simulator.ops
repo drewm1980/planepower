@@ -186,10 +186,9 @@ cpImuMhe.size = 1000
 // connect("winch.data", "mhe.winchData", cp)
 
 connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
-// connect("encoder.data", "encoderTelemetry.msgData", cp)
-// connect("LEDTracker.data", "ledTrackerTelemetry.msgData", cp)
-// connect("lineAngleSensor.data", "lineAngleSensorTelemetry.msgData", cp)
-// connect("winch.data", "winchTelemetry.msgData", cp)
+connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
+connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
+connect("simulator.winchData", "winchTelemetry.msgData", cp)
 
 // connect("mhe.debugData", "mheTelemetry.msgData", cp)
 

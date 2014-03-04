@@ -167,13 +167,19 @@ def setupLedTrackerPlots( layout ):
 	"""
 	d = dict()
 
+	class CustomPlotItem( pg.PlotItem ):
+		def autoBtnClicked( self ):
+			self.setXRange(0, 1200)
+			self.setYRange(0, 1200)
+
 	for frame in ["left", "right"]:
 		l = layout.addLayout()
 		l.setContentsMargins(10, 10, 10, 10)
 		l.addLabel(frame + " frame, v vs u components")
 		l.nextRow()
 
-		plt = l.addPlot();
+		plt = CustomPlotItem()
+		l.addItem( plt )
 		plt.setXRange(0, 1200)
 		plt.setYRange(0, 1200)
 		plt.showGrid(x = True, y = True)
