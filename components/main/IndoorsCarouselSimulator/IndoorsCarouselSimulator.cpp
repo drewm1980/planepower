@@ -13,6 +13,8 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+#define CAM_DATA_SIZE 12
+
 IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	: TaskContext(name, PreOperational)
 {
@@ -44,9 +46,9 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	portEncoderData.setDataSample( encData );
 
 	// NOTE: Dimensions are hard-coded, should be compatible with LEDTracker component
-	camData.positions.resize(12, 0.0);
-	camData.weights.resize(12, 0.0);
-	camData.pose.resize(12, 0.0);
+	camData.positions.resize(CAM_DATA_SIZE, 0.0);
+	camData.weights.resize(CAM_DATA_SIZE, 0.0);
+	camData.pose.resize(CAM_DATA_SIZE, 0.0);
 	camData.ts_trigger = trigger;
 	portLEDTrackerData.setDataSample( camData );
 
@@ -277,7 +279,7 @@ void IndoorsCarouselSimulator::updateCamData()
 	{
 		camTime.cnt_ts = camTime.ts;
 
-		for (unsigned el = 0; el < 12; ++el)
+		for (unsigned el = 0; el < CAM_DATA_SIZE; ++el)
 			camData.positions[ el ] = outputs[offset_marker_positions + el];
 
 		camData.ts_trigger = trigger;
