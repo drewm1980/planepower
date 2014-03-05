@@ -20,7 +20,7 @@ view = pg.GraphicsView()
 view.setCentralItem( layout )
 view.show()
 view.setWindowTitle(
-	"Telemetry for MHE; Horizons of states and controls and history of performance indicators" )
+	"Telemetry for NMPC" )
 view.resize(1024, 768)
 
 #
@@ -124,12 +124,12 @@ mheNamesExt = genNames + historyNames + horizonNames
 
 host = "192.168.1.110"
 
-DynamicMhePort = "5570"
+DynamicMpcPort = "5571"
 
 # Create workers
 workers = []
 
-workers.append(OcpWorker(mpcProto, host + ":" + DynamicMhePort, q1, bufferSize = 20 * 25))
+workers.append(OcpWorker(mpcProto, host + ":" + DynamicMpcPort, q1, bufferSize = 20 * 25))
 
 # Start Qt event loop unless running in interactive mode.
 #
