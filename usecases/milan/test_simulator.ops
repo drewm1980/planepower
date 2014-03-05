@@ -46,6 +46,11 @@ import("DynamicMhe")
 loadComponent("mhe", "DynamicMhe")
 loadComponent("mheTelemetry", "DynamicMheTelemetry")
 
+// Dynamic NMPC component
+import("DynamicMpc")
+loadComponent("mpc", "DynamicMpc")
+loadComponent("mpcTelemetry", "DynamicMpcTelemetry")
+
 // OCL NETcdf reporter
 loadComponent("imuReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
@@ -54,6 +59,7 @@ loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
 loadComponent("winchReporter", "OCL::NetcdfReporting")
 
 loadComponent("mheReporter", "OCL::NetcdfReporting")
+loadComponent("mpcReporter", "OCL::NetcdfReporting")
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -73,6 +79,7 @@ ledTrackerTelemetry.port = "tcp://*:5565"
 lineAngleSensorTelemetry.port = "tcp://*:5566"
 winchTelemetry.port = "tcp://*:5567"
 mheTelemetry.port = "tcp://*:5570"
+mpcTelemetry.port = "tcp://*:5571"
 
 // OK, so here we take the current timestamp and set
 // it to all telemetry components so that time on the
@@ -86,6 +93,7 @@ ledTrackerTelemetry.startTime = startTime
 lineAngleSensorTelemetry.startTime = startTime
 winchTelemetry.startTime = startTime
 mheTelemetry.startTime = startTime
+mpcTelemetry.startTime = startTime
 
 //
 // Reporters
@@ -128,6 +136,10 @@ mheReporter.ReportFile = "dynamicMheData.nc"
 mheReporter.ReportPolicy = rp
 mheReporter.ReportOnlyNewData = false
 
+mpcReporter.ReportFile = "dynamicMpcData.nc"
+mpcReporter.ReportPolicy = rp
+mpcReporter.ReportOnlyNewData = false
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Set activities and priorities
@@ -142,23 +154,26 @@ var int winchPrio = 65
 var int sineGenPrio = 60
 var int telemetryPrio = 50
 
-setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT,2)
+setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT, 1)
 
-setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
+setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT, 2)
+setActivityOnCPU("mpc", 0.0, ocpPrio, ORO_SCHED_RT, 3)
 
-setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 1)
-setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 1)
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 6)
+setActivityOnCPU("mpcTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 7)
 
-setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -190,7 +205,10 @@ connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
 connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
 connect("simulator.winchData", "winchTelemetry.msgData", cp)
 
+connect("mhe.stateEstimate", "mpc.feedback", cp)
+
 connect("mhe.debugData", "mheTelemetry.msgData", cp)
+connect("mpc.debugData", "mpcTelemetry.msgData", cp)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -215,6 +233,9 @@ winchReporter.reportPort("simulator", "winchData")
 
 connectPeers("mheReporter", "mhe")
 mheReporter.reportPort("mhe", "debugData")
+
+connectPeers("mpcReporter", "mpc")
+mpcReporter.reportPort("mpc", "debugData")
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -251,8 +272,14 @@ winchTelemetry.start()
 mhe.configure()
 // mhe.start()
 
+mpc.configure()
+// mpc.start()
+
 mheTelemetry.configure()
 mheTelemetry.start()
+
+mpcTelemetry.configure()
+mpcTelemetry.start()
 
 imuReporter.configure()
 imuReporter.start()
@@ -271,6 +298,9 @@ winchReporter.start()
 
 mheReporter.configure()
 mheReporter.start()
+
+mpcReporter.configure()
+mpcReporter.start()
 
 // Now, when all other components are started, start the simulator
 simulator.start()

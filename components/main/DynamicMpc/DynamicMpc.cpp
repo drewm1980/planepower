@@ -68,8 +68,8 @@ DynamicMpc::DynamicMpc(std::string name)
 	// Properties
 	//
 	numSqpIterations = 1;
-	addProperty("numSqpIterations", numSqpIterations)
-		.doc("Number of SQP iterations. Default = 1, Max = 10.");
+	// addProperty("numSqpIterations", numSqpIterations)
+	// 	.doc("Number of SQP iterations. Default = 1, Max = 10.");
 }
 
 bool DynamicMpc::configureHook()
@@ -104,8 +104,9 @@ bool DynamicMpc::startHook()
 void DynamicMpc::updateHook()
 {
 	int mpcStatus = 0;
+	uint64_t timeStamp = TimeService::Instance()->getTicks();
 
-	debugData.ts_entry = TimeService::Instance()->getTicks();
+	debugData.ts_entry = timeStamp;
 
 	portFeedback.read( feedback );
 	if (feedback.x_hat.size() != NX)
@@ -120,8 +121,10 @@ void DynamicMpc::updateHook()
 	}
 	else
 	{
+		uint64_t fdbEntry = TimeService::Instance()->getTicks();
 		mpcStatus = feedbackStep();
-
+		debugData.exec_fdb = TimeService::Instance()->secondsSince( fdbEntry );
+		
 		if (mpcStatus == 0)
 		{
 			// TODO Do not forget about scaling!!!
@@ -147,13 +150,15 @@ void DynamicMpc::updateHook()
 	//
 	
 	prepareDebugData();
-	debugData.ts_elapsed = TimeService::Instance()->secondsSince( debugData.ts_entry );
+	debugData.ts_elapsed = TimeService::Instance()->secondsSince( timeStamp );
 	portDebugData.write( debugData );
 
 	//
 	// Prepare for the next iteration; run the RTI preparation step
 	//
 
+	timeStamp = TimeService::Instance()->getTicks();
+	
 	if ( runCnt )
 	{
 		shiftStates(2, 0, 0);
@@ -161,6 +166,8 @@ void DynamicMpc::updateHook()
 	}
 
 	preparationStep();
+
+	debugData.exec_prep = TimeService::Instance()->secondsSince( timeStamp );
 
 	if ( mpcStatus )
 		exception();
@@ -243,8 +250,8 @@ bool DynamicMpc::prepareReference( void )
 	for (unsigned blk = 1; blk < N + 1; ++blk)
 	{
 		angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
-		acadoVariables.x[blk * NX + idx_cos_delta] = cos( angle );
-		acadoVariables.x[blk * NX + idx_sin_delta] = sin( angle );
+		acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
+		acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
 	}
 
 	for (unsigned blk = 0; blk < N; ++blk)
@@ -253,6 +260,10 @@ bool DynamicMpc::prepareReference( void )
 	
 	for (unsigned el = 0; el < NX; ++el)
 		acadoVariables.yN[ el ] = ss_x[ el ];
+	angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+	acadoVariables.yN[ idx_cos_delta ] = cos( angle );
+	acadoVariables.yN[ idx_sin_delta ] = sin( angle );
+	
 	
 #endif // DEBUG == 1
 
@@ -270,6 +281,8 @@ bool DynamicMpc::prepareDebugData( void )
 	debugData.yN.assign(acadoVariables.yN, acadoVariables.yN + NYN);
 //	debugData.S.assign(acadoVariables.W, acadoVariables.W + NY * NY);
 //	debugData.SN.assign(acadoVariables.WN, acadoVariables.WN + NYN * NYN);
+
+	debugData.ts_trigger = feedback.ts_trigger;
 
 	return true;
 }
