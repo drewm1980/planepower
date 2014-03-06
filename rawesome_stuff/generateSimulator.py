@@ -132,7 +132,8 @@ if __name__=='__main__':
             }
 
     # Get the steady state
-    steadyState, _ = getSteadyState(mhe.dae, makeConf(), refP['ddelta0'], refP['r0'])
+    conf = makeConf()
+    steadyState, _ = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
 
     # Write the steady state to the file
     names = {"x": mhe.dae.xNames(), "u": mhe.dae.uNames(), "z": mhe.dae.zNames()}
@@ -140,6 +141,11 @@ if __name__=='__main__':
         fw.write("const double ss_" + k + "[ " + str( len( v ) ) + " ] = {")
         fw.write(", ".join([repr( steadyState[ name ] ) + " /*" + name + "*/" for name in v]))
         fw.write("};\n\n")
+
+    # Write bounds for control surfaces
+    fw.write("// Plane's control surface limits [rad] \n")
+    for name in ["aileron_bound", "elevator_bound"]:
+        fw.write("#define " + name + " " + repr( conf[ name ] ) + "\n")
     
-    fw.write("#endif // SIMULATOR_CONFIGURATION\n")
+    fw.write("\n\n#endif // SIMULATOR_CONFIGURATION\n")
     fw.close()

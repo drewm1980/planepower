@@ -170,12 +170,17 @@ void IndoorsCarouselSimulator::updateHook( )
 	}
 
 	// 2) Take the step, i.e. call ACADO generated integrator
+
+	updateControls();
+
 	status = integrate(integratorIO.data(), outputs.data(), firstRun == true ? 1 : 0);
 	if ( status )
 	{
 		log( Error ) << "*** SIMULATOR DIED ***" << endlog();
 		exception();
 	}
+
+	updateControls();
 	
 	if (firstRun == true)
 		firstRun = false;
@@ -210,6 +215,19 @@ void IndoorsCarouselSimulator::errorHook( )
 
 void IndoorsCarouselSimulator::exceptionHook()
 {}
+
+void IndoorsCarouselSimulator::updateControls()
+{
+	// Dodgy way to trim the controls
+	double ua1 = integratorIO[idx_aileron];
+	double ue  = integratorIO[idx_elevator];
+
+	if (ua1 > aileron_bound) ua1 = aileron_bound; else if (ua1 < -aileron_bound) ua1 = -aileron_bound;
+	if (ue > elevator_bound) ue = elevator_bound; else if (ue < -elevator_bound) ue = -elevator_bound;
+	
+	integratorIO[idx_aileron] = ua1;
+	integratorIO[idx_elevator] = ue;
+}
 
 
 void IndoorsCarouselSimulator::updateTrigger()
