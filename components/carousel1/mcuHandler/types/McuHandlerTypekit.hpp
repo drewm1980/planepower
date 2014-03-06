@@ -21,6 +21,8 @@ namespace boost
 			a & make_nvp("d_ua1", l.d_ua1);
 			a & make_nvp("d_ua2", l.d_ua2);
 			a & make_nvp("d_ue", l.d_ue);
+
+			a & make_nvp("der_ctrl", l.der_ctrl);
 		}
 
 		template< class Archive >

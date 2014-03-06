@@ -167,21 +167,8 @@ void McuHandler::updateHook()
 	tcpStatus = OK;
 	receiveSensorData();
 
-	//
-	// If _NEW_ controls arrived, send them to the MCU
-	//
-	if (portControls.read( controls ) == NewData)
-	{
-		// In case we received new commands and we are in the real-time mode
-		// we can send new commands to the plane.
-
-		execControls = controls;
-
-		controlsJustUpdated = true;
-	}
-	else
-		controlsJustUpdated = false;
-
+	// Read and update controls
+	controlStatus = portControls.read( controls );
 	updateControls();
 
 	// Before calling the MCU operation, reset the tcpStatus flag.
@@ -261,17 +248,41 @@ void McuHandler::errorHook()
 
 void McuHandler::updateControls()
 {
-	if (controlsJustUpdated == true)
-		return;
+	// NOTE: A bit of the logic behind this function... If we are in the derivative
+	//       mode, first calculate new controls which are going to be applied. If
+	//       new derivatives arrive, they are going to be applied during the next
+	//       sampling instance.
 
-	if (execControls.d_ua1 > 0.0)
+
+	if (execControls.der_ctrl == true)
+	{
+		// Calculate current controls;
 		execControls.ua1 += execControls.d_ua1 * Ts;
-
-	if (execControls.d_ua2 > 0.0)
 		execControls.ua2 += execControls.d_ua2 * Ts;
-
-	if (execControls.d_ue  > 0.0)
 		execControls.ue  += execControls.d_ue  * Ts;
+	}
+
+	if (controlStatus == NewData)
+	{
+		if (controls.der_ctrl == true)
+		{
+			execControls.d_ua1 = controls.d_ua1;
+			execControls.d_ua2 = controls.d_ua2;
+			execControls.d_ue  = controls.d_ue;
+			
+			execControls.der_ctrl = true;
+		}
+		else
+		{
+			execControls.ua1 = controls.ua1;
+			execControls.ua2 = controls.ua2;
+			execControls.ue  = controls.ue;
+
+			execControls.d_ua1 = execControls.d_ua2 = execControls.d_ue = 0.0;
+			
+			execControls.der_ctrl = false;
+		}
+	}
 }
 
 void McuHandler::setControlsRadians(float right_aileron, float left_aileron, float elevator)
@@ -280,7 +291,7 @@ void McuHandler::setControlsRadians(float right_aileron, float left_aileron, flo
 	execControls.ua2 = left_aileron;
 	execControls.ue  = elevator;
 
-	controlsJustUpdated = true;
+	execControls.der_ctrl = false;
 	
 	sendMotorReferences();
 }
@@ -291,7 +302,7 @@ void McuHandler::setControlsUnitless(float right_aileron, float left_aileron, fl
 	execControls.ua2 = left_aileron;
 	execControls.ue  = elevator;
 
-	controlsJustUpdated = true;
+	execControls.der_ctrl = false;
 	
 	sendMotorReferences();
 }

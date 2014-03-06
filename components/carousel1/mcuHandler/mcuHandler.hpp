@@ -134,7 +134,7 @@ private:
 
 	ControlSurfacesValues execControls;
 
-	bool controlsJustUpdated;
+	RTT::FlowStatus controlStatus;
 };
 
 #endif // __MCUHANDLER__

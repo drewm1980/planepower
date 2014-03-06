@@ -5,20 +5,22 @@
 struct ControlSurfacesValues
 {
 	ControlSurfacesValues()
-		: ua1(0.0), ua2(0.0), ue(0.0), d_ua1(0.0), d_ua2(0.0), d_ue(0.0)
+		: ua1(0.0), ua2(0.0), ue(0.0), d_ua1(0.0), d_ua2(0.0), d_ue(0.0),
+		  der_ctrl(false)
 	{}
 
 	void reset()
 	{
 		ua1 = ua2 = ue = d_ua1 = d_ua2 = d_ue = 0.0;
+		der_ctrl = false;
 	}
 
 	/// Control surfaces' values [rad]
 	float ua1, ua2, ue;
 	/// Control surcafes derivative values [rad/s]
-	/// NOTE: if those derivatives are zero, then guys above are
-	///       are applied immediatelly
 	float d_ua1, d_ua2, d_ue;
+	/// Indircator for derivative control, when only derivatives are used
+	bool der_ctrl;
 };
 
 /// Custom data type for the MCU handler
