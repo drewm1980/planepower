@@ -91,8 +91,12 @@ public:
 
 protected:
 	//
-	// TODO Input ports
+	// Input ports
 	//
+	/// Port with controls
+	RTT::InputPort< ControlSurfacesValues > portControls;
+	/// control values holder
+	ControlSurfacesValues controls;
 
 	//
 	// Output ports
@@ -147,6 +151,7 @@ private:
 	void updateEncData();
 	void updateCamData();
 	void updateWinchData();
+	void updateControls();
 
 	std::vector< double > integratorIO, outputs;
 

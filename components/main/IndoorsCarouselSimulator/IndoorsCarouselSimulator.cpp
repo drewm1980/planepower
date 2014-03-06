@@ -19,6 +19,8 @@ using namespace RTT::os;
 IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	: TaskContext(name, PreOperational)
 {
+	addPort("controls", portControls)
+		.doc("Plane's control surfaces values");
 	addPort("trigger", portTrigger)
 		.doc("Trigger port");
 	addPort("mcuData", portMcuHandlerData)
@@ -37,6 +39,8 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	//
 	// Set data samples
 	//
+
+	controls.reset();
 
 	trigger = TimeService::Instance()->getTicks();
 
@@ -147,15 +151,36 @@ void IndoorsCarouselSimulator::updateHook( )
 
 	trigger = TimeService::Instance()->getTicks();
 
-	// 1) Take the step, i.e. call ACADO generated integrator
+	// 1) Read controls
+	if (portControls.read( controls ) == NewData)
+	{
+		if (controls.der_ctrl == true)
+		{
+			integratorIO[NX + NXA + idx_daileron] = controls.d_ua1;
+			integratorIO[NX + NXA + idx_delevator] = controls.d_ue;
+		}
+		else
+		{
+			integratorIO[idx_aileron] = controls.ua1;
+			integratorIO[idx_elevator] = controls.ue;
+
+			integratorIO[NX + NXA + idx_daileron] = controls.d_ua1;
+			integratorIO[NX + NXA + idx_delevator] = controls.d_ue;
+		}
+	}
+
+	// 2) Take the step, i.e. call ACADO generated integrator
 	status = integrate(integratorIO.data(), outputs.data(), firstRun == true ? 1 : 0);
 	if ( status )
+	{
+		log( Error ) << "*** SIMULATOR DIED ***" << endlog();
 		exception();
+	}
 	
 	if (firstRun == true)
 		firstRun = false;
 
-	// 2) Put outputs to the ports according to the specs (from python codegen)
+	// 3) Put outputs to the ports according to the specs (from python codegen)
 	updateMcuData();
 	updateEncData();
 	updateCamData();
@@ -164,7 +189,7 @@ void IndoorsCarouselSimulator::updateHook( )
 	// Update trigegr at the end, so that the delayed measurements get sent to corr. port
 	updateTrigger();
 
-	// 3) Set some debug info
+	// 4) Set some debug info
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
