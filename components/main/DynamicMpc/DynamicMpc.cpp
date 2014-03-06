@@ -96,6 +96,9 @@ bool DynamicMpc::startHook()
 	// Configure weights, from the header file
 	prepareWeights();
 
+	// Reset the controls that are going to be sent to outside
+	controls.reset();
+
 	runCnt = 0;
 
 	return true;
@@ -128,17 +131,20 @@ void DynamicMpc::updateHook()
 		if (mpcStatus == 0)
 		{
 #if 1
-			controls.ua1 = controls.ua2 = acadoVariables.x[ idx_aileron ];
-			controls.ue  = acadoVariables.x[ idx_elevator ];
-
+			// Derivative mode
 			controls.d_ua1 = controls.d_ua2 = acadoVariables.u[ idx_daileron ];
 			controls.d_ue  = acadoVariables.u[ idx_delevator ];
+
+			controls.der_ctrl = true;
 #else
+			// Mode where we send the reference which should appear after one sampling period
 			controls.ua1 = controls.ua2 = acadoVariables.x[NX + idx_aileron];
 			controls.ue  = acadoVariables.x[NX + idx_elevator];
 
 			controls.d_ua1 = controls.d_ua2 = 0.0;
 			controls.d_ue  = 0.0;
+
+			controls.der_ctrl = false;
 #endif
 		}
 		else
