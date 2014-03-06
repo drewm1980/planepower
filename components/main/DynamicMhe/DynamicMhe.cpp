@@ -347,9 +347,9 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ 4 ] += imuData[ i ].accl_y;
 		debugData.imu_avg[ 5 ] += imuData[ i ].accl_z;
 
-		debugData.controls_avg[ 0 ] += imuData[ i ].ua1;
-		debugData.controls_avg[ 1 ] += imuData[ i ].ua2;
-		debugData.controls_avg[ 2 ] += imuData[ i ].ue;
+		debugData.controls_avg[ 0 ] += imuData[ i ].ctrl.ua1;
+		debugData.controls_avg[ 1 ] += imuData[ i ].ctrl.ua2;
+		debugData.controls_avg[ 2 ] += imuData[ i ].ctrl.ue;
 	}
 	for (unsigned i = 0; i < debugData.imu_avg.size(); ++i)
 		debugData.imu_avg[ i ] /= (double)numImuSamples;

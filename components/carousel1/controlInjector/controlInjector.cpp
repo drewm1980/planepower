@@ -19,9 +19,9 @@ ControlInjector::ControlInjector(std::string name):TaskContext(name,PreOperation
 			.arg("right_aileron", "Right Aileron, scaled from -1 to 1, positive is DOWN")
 			.arg("left_aileron", "Left Aileron, scaled from -1 to 1, positive is UP")
 			.arg("elevator", "Elevator, scaled from -1 to 1, positive is UP");
-
-	controls.resize(3, 0.0);
+	
 	// Prepare ports
+	controls.reset();
 	portControls.setDataSample( controls );
 	portControls.write( controls );
 
@@ -58,17 +58,14 @@ void  ControlInjector::errorHook()
 // Warning, this function NOT hard real-time safe.
 // But, this should be fine if you're running this component
 // in it's own thread.
-void ControlInjector::setControlsUnitless(double right_aileron, double left_aileron, double elevator)
+void ControlInjector::setControlsUnitless(float right_aileron, float left_aileron, float elevator)
 {
-	vector<double> temp;
-	temp.resize(3,0.0);
-	temp[0] = right_aileron;
-	temp[1] = left_aileron; 
-	temp[2] = elevator;
-	convert_controls_unitless_to_radians(&temp[0]);
-	controls[0]=temp[0];
-	controls[1]=temp[1];
-	controls[2]=temp[2];
+	convertControlsUnitlessRadians(right_aileron, left_aileron, elevator);
+	controls.ua1 = right_aileron;
+	controls.ua2 = left_aileron;
+	controls.ue = elevator;
+
+	controls.d_ua1 = controls.d_ua1 = controls.d_ue = 0.0;
 }
 
 ORO_CREATE_COMPONENT( ControlInjector )

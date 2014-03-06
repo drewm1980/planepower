@@ -217,9 +217,9 @@ void IndoorsCarouselSimulator::updateMcuData()
 		mcuData.gyro_y = outputs[offset_IMU_angular_velocity + 1];
 		mcuData.gyro_z = outputs[offset_IMU_angular_velocity + 2];
 
-		mcuData.ua1 = integratorIO[ idx_aileron ];
-		mcuData.ua2 = integratorIO[ idx_aileron ];
-		mcuData.ue  = integratorIO[ idx_elevator ];
+		mcuData.ctrl.ua1 = integratorIO[ idx_aileron ];
+		mcuData.ctrl.ua2 = integratorIO[ idx_aileron ];
+		mcuData.ctrl.ue  = integratorIO[ idx_elevator ];
 
 		mcuData.ts_trigger = trigger;
 		mcuData.ts_elapsed = 0.0;

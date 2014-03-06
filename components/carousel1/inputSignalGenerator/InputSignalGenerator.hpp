@@ -4,6 +4,8 @@
 #include <rtt/TaskContext.hpp>
 #include <rtt/Port.hpp>
 
+#include "mcuHandler/types/McuHandlerDataType.hpp"
+
 /// Stupid component to generate some inputs for the ailerons
 class InputSignalGenerator
 	: public RTT::TaskContext
@@ -30,9 +32,9 @@ public:
 
 protected:
 	/// Output port containing voltages
-	RTT::OutputPort< std::vector< double > > portData;
+	RTT::OutputPort< ControlSurfacesValues > portData;
 	/// Output data holder
-	std::vector< double > data;
+    ControlSurfacesValues data;
 
 	/// Frequency of the output sine wave
 	double fsine;

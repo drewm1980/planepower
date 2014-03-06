@@ -21,7 +21,7 @@ InputSignalGenerator::InputSignalGenerator(string name)
 	addPort("data", portData)
 		.doc("Input data for the airplane...");
 
-	data.resize(3, 0.0);
+	data.reset();
 	portData.setDataSample( data );
 	portData.write( data );
 
@@ -74,21 +74,19 @@ void InputSignalGenerator::updateHook()
 
 	if (abs(fsine) > 1e-4)
 	{
-		data[ 0 ] = amplitude * sin_angle;
-		data[ 1 ] = amplitude * sin_angle;
-		data[ 2 ] = 0.0;
+		data.ua1 = amplitude * sin_angle;
+		data.ua2 = amplitude * sin_angle;
+		data.ue = 0.0;
 	}
 	else
-	{
-		data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
-	}
+		data.reset();
 
 	portData.write( data );
 }
 
 void InputSignalGenerator::stopHook()
 {
-	data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
+	data.reset();
 	portData.write( data );
 }
 
