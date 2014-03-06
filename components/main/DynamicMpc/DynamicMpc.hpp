@@ -96,7 +96,7 @@ private:
 	bool prepareDebugData( void );
 
 	unsigned runCnt;
-	double execY[ NY ], execYN[ NYN ];
+//	double execY[ NY ], execYN[ NYN ];
 };
 
 #endif // DYNAMIC_MPC_HPP

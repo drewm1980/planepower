@@ -127,6 +127,11 @@ void DynamicMpc::updateHook()
 		uint64_t fdbEntry = TimeService::Instance()->getTicks();
 		mpcStatus = feedbackStep();
 		debugData.exec_fdb = TimeService::Instance()->secondsSince( fdbEntry );
+
+		if (isNaN(acadoVariables.x, NX * (N + 1)) == true || isNaN(acadoVariables.u, NU * N) == true)
+		{
+			mpcStatus = -100;
+		}
 		
 		if (mpcStatus == 0)
 		{
