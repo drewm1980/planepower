@@ -187,12 +187,11 @@ var ConnPolicy cpLT
 cpLT.type = 1
 cpLT.size = 5
 
-// MHE connections
-
 var ConnPolicy cpImuMhe
 cpImuMhe.type = 1
 cpImuMhe.size = 1000
 
+// Simulator -> MHE
 connect("simulator.trigger", "mhe.trigger", cp)
 connect("simulator.mcuData", "mhe.mcuData", cpImuMhe)
 connect("simulator.encoderData", "mhe.encoderData", cp)
@@ -205,7 +204,10 @@ connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
 connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
 connect("simulator.winchData", "winchTelemetry.msgData", cp)
 
+// MHE -> NMPC
 connect("mhe.stateEstimate", "mpc.feedback", cp)
+// NMPC -> Simulator
+connect("mpc.controls", "simulator.controls", cp)
 
 connect("mhe.debugData", "mheTelemetry.msgData", cp)
 connect("mpc.debugData", "mpcTelemetry.msgData", cp)
