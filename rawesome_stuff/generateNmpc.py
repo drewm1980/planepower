@@ -9,6 +9,8 @@ from rawe.ocp.Ocp import generateProto
 from rawe.models.arianne_conf import makeConf
 from offline_mhe_test import NMPC
 
+from generateReference import generateReference
+
 from rawekite.carouselSteadyState import getSteadyState
 
 if __name__=='__main__':
@@ -82,7 +84,7 @@ if __name__=='__main__':
 	#
 	
 	# Cable length which we are going to supply to the MHE as a fake measurement
-	measCableLength = 1.275
+	measCableLength = 1.75
 	
 	# Speed for the steady state calculation
 	steadyStateSpeed = -4.0
@@ -101,6 +103,10 @@ if __name__=='__main__':
 		fw.write("const double ss_" + k + "[ " + str( len( v ) ) + " ] = {")
 		fw.write(", ".join([repr( steadyState[ name ] ) + " /*" + name + "*/" for name in v]))
 		fw.write("};\n\n")
+		
+	ref, code = generateReference(propsDir, measCableLength, steadyStateSpeed)
+	
+	fw.write( code )
 	
 	fw.write("#endif // NMPC_CONFIGURATION\n")
 	fw.close()
