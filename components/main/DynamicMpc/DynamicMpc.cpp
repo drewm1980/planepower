@@ -48,7 +48,7 @@ DynamicMpc::DynamicMpc(std::string name)
 	addPort("debugData", portDebugData)
 		.doc("Debugging data");
 
-	controls.resize(3, 0.0);
+	controls.reset();
 	portControls.setDataSample( controls );
 	portControls.write( controls );
 
@@ -127,13 +127,23 @@ void DynamicMpc::updateHook()
 		
 		if (mpcStatus == 0)
 		{
-			// TODO Do not forget about scaling!!!
-			controls[ 0 ] = controls[ 1 ] = acadoVariables.x[NX + idx_aileron];
-			controls[ 2 ] = acadoVariables.x[NX + idx_elevator];
+#if 1
+			controls.ua1 = controls.ua2 = acadoVariables.x[ idx_aileron ];
+			controls.ue  = acadoVariables.x[ idx_elevator ];
+
+			controls.d_ua1 = controls.d_ua2 = acadoVariables.u[ idx_daileron ];
+			controls.d_ue  = acadoVariables.u[ idx_delevator ];
+#else
+			controls.ua1 = controls.ua2 = acadoVariables.x[NX + idx_aileron];
+			controls.ue  = acadoVariables.x[NX + idx_elevator];
+
+			controls.d_ua1 = controls.d_ua2 = 0.0;
+			controls.d_ue  = 0.0;
+#endif
 		}
 		else
 		{
-			controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
+			controls.reset();
 		}
 
 		portControls.write( controls );
@@ -178,7 +188,7 @@ void DynamicMpc::updateHook()
 
 void DynamicMpc::stopHook( )
 {
-	controls[ 0 ] = controls[ 1 ] = controls[ 2 ] = 0.0;
+	controls.reset();
 	portControls.write( controls );
 }
 
