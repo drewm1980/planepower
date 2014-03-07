@@ -164,8 +164,8 @@ void IndoorsCarouselSimulator::updateHook( )
 			integratorIO[idx_aileron] = controls.ua1;
 			integratorIO[idx_elevator] = controls.ue;
 
-			integratorIO[NX + NXA + idx_daileron] = controls.d_ua1;
-			integratorIO[NX + NXA + idx_delevator] = controls.d_ue;
+			integratorIO[NX + NXA + idx_daileron] = 0.0;
+			integratorIO[NX + NXA + idx_delevator] = 0.0;
 		}
 	}
 
