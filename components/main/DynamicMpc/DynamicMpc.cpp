@@ -113,10 +113,10 @@ void DynamicMpc::updateHook()
 
 	portFeedback.read( feedback );
 	if (feedback.x_hat.size() != NX)
-		exception();
+		stop();
 	for (unsigned i = 0; i < NX; acadoVariables.x0[ i ] = feedback.x_hat[ i ], i++);
 	if (prepareReference() == false)
-		exception();
+		stop();
 
 	if (runCnt == 0)
 	{
@@ -191,7 +191,7 @@ void DynamicMpc::updateHook()
 	debugData.exec_prep = TimeService::Instance()->secondsSince( timeStamp );
 
 	if ( mpcStatus )
-		exception();
+		stop();
 
 	if (runCnt == 0)
 		++runCnt;
