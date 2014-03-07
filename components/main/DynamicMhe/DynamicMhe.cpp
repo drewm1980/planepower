@@ -505,8 +505,10 @@ bool DynamicMhe::prepareInitialGuess( void )
 
 	// Nodes 0.. N - 1
 	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
-			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
+	{
+		acadoVariables.x[blk * NX + idx_cos_delta] = acadoVariables.y[offset_cos_delta];
+		acadoVariables.x[blk * NX + idx_sin_delta] = acadoVariables.y[offset_sin_delta];
+	}
 
 	// Node N
 	// Take cos_delta and sin_delta from the last row from y and based on the 
