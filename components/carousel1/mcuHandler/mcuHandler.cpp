@@ -254,13 +254,13 @@ void McuHandler::updateControls()
 	//       sampling instance.
 
 
-	if (execControls.der_ctrl == true)
-	{
+//	if (execControls.der_ctrl == true)
+//	{
 		// Calculate current controls;
 		execControls.ua1 += execControls.d_ua1 * Ts;
 		execControls.ua2 += execControls.d_ua2 * Ts;
 		execControls.ue  += execControls.d_ue  * Ts;
-	}
+//	}
 
 	if (controlStatus == NewData)
 	{
