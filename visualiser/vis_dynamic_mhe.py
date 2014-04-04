@@ -17,13 +17,22 @@ from vis_helpers import OcpWorker
 
 app = QtGui.QApplication([])
 
+class CustomGraphicsView( pg.GraphicsView ):
+	def __init__(self, timer, parent = None):
+		pg.GraphicsView.__init__(self, parent)
+
+		assert isinstance(timer, QtCore.QTimer)
+		self._timer = timer
+	
+	def keyPressEvent(self, event):
+		if event.key() == QtCore.Qt.Key_P:
+			# A simple start/stop of a timer if the key "P" is pressed
+			if self._timer.isActive() is True:
+				self._timer.stop()
+			else:
+				self._timer.start()
+
 layout = pg.GraphicsLayout(border = (100, 100, 100))
-view = pg.GraphicsView()
-view.setCentralItem( layout )
-view.show()
-view.setWindowTitle(
-	"Telemetry for MHE; Horizons of states and controls and history of performance indicators" )
-view.resize(1024, 768)
 
 #
 # Generic fields, that all protobufs _must_ have
@@ -138,6 +147,13 @@ workers.append(OcpWorker(mheProto, host + ":" + DynamicMhePort, q1, bufferSize =
 # Start Qt event loop unless running in interactive mode.
 #
 if __name__ == '__main__':
+
+	view = CustomGraphicsView( timer )
+	view.setCentralItem( layout )
+	view.show()
+	view.setWindowTitle(
+		"Telemetry for MHE; Horizons of states and controls and history of performance indicators" )
+	view.resize(1024, 768)
 
 	for worker in workers:
 		worker.start()
