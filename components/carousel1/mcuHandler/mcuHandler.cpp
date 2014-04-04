@@ -324,18 +324,18 @@ void McuHandler::sendMotorReferences( void )
 	if (ua2 > 1.0) ua2 = 1.0; else if (ua2 < -1.0) ua2 = -1.0;
 	if (ue  > 1.0) ue  = 1.0; else if (ue  < -1.0) ue  = -1.0;
 
-	// Return back the trimmed controls to exec variable
-	convertControlsUnitlessRadians(ua1, ua2, ue);
-	execControls.ua1 = ua1;
-	execControls.ua2 = ua2;
-	execControls.ue  = ue;
-	
 	//
 	// Scale controls
 	//
 	short execRef1 = (short)(ua1 * MAX_VALUE_MOTOR_REF);
 	short execRef2 = (short)(ua2 * MAX_VALUE_MOTOR_REF);
 	short execRef3 = (short)(ue  * MAX_VALUE_MOTOR_REF);
+
+	// Return back the trimmed controls to exec variable
+	convertControlsUnitlessRadians(ua1, ua2, ue);
+	execControls.ua1 = ua1;
+	execControls.ua2 = ua2;
+	execControls.ue  = ue;
 
 	//
 	// Prepare the request message
