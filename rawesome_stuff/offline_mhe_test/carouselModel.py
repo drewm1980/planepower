@@ -5,6 +5,7 @@ import numpy as np
 import os
 
 def makeModel(conf,propertiesDir='../properties'):
+    print "Using the update carousel model"
     
     # Make model
     dae = rawe.models.carousel(conf)

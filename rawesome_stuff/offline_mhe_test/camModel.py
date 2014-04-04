@@ -36,6 +36,7 @@ def singleCamModel(p,R,RP,P,pos_marker_body):
     #Jh_cam.generateCode('camModelJacobian.c')
 
 def fullCamModel(dae,conf):
+    print "Using the updated full camera model"
 	
 	# Rotation matrix to convert from NWU to NED frame type
     R_nwu2ned = np.eye( 3 )
