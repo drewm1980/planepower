@@ -38,12 +38,14 @@ DynamicMpc::DynamicMpc(std::string name)
 	//
 	addEventPort("feedback", portFeedback)
 		.doc("Feedback -- state estimate.");
+	addPort("currentControls", portCurrentControls)
+		.doc("Current controls -- from the MCU handler.");
 
 	//
 	// Set the output ports
 	//
 	addPort("controls", portControls)
-		.doc("MPC controls, current controls (estimated by MHE).");
+		.doc("MPC controls");
 
 	addPort("debugData", portDebugData)
 		.doc("Debugging data");
@@ -115,6 +117,16 @@ void DynamicMpc::updateHook()
 	if (feedback.x_hat.size() != NX)
 		stop();
 	for (unsigned i = 0; i < NX; acadoVariables.x0[ i ] = feedback.x_hat[ i ], i++);
+
+#if 0
+	// Here we can override the control surface angles with what is actually applied
+	// to the plane
+	portCurrentControls.read( currentControls );
+	acadoVariables.x0[ idx_aileron ] = currentControls.ctrl.ua1;
+	acadoVariables.x0[ idx_elevator ] = currentControls.ctrl.ue;
+#endif
+
+
 	if (prepareReference() == false)
 		stop();
 

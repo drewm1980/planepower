@@ -305,6 +305,7 @@ connect("mhe.stateEstimate", "mpc.feedback", cp)
 
 // NMPC -> outside world (MCU handler)
 connect("mpc.controls", "mcuHandler.controls", cp)
+connect("mcuHandler.data", "mcuHandler.currentControls", cp)
 
 connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
 connect("encoder.data", "encoderTelemetry.msgData", cp)

@@ -67,6 +67,11 @@ protected:
 	/// State estimate data holder
 	DynamicMheStateEstimate feedback;
 
+	// Current controls
+	RTT::InputPort< McuHandlerDataType > portCurrentControls;
+	/// control data holder
+	McuHandlerDataType currentControls;
+
 	//
 	// Output ports
 	//
