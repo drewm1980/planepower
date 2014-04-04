@@ -1,4 +1,5 @@
 import casadi as C
+import numpy as np
 import rawe
 
 import carouselModel
@@ -10,7 +11,7 @@ from rawe.models.arianne_conf import makeConf
 samplingTime = 0.04
 
 # Horizon length
-mheHorizonN = 20
+mheHorizonN = 15
 
 mheIntOpts = rawe.RtIntegratorOptions()
 mheIntOpts['INTEGRATOR_TYPE'] = 'INT_IRK_GL2'
@@ -40,12 +41,13 @@ mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = True
 
 # Measurements depending only on diff. state variables
 # DO NOT CHANGE THIS ORDER
-measX = ['marker_positions', 'cos_delta', 'sin_delta', 'IMU_angular_velocity', 'IMU_acceleration']
+measX  = ['marker_positions', 'cos_delta', 'sin_delta', 'IMU_angular_velocity', 'IMU_acceleration']
 measX += ['aileron', 'elevator']
 measX += ['r', 'dr', 'ddr']
 
 # Measurements depending only on control variables
-measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
+measU  = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
+measU += ['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']
 
 #
 # Standard deviations for measurements
@@ -63,25 +65,27 @@ measU = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 # 			   'dmotor_torque':1e-4,
 # 			   'dddr':1e-4}
 
+gyro_lsb = np.radians( 0.2 )
+accl_lsb = 3.33 / 1000.0 * 9.81
+servo_lsb = 2.0 * np.pi / 1024.0
+
 # New, verified with experimental data
 mheSigmas = {
-				'marker_positions': 2e1,
+				'marker_positions': 2e1, # pixels
 
-				'cos_delta': 1e-2, 'sin_delta': 1e-2,
+				'cos_delta': 1e-3, 'sin_delta': 1e-3,
 
-				'IMU_angular_velocity': 1e-2,
-				'IMU_acceleration': 1e-2,
+				'IMU_angular_velocity': 50.0 * gyro_lsb, # 1 LSB of the gyroscope
+				'IMU_acceleration': 50.0 * accl_lsb, # 1 LSB of the accelerometer
 
-				'aileron': 1e-2,
-				'elevator': 1e-2,
+				'aileron': servo_lsb, 'elevator': servo_lsb,
+				'daileron': 1e0, 'delevator': 1e0,
 
-				'r': 1e-3, 'dr': 1e-2, 'ddr': 1e-2,
+				'r': 1e-2, 'dr': 1e-1, 'ddr': 1e-1, 'dddr': 1e-1,
 
-				'daileron': 1e-2, 'delevator': 1e-2,
-
-				'dmotor_torque': 1e0,
-
-				'dddr': 1e-4
+				'dmotor_torque': 1e1,
+				
+				'dt1_disturbance': 1e1, 'dt2_disturbance': 1e1, 'dt3_disturbance' : 1e1
 			 }
 
 # Weights
@@ -91,9 +95,19 @@ mheWeights = {}
 for sigma in mheSigmas:
 	mheWeights[ sigma ] = mheWeightScaling / mheSigmas[ sigma ] ** 2
 
-def makeMhe(Ts = None, propertiesDir = '../../properties',):
+def makeMhe(Ts = None, propertiesDir = '../../properties'):
+	
+	#
+	# Make the parameter configuration for the model
+	#
 	conf = makeConf()
-	conf['stabilize_invariants'] = False
+	conf[ 'stabilize_invariants' ] = False
+	conf[ 'useVirtualTorques' ]    = True
+	conf[ 'useVirtualForces' ]     = False 
+	
+	#
+	# Create the DAE
+	#
 	dae = carouselModel.makeModel(conf, propertiesDir = propertiesDir)
 
 	if Ts is None:
