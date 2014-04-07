@@ -41,9 +41,15 @@ protected:
 	/// Amplitude of the output sine wave
 	double amplitude;
 
+	/// A method to reset control surfaces to zero
+	void reset();
+
 private:
 	double Ts;
 	double angle;
+
+	double aileron;
+	double elevator;
 };
 
 #endif // __INPUT_SIGNAL_GENERATOR__
