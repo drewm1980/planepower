@@ -101,7 +101,7 @@ void InputSignalGenerator::cleanupHook()
 
 void InputSignalGenerator::reset()
 {
-	aileron = elevator = 0.0;
+	fsine = aileron = elevator = 0.0;
 }
 
 ORO_CREATE_COMPONENT( InputSignalGenerator )
