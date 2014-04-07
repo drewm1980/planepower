@@ -35,3 +35,8 @@ dataset
 # Images
 *.png
 
+# Latex stuff
+*.pdf
+*.aux
+*.log
+*.synctex.gz

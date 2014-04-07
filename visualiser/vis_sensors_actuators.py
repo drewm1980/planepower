@@ -151,11 +151,10 @@ lasPlots = addPlotsToLayout(layout.addLayout(), lasTitle, lasNames)
 #
 # LED Tracker data
 #
-ledNames =  []
-for frame in ["left", "right"]:
-	for clr in ["r", "g", "b"]:
-		for coord in ["u", "v"]:
-			ledNames.append(frame + "_" + clr + "_" + coord)
+ledNames = [frame + "_" + clr + "_" + coord
+			for frame in ["left, right"]
+			for clr in ["r", "g", "b"]
+			for coord in ["u", "v"]]
 
 def setupLedTrackerPlots( layout ):
 	"""

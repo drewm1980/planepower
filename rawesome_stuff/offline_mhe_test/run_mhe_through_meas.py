@@ -65,7 +65,20 @@ import carouselModel
 #data = sio.loadmat('dataset_20140206_185035_dmhe_testing.mat')
 # With high-speed winch data
 data = sio.loadmat('dataset_20140211_175800_dmhe_testing.mat')
+
+# Works
 data = sio.loadmat('dataset_20140211_200325_dmhe_testing.mat')
+
+# New March 7, check
+# data = sio.loadmat('dataset_20140307_161553_dmhe_testing.mat')
+# data = sio.loadmat('dataset_20140307_160755_dmhe_testing.mat')
+
+data = sio.loadmat('dataset_20140307_211550_closed_loop_tests.mat')
+
+# April 2, sine excitation in ailerons
+data = sio.loadmat('dataset_20140402_183030_dmhe_testing.mat')
+# April 3, mcuHandler is fixed now.
+data = sio.loadmat('dataset_20140403_160157_dmhe_testing.mat')
 
 # #samples, representing camera delay
 nDelay = 2
@@ -108,11 +121,19 @@ winch_flag   = data['dataset'][0,0]['winch_flag']
 #measEnd   = measStart + 1000
 
 # @ 25 Hz, from 2014
-measStart = 12400 # + 500 #25 * 80
+measStart = 12400 + 1000 #25 * 80
 measEnd	  = measStart + 2000
 
-while cam_flag[measStart] != 1:
-	measStart += 1
+# @ 25 Hz, from 2014, March7
+measStart = 1150 
+measEnd	  = measStart + 2000
+
+# @ 25 Hz, from 2014, April2
+measStart = 2400#4000 
+measEnd	  = measStart + 2000
+
+# while cam_flag[measStart] != 1:
+# 	measStart += 1
 
 measurements = {}
 measurements['time'] = time[measStart: measEnd, :]
@@ -138,8 +159,8 @@ measurements['sin_delta'] = -enc_data[measStart: measEnd, 1]
 measurements['IMU_angular_velocity'] = imu_avg[measStart: measEnd, :3]
 measurements['IMU_acceleration'] = imu_avg[measStart: measEnd, 3:]
 
-measurements['aileron'] = control_surf[measStart: measEnd, 0]
-measurements['elevator'] = control_surf[measStart: measEnd, 2]
+measurements['aileron'] = control_surf[measStart: measEnd, 0] * 1
+measurements['elevator'] = control_surf[measStart: measEnd, 2] * 1
 
 measurements['r'] = winch_data[measStart: measEnd, 0]
 measurements['r_delay'] = winch_delay[measStart: measEnd, 0]
@@ -197,6 +218,7 @@ if plot_meas:
 
 # Get the plane configuration parameters
 conf = makeConf()
+conf[ 'useVirtualTorques' ] = True
 # conf['stabilize_invariants'] = True
 dae = carouselModel.makeModel(conf, propertiesDir = '../../properties')
 
@@ -214,7 +236,7 @@ measU = MHE.measU
 ###############################################################################
 
 # Reference parameters
-refP = {'r0': 1.275, # [m], cable length used for SS calculations 
+refP = {'r0': 1.75, # [m], cable length used for SS calculations 
 		'ddelta0': -4.0, # [rad/s], speed used for SS calculations
 		}
 
@@ -539,7 +561,7 @@ if use_arrival_cost:
 	mheRT.WL  = 1e2 * numpy.eye(mheRT.x[0, :].shape[ 0 ])
 
 # Number of simulations steps
-nSim = MHE.mheHorizonN	+ 250
+nSim = MHE.mheHorizonN	+ 500
 # Maximum number of SQP iterations
 nSqpMhe = 1
 # Initialized flag
@@ -725,11 +747,11 @@ for itSim in range( nSim ):
 if mhe_sanity_check:
 	
 	# Check sparsity patterns of the measurements and weights
-	plt.figure()
-	plt.spy(mheRT.y, markersize=5)
-	plt.savefig('mhe_y_horizon.png', transparent=True)
-	plt.figure()
-	plt.spy(mheRT.S, markersize=5)
+# 	plt.figure()
+# 	plt.spy(mheRT.y, markersize=5)
+# 	plt.savefig('mhe_y_horizon.png', transparent=True)
+# 	plt.figure()
+# 	plt.spy(mheRT.S, markersize=5)
 
 	# ... for nodes 0..N - 1
 	scY = numpy.zeros(mheRT.y.shape)
@@ -768,25 +790,41 @@ if mhe_sanity_check:
 
 plt.ioff()
 
+saveFigs = False
+
 mheRT.subplot([['x', 'y', 'z'], ['dx', 'dy', 'dz']])
+if saveFigs is True: plt.savefig("positions.pdf")
 mheRT.subplot([['e11', 'e12', 'e13'], ['e21', 'e22', 'e23'], ['e31', 'e32', 'e33']])
+if saveFigs is True: plt.savefig("rot_matrix.pdf")
 mheRT.plot(['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z'])
+if saveFigs is True: plt.savefig("angular_velocities.pdf")
+
 
 mheRT.subplot([['aileron', 'elevator'], ['daileron', 'delevator']])
-mheRT.subplot([['cos_delta', 'sin_delta'], ['ddelta'], ['motor_torque']])
+if saveFigs is True: plt.savefig("control_surfaces.pdf")
+mheRT.subplot([['cos_delta', 'sin_delta'], ['ddelta'], ['motor_torque'], ['dmotor_torque']])
+if saveFigs is True: plt.savefig("carousel_angle_motor_torque.pdf")
 
 # Measurements for cable length are usually delayed by one sample
 mheRT.subplot([['r'], ['dr'], ['ddr'], ['dddr']], when = MHE.mheHorizonN - 1)
+if saveFigs is True: plt.savefig("tether.pdf")
 
 mheRT.subplot([['c'], ['cdot'], ['ConstDelta']])
+if saveFigs is True: plt.savefig("dae_constaints.pdf")
 mheRT.plot(['ConstR1', 'ConstR2', 'ConstR3', 'ConstR4', 'ConstR5', 'ConstR6'])
+if saveFigs is True: plt.savefig("rot_matrix_constraints.pdf")
 mheRT.subplot([['_kkt'], ['_objective'], ['_prep_time', '_fb_time']])
+if saveFigs is True: plt.savefig("mhe_perf.pdf")
 
 mheRT.plot(['IMU_acceleration'])
+if saveFigs is True: plt.savefig("imu_acceleration.pdf")
 mheRT.plot(['IMU_angular_velocity'])
+if saveFigs is True: plt.savefig("imu_angular_velocity.pdf")
 # Marker positions are usually delayed by 2 sample (@25 Hz samling rate)
 mheRT.plot(['marker_positions'], when = MHE.mheHorizonN - 2)
-
+if saveFigs is True: plt.savefig("marker_positions.pdf")
+mheRT.subplot([['t1_disturbance', 't2_disturbance', 't3_disturbance'],
+				['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']])
 
 #N = MHE.mheHorizonN
 #plt.figure()
