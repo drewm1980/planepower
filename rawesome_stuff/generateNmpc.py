@@ -84,7 +84,7 @@ if __name__=='__main__':
 	#
 	
 	# Cable length which we are going to supply to the MHE as a fake measurement
-	measCableLength = 1.275
+	measCableLength = 1.7
 	
 	# Speed for the steady state calculation
 	steadyStateSpeed = -4.0
