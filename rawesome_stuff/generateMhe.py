@@ -113,7 +113,9 @@ if __name__=='__main__':
     
     # Get the plane configuration parameters
     conf = makeConf()
-    daeSim = carouselModel.makeModel(conf, propsDir)
+    conf[ 'stabilize_invariants' ] = False
+    conf[ 'useVirtualTorques' ]    = True
+    conf[ 'useVirtualForces' ]     = False 
     
     # Cable length for steady state calculation
     steadyStateCableLength = 1.275
@@ -126,30 +128,30 @@ if __name__=='__main__':
             }
 
     # Get the steady state
-    steadyState, dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'])
+    steadyState, dSS = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'])
         
-    xlen = len( daeSim.xNames() )
-    fw.write("// " + str(daeSim.xNames()) + "\n");
+    xlen = len( mhe.dae.xNames() )
+    fw.write("// " + str(mhe.dae.xNames()) + "\n");
     fw.write("const double ss_x[ " + str( xlen ) + " ] = {")
-    for k, name in enumerate(daeSim.xNames()):
+    for k, name in enumerate(mhe.dae.xNames()):
         fw.write(repr(steadyState[ name ]))
         if k < (xlen - 1):
             fw.write(", ") 
     fw.write("};\n\n")
     
-    ulen = len( daeSim.uNames() )
-    fw.write("// " + str(daeSim.uNames()) + "\n");
+    ulen = len( mhe.dae.uNames() )
+    fw.write("// " + str(mhe.dae.uNames()) + "\n");
     fw.write("const double ss_u[ " + str( ulen ) + " ] = {")
-    for k, name in enumerate(daeSim.uNames()):
+    for k, name in enumerate(mhe.dae.uNames()):
         fw.write(repr(steadyState[ name ]))
         if k < (ulen - 1):
             fw.write(", ") 
     fw.write("};\n\n")
     
-    zlen = len( daeSim.zNames() )
-    fw.write("// " + str(daeSim.zNames()) + "\n");
+    zlen = len( mhe.dae.zNames() )
+    fw.write("// " + str(mhe.dae.zNames()) + "\n");
     fw.write("const double ss_z[ " + str( zlen ) + " ] = {")
-    for k, name in enumerate(daeSim.zNames()):
+    for k, name in enumerate(mhe.dae.zNames()):
         fw.write(repr(steadyState[ name ]))
         if k < (zlen - 1):
             fw.write(", ") 
