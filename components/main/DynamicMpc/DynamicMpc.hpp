@@ -101,6 +101,7 @@ private:
 	bool prepareDebugData( void );
 
 	unsigned runCnt;
+	int mpcStatus, errorCode;
 //	double execY[ NY ], execYN[ NYN ];
 };
 
