@@ -6,8 +6,8 @@
 /// This, compact, data structure is intended to be sent to a controller
 typedef struct
 {
-	/// Time-stamps: trigger [ticks], entry [ticks], elapsed [sec];
-	double ts_trigger, ts_entry, ts_elapsed;
+	/// Time-stamps: trigger [ticks]
+	double ts_trigger;
 	/// Ready indicator
 	bool ready;
 	/// Current state estimate

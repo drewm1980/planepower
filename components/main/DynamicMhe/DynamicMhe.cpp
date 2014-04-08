@@ -129,7 +129,7 @@ void DynamicMhe::updateHook()
 	TIME_TYPE prepStart, fdbStart;
 	bool runMhe = false;
 
-	debugData.ts_entry = stateEstimate.ts_entry = TimeService::Instance()->getTicks();
+	debugData.ts_entry = TimeService::Instance()->getTicks();
 	
 	// Reset the error codes
 	errorCode = ERR_OK;
@@ -249,7 +249,7 @@ void DynamicMhe::updateHook()
 		//
 		// Output the current state estimate
 		//
-		stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+		stateEstimate.ts_trigger = TimeService::Instance()->getTicks();
 		portStateEstimate.write( stateEstimate );
 	}
 	debugData.exec_fdb = TimeService::Instance()->secondsSince( fdbStart );

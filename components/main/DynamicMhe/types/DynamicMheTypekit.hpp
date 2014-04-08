@@ -15,8 +15,6 @@ namespace boost
 			using boost::serialization::make_nvp;
 			
 			a & make_nvp("ts_trigger", l.ts_trigger);
-			a & make_nvp("ts_entry", l.ts_entry);
-			a & make_nvp("ts_elapsed", l.ts_elapsed);
 
 			a & make_nvp("ready", l.ready);
 			a & make_nvp("x_hat", l.x_hat);
