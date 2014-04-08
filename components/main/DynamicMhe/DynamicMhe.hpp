@@ -122,7 +122,8 @@ private:
 	unsigned runCnt;
 	double execY[ NY ], execYN[ NYN ];
 
-	int mheStatus;
+	int mheStatus, errorCode;
+	unsigned numOfFailures;
 };
 
 #endif // DYNAMIC_MHE_HPP

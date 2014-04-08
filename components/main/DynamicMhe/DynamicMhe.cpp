@@ -15,11 +15,31 @@ using namespace RTT::os;
 
 /// Size of the IMU data buffer size
 #define MAX_NUM_IMU_SAMPLES 100
+/// Maxumum number of failures when we start the MHE
+#define MAX_NUM_FAILURES (2 * ACADO_N)
 
 /// Check port connection
 #define checkPortConnection( port ) \
 	if (port.connected() == false) \
 	{log( Error ) << "Port " << port.getName() << " is not connected." << endlog(); return false;}
+
+/// For internal use
+enum DynamicMheErrorCodes
+{
+	ERR_OK = 0,
+	ERR_NANS,
+	ERR_QP_STATUS,
+	ERR_MEAS_FAILED
+};
+
+static bool isNaN(double* array, unsigned dim)
+{
+	for (unsigned i = 0; i < dim; ++i)
+		if ((array[ i ] != array[ i ]) || (array[ i ] < -1e12) || (array[ i ] > 1e12))
+			return true;
+
+	return false;	
+}
 
 DynamicMhe::DynamicMhe(std::string name)
 	: TaskContext(name, PreOperational)
@@ -99,15 +119,22 @@ bool DynamicMhe::startHook()
 
 	runCnt = 0;
 
+	numOfFailures = 0;
+
 	return true;
 }
 
 void DynamicMhe::updateHook()
 {
 	TIME_TYPE prepStart, fdbStart;
+	bool runMhe = false;
 
 	debugData.ts_entry = stateEstimate.ts_entry = TimeService::Instance()->getTicks();
 	
+	// Reset the error codes
+	errorCode = ERR_OK;
+	mheStatus = 0;
+
 	// Read the trigger port
 	TIME_TYPE trigger;
 	portTrigger.read( trigger );
@@ -115,13 +142,19 @@ void DynamicMhe::updateHook()
 	
 	// Read and prepare sensor data
 	if (prepareMeasurements() == false)
-		exception();
+	{
+		if (runCnt > 0 and ++numOfFailures > MAX_NUM_FAILURES)
+		{
+			errorCode = ERR_MEAS_FAILED;
+			stop();
+		}
+		else
+			goto DynamicMheUpdateHookExit;
+	}
 	
 	//
 	// MHE "state-machine"
 	//
-	
-	bool runMhe = false;
 	
 	if (runCnt < N)
 	{
@@ -201,6 +234,12 @@ void DynamicMhe::updateHook()
 		// Execute feedback step of the RTI scheme
 		mheStatus = feedbackStep();
 
+		if (isNaN(acadoVariables.x, NX * (N + 1)) == true || isNaN(acadoVariables.u, NU * N) == true)
+		{
+			mheStatus = -100;
+			errorCode = ERR_NANS;
+		}
+
 		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
 			
 		// Copy the current state estimate to the output port
@@ -252,18 +291,46 @@ void DynamicMhe::updateHook()
 	}
 	debugData.exec_prep = TimeService::Instance()->secondsSince( prepStart );
 
+DynamicMheUpdateHookExit:
+
 	//
 	// Output debug data to the port
 	//
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
 
-	if ( mheStatus )
-		exception();
+	if (mheStatus and errorCode == ERR_OK)
+		errorCode = ERR_QP_STATUS;
+	if (errorCode != ERR_OK)
+		stop();
 }
 
 void DynamicMhe::stopHook()
-{}
+{
+	Logger::In in( getName() );
+
+	switch( errorCode )
+	{
+	case ERR_OK:
+		log( Info ) << "Successfully stopped." << endlog();
+		break;
+	case ERR_NANS:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": NANs detected in the estimator structures." << endlog();
+		break;
+	case ERR_QP_STATUS:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": mHE returned error code " << mheStatus << "." << endlog();
+		break;
+	case ERR_MEAS_FAILED:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": gathering of measurements failed." << endlog();
+		break;
+	default:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": unknown error." << endlog();
+	}
+}
 
 void DynamicMhe::cleanupHook()
 {}
@@ -273,7 +340,9 @@ void DynamicMhe::errorHook()
 
 void DynamicMhe::exceptionHook()
 {
-	log( Error ) << "Exception happened..." << endlog();
+	Logger::In in( getName() );
+	
+	log( Error ) << "Unknown exception happened..." << endlog();
 	// Try to recover the component ...
 	recover();
 }
@@ -327,6 +396,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	//
 	// Average data that come from MCU handler component
 	//
+	
 	debugData.imu_first[ 0 ] = imuData[numImuSamples - 1].gyro_x;
 	debugData.imu_first[ 1 ] = imuData[numImuSamples - 1].gyro_y;
 	debugData.imu_first[ 2 ] = imuData[numImuSamples - 1].gyro_z;
@@ -338,8 +408,15 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ i ] = 0.0;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
 		debugData.controls_avg[ i ] = 0.0;
+	
+	double prevTimestamp = debugData.ts_trigger - mhe_sampling_time * 1e9;
+	unsigned numImuSamplesReal = 0;
 	for (unsigned i = 0; i < numImuSamples; ++i)
 	{
+		// There can be some garbage in the buffer
+		if (imuData[ i ].ts_trigger < prevTimestamp)
+			continue;
+
 		debugData.imu_avg[ 0 ] += imuData[ i ].gyro_x;
 		debugData.imu_avg[ 1 ] += imuData[ i ].gyro_y;
 		debugData.imu_avg[ 2 ] += imuData[ i ].gyro_z;
@@ -350,21 +427,29 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.controls_avg[ 0 ] += imuData[ i ].ctrl.ua1;
 		debugData.controls_avg[ 1 ] += imuData[ i ].ctrl.ua2;
 		debugData.controls_avg[ 2 ] += imuData[ i ].ctrl.ue;
+
+		++numImuSamplesReal;
 	}
 	for (unsigned i = 0; i < debugData.imu_avg.size(); ++i)
-		debugData.imu_avg[ i ] /= (double)numImuSamples;
+		debugData.imu_avg[ i ] /= (double)numImuSamplesReal;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
-		debugData.controls_avg[ i ] /= (double)numImuSamples;
+		debugData.controls_avg[ i ] /= (double)numImuSamplesReal;
 
 	//
 	// Some debug stuff, record number of measurements we got
 	//
 	
-	debugData.num_imu_samples = numImuSamples;
+	debugData.num_imu_samples = numImuSamplesReal;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
 	debugData.num_las_samples = (lasStatus == NewData);
 	debugData.num_winch_samples = (winchStatus == NewData);
+
+	//
+	// If we got no measurements from the IMU, abort
+	//
+	if (numImuSamplesReal == 0)
+		return false;
 	
 	//
 	// Prepare the sensor data
@@ -505,28 +590,17 @@ bool DynamicMhe::prepareInitialGuess( void )
 		for (unsigned el = 0; el < NX; ++el)
 			acadoVariables.x[blk * NX + el] = ss_x[ el ];
 
-	// Initialize cos_delta and sin_delta from measurements:
+	// Initialize cos_delta and sin_delta by simulation from the first
+	// measurement using precomputed steady-state speed
+	double ddelta_ss = ss_x[ idx_ddelta ];
+	double angle = atan2(acadoVariables.y[ offset_sin_delta ], acadoVariables.y[ offset_cos_delta ]);
 
-	// Nodes 0.. N - 1
-	for (unsigned blk = 0; blk < N; ++blk)
+	for (unsigned blk = 0; blk < N + 1; ++blk)
 	{
-		acadoVariables.x[blk * NX + idx_cos_delta] = acadoVariables.y[offset_cos_delta];
-		acadoVariables.x[blk * NX + idx_sin_delta] = acadoVariables.y[offset_sin_delta];
+		acadoVariables.x[blk * NX + idx_cos_delta] = cos( angle );
+		acadoVariables.x[blk * NX + idx_sin_delta] = sin( angle );
+		angle += mhe_sampling_time * ddelta_ss;
 	}
-
-	// Node N
-	// Take cos_delta and sin_delta from the last row from y and based on the 
-	// steady state speed construct initial guess for the last node
-	
-	double angle = atan2(acadoVariables.x[(N - 1) * NX + idx_sin_delta],
-						 acadoVariables.x[(N - 1) * NX + idx_cos_delta]);
-	angle += ss_x[ idx_ddelta ] * mhe_sampling_time;
-	acadoVariables.x[N * NX + idx_cos_delta] = cos( angle );
-	acadoVariables.x[N * NX + idx_sin_delta] = sin( angle );
-
-//	// Last node must be initialized from yN
-//	for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
-//		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
 
 	//
 	// Initialize algebraic variables
