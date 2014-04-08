@@ -336,7 +336,7 @@ bool DynamicMpc::prepareReference( void )
 
 	// Set cos_delta and sin_delta from feedback
 	double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
-	for (unsigned blk = 0; blk < N + 1; ++blk)
+	for (unsigned blk = 0; blk < N; ++blk)
 	{
 		acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
 		acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
