@@ -35,7 +35,8 @@ enum DynamicMpcErrorCodes
 	ERR_NANS,
 	ERR_QP_STATUS,
 	ERR_FEEDBACK_SIZE,
-	ERR_PREPARE_REF
+	ERR_PREPARE_REF,
+	ERR_DEADLINE
 };
 
 DynamicMpc::DynamicMpc(std::string name)
@@ -171,7 +172,7 @@ void DynamicMpc::updateHook()
 			errorCode = ERR_NANS;
 		}
 		
-		if (mpcStatus == 0)
+		if (mpcStatus == 0 or mpcStatus == QPOASES_RET_MAX_NWSR)
 		{
 #if 1
 			// Derivative mode
@@ -227,13 +228,20 @@ DynamicMpcUpdateHookExit:
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
 
-	if (mpcStatus and errorCode == ERR_OK)
+	if (mpcStatus and mpcStatus != QPOASES_RET_MAX_NWSR and errorCode == ERR_OK)
 		errorCode = ERR_QP_STATUS;
 	if (errorCode != ERR_OK)
 		stop();
 
 	if (runCnt <= (5 * N))
 		++runCnt;
+
+	double elapsed = TimeService::Instance()->secondsSince( trigger );
+	if (runCnt > 5 and elapsed > mpc_sampling_time)
+	{
+		errorCode = ERR_DEADLINE;
+		stop();
+	}
 }
 
 void DynamicMpc::stopHook( )
@@ -250,7 +258,7 @@ void DynamicMpc::stopHook( )
 		break;
 	case ERR_NANS:
 		log( Error ) << "Runtime counter " << runCnt
-					 << ": NANs detected in the estimator structures." << endlog();
+					 << ": NANs detected in the controller structures." << endlog();
 		break;
 	case ERR_QP_STATUS:
 		log( Error ) << "Runtime counter " << runCnt
@@ -263,6 +271,10 @@ void DynamicMpc::stopHook( )
 	case ERR_PREPARE_REF:
 		log( Error ) << "Runtime counter " << runCnt
 					 << "Preparation of reference failed." << endlog();
+		break;
+	case ERR_DEADLINE:
+		log( Error ) << "Runtime counter " << runCnt
+					 << "Deadline is missed." << endlog();
 		break;
 
 	default:
