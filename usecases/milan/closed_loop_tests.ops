@@ -260,7 +260,8 @@ setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 
 setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
-setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,5)
+setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,4)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
