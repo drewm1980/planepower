@@ -20,20 +20,20 @@ typedef struct
 	/// Time-stamps: trigger [ticks], entry [ticks], elapsed [sec];
 	double ts_trigger, ts_entry, ts_elapsed;
 	/// Exec times for the MHE: feedback and preparation phase [sec]
-	double exec_fdb, exec_prep;
+	float exec_fdb, exec_prep;
 	/// Ready indicator
 	bool ready;
 	/// Error code
 	int solver_status;
 	/// Performance indicators
-	double kkt_value, obj_value, n_asc;
+	float kkt_value, obj_value, n_asc;
 
 	/// Horizons of optimization data
-	std::vector< double > x; 
-	std::vector< double > u; 
-	std::vector< double > z; 
-	std::vector< double > y;
-	std::vector< double > yN;
+	std::vector< float > x; 
+	std::vector< float > u; 
+	std::vector< float > z; 
+	std::vector< float > y;
+	std::vector< float > yN;
 //	std::vector< double > S;
 //	std::vector< double > SN;
 
