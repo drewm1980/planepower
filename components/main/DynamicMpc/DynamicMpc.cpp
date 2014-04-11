@@ -36,7 +36,8 @@ enum DynamicMpcErrorCodes
 	ERR_QP_STATUS,
 	ERR_FEEDBACK_SIZE,
 	ERR_PREPARE_REF,
-	ERR_DEADLINE
+	ERR_DEADLINE,
+	ERR_MHE_NOT_READY
 };
 
 DynamicMpc::DynamicMpc(std::string name)
@@ -139,6 +140,12 @@ void DynamicMpc::updateHook()
 	}
 	for (unsigned i = 0; i < NX; acadoVariables.x0[ i ] = feedback.x_hat[ i ], i++);
 
+	if (feedback.ready == false)
+	{
+		// Abort if MHE is not ready!
+		errorCode = ERR_MHE_NOT_READY;
+		goto DynamicMpcUpdateHookExit;
+	}
 
 #if 0
 	// Here we can override the control surface angles with what is actually applied
@@ -275,6 +282,10 @@ void DynamicMpc::stopHook( )
 	case ERR_DEADLINE:
 		log( Error ) << "Runtime counter " << runCnt
 					 << "Deadline is missed." << endlog();
+		break;
+	case ERR_MHE_NOT_READY:
+		log( Error ) << "Runtime counter " << runCnt
+					 << "Estimator is not ready." << endlog();
 		break;
 
 	default:
