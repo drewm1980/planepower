@@ -78,9 +78,9 @@ mhePlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
 				options = {"obj_value": ["semilogy"],
 						   "kkt_value": ["semilogy"]}) )
 
-horizonNamesAlt = posNames + rpyNames + velNames + gyroNames + \
-				  ctrlNames + carNames + cableNames
-historyNamesAlt = perfNames
+horizonNamesAlt = flatten(posNames + rpyNames + velNames + gyroNames + \
+				  ctrlNames + carNames + cableNames)
+historyNamesAlt = flatten( perfNames )
 
 horizonNames = []
 for v in horizonNamesAlt:
@@ -127,8 +127,6 @@ def updatePlots():
 timer = QtCore.QTimer()
 timer.timeout.connect( updatePlots )
 timer.start( 100 )
-
-mheNamesExt = genNames + historyNames + horizonNames
 
 #
 # ZMQ part:

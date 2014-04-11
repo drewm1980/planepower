@@ -2,8 +2,26 @@
 import zmq_protobuf_helpers
 import numpy as np
 
+from collections import OrderedDict
+
+def flatten( iterables ):
+	t = []
+	for it in iterables:
+		if isinstance(it, str) or isinstance(it, tuple):
+			t.extend( [ it ] )
+		else:
+			assert isinstance(it, list)
+			t.extend( it )
+	return t
+
 # Colors 
 colors = ["#FF0000", "#ADFF2F", "#00BFFF", "#FFFF00", "#FAA460"]
+symbols = OrderedDict([("o", "&#x25CF;"),
+					   ("s", "&#x25FC;"),
+					   ("t", "&#x25BC;"),
+					   ("d", "&#x25C6;"),
+					   ("+", "+")])
+
 
 def coloredText(txt, clr):
 	t = "<span style='color: " + clr + "; font-weight: bold'>" + str( txt ) + "</span>"
@@ -21,6 +39,12 @@ def blueBoldText( txt ):
 	t = "<span style='color: " + colors[ 2 ] + "; font-weight: bold'>" + str( txt ) + "</span>"
 	return t
 
+def wrappedCounter( n ):
+	counter = 0
+	while True:
+		yield counter % n
+		counter += 1
+
 def addPlotsToLayout(layout, title, names, options = dict()):
 	"""
 	A helper function to make plot objects on a grid
@@ -30,47 +54,80 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 	if isinstance(title, str):
 		layout.addLabel( title )
 	elif isinstance(title, list):
-		t = ""
-		for n, v in enumerate( title ):
-			if isinstance(v, str):
-				_v = v
-			elif isinstance (v, tuple):
-				# First element of the tuple is taken as the name and
-				# the second one as unit
-				_v = v[ 0 ] + " [" + v[ 1 ] + "]"
-			else:
-				raise TypeError("Title item can be a string or a tuple")
+		t = []
+		clr = wrappedCounter( len( colors ) )
+		for v in title:
+			def addSingleString(v, c, s = None):
+				if isinstance(v, str):
+					_v = v
+				elif isinstance (v, tuple):
+					# First element of the tuple is taken as the name and
+					# the second one as unit
+					_v = v[ 0 ] + " [" + v[ 1 ] + "]"
+				else:
+					raise TypeError("Title item can be a string or a tuple")
+
+				if s is not None:
+					_v += " " + s[ 1 ]
+
+				t.extend( [coloredText(_v, colors[ c ])] )
 			
-			t = t + coloredText(_v, colors[ n ])
-			if n < len( title ) - 1:
-				t = t + ", "
+			if isinstance(v, str) or isinstance(v, tuple):
+				addSingleString(v, next( clr ))
+			elif isinstance(v, list):
+				cc = next( clr )
+				ss = symbols.iteritems()
+				for innerName in v:
+					addSingleString(innerName, cc, next( ss ) )
+			else:
+				raise TypeError("Title items in the outer-most list can be: string, tuple, or a list")
 		
-		layout.addLabel( t )
+		layout.addLabel( ", ".join( t ) )
 	else:
 		raise TypeError("Title can be a string or a list of strings")
 	
 	layout.nextRow()
 	
 	d = dict()
+	clr = wrappedCounter( len( colors ) )
 	for k, name in enumerate( names ):
 		plt = layout.addPlot()
 		if k < len( names ) - 1:
 			plt.hideAxis( "bottom" )
 			layout.nextRow()
 
-		if isinstance(name, str):
-			_name = name
-		elif isinstance(name, tuple):
-			_name = name[ 0 ]
-		else:
-			raise TypeError("Items in the list of names can be either strings or tuples")
-		
-		d[ _name ] = plt.plot()
-		d[ _name ].setPen( colors[ k ] )
+		def addSinglePlot(name, c, s = None):
+			if isinstance(name, str):
+				_name = name
+			elif isinstance(name, tuple):
+				_name = name[ 0 ]
+			else:
+				raise TypeError("Items in the inner-most list can be either strings or tuples")
+			_clr = colors[ c ]
+			if s is None:
+				d[ _name ] = plt.plot(pen = _clr)
+			else:
+				# Add a bit of transparency to the symbol color
+				_clrT  = _clr + "80"
+				d[ _name ] = plt.plot(pen = _clr, \
+									  symbol = s[ 0 ], symbolPen = _clrT, symbolBrush = _clrT, symbolSize = 7)
 
-		if name in options:
-			if "semilogy" in options[ _name ]:
-				plt.setLogMode(y = True)
+			if s is not None:
+				d[ _name ].setSymbol( s[ 0 ] )
+
+			if name in options:
+				if "semilogy" in options[ _name ]:
+					plt.setLogMode(y = True)
+
+		if isinstance(name, str) or isinstance(name, tuple):
+			addSinglePlot(name, next( clr ) )
+		elif isinstance(name, list):
+			cc = next( clr )
+			ss = symbols.iteritems()
+			for innerName in name:
+				addSinglePlot(innerName, cc, next( ss ))
+		else:
+			raise TypeError("Items in the outer-most list can be: string, tuple, or a list")
 
 	return d
 
@@ -121,6 +178,18 @@ class OcpWorker( zmq_protobuf_helpers.ZmqSubProtobufWorker ):
 		for k in self._zMap.keys() + self._uMap.keys():
 			self._buffer[ k ] = list( xrange( self._msg.N ) )
 
+		# Define buffer for direct measurements/references of states and controls
+		self._yxMap = dict()
+		self._yuMap = dict()
+		for k, v in self._yMap.items():
+			_name = "y_" + k
+			if k in self._xMap.keys():
+				self._buffer[ _name ] = list( xrange(self._msg.N ) ) # TODO extend to N+1
+				self._yxMap.update({k: (_name, v)})
+			elif k in self._uMap.keys():
+				self._buffer[ _name ] = list( xrange( self._msg.N ) )
+				self._yuMap.update({k: (_name, v)})
+
 	def deserialize( self ):
 		def updateBufferSimple( name ):
 			self._buffer[ name ].popleft()
@@ -132,10 +201,19 @@ class OcpWorker( zmq_protobuf_helpers.ZmqSubProtobufWorker ):
 			el = getattr(self._msg, name)
 			for k, v in nMap.items():
 				self._buffer[ k ] = el[ v ].h._values
+
+		def updateHorizonBuffersYYN():
+			for k, v in self._yxMap.items():
+				self._buffer[ v[ 0 ] ] = self._msg.y[ v[ 1 ] ].h._values
+			for k, v in self._yuMap.items():
+				self._buffer[ v[ 0 ] ] = self._msg.y[ v[ 1 ] ].h._values
 		
 		updateHorizonBuffers(self._xMap, "x")
 		updateHorizonBuffers(self._zMap, "z")
 		updateHorizonBuffers(self._uMap, "u")
+
+		# TODO include data from yN buffer as well
+		updateHorizonBuffersYYN()
 
 		#
 		# And now do some unit conversions to make our lives easier

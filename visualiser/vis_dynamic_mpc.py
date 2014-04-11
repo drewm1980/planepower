@@ -38,7 +38,9 @@ genNames = ["ts_trigger", "ts_elapsed"]
 mpcPlots = dict()
 
 # x, y, z
-posNames = [("x", "m"), ("y", "m"), ("z", "m")]
+posNames = [[("x", "m"), "y_x"],
+			[("y", "m"), "y_y"],
+			[("z", "m"), "y_z"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), posNames, posNames) )
 # RPY, or e11_...e33
 rpyNames = [("roll", "deg"), ("pitch", "deg"), ("yaw", "deg")]
@@ -65,8 +67,8 @@ mpcPlots.update( addPlotsToLayout(layout.addLayout( ), perfNames, perfNames,
 execNames = [("exec_prep", "s"), ("exec_fdb", "s")]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), execNames, execNames) )
 
-horizonNamesAlt = posNames + rpyNames + velNames + gyroNames + \
-				  uaNames + ueNames
+horizonNamesAlt = flatten(posNames + rpyNames + velNames + gyroNames + \
+				  uaNames + ueNames)
 # 				  + carNames + cableNames
 historyNamesAlt = perfNames + execNames
 
@@ -115,8 +117,6 @@ def updatePlots():
 timer = QtCore.QTimer()
 timer.timeout.connect( updatePlots )
 timer.start( 100 )
-
-mheNamesExt = genNames + historyNames + horizonNames
 
 #
 # ZMQ part:
