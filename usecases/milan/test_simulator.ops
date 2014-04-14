@@ -67,7 +67,10 @@ loadComponent("mpcReporter", "OCL::NetcdfReporting")
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// Master timer
+//
+// NMPC
+//
+mpc.refPrescaler = 10
 
 //
 // Telemetry

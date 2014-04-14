@@ -107,9 +107,14 @@ private:
 	bool prepareReference( void );
 	bool prepareDebugData( void );
 
+	void refStart();
+	void refStop();
+
 	unsigned runCnt;
 	int mpcStatus, errorCode;
-//	double execY[ NY ], execYN[ NYN ];
+
+	bool refActive;
+	unsigned refCnt, refPrescalerCnt, refPrescaler;
 };
 
 #endif // DYNAMIC_MPC_HPP

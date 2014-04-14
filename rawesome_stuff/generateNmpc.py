@@ -95,7 +95,7 @@ if __name__=='__main__':
 			}
 
 	# Get the steady state
-	steadyState, dSS = getSteadyState(nmpc.dae, makeConf(), refP['ddelta0'], refP['r0'])
+	steadyState, dSS = getSteadyState(nmpc.dae, makeConf(), refP['ddelta0'], refP['r0'], verbose = False)
 
 	# Write the steady state to the file
 	names = {"x": nmpc.dae.xNames(), "u": nmpc.dae.uNames(), "z": nmpc.dae.zNames()}
@@ -103,9 +103,12 @@ if __name__=='__main__':
 		fw.write("const double ss_" + k + "[ " + str( len( v ) ) + " ] = {")
 		fw.write(", ".join([repr( steadyState[ name ] ) + " /*" + name + "*/" for name in v]))
 		fw.write("};\n\n")
+
+        #
+        # Generate reference for the NMPC
+        #
 		
 	ref, code = generateReference(propsDir, measCableLength, steadyStateSpeed)
-	
 	fw.write( code )
 	
 	fw.write("#endif // NMPC_CONFIGURATION\n")

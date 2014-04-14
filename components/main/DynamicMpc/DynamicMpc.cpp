@@ -81,9 +81,21 @@ DynamicMpc::DynamicMpc(std::string name)
 	//
 	// Properties
 	//
-	numSqpIterations = 1;
-	// addProperty("numSqpIterations", numSqpIterations)
-	// 	.doc("Number of SQP iterations. Default = 1, Max = 10.");
+	refPrescaler = 1;
+	addProperty("refPrescaler", refPrescaler)
+		.doc("Reference sampling time in ticks of the NMPC sapling time");
+
+	//
+	// Operations
+	//
+	addOperation("refStart", &DynamicMpc::refStart, this, ClientThread)
+		.doc("Start reference generator");
+	addOperation("refStop", &DynamicMpc::refStop, this, ClientThread)
+		.doc("Stop reference generator");
+	
+	// Set reference "generator" to false
+	refActive = false;
+	refCnt = refPrescalerCnt = 0;
 }
 
 bool DynamicMpc::configureHook()
@@ -114,6 +126,9 @@ bool DynamicMpc::startHook()
 	controls.reset();
 
 	runCnt = 0;
+
+	refActive = false;
+	refCnt = refPrescalerCnt = 0;
 
 	return true;
 }
@@ -342,41 +357,84 @@ bool DynamicMpc::prepareWeights( void )
 	for (unsigned el = 0; el < NY; ++el)
 		acadoVariables.W[el * NY + el] = mpc_weights[ el ];
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.WN[el * NYN + el] = mpc_weights[ el ];
+		acadoVariables.WN[el * NYN + el] = 10 * mpc_weights[ el ];
 	
 	return true;
 }
 
+void DynamicMpc::refStart( void )
+{
+	refCnt = refPrescalerCnt = 0;
+	refActive = true;
+}
+
+void DynamicMpc::refStop( void )
+{
+	refCnt = refPrescalerCnt = 0;
+	refActive = false;
+}
+
 bool DynamicMpc::prepareReference( void )
 {
-#if DEBUG == 1
-
-	// Set precomputed steady state as a reference!!!
-
-	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = 0; el < NX; ++el)
-			acadoVariables.y[blk * NY + el] = ss_x[ el ];
-
-	// Set cos_delta and sin_delta from feedback
-	double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
-	for (unsigned blk = 0; blk < N; ++blk)
+	if (refActive == false)
 	{
-		acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
-		acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
-		angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
-	}
+		// Set precomputed steady state as a reference!!!
+		for (unsigned blk = 0; blk < N; ++blk)
+			for (unsigned el = 0; el < NX; ++el)
+				acadoVariables.y[blk * NY + el] = ss_x[ el ];
 
-	for (unsigned blk = 0; blk < N; ++blk)
+		// Set cos_delta and sin_delta from feedback
+		double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
+		for (unsigned blk = 0; blk < N; ++blk)
+		{
+			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
+			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
+			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+		}
+
+		for (unsigned blk = 0; blk < N; ++blk)
+			for (unsigned el = 0; el < NU; ++el)
+				acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
+	
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.yN[ el ] = ss_x[ el ];
+		acadoVariables.yN[ idx_cos_delta ] = cos( angle );
+		acadoVariables.yN[ idx_sin_delta ] = sin( angle );
+	}
+	else
+	{
+		if (++refPrescalerCnt >= refPrescaler)
+		{
+			refPrescalerCnt = 0;
+			refCnt = (refCnt + 1) % REF_NUM_POINTS;
+		}
+		
+		// Shift the reference
+		for (unsigned blk = 0; blk < N - 1; ++blk)
+			for (unsigned el = 0; el < NY; ++el)
+				acadoVariables.y[blk * NY + el] = acadoVariables.y[(blk + 1) * NY + el];
+
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.y[(N - 1) * NY + el] = acadoVariables.yN[ el ];
+
+		// Add the new reference point at the end of the horizon
+		for (unsigned el = 0; el < NX; ++el)
+			acadoVariables.yN[ el ] = references[ refCnt ].x[ el ];
 		for (unsigned el = 0; el < NU; ++el)
-			acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
-	
-	for (unsigned el = 0; el < NX; ++el)
-		acadoVariables.yN[ el ] = ss_x[ el ];
-	acadoVariables.yN[ idx_cos_delta ] = cos( angle );
-	acadoVariables.yN[ idx_sin_delta ] = sin( angle );
-	
-	
-#endif // DEBUG == 1
+			acadoVariables.y[(N - 1) * NY + NX + el] = references[ refCnt ].u[ el ];
+
+		// Set cos_delta and sin_delta from feedback
+		double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
+		for (unsigned blk = 0; blk < N; ++blk)
+		{
+			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
+			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
+			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+		}
+
+		acadoVariables.yN[ idx_cos_delta ] = cos( angle );
+		acadoVariables.yN[ idx_sin_delta ] = sin( angle );
+	}
 
 	return true;
 }
