@@ -159,21 +159,22 @@ setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT, 1)
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT, 2)
 setActivityOnCPU("mpc", 0.0, ocpPrio, ORO_SCHED_RT, 3)
 
-setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
-setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
-setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 5)
-setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
-setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 5)
-setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 6)
-setActivityOnCPU("mpcTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 7)
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("mpcTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 4)
 
 setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
-setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
-setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 4)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -183,13 +184,9 @@ setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
 
 var ConnPolicy cp
 
-var ConnPolicy cpLT
-cpLT.type = 1
-cpLT.size = 5
-
 var ConnPolicy cpImuMhe
 cpImuMhe.type = 1
-cpImuMhe.size = 1000
+cpImuMhe.size = 100
 
 // Simulator -> MHE
 connect("simulator.trigger", "mhe.trigger", cp)
@@ -198,17 +195,16 @@ connect("simulator.encoderData", "mhe.encoderData", cp)
 connect("simulator.ledTrackerData", "mhe.ledTrackerData", cp)
 connect("simulator.lasData", "mhe.lasData", cp)
 connect("simulator.winchData", "mhe.winchData", cp)
-
+// Simulator -> sensors and actuators telemetry
 connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
 connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
 connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
 connect("simulator.winchData", "winchTelemetry.msgData", cp)
-
 // MHE -> NMPC
 connect("mhe.stateEstimate", "mpc.feedback", cp)
 // NMPC -> Simulator
 connect("mpc.controls", "simulator.controls", cp)
-
+// MHE & NMPC -> telemetry
 connect("mhe.debugData", "mheTelemetry.msgData", cp)
 connect("mpc.debugData", "mpcTelemetry.msgData", cp)
 

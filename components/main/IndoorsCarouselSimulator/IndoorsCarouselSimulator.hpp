@@ -36,25 +36,46 @@ typedef uint64_t TIME_TYPE;
 // Components' typekit
 #include "types/IndoorsCarouselSimulatorDataType.hpp"
 
-/// A class for manipulation of sensor data
+/// A buffer with functionality to delay samples
 template<class T>
-struct SensorTiming
+struct BufferWithDelay
 {
-	SensorTiming()
-		: cnt_ts( 0 ), cnt_td( 0 ), cnt_td_enable( false ), ts( 0 ), td( 0 )
+	BufferWithDelay()
+		: cnt_ts( 0 ), cnt_td( 0 ), ts( 0 ), td( 0 )
 	{}
 
 	void reset()
 	{
-		cnt_ts = ts;
+		cnt_ts = 0;
 		cnt_td = td;
-		cnt_td_enable = false;
+	}
+
+    bool update(T& _sample)
+	{
+		if (--cnt_ts <= 0)
+		{
+			cnt_ts = ts;
+
+			samples.push_back( _sample );
+		}
+
+		if (--cnt_td <= 0)
+		{
+			cnt_td = ts;
+
+			if (samples.size() > 0)
+			{
+				_sample = samples.front();
+				samples.pop_front();
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// Counters, RW
 	int cnt_ts, cnt_td;
-	/// Enable of delay counter
-	bool cnt_td_enable;
 	/// Sampling time in number of ticks of the simulator period, R
 	int ts;
 	/// Delay time in number of ticks of the simulator period, R
@@ -82,12 +103,6 @@ public:
 	virtual void updateHook( );
 	/// Stop hook.
 	virtual void stopHook( );
-	/// Cleanup hook.
-	virtual void cleanupHook( );
-	/// Error hook.
-	virtual void errorHook( );
-	/// Exception hook.
-	virtual void exceptionHook();
 
 protected:
 	//
@@ -138,20 +153,18 @@ protected:
 	
 private:
 
-	SensorTiming< McuHandlerDataType > mcuTime;
-	SensorTiming< EncoderDataType > encTime;
-	SensorTiming< LEDTrackerDataType > camTime;
-	SensorTiming< WinchControlDataType > winchTime;
+	BufferWithDelay< McuHandlerDataType > mcu;
+	BufferWithDelay< EncoderDataType > enc;
+	BufferWithDelay< LEDTrackerDataType > cam;
+	BufferWithDelay< WinchControlDataType > winch;
+	BufferWithDelay< uint64_t > mhe;
 
-	int trigger_cnt, trigger_ts, trigger_td;
-	bool trigger_enable;
-
-	void updateTrigger();
+	void updateControls();
 	void updateMcuData();
 	void updateEncData();
 	void updateCamData();
 	void updateWinchData();
-	void updateControls();
+	void updateMheTrigger();
 
 	std::vector< double > integratorIO, outputs;
 
