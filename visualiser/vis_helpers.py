@@ -3,6 +3,7 @@ import zmq_protobuf_helpers
 import numpy as np
 
 from collections import OrderedDict
+from textwrap import fill
 
 def flatten( iterables ):
 	t = []
@@ -53,10 +54,13 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 	layout.setContentsMargins(10, 10, 10, 10)
 	if isinstance(title, str):
 		layout.addLabel( title )
+		layout.nextRow()
 	elif isinstance(title, list):
 		t = []
 		clr = wrappedCounter( len( colors ) )
 		for v in title:
+			dim = 0
+
 			def addSingleString(v, c, s = None):
 				if isinstance(v, str):
 					_v = v
@@ -71,22 +75,30 @@ def addPlotsToLayout(layout, title, names, options = dict()):
 					_v += " " + s[ 1 ]
 
 				t.extend( [coloredText(_v, colors[ c ])] )
+
+				return len( _v )
 			
 			if isinstance(v, str) or isinstance(v, tuple):
-				addSingleString(v, next( clr ))
+				dim += addSingleString(v, next( clr ))
 			elif isinstance(v, list):
 				cc = next( clr )
 				ss = symbols.iteritems()
 				for innerName in v:
-					addSingleString(innerName, cc, next( ss ) )
+					dim += addSingleString(innerName, cc, next( ss ) )
 			else:
 				raise TypeError("Title items in the outer-most list can be: string, tuple, or a list")
+
+			if dim > 30:
+				layout.addLabel( ", ".join( t ) )					
+				layout.nextRow()
+				t = []
 		
-		layout.addLabel( ", ".join( t ) )
+		if len( t ):
+			layout.addLabel( ", ".join( t ) )					
+			layout.nextRow()
+
 	else:
 		raise TypeError("Title can be a string or a list of strings")
-	
-	layout.nextRow()
 	
 	d = dict()
 	clr = wrappedCounter( len( colors ) )

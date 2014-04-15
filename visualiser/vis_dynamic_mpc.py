@@ -37,7 +37,7 @@ genNames = ["ts_trigger", "ts_elapsed"]
 #
 mpcPlots = dict()
 
-# x, y, z
+# x, y, z; plus references
 posNames = [[("x", "m"), "y_x"],
 			[("y", "m"), "y_y"],
 			[("z", "m"), "y_z"]]
@@ -49,15 +49,19 @@ mpcPlots.update( addPlotsToLayout(layout.addLayout( ), rpyNames, rpyNames) )
 velNames = [("dx", "m/s"), ("dy", "m/s"), ("dz", "m/s")]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), velNames, velNames) )
 # w_... x, y, z
-gyroNames = [("w_bn_b_x", "rad/s"), "w_bn_b_y", "w_bn_b_z"]
+gyroNames = [[("w_bn_b_x", "rad/s"), "y_w_bn_b_x"],
+			 ["w_bn_b_y", "y_w_bn_b_y"],
+			 ["w_bn_b_z", "y_w_bn_b_z"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
 
 layout.nextRow()
 
 # aileron, elevator; daileron, delevator
-uaNames = [("aileron", "deg"), ("daileron", "deg/s")]
+uaNames = [[("aileron", "deg"), "y_aileron"],
+		   [("daileron", "deg/s"), "y_daileron"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), uaNames, uaNames) )
-ueNames = [("elevator", "deg"), ("delevator", "deg/s")]
+ueNames = [[("elevator", "deg"), "y_elevator"],
+		   [("delevator", "deg/s"), "y_delevator"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), ueNames, ueNames) )
 # obj_value, kkt_value, exec_prep, exec_fdb
 perfNames = ["n_asc", "obj_value", "kkt_value"]
