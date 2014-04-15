@@ -14,7 +14,6 @@ using namespace RTT;
 using namespace RTT::os;
 
 #define CAM_DATA_SIZE 12
-#define TRIGGER_OFFSET 1
 
 IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	: TaskContext(name, PreOperational)
@@ -66,39 +65,43 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	// Add constants for the configuration of the simulator
 	//
 
+	unsigned maxDelay = 0;
+
 	samplingTime = sim_sampling_time;
 	addConstant("sim_sampling_time", samplingTime);
 
-	mcuTime.ts = mcu_ts / sim_sampling_time;
-	mcuTime.td = mcu_td / sim_sampling_time;
+	mcu.ts = mcu_ts / sim_sampling_time;
+	mcu.td = mcu_td / sim_sampling_time;
+	if (mcu.td > maxDelay) maxDelay = mcu.td;
 
-	addConstant("mcu_ts", mcuTime.ts);
-	addConstant("mcu_td", mcuTime.td);
+	addConstant("mcu_ts", mcu.ts);
+	addConstant("mcu_td", mcu.td);
 
-	encTime.ts = enc_ts / sim_sampling_time;
-	encTime.td = enc_td / sim_sampling_time;
+	enc.ts = enc_ts / sim_sampling_time;
+	enc.td = enc_td / sim_sampling_time;
+	if (enc.td > maxDelay) maxDelay = enc.td;
 
-	addConstant("enc_ts", encTime.ts);
-	addConstant("enc_td", encTime.td);
+	addConstant("enc_ts", enc.ts);
+	addConstant("enc_td", enc.td);
 
-	camTime.ts = cam_ts / sim_sampling_time;
-	camTime.td = cam_td / sim_sampling_time;
+	cam.ts = cam_ts / sim_sampling_time;
+	cam.td = cam_td / sim_sampling_time;
+	if (cam.td > maxDelay) maxDelay = cam.td;
 
-	addConstant("cam_ts", camTime.ts);
-	addConstant("cam_td", camTime.td);
+	addConstant("cam_ts", cam.ts);
+	addConstant("cam_td", cam.td);
 
-	winchTime.ts = winch_ts / sim_sampling_time;
-	winchTime.td = winch_td / sim_sampling_time;
+	winch.ts = winch_ts / sim_sampling_time;
+	winch.td = winch_td / sim_sampling_time;
+	if (winch.td > maxDelay) maxDelay = winch.td;
 
-	addConstant("winch_ts", winchTime.ts);
-	addConstant("winch_td", winchTime.td);
+	addConstant("winch_ts", winch.ts);
+	addConstant("winch_td", winch.td);
 
-	trigger_ts = mhe_ts / sim_sampling_time;
-	// The delay is the max of all delays, here camTime
-	trigger_td = camTime.td + TRIGGER_OFFSET;
-	trigger_enable = false;
-	
-	addConstant("trigger_ts", trigger_ts);
+	mhe.ts = mhe_ts / sim_sampling_time;
+	mhe.td = 0;
+	addConstant("mhe_trigger_ts", mhe.ts);
+	addConstant("mhe_trigger_td", mhe.td);
 
 	//
 	// Set-up ACADO stuff
@@ -113,8 +116,6 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	debugData.ts_trigger = trigger;
 	debugData.ts_elapsed = 0.0;
 	portDebugData.write( debugData );
-	
-	trigger_cnt = 0;
 }
 
 
@@ -126,10 +127,11 @@ bool IndoorsCarouselSimulator::configureHook( )
 
 bool IndoorsCarouselSimulator::startHook( )
 {
-	mcuTime.reset();
-	encTime.reset();
-	camTime.reset();
-	winchTime.reset();
+	mcu.reset();
+	enc.reset();
+	cam.reset();
+	winch.reset();
+	mhe.reset();
 
 	// Initialize integrator with steady state
 	for (unsigned el = 0; el < NX; integratorIO[ el ] = ss_x[ el ], el++);
@@ -137,9 +139,6 @@ bool IndoorsCarouselSimulator::startHook( )
 	for (unsigned el = 0; el < NU; integratorIO[NX + NXA + el] = ss_u[ el ], el++);
 
 	firstRun = true;
-
-	trigger_cnt = trigger_td;
-	trigger_enable =  false;
 
 	return true;
 }
@@ -151,7 +150,45 @@ void IndoorsCarouselSimulator::updateHook( )
 
 	trigger = TimeService::Instance()->getTicks();
 
-	// 1) Read controls
+	// 1) Read and controls
+	updateControls();
+
+	// 2) Take the step, i.e. call ACADO generated integrator
+	status = integrate(integratorIO.data(), outputs.data(), firstRun == true ? 1 : 0);
+	if ( status )
+	{
+		log( Error ) << "*** SIMULATOR DIED ***" << endlog();
+		stop();
+	}
+
+	updateControls();
+	
+	if (firstRun == true)
+		firstRun = false;
+
+	// 3) Put outputs to the ports according to the specs (from python codegen)
+	updateMcuData();
+	updateEncData();
+	updateCamData();
+	updateWinchData();
+
+	// Update MHE trigger at the end, so that the delayed measurements get sent to corr. port
+	updateMheTrigger();
+
+	// 4) Set some debug info
+	debugData.ts_trigger = trigger;
+	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	portDebugData.write( debugData );
+}
+
+
+void IndoorsCarouselSimulator::stopHook( )
+{}
+
+void IndoorsCarouselSimulator::updateControls()
+{
+	// TODO Here we should simulate that servos work @ 50 Hz.
+
 	if (portControls.read( controls ) == NewData)
 	{
 		if (controls.der_ctrl == true)
@@ -169,55 +206,6 @@ void IndoorsCarouselSimulator::updateHook( )
 		}
 	}
 
-	// 2) Take the step, i.e. call ACADO generated integrator
-
-	updateControls();
-
-	status = integrate(integratorIO.data(), outputs.data(), firstRun == true ? 1 : 0);
-	if ( status )
-	{
-		log( Error ) << "*** SIMULATOR DIED ***" << endlog();
-		exception();
-	}
-
-	updateControls();
-	
-	if (firstRun == true)
-		firstRun = false;
-
-	// 3) Put outputs to the ports according to the specs (from python codegen)
-	updateMcuData();
-	updateEncData();
-	updateCamData();
-	updateWinchData();
-
-	// Update trigegr at the end, so that the delayed measurements get sent to corr. port
-	updateTrigger();
-
-	// 4) Set some debug info
-	debugData.ts_trigger = trigger;
-	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
-	portDebugData.write( debugData );
-}
-
-
-void IndoorsCarouselSimulator::stopHook( )
-{}
-
-
-void IndoorsCarouselSimulator::cleanupHook( )
-{}
-
-
-void IndoorsCarouselSimulator::errorHook( )
-{}
-
-
-void IndoorsCarouselSimulator::exceptionHook()
-{}
-
-void IndoorsCarouselSimulator::updateControls()
-{
 	// Dodgy way to trim the controls
 	double ua1 = integratorIO[idx_aileron];
 	double ue  = integratorIO[idx_elevator];
@@ -230,162 +218,79 @@ void IndoorsCarouselSimulator::updateControls()
 }
 
 
-void IndoorsCarouselSimulator::updateTrigger()
+void IndoorsCarouselSimulator::updateMheTrigger()
 {
-	if (trigger_enable == false && --trigger_cnt <= 0)
-	{
-		trigger_enable = true;
-	}
-
-	if (trigger_enable == true && --trigger_cnt <= 0)
-	{
-		trigger_cnt = trigger_ts;
-
-		portTrigger.write( trigger );
-	}
+	uint64_t mheTrigger = trigger;
+	if (mhe.update( mheTrigger ) == true)
+		portTrigger.write( mheTrigger );
 }
 
 
 void IndoorsCarouselSimulator::updateMcuData()
 {
-	if (--mcuTime.cnt_ts <= 0)
-	{
-		mcuTime.cnt_ts = mcuTime.ts;
+	mcuData.accl_x = outputs[offset_IMU_acceleration + 0];
+	mcuData.accl_y = outputs[offset_IMU_acceleration + 1];
+	mcuData.accl_z = outputs[offset_IMU_acceleration + 2];
+	
+	mcuData.gyro_x = outputs[offset_IMU_angular_velocity + 0];
+	mcuData.gyro_y = outputs[offset_IMU_angular_velocity + 1];
+	mcuData.gyro_z = outputs[offset_IMU_angular_velocity + 2];
 
-		mcuData.accl_x = outputs[offset_IMU_acceleration + 0];
-		mcuData.accl_y = outputs[offset_IMU_acceleration + 1];
-		mcuData.accl_z = outputs[offset_IMU_acceleration + 2];
+	mcuData.ctrl.ua1 = integratorIO[ idx_aileron ];
+	mcuData.ctrl.ua2 = integratorIO[ idx_aileron ];
+	mcuData.ctrl.ue  = integratorIO[ idx_elevator ];
 
-		mcuData.gyro_x = outputs[offset_IMU_angular_velocity + 0];
-		mcuData.gyro_y = outputs[offset_IMU_angular_velocity + 1];
-		mcuData.gyro_z = outputs[offset_IMU_angular_velocity + 2];
+	mcuData.ts_trigger = trigger;
+	mcuData.ts_elapsed = 0.0;
 
-		mcuData.ctrl.ua1 = integratorIO[ idx_aileron ];
-		mcuData.ctrl.ua2 = integratorIO[ idx_aileron ];
-		mcuData.ctrl.ue  = integratorIO[ idx_elevator ];
-
-		mcuData.ts_trigger = trigger;
-		mcuData.ts_elapsed = 0.0;
-
-		mcuTime.samples.push_back( mcuData );
-
-		if (mcuTime.cnt_td_enable == false)
-		{
-			mcuTime.cnt_td_enable = true;
-		}
-	}
-
-	if (mcuTime.cnt_td_enable == true && --mcuTime.cnt_td <= 0)
-	{
-		mcuTime.cnt_td = mcuTime.ts;
-
-		if (mcuTime.samples.size() > 0)
-		{
-			portMcuHandlerData.write( mcuTime.samples.front() );
-			mcuTime.samples.pop_front();
-		}
-	}
+	if (mcu.update( mcuData ) == true)
+		portMcuHandlerData.write( mcuData );
 }
 
 void IndoorsCarouselSimulator::updateEncData()
 {
-	if (--encTime.cnt_ts <= 0)
-	{
-		encTime.cnt_ts = encTime.ts;
+	encData.sin_theta = -integratorIO[ idx_sin_delta ]; // !!! Sign is inverted!
+	encData.cos_theta = integratorIO[ idx_cos_delta ];
+	encData.omega = -integratorIO[ idx_ddelta ]; // !!! Sign is inverted!
+	encData.omega_filt_rpm = encData.omega / (2.0 * M_PI) * 60.0;
 
-		encData.sin_theta = -integratorIO[ idx_sin_delta ]; // !!! Sign is inverted!
-		encData.cos_theta = integratorIO[ idx_cos_delta ];
-		encData.omega = integratorIO[ idx_ddelta ];
-		encData.omega_filt_rpm = encData.omega / (2.0 * M_PI) * 60.0;
+	encData.ts_trigger = trigger;
+	encData.ts_elapsed = 0.0;
 
-		encData.ts_trigger = trigger;
-		encData.ts_elapsed = 0.0;
-
-		encTime.samples.push_back( encData );
-
-		if (encTime.cnt_td_enable == false)
-		{
-			encTime.cnt_td_enable = true;
-		}
-	}
-
-	if (encTime.cnt_td_enable == true && --encTime.cnt_td <= 0)
-	{
-		encTime.cnt_td = encTime.ts;
-
-		if (encTime.samples.size() > 0)
-		{
-			portEncoderData.write( encTime.samples.front() );
-			encTime.samples.pop_front();
-
-			// It's not implemented yet, but MHE requires connection to this source
-			portLASData.write( lasData );
-		}
-	}
+	if (enc.update( encData  ) == true)
+		portEncoderData.write( encData );
 }
 
 void IndoorsCarouselSimulator::updateCamData()
 {
-	if (--camTime.cnt_ts <= 0)
+	for (unsigned el = 0; el < CAM_DATA_SIZE; ++el)
 	{
-		camTime.cnt_ts = camTime.ts;
+		double pos = ceil(outputs[offset_marker_positions + el]);
+		if (pos < 0. || pos > 1200.)
+			pos = -1.;
+		double weight = pos > 0. ? 1. : -1.;
 
-		for (unsigned el = 0; el < CAM_DATA_SIZE; ++el)
-			camData.positions[ el ] = outputs[offset_marker_positions + el];
-
-		camData.ts_trigger = trigger;
-		camData.ts_elapsed = 0.0;
-
-		camTime.samples.push_back( camData );
-
-		if (camTime.cnt_td_enable == false)
-		{
-			camTime.cnt_td_enable = true;
-		}
+		camData.positions[ el ] = pos;
+		camData.weights[ el ] = weight;
 	}
 
-	if (camTime.cnt_td_enable == true && --camTime.cnt_td <= 0)
-	{
-		camTime.cnt_td = camTime.ts;
+	camData.ts_trigger = trigger;
+	camData.ts_elapsed = 0.0;
 
-		if (camTime.samples.size() > 0)
-		{
-			portLEDTrackerData.write( camTime.samples.front() );
-			camTime.samples.pop_front();
-		}
-	}
+	if (cam.update( camData ) == true)
+		portLEDTrackerData.write( camData );
 }
 
 void IndoorsCarouselSimulator::updateWinchData()
 {
-	if (--winchTime.cnt_ts <= 0)
-	{
-		winchTime.cnt_ts = winchTime.ts;
+	winchData.length = integratorIO[ idx_r ];
+	winchData.speed = integratorIO[ idx_dr ];
 
-		winchData.length = integratorIO[ idx_r ];
-		winchData.speed = integratorIO[ idx_dr ];
+	winchData.ts_trigger = trigger;
+	winchData.ts_elapsed = 0.0;
 
-		winchData.ts_trigger = trigger;
-		winchData.ts_elapsed = 0.0;
-
-		winchTime.samples.push_back( winchData );
-
-		if (winchTime.cnt_td_enable == false)
-		{
-			winchTime.cnt_td_enable = true;
-		}
-	}
-
-	if (winchTime.cnt_td_enable == true && --winchTime.cnt_td <= 0)
-	{
-		winchTime.cnt_td = winchTime.ts;
-
-		if (winchTime.samples.size() > 0)
-		{
-			portWinchData.write( winchTime.samples.front() );
-			winchTime.samples.pop_front();
-		}
-	}
+	if (winch.update( winchData ) == true)
+		portWinchData.write( winchData );
 }
 
 ORO_CREATE_COMPONENT( IndoorsCarouselSimulator )

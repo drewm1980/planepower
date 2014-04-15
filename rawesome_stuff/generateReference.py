@@ -115,7 +115,7 @@ def generateReference(propDir, refCableLength, refSpeed):
     
     ddz = 0.10
     
-    x = np.linspace(-6, 8, num = 75)
+    x = np.linspace(-12, 12, num = 100)
     sszVec = ssZ - ddz * 1.0 / (1.0 + np.exp(-1.0 * x))
 
     for z in sszVec:
@@ -146,7 +146,8 @@ def generateReference(propDir, refCableLength, refSpeed):
     nu = len(dae.uNames())
     
     refCode = []
-    for r in ref:
+    refUpDown = ref + ref[::-1]
+    for r in refUpDown:
         t = "{ {" + \
             ", ".join([repr( r[ name ] ) for name in dae.xNames()]) + \
             "}, {" + \
@@ -156,6 +157,8 @@ def generateReference(propDir, refCableLength, refSpeed):
     refs = ",\n".join( refCode )
     
     code = """\
+#define REF_NUM_POINTS %(nRef)d
+
 struct Reference
 {
     double x[%(nx)d];
@@ -166,7 +169,7 @@ static const Reference references[ %(nRef)d ] =
 { 
 %(refs)s
 };
-""" % {"nx": nx, "nu": nu, "nRef": lenRef, "refs": refs}
+""" % {"nx": nx, "nu": nu, "nRef": len( refUpDown ), "refs": refs}
         
     return refOut, code
 

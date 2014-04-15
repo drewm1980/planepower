@@ -29,29 +29,56 @@ mpcOpts['MAX_NUM_QP_ITERATIONS'] = 50
 mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING_N2'
 mpcOpts['FIX_INITIAL_STATE'] = True
 
+#
 # Define the weights
-mpcSigmas = {}
-for name in ['x', 'y', 'z']: mpcSigmas[name] = 1e0 #1e-1
-for name in ['dx', 'dy', 'dz']: mpcSigmas[name] = 1e0 #1.e2
-for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = 1.0
-for name in ['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z']: mpcSigmas[name] = 1.0
-mpcSigmas['r'] = 1.0
-mpcSigmas['dr'] = 1.0
-mpcSigmas['ddr'] = 1.0
-mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = 1.0
-mpcSigmas['ddelta'] = 1.0
-mpcSigmas['motor_torque'] = 1e0
-mpcSigmas['aileron'] = mpcSigmas['elevator'] = 1e0 # 1e1
+#
 
-mpcSigmas['dmotor_torque'] = 1.0
-mpcSigmas['dddr'] = 1.0
-mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1e0 #1e2
+# V1, just for testing, very detuned
+# mpcSigmas = {}
+# for name in ['x', 'y', 'z']: mpcSigmas[name] = 1e0 #1e-1
+# for name in ['dx', 'dy', 'dz']: mpcSigmas[name] = 1e0 #1.e2
+# for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcSigmas[name] = 1.0
+# for name in ['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z']: mpcSigmas[name] = 1.0
+# mpcSigmas['r'] = 1.0
+# mpcSigmas['dr'] = 1.0
+# mpcSigmas['ddr'] = 1.0
+# mpcSigmas['cos_delta'] = mpcSigmas['sin_delta'] = 1.0
+# mpcSigmas['ddelta'] = 1.0
+# mpcSigmas['motor_torque'] = 1e0
+# mpcSigmas['aileron'] = mpcSigmas['elevator'] = 1e0 # 1e1
 
-mpcWeightScaling = 1e-3
+# mpcSigmas['dmotor_torque'] = 1.0
+# mpcSigmas['dddr'] = 1.0
+# mpcSigmas['daileron'] = mpcSigmas['delevator'] = 1e0 #1e2
+
+# mpcWeightScaling = 1e-3
+
+# mpcWeights = {}
+# for name in mpcSigmas:
+#     mpcWeights[name] = mpcWeightScaling / mpcSigmas[name] ** 2
+
+#
+# V2 Experimenting
+#
 
 mpcWeights = {}
-for name in mpcSigmas:
-    mpcWeights[name] = mpcWeightScaling / mpcSigmas[name] ** 2
+for name in ['x', 'y', 'z']: mpcWeights[ name ] = 1e2
+for name in ['dx', 'dy', 'dz']: mpcWeights[ name ] = 1e1
+for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcWeights[name] = 1e0
+for name in ['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z']: mpcWeights[ name ] = 1e0
+
+for name in ['aileron', 'elevator']: mpcWeights[ name ] = 1e-2
+for name in ['daileron', 'delevator']: mpcWeights[ name ] = 1e0
+
+# Those guys are fixed anyways, we don't control them
+for name in ['r', 'dr', 'ddr', 'dddr']: mpcWeights[ name ] = 1e-4
+for name in ['sin_delta', 'cos_delta']: mpcWeights[ name ] = 1e-4
+for name in ['ddelta', 'motor_torque', 'dmotor_torque']: mpcWeights[ name ] = 1e-4
+
+mpcWeightScaling = 1 / float( mpcHorizonN )
+
+for name in mpcWeights:
+    mpcWeights[ name ] *= mpcWeightScaling
 
 def makeNmpc(Ts = None, propertiesDir = '../../properties'):
     conf = makeConf()
