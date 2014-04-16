@@ -57,6 +57,8 @@ def processNetCdfFile( fileName ):
 
 		# Update the progress bar
 		cli_progress(info, it + 1, numKeys)
+
+        print "\n"
 	
 	return res
 
