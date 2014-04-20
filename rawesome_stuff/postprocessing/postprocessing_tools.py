@@ -85,16 +85,19 @@ def savePlotsToPdf(figures, folder, prefix = None, ext = ".png", dpi = 150):
 		assert isinstance(prefix, str)
 		texFileName = prefix + "_"
 		
-	texFileName += logName + ".tex" 
-	with open(texFileName, 'w') as f:
+	texFileName += logName 
+	with open(texFileName + ".tex", 'w') as f:
 		f.write( tex )
-	proc = subprocess.Popen(shlex.split("pdflatex " + texFileName))
+	proc = subprocess.Popen(shlex.split("pdflatex " + texFileName + ".tex"))
 	proc.communicate()
 	
 	# Delete all figures
 	for it, fig in enumerate(figures):
 		name = logName + "_" + repr( it )
-		os.remove(name + ext)					 
+		os.remove(name + ext)
+	# Delete all byproducts
+	for ext in [".tex", ".log", ".aux"]:
+		os.remove( texFileName + ext )
 
 if __name__ == '__main__':
 	"""

@@ -44,7 +44,7 @@ def makePlots(logName, mpc, data):
             
     t_mpc = np.array(data["ts_trigger"] - data["ts_trigger"][ start ]) * 1e-9
     
-    NX = len(mhe.dae.xNames())
+    NX = len(mpc.dae.xNames())
     
     position = plt.figure()
     for i, n in enumerate(["x", "y", "z"]):
@@ -135,12 +135,12 @@ def makePlots(logName, mpc, data):
     plt.suptitle("KKT tolerance and objective\n" + logName)
         
     exec_times = plt.figure()
-    for i, n in enumerate(["exec_fdb", "exec_prep"]):
-        plt.subplot(2, 1, i + 1)
+    for i, n in enumerate(["exec_fdb", "exec_prep", "n_asc", "solver_status"]):
+        plt.subplot(4, 1, i + 1)
         plt.plot(data[ n ])
         plt.ylabel( n )
     plt.xlabel("Samples")
-    plt.suptitle("Execution times\n" + logName)
+    plt.suptitle("Execution times and QP perf\n" + logName)
     
     return [position, speed, dcm, omega_body, ctrl_surf, tether, carousel,
             perf, exec_times]
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         'need to call with the properties directory'
     propsDir = sys.argv[ 1 ]
     
-    mhe = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = propsDir)
+    mpc = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = propsDir)
     
     app = QtGui.QApplication(sys.argv)
     
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     
     data, logName = gimmeMpcData( str(folder) )
     
-    plots = makePlots(logName, mhe, data)
+    plots = makePlots(logName, mpc, data)
     
 #     if savePlots.getReply() == True:
     savePlotsToPdf(plots, str(folder), "nmpc_exp")
