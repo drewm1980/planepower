@@ -154,6 +154,35 @@ def makePlots(logName, mhe, data):
     return [position, speed, dcm, omega_body, ctrl_surf, tether, carousel,
             virtual_torques,
             perf, exec_times]
+    
+def getMheInfo( mhe ):
+    
+    txt = "\\begin{table}[!h]\n \\begin{tabular}{ll}\n"
+    txt += ""
+    txt += "Measurement item & Standard deviation \\\\\n"
+    for name in mhe.yxNames + mhe.yuNames:
+            txt += "\\verb|" + name + "| & " + repr( MHE.mheSigmas[ name ] ) + "\\\\\n"
+    
+    txt += "\\end{tabular}\n"
+    txt += "\\caption{Measurement standard deviations.}\n"
+    txt += "\\end{table}\n\n"
+    
+    txt += "\\begin{table}[!h]\n \\begin{tabular}{ll}\n"
+    txt += ""
+    txt += "Measurement item & Scaled MHE weights \\\\\n"
+    for name in mhe.yxNames + mhe.yuNames:
+            txt += "\\verb|" + name + "| & " + repr( MHE.mheWeights[ name ] ) + "\\\\\n"
+    
+    txt += "\\end{tabular}\n"
+    txt += "\\caption{MHE weights; scaling factor is " + str( MHE.mheWeightScaling ) + ".}\n"
+    txt += "\\end{table}\n\n"
+    
+    txt += "Horizon length is " + str( MHE.mheHorizonN ) + ".\n\n"
+    txt += "Sampling time is " + str( MHE.samplingTime ) + ".\n\n"
+        
+    txt += "\\clearpage"
+    
+    return txt
 
 if __name__ == "__main__":
     assert len(sys.argv) == 2, \
@@ -171,8 +200,10 @@ if __name__ == "__main__":
     
     plots = makePlots(logName, mhe, data)
     
+    info = getMheInfo( mhe )
+    
 #     if savePlots.getReply() == True:
-    savePlotsToPdf(plots, str(folder), "mhe_exp")
+    savePlotsToPdf(plots, str(folder), "mhe_exp", pretext = info)
     
     plt.show()
     

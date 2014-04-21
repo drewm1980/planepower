@@ -144,6 +144,26 @@ def makePlots(logName, mpc, data):
     
     return [position, speed, dcm, omega_body, ctrl_surf, tether, carousel,
             perf, exec_times]
+
+def getNmpcInfo( mpc ):
+    
+    txt = "\\begin{table}[h]\n \\begin{tabular}{ll}\n"
+    txt += ""
+    txt += "Reference item & Scaled NMPC weights \\\\\n"
+    for name in mpc.dae.xNames():
+        if name in NMPC.mpcWeights:
+            txt += "\\verb|" + name + "| & " + repr( NMPC.mpcWeights[ name ] ) + "\\\\\n"
+    
+    txt += "\\end{tabular}\n"
+    txt += "\\caption{NMPC weights; scaling factor is " + str( NMPC.mpcWeightScaling ) + ".}\n"
+    txt += "\\end{table}\n\n"
+    
+    txt += "Horizon length is " + str( NMPC.mpcHorizonN ) + ".\n\n"
+    txt += "Sampling time is " + str( NMPC.samplingTime ) + ".\n\n"
+        
+    txt += "\\clearpage"
+    
+    return txt
     
 if __name__ == "__main__":
     assert len(sys.argv) == 2, \
@@ -161,7 +181,9 @@ if __name__ == "__main__":
     
     plots = makePlots(logName, mpc, data)
     
-#     if savePlots.getReply() == True:
-    savePlotsToPdf(plots, str(folder), "nmpc_exp")
+    info = getNmpcInfo( mpc )
     
-    plt.show()
+#     if savePlots.getReply() == True:
+    savePlotsToPdf(plots, str(folder), "nmpc_exp", pretext = info)
+    
+#     plt.show()

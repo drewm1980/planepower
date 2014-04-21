@@ -45,7 +45,7 @@ class YesNoDialog( QtGui.QMainWindow ):
 	def getReply(self):
 		return self._reply
 	
-def savePlotsToPdf(figures, folder, prefix = None, ext = ".png", dpi = 150):
+def savePlotsToPdf(figures, folder, prefix = None, ext = ".png", dpi = 150, pretext = None):
 	"""
 	A simple function to generate a PDF file out of matplotlib
 	generated figures.
@@ -68,16 +68,19 @@ def savePlotsToPdf(figures, folder, prefix = None, ext = ".png", dpi = 150):
 		fig.savefig(name + ext, dpi = dpi)
 		
 		plots += "\includegraphics[width=\\textwidth]{" + name + "}\n"
-		
+	
+	_pretext = "" if pretext is None else pretext 
+	
 	tex = r'''
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \begin{document}
+%(pretext)s
 %(plots)s
 \end{document}
-''' % {"plots": plots}
+''' % {"plots": plots, "pretext": _pretext}
 
 	if prefix == None:
 		texFileName = ""
