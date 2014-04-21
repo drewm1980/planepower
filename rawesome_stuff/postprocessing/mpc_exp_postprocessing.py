@@ -166,24 +166,32 @@ def getNmpcInfo( mpc ):
     return txt
     
 if __name__ == "__main__":
-    assert len(sys.argv) == 2, \
-        'need to call with the properties directory'
-    propsDir = sys.argv[ 1 ]
+    import argparse
     
-    mpc = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = propsDir)
+    parser = argparse.ArgumentParser(description="A script for generating NMPC report")
+    parser.add_argument("properties", nargs=1, type=str, help="Folder with model properties")
+    parser.add_argument("cwd", nargs="?", const=None, default=None, type=str, help="Working folder")
+    parser.add_argument("-q", nargs="?", const=False, default=False, type=bool, help="Quiet mode of operation")
+    args = parser.parse_args()
     
-    app = QtGui.QApplication(sys.argv)
+    if args.q is False:
+        app = QtGui.QApplication(sys.argv)
+        folder = FileFolderDialog().getFolder( os.getcwd() )
+        ynDlg = YesNoDialog("Do you want to save plots?")
+        savePlots = ynDlg.getReply()
+    else:
+        assert args.cwd is not None
+        folder = args.cwd
+        savePlots = True
     
-    folder = FileFolderDialog().getFolder( os.getcwd() )
-    savePlots = YesNoDialog("Do you want to save plots?")
+    mpc = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = args.properties[0])
     
     data, logName = gimmeMpcData( str(folder) )
-    
     plots = makePlots(logName, mpc, data)
-    
     info = getNmpcInfo( mpc )
     
-#     if savePlots.getReply() == True:
-    savePlotsToPdf(plots, str(folder), "nmpc_exp", pretext = info)
+    if savePlots == True:
+        savePlotsToPdf(plots, str(folder), "nmpc_exp", pretext = info)
     
-#     plt.show()
+    if args.q is False:
+        plt.show()

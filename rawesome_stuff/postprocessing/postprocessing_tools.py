@@ -30,12 +30,14 @@ class YesNoDialog( QtGui.QMainWindow ):
 	A simple yes/no dialog
 	"""
 	
-	def __init__(self, message):
+	def __init__(self, message, default=True):
 		super(YesNoDialog, self).__init__()
 		self._message = message
 		
 		reply = QtGui.QMessageBox.question(self, 'Message', 
-					self._message, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					self._message,
+					QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+					QtGui.QMessageBox.Yes if default is True else QtGui.QMessageBox.No)
 		
 		if reply == QtGui.QMessageBox.Yes:
 			self._reply = True

@@ -43,9 +43,10 @@ def processFiles(folder, savePlots):
     
     gyroSCPlots = gyroSanityCheck(logName, imu, enc)
     
-    savePlotsToPdf(imuPlots + encPlots + camPlots + winchPlots + lasPlots + gyroSCPlots,
-                   folder,
-                   prefix = "sensors_actuators_timing")
+    if savePlots is True:
+        savePlotsToPdf(imuPlots + encPlots + camPlots + winchPlots + lasPlots + gyroSCPlots,
+                       folder,
+                       prefix = "sensors_actuators_timing")
 
 def  processImuData(logName, data):
     
@@ -307,14 +308,24 @@ def gyroSanityCheck(logName, imu, enc):
     return [f1]
 
 if __name__ == '__main__':
+    import argparse
     
-    app = QtGui.QApplication(sys.argv)
-    ffd = FileFolderDialog()
+    parser = argparse.ArgumentParser(description="A script for generating S&A info")
+    parser.add_argument("cwd", nargs="?", const=None, default=None, type=str, help="Working folder")
+    parser.add_argument("-q", nargs="?", const=False, default=False, type=bool, help="Quiet mode of operation")
+    args = parser.parse_args()
     
-    folder = ffd.getFolder( os.getcwd() )
-    savePlots = YesNoDialog("Do you want to save plots?")
+    if args.q is False:
+        app = QtGui.QApplication(sys.argv)
+        folder = FileFolderDialog().getFolder( os.getcwd() )
+        ynDlg = YesNoDialog("Do you want to save plots?")
+        savePlots = ynDlg.getReply()
+    else:
+        assert args.cwd is not None
+        folder = args.cwd
+        savePlots = True
     
     processFiles(str( folder ), savePlots)
     
-#     plt.show()
-    
+    if args.q is False:
+        plt.show()

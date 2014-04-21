@@ -185,25 +185,32 @@ def getMheInfo( mhe ):
     return txt
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 2, \
-        'need to call with the properties directory'
-    propsDir = sys.argv[ 1 ]
+    import argparse
     
-    mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = propsDir)
+    parser = argparse.ArgumentParser(description="A script for generating MHE report")
+    parser.add_argument("properties", nargs=1, type=str, help="Folder with model properties")
+    parser.add_argument("cwd", nargs="?", const=None, default=None, type=str, help="Working folder")
+    parser.add_argument("-q", nargs="?", const=False, default=False, type=bool, help="Quiet mode of operation")
+    args = parser.parse_args()
     
-    app = QtGui.QApplication(sys.argv)
+    if args.q is False:
+        app = QtGui.QApplication(sys.argv)
+        folder = FileFolderDialog().getFolder( os.getcwd() )
+        ynDlg = YesNoDialog("Do you want to save plots?")
+        savePlots = ynDlg.getReply()
+    else:
+        assert args.cwd is not None
+        folder = args.cwd
+        savePlots = True
     
-    folder = FileFolderDialog().getFolder( os.getcwd() )
-    savePlots = YesNoDialog("Do you want to save plots?")
+    mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = args.properties[0])
     
     data, logName = gimmeMheData( str(folder) )
-    
     plots = makePlots(logName, mhe, data)
-    
     info = getMheInfo( mhe )
     
-#     if savePlots.getReply() == True:
-    savePlotsToPdf(plots, str(folder), "mhe_exp", pretext = info)
+    if savePlots is True:
+        savePlotsToPdf(plots, str(folder), "mhe_exp", pretext = info)
     
-    plt.show()
-    
+    if args.q is False:
+        plt.show()
