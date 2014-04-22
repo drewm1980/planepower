@@ -13,7 +13,7 @@ def gimmeMpcData( folder ):
         data = sio.loadmat(os.path.join(folder, "dynamicMpcData.mat"))
     except:
         from orocos_netcdf_postprocessing import processNetCdfFile, saveDataToMatFile 
-        data = processNetCdfFile(os.path.join(folder, "dynamicMpcData.nc"), trimDataSets = False)
+        data = processNetCdfFile(os.path.join(folder, "dynamicMpcData.nc"), trimDataSets = True)
         saveDataToMatFile(data, os.path.join(folder, "dynamicMpcData.mat"))
         
     #
@@ -35,6 +35,9 @@ def gimmeCurrentIndex(mpc, name):
         raise KeyError("Cannot find " + name +"neither in x nor u names")
     
 def makePlots(logName, mpc, data):
+
+    if len(data["ts_trigger"]) <= 1:
+        return []
     
     start = 0;
     while True:
