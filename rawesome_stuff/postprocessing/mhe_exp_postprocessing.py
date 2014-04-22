@@ -176,10 +176,13 @@ def getMheInfo( mhe ):
     txt += "\\end{tabular}\n"
     txt += "\\caption{MHE weights; scaling factor is " + str( MHE.mheWeightScaling ) + ".}\n"
     txt += "\\end{table}\n\n"
-    
-    txt += "Horizon length is " + str( MHE.mheHorizonN ) + ".\n\n"
-    txt += "Sampling time is " + str( MHE.samplingTime ) + ".\n\n"
         
+    txt += "\\clearpage"
+    
+    txt += "\\begin{verbatim}\n"
+    txt += repr( mhe )
+    txt += "\\end{verbatim}\n"
+    
     txt += "\\clearpage"
     
     return txt

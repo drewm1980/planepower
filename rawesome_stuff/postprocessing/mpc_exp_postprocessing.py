@@ -157,10 +157,13 @@ def getNmpcInfo( mpc ):
     txt += "\\end{tabular}\n"
     txt += "\\caption{NMPC weights; scaling factor is " + str( NMPC.mpcWeightScaling ) + ".}\n"
     txt += "\\end{table}\n\n"
-    
-    txt += "Horizon length is " + str( NMPC.mpcHorizonN ) + ".\n\n"
-    txt += "Sampling time is " + str( NMPC.samplingTime ) + ".\n\n"
         
+    txt += "\\clearpage"
+    
+    txt += "\\begin{verbatim}\n"
+    txt += repr( mpc )
+    txt += "\\end{verbatim}\n"
+    
     txt += "\\clearpage"
     
     return txt
