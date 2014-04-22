@@ -72,6 +72,31 @@ def makePlots(logName, mpc, data):
         plt.ylabel( n )
     plt.xlabel("Time [s]")
     plt.suptitle("Estimated DCM\n" + logName)
+
+    rpy = plt.figure()
+
+    yaw = np.rad2deg(np.arctan2(data["x"][start: , gimmeCurrentIndex(mpc, "e12")], data["x"][start: , gimmeCurrentIndex(mpc, "e11")]))
+    pitch = np.rad2deg( np.arcsin( -data["x"][start: , gimmeCurrentIndex(mpc, "e13")] ) )
+    roll = np.rad2deg( np.arctan2(data["x"][start: , gimmeCurrentIndex(mpc, "e23")], data["x"][start: , gimmeCurrentIndex(mpc, "e33")]) )
+
+    y_yaw = np.rad2deg(np.arctan2(data["y"][start: , gimmeCurrentIndex(mpc, "e12")], data["y"][start: , gimmeCurrentIndex(mpc, "e11")]))
+    y_pitch = np.rad2deg( np.arcsin( -data["y"][start: , gimmeCurrentIndex(mpc, "e13")] ) )
+    y_roll = np.rad2deg( np.arctan2(data["y"][start: , gimmeCurrentIndex(mpc, "e23")], data["y"][start: , gimmeCurrentIndex(mpc, "e33")]) )
+
+    plt.subplot(3, 1, 1)
+    plt.plot(t_mpc[start: ], roll, 'b')
+    plt.plot(t_mpc[start: ], y_roll, 'r')
+    plt.ylabel("roll [deg]")
+
+    plt.subplot(3, 1, 2)
+    plt.plot(t_mpc[start: ], pitch, 'b')
+    plt.plot(t_mpc[start: ], y_pitch, 'r')
+    plt.ylabel("pitch [deg]")
+
+    plt.subplot(3, 1, 3)
+    plt.plot(t_mpc[start: ], yaw, 'b')
+    plt.plot(t_mpc[start: ], y_yaw, 'r')
+    plt.ylabel("yaw [deg]")
     
     omega_body = plt.figure()
     for i, n in enumerate(["w_bn_b_x", "w_bn_b_y", "w_bn_b_z"]):
@@ -142,7 +167,7 @@ def makePlots(logName, mpc, data):
     plt.xlabel("Samples")
     plt.suptitle("Execution times and QP perf\n" + logName)
     
-    return [position, speed, dcm, omega_body, ctrl_surf, tether, carousel,
+    return [position, speed, dcm, rpy, omega_body, ctrl_surf, tether, carousel,
             perf, exec_times]
 
 def getNmpcInfo( mpc ):
