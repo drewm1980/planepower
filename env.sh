@@ -38,6 +38,8 @@ else
 fi
 export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
 
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/rawesome_stuff
+
 # TODO ACADO related (next two lines) stuff should be optional, same as for rawesome. 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build/experimental/mvukov/ocg2
