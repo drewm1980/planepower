@@ -97,9 +97,6 @@ protected:
 	// Properties
 	//
 
-	/// # SQP iterations
-	unsigned numSqpIterations;
-
 private:
 
 	bool prepareInitialGuess( void );
