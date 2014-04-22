@@ -35,7 +35,14 @@ def processNetCdfFile(fileName, removeDuplicates = True, trimDataSets = False):
 	numKeys = len( keys )
 	if removeDuplicates is True:
 		# There are duplicates in the log file and here we want to get rid of them
-		_, indices = np.unique(h.variables[ getTimeStampKey( keys ) ], return_index=True)
+		_, _indices = np.unique(h.variables[ getTimeStampKey( keys ) ], return_index=True)
+                if trimDataSets is True:
+                        # Usually the first and the last sample are some crap
+                        indices = _indices[1: -2]
+                else:
+                        indices = _indices
+                        
+
 	else:
 		if trimDataSets is True:
 			indices = xrange(5, len( h.variables[ getTimeStampKey( keys ) ] ) - 5)

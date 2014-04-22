@@ -44,6 +44,9 @@ def gimmeCurrentIndex(mhe, name):
         raise KeyError("Cannot find " + name +"neither in x nor u names")
 
 def makePlots(logName, mhe, data):
+
+    if len(data["ts_trigger"]) <= 1:
+        return []
     
     start = 0;
     while True:

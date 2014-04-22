@@ -43,8 +43,6 @@ enum DynamicMpcErrorCodes
 DynamicMpc::DynamicMpc(std::string name)
 	: TaskContext(name, PreOperational)
 {
-//	initialized = false;
-
 	//
 	// Set the input ports
 	//
@@ -101,11 +99,6 @@ DynamicMpc::DynamicMpc(std::string name)
 bool DynamicMpc::configureHook()
 {
 	checkPortConnection( portFeedback );
-
-	if (numSqpIterations > 10)
-		log( Warning )
-			<< "Number of requested SQP iterations is: "
-			<< numSqpIterations << endlog();
 	
 	return true;
 }
@@ -146,8 +139,9 @@ void DynamicMpc::updateHook()
 	portFeedback.read( feedback );
 	trigger = feedback.ts_trigger;
 
-	// This is a hack, more/less. Heer is assumed that first NX component
-	// of the MHE 
+	// This is a hack, more/less. Here is assumed that first MPC.NX components
+	// of the state estimate are the same. In other words, MHE state estimate 
+	// can be longer, but MPC with take first MPC.NX components.
 	if (feedback.x_hat.size() < NX)
 	{
 		errorCode = ERR_FEEDBACK_SIZE;
@@ -357,7 +351,7 @@ bool DynamicMpc::prepareWeights( void )
 	for (unsigned el = 0; el < NY; ++el)
 		acadoVariables.W[el * NY + el] = mpc_weights[ el ];
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.WN[el * NYN + el] = 10 * mpc_weights[ el ];
+		acadoVariables.WN[el * NYN + el] = mpc_wn_multiplier * mpc_weights[ el ];
 	
 	return true;
 }
@@ -389,9 +383,11 @@ bool DynamicMpc::prepareReference( void )
 		{
 			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
 			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
-			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+//			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+			angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
 		}
 
+		// Here I kinda assume that those are zero...
 		for (unsigned blk = 0; blk < N; ++blk)
 			for (unsigned el = 0; el < NU; ++el)
 				acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
@@ -420,6 +416,8 @@ bool DynamicMpc::prepareReference( void )
 		// Add the new reference point at the end of the horizon
 		for (unsigned el = 0; el < NX; ++el)
 			acadoVariables.yN[ el ] = references[ refCnt ].x[ el ];
+
+		
 		for (unsigned el = 0; el < NU; ++el)
 			acadoVariables.y[(N - 1) * NY + NX + el] = references[ refCnt ].u[ el ];
 
@@ -429,7 +427,8 @@ bool DynamicMpc::prepareReference( void )
 		{
 			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
 			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
-			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+//			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
+			angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
 		}
 
 		acadoVariables.yN[ idx_cos_delta ] = cos( angle );
