@@ -17,3 +17,9 @@ cp winchData.nc ${timeStamp}/
 
 cp dynamicMheData.nc ${timeStamp}/
 echo "All log files are copied to folder: ${timeStamp}"
+
+# Generate a PDF out of the netCDF log file for the MHE
+cd ${timeStamp}
+$PLANEPOWER_ROOT/rawesome_stuff/postprocessing/mhe_exp_postprocessing.py $PLANEPOWER_ROOT/properties `pwd` -q=True
+cd ..
+
