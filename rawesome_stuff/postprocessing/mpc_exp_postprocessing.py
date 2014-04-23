@@ -76,30 +76,52 @@ def makePlots(logName, mpc, data):
     plt.xlabel("Time [s]")
     plt.suptitle("Estimated DCM\n" + logName)
 
+
+    rpy_est = getRPY( data["x"][start: , gimmeCurrentIndex(mpc, "e12")]
+                    , data["x"][start: , gimmeCurrentIndex(mpc, "e11")]
+                    , data["x"][start: , gimmeCurrentIndex(mpc, "e13")]
+                    , data["x"][start: , gimmeCurrentIndex(mpc, "e23")]
+                    , data["x"][start: , gimmeCurrentIndex(mpc, "e33")])
+
+    rpy_ref = getRPY( data["y"][start: , gimmeCurrentIndex(mpc, "e12")]
+                    , data["y"][start: , gimmeCurrentIndex(mpc, "e11")]
+                    , data["y"][start: , gimmeCurrentIndex(mpc, "e13")]
+                    , data["y"][start: , gimmeCurrentIndex(mpc, "e23")]
+                    , data["y"][start: , gimmeCurrentIndex(mpc, "e33")])
+
     rpy = plt.figure()
+    for i, n in enumerate(["roll [deg]", "pitch [deg]", "yaw [deg]"]):
+        plt.subplot(3, 1, i + 1)
+        plt.plot(t_mpc[start: ], rpy_est[:, i], 'b')
+        plt.plot(t_mpc[start: ], rpy_ref[:, i], 'r')
+        plt.ylabel( n )
+    plt.xlabel("Time [s]")
+    plt.suptitle("Estimated Euler angles\n" + logName)
 
-    yaw = np.rad2deg(np.arctan2(data["x"][start: , gimmeCurrentIndex(mpc, "e12")], data["x"][start: , gimmeCurrentIndex(mpc, "e11")]))
-    pitch = np.rad2deg( np.arcsin( -data["x"][start: , gimmeCurrentIndex(mpc, "e13")] ) )
-    roll = np.rad2deg( np.arctan2(data["x"][start: , gimmeCurrentIndex(mpc, "e23")], data["x"][start: , gimmeCurrentIndex(mpc, "e33")]) )
+    dcmEst = data["x"][start: , gimmeCurrentIndex(mpc, "e11"): gimmeCurrentIndex(mpc, "e33") + 1]
+    dcmRef = data["y"][start: , gimmeCurrentIndex(mpc, "e11"): gimmeCurrentIndex(mpc, "e33") + 1]
 
-    y_yaw = np.rad2deg(np.arctan2(data["y"][start: , gimmeCurrentIndex(mpc, "e12")], data["y"][start: , gimmeCurrentIndex(mpc, "e11")]))
-    y_pitch = np.rad2deg( np.arcsin( -data["y"][start: , gimmeCurrentIndex(mpc, "e13")] ) )
-    y_roll = np.rad2deg( np.arctan2(data["y"][start: , gimmeCurrentIndex(mpc, "e23")], data["y"][start: , gimmeCurrentIndex(mpc, "e33")]) )
+    dcmErr = np.zeros( dcmEst.shape )
+    for i in xrange( dcmEst.shape[ 0 ] ):
+        Rest = np.reshape(dcmEst[i, :], (3, 3), order='C')
+        Rref = np.reshape(dcmRef[i, :], (3, 3), order='C')
+        Rerr = np.dot(Rest, Rref.T)
+#        Rerr = np.dot(Rref.T, Rest)
+        dcmErr[i, :] = Rerr.flatten()
+    rpy_err = getRPY(dcmErr[:, 1],
+                     dcmErr[:, 0],
+                     dcmErr[:, 2],
+                     dcmErr[:, 5],
+                     dcmErr[:, 8])
 
-    plt.subplot(3, 1, 1)
-    plt.plot(t_mpc[start: ], roll, 'b')
-    plt.plot(t_mpc[start: ], y_roll, 'r')
-    plt.ylabel("roll [deg]")
-
-    plt.subplot(3, 1, 2)
-    plt.plot(t_mpc[start: ], pitch, 'b')
-    plt.plot(t_mpc[start: ], y_pitch, 'r')
-    plt.ylabel("pitch [deg]")
-
-    plt.subplot(3, 1, 3)
-    plt.plot(t_mpc[start: ], yaw, 'b')
-    plt.plot(t_mpc[start: ], y_yaw, 'r')
-    plt.ylabel("yaw [deg]")
+    rpy_error = plt.figure()
+    for i, n in enumerate(["roll [deg]", "pitch [deg]", "yaw [deg]"]):
+        plt.subplot(3, 1, i + 1)
+        plt.plot(t_mpc[start: ], dcmErr[:, i], 'k')
+        plt.ylabel( n )
+    plt.xlabel("Time [s]")
+    plt.suptitle("Error Euler angles -- from Rest * Rref'\n" + logName)
+        
     
     omega_body = plt.figure()
     for i, n in enumerate(["w_bn_b_x", "w_bn_b_y", "w_bn_b_z"]):
@@ -170,7 +192,7 @@ def makePlots(logName, mpc, data):
     plt.xlabel("Samples")
     plt.suptitle("Execution times and QP perf\n" + logName)
     
-    return [position, speed, dcm, rpy, omega_body, ctrl_surf, tether, carousel,
+    return [position, speed, dcm, rpy, rpy_error, omega_body, ctrl_surf, tether, carousel,
             perf, exec_times]
 
 def getNmpcInfo( mpc ):

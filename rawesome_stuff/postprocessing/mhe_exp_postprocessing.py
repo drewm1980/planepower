@@ -73,13 +73,6 @@ def makePlots(logName, mhe, data):
         _R = np.reshape(np.ravel(cam_dcm[r, :], order='C'), (3, 3), order='C').T
         R = np.dot(conv, np.dot(_R, conv))
         cam_dcm_ned[r, :] = R.flatten()
-        
-    def getRPY(e12, e11, e13, e23, e33):
-        yaw = np.rad2deg(np.arctan2(e12, e11))
-        pitch = np.rad2deg( np.arcsin( -e13 ) )
-        roll = np.rad2deg( np.arctan2(e23, e33) )
-        
-        return np.array([roll, pitch, yaw]).T
     
     rpy_cam = getRPY(cam_dcm_ned[:, 1],
                      cam_dcm_ned[:, 0],
@@ -120,7 +113,7 @@ def makePlots(logName, mhe, data):
     plt.suptitle("Estimated DCM; blue - MHE; green - LED Tracker\n" + logName)
     
     rpy = plt.figure()
-    for i, n in enumerate(["roll", "pitch", "yaw"]):
+    for i, n in enumerate(["roll [deg]", "pitch [deg]", "yaw [deg]"]):
         plt.subplot(3, 1, i + 1)
         plt.plot(cam_time, rpy_cam[:, i], 'g')
         plt.plot(t_mhe[start:], rpy_mhe[:, i], 'b')

@@ -5,6 +5,8 @@ from PyQt4 import QtGui
 
 import subprocess, shlex
 
+import numpy as np
+
 class FileFolderDialog( QtGui.QMainWindow ):
 	"""
 	Adapted from zetcode.com
@@ -103,6 +105,13 @@ def savePlotsToPdf(figures, folder, prefix = None, ext = ".png", dpi = 150, pret
 	# Delete all byproducts
 	for ext in [".tex", ".log", ".aux"]:
 		os.remove( texFileName + ext )
+
+def getRPY(e12, e11, e13, e23, e33):
+	yaw = np.rad2deg(np.arctan2(e12, e11))
+	pitch = np.rad2deg( np.arcsin( -e13 ) )
+	roll = np.rad2deg( np.arctan2(e23, e33) )
+        
+	return np.array([roll, pitch, yaw]).T
 
 if __name__ == '__main__':
 	"""
