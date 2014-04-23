@@ -56,13 +56,51 @@ def makePlots(logName, mhe, data):
             
     t_mhe = np.array(data["ts_trigger"] - data["ts_trigger"][ start ]) * 1e-9
     
+    cam_all_positive = np.array([(row != -1.0).all() for row in data["cam_markers"][start: , :]]).astype(int)
+    
+    cam_indices = np.flatnonzero(data[ "num_cam_samples" ][start: ].flatten() * cam_all_positive.flatten())
+    
+    cam_time = t_mhe[start + cam_indices] - data["dbg_cam_delay"][start + cam_indices] * MHE.samplingTime
+    # Convert to NED
+    cam_pose = np.array([data["cam_pose"][start + cam_indices, 0],
+                         -data["cam_pose"][start + cam_indices, 1],
+                         -data["cam_pose"][start + cam_indices, 2]]).T
+    
+    cam_dcm = data["cam_pose"][start + cam_indices, 3: ]
+    cam_dcm_ned = np.zeros( cam_dcm.shape )
+    conv = np.diag([1, -1, -1])
+    for r in xrange( cam_dcm.shape[ 0 ] ):
+        _R = np.reshape(np.ravel(cam_dcm[r, :], order='C'), (3, 3), order='C').T
+        R = np.dot(conv, np.dot(_R, conv))
+        cam_dcm_ned[r, :] = R.flatten()
+        
+    def getRPY(e12, e11, e13, e23, e33):
+        yaw = np.rad2deg(np.arctan2(e12, e11))
+        pitch = np.rad2deg( np.arcsin( -e13 ) )
+        roll = np.rad2deg( np.arctan2(e23, e33) )
+        
+        return np.array([roll, pitch, yaw]).T
+    
+    rpy_cam = getRPY(cam_dcm_ned[:, 1],
+                     cam_dcm_ned[:, 0],
+                     cam_dcm_ned[:, 2],
+                     cam_dcm_ned[:, 5],
+                     cam_dcm_ned[:, 8])
+    
+    rpy_mhe = getRPY(data["x"][start: , gimmeCurrentIndex(mhe, "e12")],
+                     data["x"][start: , gimmeCurrentIndex(mhe, "e11")],
+                     data["x"][start: , gimmeCurrentIndex(mhe, "e13")],
+                     data["x"][start: , gimmeCurrentIndex(mhe, "e23")],
+                     data["x"][start: , gimmeCurrentIndex(mhe, "e33")])
+    
     position = plt.figure()
     for i, n in enumerate(["x", "y", "z"]):
         plt.subplot(3, 1, i + 1)
-        plt.plot(t_mhe[start: ], data["x"][start: , gimmeCurrentIndex(mhe, n)])
+        plt.plot(cam_time, cam_pose[:, i], 'g')
+        plt.plot(t_mhe[start: ], data["x"][start: , gimmeCurrentIndex(mhe, n)], 'b')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
-    plt.suptitle("Estimated position\n" + logName)
+    plt.suptitle("Estimated position; blue - MHE; green - LED Tracker\n" + logName)
     
     speed = plt.figure()
     for i, n in enumerate(["dx", "dy", "dz"]):
@@ -75,10 +113,20 @@ def makePlots(logName, mhe, data):
     dcm = plt.figure()
     for i, n in enumerate(["e11", "e12", "e13", "e21", "e22", "e23", "e31", "e32", "e33",]):
         plt.subplot(9, 1, i + 1)
-        plt.plot(t_mhe[start: ], data["x"][start: , gimmeCurrentIndex(mhe, n)])
+        plt.plot(cam_time, cam_dcm_ned[:, i], 'g')
+        plt.plot(t_mhe[start: ], data["x"][start: , gimmeCurrentIndex(mhe, n)], 'b')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
-    plt.suptitle("Estimated DCM\n" + logName)
+    plt.suptitle("Estimated DCM; blue - MHE; green - LED Tracker\n" + logName)
+    
+    rpy = plt.figure()
+    for i, n in enumerate(["roll", "pitch", "yaw"]):
+        plt.subplot(3, 1, i + 1)
+        plt.plot(cam_time, rpy_cam[:, i], 'g')
+        plt.plot(t_mhe[start:], rpy_mhe[:, i], 'b')
+        plt.ylabel( n )
+    plt.xlabel("Time [s]")
+    plt.suptitle("Estimated Euler angles; blue - MHE; green - LED Tracker\n" + logName)
     
     omega_body = plt.figure()
     for i, n in enumerate(["w_bn_b_x", "w_bn_b_y", "w_bn_b_z"]):
@@ -154,7 +202,7 @@ def makePlots(logName, mhe, data):
     plt.xlabel("Samples")
     plt.suptitle("Execution times\n" + logName)
     
-    return [position, speed, dcm, omega_body, ctrl_surf, tether, carousel,
+    return [position, speed, dcm, rpy, omega_body, ctrl_surf, tether, carousel,
             virtual_torques,
             perf, exec_times]
     
