@@ -7,6 +7,8 @@ import numpy as np
 
 from offline_mhe_test import NMPC
 
+from mhe_exp_postprocessing import gimmeMheData, getCameraEstimatedPose
+
 def gimmeMpcData( folder ):
     try:
         import scipy.io as sio
@@ -34,29 +36,41 @@ def gimmeCurrentIndex(mpc, name):
     except:
         raise KeyError("Cannot find " + name +"neither in x nor u names")
     
-def makePlots(logName, mpc, data):
+def makePlots(logName, mpc, data, mheData):
 
     if len(data["ts_trigger"]) <= 1:
         return []
+
+    # Get cam estimated pose and additional info
+    cam_time, cam_position, cam_dcm, cam_rpy = getCameraEstimatedPose( mheData )
+    startMhe = 20
+    while cam_time[ startMhe ] <= 0:
+        startMhe += 1
+
+    t_mpc = np.array(data["ts_trigger"]) * 1e-9 - cam_time[ startMhe ]
+    cam_time = cam_time - cam_time[ startMhe ]
     
-    start = 0;
-    while True:
+    start = 0
+    while t_mpc[ start ] <= 0:
         start += 1
-        if data["ts_trigger"][ start ] != 0:
-            break;
-            
-    t_mpc = np.array(data["ts_trigger"] - data["ts_trigger"][ start ]) * 1e-9
+
+    cam_indices = np.where((cam_time > t_mpc[start]) & (cam_time < t_mpc[ -1 ]))[ 0 ]
+
+#    t_mpc = np.array(data["ts_trigger"] - data["ts_trigger"][ start ]) * 1e-9
     
+    # Make plots now
+
     NX = len(mpc.dae.xNames())
     
     position = plt.figure()
     for i, n in enumerate(["x", "y", "z"]):
         plt.subplot(3, 1, i + 1)
+        plt.plot(cam_time[ cam_indices ], cam_position[cam_indices , i], 'g')
         plt.plot(t_mpc[start: ], data["x"][start: , gimmeCurrentIndex(mpc, n)], 'b')
         plt.plot(t_mpc[start: ], data["y"][start: , gimmeCurrentIndex(mpc, n)], 'r')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
-    plt.suptitle("Estimated position\n" + logName)
+    plt.suptitle("Estimated position; blue - MHE; green - LED Tracker; red - reference\n" + logName)
     
     speed = plt.figure()
     for i, n in enumerate(["dx", "dy", "dz"]):
@@ -70,11 +84,12 @@ def makePlots(logName, mpc, data):
     dcm = plt.figure()
     for i, n in enumerate(["e11", "e12", "e13", "e21", "e22", "e23", "e31", "e32", "e33",]):
         plt.subplot(9, 1, i + 1)
+        plt.plot(cam_time[cam_indices], cam_dcm[cam_indices, i], 'g')
         plt.plot(t_mpc[start: ], data["x"][start: , gimmeCurrentIndex(mpc, n)], 'b')
         plt.plot(t_mpc[start: ], data["y"][start: , gimmeCurrentIndex(mpc, n)], 'r')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
-    plt.suptitle("Estimated DCM\n" + logName)
+    plt.suptitle("Estimated DCM; blue - MHE; green - LED Tracker; red - reference\n" + logName)
 
 
     rpy_est = getRPY( data["x"][start: , gimmeCurrentIndex(mpc, "e12")]
@@ -92,11 +107,12 @@ def makePlots(logName, mpc, data):
     rpy = plt.figure()
     for i, n in enumerate(["roll [deg]", "pitch [deg]", "yaw [deg]"]):
         plt.subplot(3, 1, i + 1)
+        plt.plot(cam_time[cam_indices], cam_rpy[cam_indices, i], 'g')
         plt.plot(t_mpc[start: ], rpy_est[:, i], 'b')
         plt.plot(t_mpc[start: ], rpy_ref[:, i], 'r')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
-    plt.suptitle("Estimated Euler angles\n" + logName)
+    plt.suptitle("Estimated Euler angles; blue - MHE; green - LED Tracker; red - reference\n" + logName)
 
     dcmEst = data["x"][start: , gimmeCurrentIndex(mpc, "e11"): gimmeCurrentIndex(mpc, "e33") + 1]
     dcmRef = data["y"][start: , gimmeCurrentIndex(mpc, "e11"): gimmeCurrentIndex(mpc, "e33") + 1]
@@ -238,9 +254,10 @@ if __name__ == "__main__":
         savePlots = True
     
     mpc = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = args.properties[0])
-    
-    data, logName = gimmeMpcData( str(folder) )
-    plots = makePlots(logName, mpc, data)
+
+    mheData, _ = gimmeMheData( str( folder ) )
+    mpcData, logName = gimmeMpcData( str( folder ) )
+    plots = makePlots(logName, mpc, mpcData, mheData)
     info = getNmpcInfo( mpc )
     
     if savePlots == True:

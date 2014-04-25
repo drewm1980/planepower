@@ -43,6 +43,41 @@ def gimmeCurrentIndex(mhe, name):
     except:
         raise KeyError("Cannot find " + name +"neither in x nor u names")
 
+def getCameraEstimatedPose(data, start = 0, t_mhe = None):
+    """
+    Get LED tracker calculated pose + some additional info
+    """
+        
+    # Get rows where all marker are detected (> 0)
+    cam_all_positive = np.array([(row != -1.0).all() for row in data["cam_markers"][start: , :]]).astype(int)
+    # Get indices where all markers are detected and where we actually received camera data
+    cam_indices = np.flatnonzero(data[ "num_cam_samples" ][start: ].flatten() * cam_all_positive.flatten())
+    # Get time, delay samples properly
+    if t_mhe == None:
+        t_mhe = np.array(data["ts_trigger"]) * 1e-9
+    time = t_mhe[start + cam_indices] - data["dbg_cam_delay"][start + cam_indices] * MHE.samplingTime
+        
+    # Get camera estimated position, convert to NED
+    position = np.array([data["cam_pose"][start + cam_indices, 0],
+                         -data["cam_pose"][start + cam_indices, 1],
+                         -data["cam_pose"][start + cam_indices, 2]]).T
+    # Get DCM and RPY
+    dcm = data["cam_pose"][start + cam_indices, 3: ]
+    dcm_ned = np.zeros( dcm.shape )
+    conv = np.diag([1, -1, -1])
+    for r in xrange( dcm.shape[ 0 ] ):
+        _R = np.reshape(np.ravel(dcm[r, :], order='C'), (3, 3), order='C').T
+        R = np.dot(conv, np.dot(_R, conv))
+        dcm_ned[r, :] = R.flatten()
+        
+    rpy = getRPY(dcm_ned[:, 1],
+                 dcm_ned[:, 0],
+                 dcm_ned[:, 2],
+                 dcm_ned[:, 5],
+                 dcm_ned[:, 8])
+
+    return time, position, dcm_ned, rpy
+
 def makePlots(logName, mhe, data):
 
     if len(data["ts_trigger"]) <= 1:
@@ -56,29 +91,7 @@ def makePlots(logName, mhe, data):
             
     t_mhe = np.array(data["ts_trigger"] - data["ts_trigger"][ start ]) * 1e-9
     
-    cam_all_positive = np.array([(row != -1.0).all() for row in data["cam_markers"][start: , :]]).astype(int)
-    
-    cam_indices = np.flatnonzero(data[ "num_cam_samples" ][start: ].flatten() * cam_all_positive.flatten())
-    
-    cam_time = t_mhe[start + cam_indices] - data["dbg_cam_delay"][start + cam_indices] * MHE.samplingTime
-    # Convert to NED
-    cam_pose = np.array([data["cam_pose"][start + cam_indices, 0],
-                         -data["cam_pose"][start + cam_indices, 1],
-                         -data["cam_pose"][start + cam_indices, 2]]).T
-    
-    cam_dcm = data["cam_pose"][start + cam_indices, 3: ]
-    cam_dcm_ned = np.zeros( cam_dcm.shape )
-    conv = np.diag([1, -1, -1])
-    for r in xrange( cam_dcm.shape[ 0 ] ):
-        _R = np.reshape(np.ravel(cam_dcm[r, :], order='C'), (3, 3), order='C').T
-        R = np.dot(conv, np.dot(_R, conv))
-        cam_dcm_ned[r, :] = R.flatten()
-    
-    rpy_cam = getRPY(cam_dcm_ned[:, 1],
-                     cam_dcm_ned[:, 0],
-                     cam_dcm_ned[:, 2],
-                     cam_dcm_ned[:, 5],
-                     cam_dcm_ned[:, 8])
+    cam_time, cam_pose, cam_dcm, rpy_cam = getCameraEstimatedPose(data, start = start, t_mhe = t_mhe)
     
     rpy_mhe = getRPY(data["x"][start: , gimmeCurrentIndex(mhe, "e12")],
                      data["x"][start: , gimmeCurrentIndex(mhe, "e11")],
@@ -106,7 +119,7 @@ def makePlots(logName, mhe, data):
     dcm = plt.figure()
     for i, n in enumerate(["e11", "e12", "e13", "e21", "e22", "e23", "e31", "e32", "e33",]):
         plt.subplot(9, 1, i + 1)
-        plt.plot(cam_time, cam_dcm_ned[:, i], 'g')
+        plt.plot(cam_time, cam_dcm[:, i], 'g')
         plt.plot(t_mhe[start: ], data["x"][start: , gimmeCurrentIndex(mhe, n)], 'b')
         plt.ylabel( n )
     plt.xlabel("Time [s]")
