@@ -115,10 +115,10 @@ if __name__=='__main__':
     conf = makeConf()
     conf[ 'stabilize_invariants' ] = False
     conf[ 'useVirtualTorques' ]    = True
-    conf[ 'useVirtualForces' ]     = False 
+    conf[ 'useVirtualForces' ]     = False
     
     # Cable length for steady state calculation
-    steadyStateCableLength = 1.275
+    steadyStateCableLength = 1.7
     # Speed for the steady state calculation
     steadyStateSpeed = -4.0
 
@@ -128,7 +128,7 @@ if __name__=='__main__':
             }
 
     # Get the steady state
-    steadyState, dSS = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'])
+    steadyState, dSS = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
         
     xlen = len( mhe.dae.xNames() )
     fw.write("// " + str(mhe.dae.xNames()) + "\n");
