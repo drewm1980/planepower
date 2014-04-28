@@ -338,6 +338,14 @@ global bool setTetherLength(double length)
 	return winch.setTetherLength( length )
 }
 
+global void abort( void )
+{
+	mhe.stop()
+
+	setSpeed( 0 )
+	setTetherLength( 1.275 ) # This is the current homing tether length
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Configure and start components
