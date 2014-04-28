@@ -558,9 +558,17 @@ bool DynamicMhe::prepareWeights( void )
 	mheWeights[ offset_dmotor_torque ] = weight_dmotor_torque;
 	mheWeights[ offset_dddr ] = weight_dddr;
 
+#ifdef offset_dt1_disturbance
 	mheWeights[ offset_dt1_disturbance ] = weight_dt1_disturbance;
 	mheWeights[ offset_dt2_disturbance ] = weight_dt2_disturbance;
 	mheWeights[ offset_dt3_disturbance ] = weight_dt3_disturbance;
+#endif // offset_dt1_disturbance
+
+#ifdef offset_df1_disturbance
+	mheWeights[ offset_df1_disturbance ] = weight_df1_disturbance;
+	mheWeights[ offset_df2_disturbance ] = weight_df2_disturbance;
+	mheWeights[ offset_df3_disturbance ] = weight_df3_disturbance;
+#endif // offset_df1_disturbance
 
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
