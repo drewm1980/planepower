@@ -3,11 +3,8 @@
 
 #include <sys/time.h>
 #include <time.h>
-
-/********************************
- * GLOBALS
- * ******************************/
-typedef struct timeval timeval;
+#include <time_highwind.h>
+#include "data_decoding.h"
 
 typedef struct{
 	double sum;
@@ -15,19 +12,18 @@ typedef struct{
 	int index;
 	double avg;
 	int is_first_data;
-	timeval previous_timestamp;
+	struct timeval previous_timestamp;
 	double *buffer;
 }Analyze;
 
-/********************************
- * PROTOTYPES PUBLIC
- * ******************************/
- 
-extern void init_analyze(Analyze *an,int buffsize);
-extern int calculate_frequency(Analyze *an,timeval tvSent); /*calculates the freq of the package in hz*/
-extern int calculate_latency(Analyze *an,timeval tvSent,timeval tvNow); /*calculates the latency between tvNow and tvSent*/
-extern void dump_buffer_to_file(Analyze *an,const char *file_name);
-extern void destroy_analyze(Analyze *an);
-extern double get_avg(Analyze *an);
+void init_analyze(Analyze *an,int buffsize);
+int calculate_frequency(Analyze *an,struct timeval tvSent); /*calculates the freq of the package in hz*/
+int calculate_latency(Analyze *an, struct timeval tvSent, struct timeval tvNow); /*calculates the latency between tvNow and tvSent*/
+void dump_buffer_to_file(Analyze *an,const char *file_name);
+void destroy_analyze(Analyze *an);
+double get_avg(Analyze *an);
+void timestamp_to_timeString(timeval tv,char time_string[]);
+void timestamp_to_timeString16(Timeval16 tv,char time_string[]);
+
 #endif /*ANALYZE_H_*/
 

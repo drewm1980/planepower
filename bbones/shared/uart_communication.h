@@ -31,7 +31,7 @@ struct Packets {
 } packets;
 
 union Serial_input {
-	char buffer[INPUT_BUFFER]; 
+	char buffer[INPUT_BUFFER_SIZE]; 
 } serial_input;
 
 //timers

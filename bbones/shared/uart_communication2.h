@@ -1,7 +1,3 @@
-/*
- * AUTHOR: Maarten Arits and Jonas Van Pelt
- */
- 
 /**************************************************************************************
 * LAYOUT OF INCOMING LISA PACKAGE 
 * startbyte (0x99) - length - sender_id, message_id, message ... , checksumA, checksumB

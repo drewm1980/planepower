@@ -4,9 +4,7 @@
 /**************************************************************************************
 This library is used to decode, encode and modify packets that are sent between bbones
 * and the server over UDP
-* 
-* - for decoding (from incoming array to struct) the library ALWAYS expects the packages to be in the format listed above
-* - You can encode any type of package to the format listed above
+#
 ****************************************************************************************/
 
 /**************************************************************************************
@@ -22,6 +20,7 @@ extern "C"
 #include <stdint.h>
 #include <sys/time.h>
 #include <time.h>
+#include "time_highwind.h"
 
 /********************************
  * GLOBALS
@@ -43,8 +42,6 @@ typedef enum dec_errCode DEC_errCode;
 enum Library {UDP_L,UART_L,DECODE_L,LOG_L,CIRCULAR_BUFFER_L,SPI_L};
 typedef enum Library library; 
 
-typedef struct timeval timeval;
-
 //pragma to set internal memory alignment to 1 byte so we can fill the structs binary
 #pragma pack(push)  /* push current alignment to stack */
 #pragma pack(1)     /* set alignment to 1 byte boundary */
@@ -53,6 +50,8 @@ typedef struct {
 		uint64_t tv_sec;
 		uint64_t tv_usec;
 } Timeval16; //redefine a new 16byte timeval for beaglebone because beaglebone has 8 byte timeval
+
+//typedef Timeval32 timeval;
 
 typedef union{
 		uint8_t raw[16];
@@ -84,7 +83,7 @@ typedef union{ //message id 72
 typedef struct { // id = 2
 		uint8_t library;
 		uint8_t error_code;
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } Beagle_error;
 	
@@ -97,7 +96,7 @@ typedef struct { // id = 33
 		uint16_t periodic_cycle_max;
 		uint16_t event_number;
 		uint8_t cpu_load; //in %
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } Sys_mon;
 	
@@ -106,14 +105,14 @@ typedef struct { // id = 208
 		uint16_t noise_err_cnt;
 		uint16_t framing_err_cnt;
 		uint8_t bus_number; 
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } UART_errors;
 	
 typedef struct { // id = 105
 		uint8_t arr_length;
 		int16_t values[7]; //the ACTUATORS message contains the final commands to the servos (or any actuator) regardless of which mode you are in (e.g. if it's comming from RC or NAV)
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } Actuators;
 	
@@ -125,7 +124,7 @@ typedef struct { // id = 25
 		uint8_t cno;
 		int8_t elev;
 		uint16_t azim;
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } Svinfo;
 	
@@ -133,7 +132,7 @@ typedef struct { // id = 57
 		uint16_t adc;
 		uint16_t offset;
 		float scaled; 
-		timeval tv; 
+		struct timeval tv; 
 		int8_t new_data;
 } Airspeed_ets;
 	
@@ -154,14 +153,14 @@ typedef struct { // id = 155
 	uint16_t pdop;
 	uint8_t numsv;
 	uint8_t fix;
-	timeval tv; 
+	struct timeval tv; 
 	int8_t new_data;
 } Gps_int;
 	
 typedef struct { // id = 221
 		int32_t abs;
 		int32_t diff;
-		timeval tv;
+		struct timeval tv;
 		int8_t new_data;
 } Baro_raw;
 	
@@ -169,7 +168,7 @@ typedef struct { // id = 203
 		int32_t gp;
 		int32_t gq;
 		int32_t gr;
-		timeval tv;
+		struct timeval tv;
 		int8_t new_data;
 } Imu_gyro_raw;
 	
@@ -177,7 +176,7 @@ typedef struct { // id = 204
 		int32_t ax;
 		int32_t ay;
 		int32_t az;
-		timeval tv;
+		struct timeval tv;
 		int8_t new_data;
 } Imu_accel_raw;
 	
@@ -185,7 +184,7 @@ typedef struct { // id = 205
 		int32_t mx;
 		int32_t my;
 		int32_t mz;
-		timeval tv;
+		struct timeval tv;
 		int8_t new_data;
 } Imu_mag_raw;
 
@@ -255,14 +254,14 @@ typedef struct
  * PROTOTYPES PUBLIC
  * ******************************/
 extern void init_decoding(void);/*initalize read/write pointers*/
-extern DEC_errCode data_decode(uint8_t stream[]);/*decodes data stream to the right structure*/
+extern DEC_errCode data_decode(unsigned char stream[]);/*decodes data stream to the right structure*/
 extern void switch_read_write(void);
-extern DEC_errCode data_encode(uint8_t message[],long unsigned int message_length,uint8_t encoded_data[],int sender_id,int message_id);
+extern DEC_errCode data_encode(unsigned char message[],long unsigned int message_length,unsigned char encoded_data[],int sender_id,int message_id);
 extern Data* get_read_pointer(); /*to get read access to data structure*/
-extern void calculate_checksum(uint8_t buffer[],uint8_t *checksum_1,uint8_t *checksum2);
-extern int add_timestamp(uint8_t buffer[]);/*add timestamp to existing package, updates the checksum and the length byte*/
-extern int strip_timestamp(uint8_t buffer[]);/*removes timestamp, update checksums and length byte*/
-DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]);/*Encodes NMEA packages coming from windsensor*/
+extern void calculate_checksum(unsigned char buffer[],uint8_t *checksum_1,uint8_t *checksum2);
+extern int add_timestamp(unsigned char buffer[]);/*add timestamp to existing package, updates the checksum and the length byte*/
+extern int strip_timestamp(unsigned char buffer[]);/*removes timestamp, update checksums and length byte*/
+DEC_errCode NMEA_asci_encode(const unsigned char buffer[], unsigned char encoded_data[]);/*Encodes NMEA packages coming from windsensor*/
 void DEC_err_handler(DEC_errCode err,void (*write_error_ptr)(char *,char *,int));  
  
 #ifdef __cplusplus

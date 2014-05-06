@@ -1,7 +1,3 @@
-/*
- * AUTHOR:Jonas Van Pelt and Maarten Arits
- */
- 
 #include <stdlib.h>
 #include "data_decoding.h"
 #include <string.h>
@@ -15,8 +11,8 @@
 /********************************
  * PROTOTYPES PRIVATE
  * ******************************/
-static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length); 
-void data_write(uint8_t stream[],void *destination, int length);
+static DEC_errCode data_to_struct(unsigned char sender,unsigned char stream[], int length); 
+void data_write(unsigned char stream[],void *destination, int length);
 
 /********************************
  * GLOBALS
@@ -56,13 +52,12 @@ void switch_read_write()
 	write_data = temp;
 }
 
-DEC_errCode data_decode(uint8_t stream[])
+DEC_errCode data_decode(unsigned char stream[])
 {
 	#if DEBUG  > 1
 		printf("Entering data_decode\n");
 	#endif
 	
-	int i = 0; 
 	uint8_t checksum_1 = 0;
 	uint8_t checksum_2 = 0;
 	uint8_t length = stream[LENGTH_INDEX];
@@ -86,7 +81,7 @@ DEC_errCode data_decode(uint8_t stream[])
 	return data_to_struct(sender, stream, length);
 }
 
-static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length) // start = 0
+static DEC_errCode data_to_struct(unsigned char sender,unsigned char stream[], int length) // start = 0
 {
 	#if DEBUG  > 1
 		printf("Entering data_to_struct\n");
@@ -165,7 +160,7 @@ static DEC_errCode data_to_struct(uint8_t sender,uint8_t stream[], int length) /
 	return DEC_ERR_NONE;	
 }
 
-void data_write(uint8_t stream[],void *destination, int length)
+void data_write(unsigned char stream[],void *destination, int length)
 {
 	#if DEBUG  > 1
 		printf("Entering data_write\n");
@@ -174,20 +169,25 @@ void data_write(uint8_t stream[],void *destination, int length)
 	memcpy(destination,&(stream[MESSAGE_START_INDEX]),length);	
 }
 
-DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]){
 	
+DEC_errCode NMEA_asci_encode(const unsigned char buffer[], unsigned char encoded_data[])
+{
 	#if DEBUG  > 1
 		printf("Entering NMEA_asci_encode\n");
 	#endif
+	char str_IIMWV[6];
+	strcpy(str_IIMWV,"IIMWV");
+	char str_WIXDR[6];
+	strcpy(str_WIXDR,"WIXDR");
 
-	if(strncmp(&buffer[1],"IIMWV",5)==0){
+	if(strncmp((const char *) &buffer[1],str_IIMWV,5)==0){
 		NMEA_IIMWV wind;
-		sscanf(&buffer[7],"%lf",&wind.wind_angle);
-		sscanf(&buffer[13],"%c",&wind.relative);
-		sscanf(&buffer[15],"%lf",&wind.wind_speed);
-		sscanf(&buffer[22],"%c",&wind.wind_speed_unit);
-		sscanf(&buffer[24],"%c",&wind.status);
-		data_encode((uint8_t *)&wind,sizeof(NMEA_IIMWV)-16-1,encoded_data,BONE_WIND,NMEA_IIMWV_ID); //- timestamp and - new data flag
+		sscanf((const char *) &buffer[7],"%lf",&wind.wind_angle);
+		sscanf((const char *) &buffer[13],"%c",&wind.relative);
+		sscanf((const char *) &buffer[15],"%lf",&wind.wind_speed);
+		sscanf((const char *) &buffer[22],"%c",&wind.wind_speed_unit);
+		sscanf((const char *) &buffer[24],"%c",&wind.status);
+		data_encode((unsigned char *)&wind,sizeof(NMEA_IIMWV)-16-1,encoded_data,BONE_WIND,NMEA_IIMWV_ID); //- timestamp and - new data flag
 
 		/*printf("wind angle %lf\n",wind.wind_angle);
 		printf("relative %c\n",wind.relative);
@@ -196,12 +196,12 @@ DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]){
 		printf("status %c\n",wind.status);
 		printf("\n");*/
 
-		}else if(strncmp(&buffer[1],"WIXDR",5)==0){
+		}else if(strncmp((const char *) &buffer[1],str_WIXDR,5)==0){
 			if(buffer[7]=='C'){
 				NMEA_WIXDR temp;
-				sscanf(&buffer[9],"%lf",&temp.temperature);
-				sscanf(&buffer[15],"%c",&temp.unit);
-				data_encode((uint8_t *)&temp,sizeof(NMEA_WIXDR)-16-1,encoded_data,BONE_WIND,NMEA_WIXDR_ID); //- timestamp and - new data flag
+				sscanf((const char *) &buffer[9],"%lf",&temp.temperature);
+				sscanf((const char *) &buffer[15],"%c",&temp.unit);
+				data_encode((unsigned char *)&temp,sizeof(NMEA_WIXDR)-16-1,encoded_data,BONE_WIND,NMEA_WIXDR_ID); //- timestamp and - new data flag
 
 				/*printf("Temperature %lf\n",temp.temperature);
 				printf("unit %c\n",temp.unit);
@@ -213,13 +213,12 @@ DEC_errCode NMEA_asci_encode(uint8_t buffer[],uint8_t encoded_data[]){
 	return DEC_ERR_NONE;
 }
 
-DEC_errCode data_encode(uint8_t message[],long unsigned int message_length,uint8_t encoded_data[],int sender_id,int message_id)
+DEC_errCode data_encode(unsigned char message[],long unsigned int message_length,unsigned char encoded_data[],int sender_id,int message_id)
 {
 	#if DEBUG  > 1
 		printf("Entering data_encode\n");
 	#endif
 	
-	int i = 0,j; 
 	uint8_t checksum_1 = 0;
 	uint8_t checksum_2 = 0;
 	uint8_t length = message_length+6+16; //message length + 6 info bytes + 16 timestamp bytes
@@ -266,13 +265,12 @@ void calculate_checksum(uint8_t buffer[],uint8_t *checksum_1,uint8_t *checksum_2
 	#if DEBUG  > 1
 		printf("Entering calculate_checksum\n");
 	#endif
-	int i;
 	int length = buffer[LENGTH_INDEX];
 	*checksum_1=0;
 	*checksum_2=0;
 	
 	//start byte '0x99' is not in checksum
-	for (i=1;i<length-2;i++)
+	for (int i=1;i<length-2;i++)
 	{
 		*checksum_1 += buffer[i];
 		*checksum_2 += *checksum_1;
@@ -284,7 +282,7 @@ int add_timestamp(uint8_t buffer[]){
 		printf("Entering add_timestamp\n");
 	#endif
 	
-	int length_original=buffer[1],i,j;
+	int length_original=buffer[1];
 	uint8_t checksum_1,checksum_2;
 	int new_length=length_original+16; //timeval is 16 bytes
 	struct timeval tv_8;	//beaglebones timestamp is 8 byte, server timestamp is 16 byte :-(
@@ -316,7 +314,7 @@ int strip_timestamp(uint8_t buffer[]){
 		printf("Entering strip_timestamp\n");
 	#endif
 	
-	int length=buffer[LENGTH_INDEX],i,j;
+	int length=buffer[LENGTH_INDEX];
 	uint8_t checksum_1,checksum_2;
 	int new_length=length-16; //timeval is 16 bytes
 
