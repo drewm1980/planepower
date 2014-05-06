@@ -1,8 +1,3 @@
-
-/*
- * AUTHOR: Maarten Arits and Jonas Van Pelt
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,36 +14,24 @@
 #define DEBUG 0
 #endif
 
+int serial_port_read(uint8_t buffer[],int length); 
+UART_errCode serial_port_new(void);
+UART_errCode serial_port_create();
+UART_errCode  serial_port_open_raw(const char* device, speed_t speed);
+void serial_port_free(void);
+void serial_port_flush(void);
+UART_errCode serial_port_flush_input(void);
+UART_errCode serial_port_flush_output(void);
+int wait_for_data();
 
-/********************************
- * PROTOTYPES PRIVATE
- * ******************************/
- 
-static int serial_port_read(uint8_t buffer[],int length); 
-static UART_errCode serial_port_new(void);
-static UART_errCode serial_port_create();
-static UART_errCode  serial_port_open_raw(const char* device, speed_t speed);
-static void serial_port_free(void);
-static void serial_port_flush(void);
-static UART_errCode serial_port_flush_input(void);
-static UART_errCode serial_port_flush_output(void);
-static int wait_for_data();
-
-/********************************
- * GLOBALS
- * ******************************/
-  
 static const char FILENAME[] = "uart_communication.c";
 
-//config
+extern serial_port *serial_stream;
+
 speed_t speed = B921600;
 const char device[]="/dev/ttyO4";
 
-/********************************
- * FUNCTIONS
- * ******************************/
- 
-static int wait_for_data(){
+int wait_for_data(){
 	struct pollfd fds[1];
 	int timeout = -1; //infinite timeout
 	int result;
@@ -62,7 +45,7 @@ static int wait_for_data(){
 	return 0;
 }
 
-static int serial_port_read(uint8_t buffer[],int length) 
+int serial_port_read(uint8_t buffer[],int length) 
 {
 	#if DEBUG  > 1
 		printf("Entering serial_port_read\n");
@@ -157,7 +140,7 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 	return message_length;
 }
 
-static int serial_port_read_temp(uint8_t buffer[],int length) 
+int serial_port_read_temp(uint8_t buffer[],int length) 
 {
 	const char test_wind[] = "$IIMWV,226.0,R,000.00,N,A*0B\n$WIXDR,C,036.5,C,,*52\n";
 	static int index=0;
@@ -237,7 +220,7 @@ int serial_input_get_windsensor_data(uint8_t buffer[]){
 }
 
 
-static UART_errCode serial_port_new(void) {
+UART_errCode serial_port_new(void) {
 	
 	#if DEBUG  > 1
 		printf("Entering serial_port_new\n");
@@ -252,7 +235,7 @@ static UART_errCode serial_port_new(void) {
 	return UART_ERR_NONE;
 }
 
-static void serial_port_free(void) {
+void serial_port_free(void) {
 	#if DEBUG  > 1
 		printf("Entering serial_port_free\n");
 	#endif
@@ -260,7 +243,7 @@ static void serial_port_free(void) {
 	free(serial_stream);
 }
 
-static void serial_port_flush(void) {
+void serial_port_flush(void) {
 	#if DEBUG  > 1
 		printf("Entering serial_port_flush\n");
 	#endif
@@ -272,7 +255,7 @@ static void serial_port_flush(void) {
 }
 
 
-static UART_errCode serial_port_flush_input(void) {
+UART_errCode serial_port_flush_input(void) {
 	#if DEBUG  > 1
 		printf("Entering serial_port_flush_input\n");
 	#endif
@@ -285,7 +268,7 @@ static UART_errCode serial_port_flush_input(void) {
 	return UART_ERR_NONE;
 }
 
-static UART_errCode serial_port_flush_output(void) {
+UART_errCode serial_port_flush_output(void) {
 	
 	#if DEBUG  > 1
 		printf("Entering serial_port_flush_output\n");
@@ -301,7 +284,7 @@ static UART_errCode serial_port_flush_output(void) {
 	return UART_ERR_NONE;
 }
 
-static UART_errCode  serial_port_open_raw(const char* device, speed_t speed) {
+UART_errCode  serial_port_open_raw(const char* device, speed_t speed) {
 	
 	#if DEBUG  > 1
 		printf("Entering serial_port_open_raw\n");
@@ -392,7 +375,7 @@ UART_errCode serial_port_setup(void)
 	return UART_ERR_NONE;
 }
 
-static UART_errCode serial_port_create()
+UART_errCode serial_port_create()
 {
 	#if DEBUG  > 1
 		printf("Entering serial_port_create\n");

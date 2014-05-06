@@ -2,6 +2,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "log.h"
 
 #ifndef DEBUG 
@@ -116,7 +117,7 @@ LOG_errCode write_data_groundstation_log(char *data,int length){
 		printf("Entering write_data_groundstation_log\n");
 	#endif
 	
-	if(fwrite(data,length, 1, groundstation_log_file)<0){
+	if( fwrite(data, length, 1, groundstation_log_file)!=length ){
 		return LOG_ERR_WRITE; 
 	}
 	
@@ -187,6 +188,7 @@ LOG_errCode log_write(char *file_name,char *message){
 	if(fclose(file)==EOF){
 		return LOG_ERR_CLOSE; 
 	}	
+	return LOG_ERR_NONE;
 }
 
 void LOG_err_handler(LOG_errCode err,void (*write_error_ptr)(char *,char *,int))  

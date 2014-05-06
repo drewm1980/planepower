@@ -17,7 +17,7 @@ typedef struct{
 	struct termios cur_termios;    /* tty state structure       */
 }serial_port; 
  
-serial_port *serial_stream;
+extern serial_port *serial_stream;
 
 struct Packets {
 	struct Serial {
@@ -42,12 +42,12 @@ struct timeval timers[10];
  * PROTOTYPES PUBLIC
  * ******************************/
  
-extern UART_errCode serial_port_create();
-extern UART_errCode serial_port_setup(void); //returns the number of read bytes
-extern int serial_input_check(void);
-extern UART_errCode serial_port_write(uint8_t output[],long unsigned int message_length) ;
-extern UART_errCode serial_port_close(void);
-extern serial_port* serial_port_new(void);
+UART_errCode serial_port_create();
+UART_errCode serial_port_setup(void); //returns the number of read bytes
+int serial_input_check(void);
+UART_errCode serial_port_write(uint8_t output[],long unsigned int message_length) ;
+UART_errCode serial_port_close(void);
+serial_port* serial_port_new(void);
 
 
 #endif /*UART_COMMUNCATION_H_*/
