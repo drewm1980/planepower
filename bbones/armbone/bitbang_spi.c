@@ -83,7 +83,7 @@ int bitbang_read(unsigned int cs_pin,
 	uint16_t rsp = 0;
 
 	usleep(10);	
-	int status = 0;
+	unsigned int status = 0;
 	int err;
 	err = gpio_get_value(status_pin, &status);
 	if(err!=0) printf("Error reading status pin!\n");
@@ -157,9 +157,6 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	bitbang_read(CS1_PIN,CLK_PIN,DO_MISO_PIN,ELEVATION_STATUS_PIN,
 			&elevation_raw);
 
-	encoders_to_angles(azimuth_raw, elevation_raw,
-			&azimuth_radians, &elevation_radians);
-
 #if 0
 	// Print the raw values in binary
 	printf("AZ: ");
@@ -169,11 +166,14 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	printf("\n");
 #endif
 
+	encoders_to_angles(azimuth_raw, elevation_raw,
+			azimuth_radians, elevation_radians);
+
 }
 
 #define PLOT_H 32
 #define PLOT_W (PLOT_H*2)
-unsigned char framebuffer[PLOT_H][PLOT_W+1];
+char framebuffer[PLOT_H][PLOT_W+1];
 void plot_two_angles(float az, float el)
 {
 	memset(framebuffer, '_', sizeof(framebuffer));

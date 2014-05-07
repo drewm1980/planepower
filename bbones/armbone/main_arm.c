@@ -10,7 +10,7 @@
 #include "udp_communication.h"
 #include "log.h"
 #include "circular_buffer.h"
-#include "data_decoding.h"
+//#include "data_decoding.h"
 #include "spi_communication.h"
 
 #define MAX_STREAM_SIZE 255
