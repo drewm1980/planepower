@@ -1,7 +1,10 @@
 include_rules
+.gitignore
 
 # If you want to buld the bbone code from tup, add CONFIG_BBONE= to your tup.config
 ifdef BBONE
+
+ifdef RSOTERSET
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror -Wextra
@@ -18,7 +21,7 @@ CFLAGS += -std=gnu99
 
 :test_spi.o bitbang_spi.o  SimpleGPIO.o |> !ld |> test_spi
 :spi_status.o SimpleGPIO.o |> !ld |> spi_status
-:bitbanging.o SimpleGPIO.o |> !ld |> bitbanging
+#:bitbang.o SimpleGPIO.o |> !ld |> bitbang
 
 #BB-SPI1-01-00A0.dtbo:BB-SPI1-01-00A0.dts
 	#dtc -o $@ -b o -@ $^
@@ -29,4 +32,4 @@ CFLAGS += -std=gnu99
 
 endif
 
-
+endif
