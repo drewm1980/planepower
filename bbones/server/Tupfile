@@ -6,11 +6,9 @@ CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror
 CPPFLAGS += -I..
 CPPFLAGS += -I../shared
-CFLAGS += -ggdb -pthread -DDEBUG=1 -D _BSD_SOURCE 
-LDFLAGS += -L../shared
-
-# This is a hopefully temporary workaround incompatible standards related bullshit about usleep and nanosleep
-#CPPFLAGS += +Wimplicit-function-declaration
+CFLAGS += -ggdb -pthread -D _BSD_SOURCE 
+CFLAGS += -DDEBUG=1 -DANALYZE=0 
+LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>
 
@@ -18,11 +16,9 @@ LDFLAGS += -L../shared
 
 #: main_beaglebone.o udp_communication.o uart_communication.o log.o circular_buffer.o data_decoding.o |> !ld |> main_beaglebone
 
-#:read_log.o udp_communication.o data_decoding.o |> !ld |> read_log
+:read_log.o ../shared/udp_communication.o data_decoding.o |> !ld |> read_log
 
-#:main_server.o log.o udp_communication.o uart_communication.o data_decoding.o analyze.o |> !ld |> main_server 
-
-:main_server.o |> !ld |> main_server
+:main_server.o ../shared/log.o ../shared/udp_communication.o ../shared/uart_communication.o data_decoding.o analyze.o |> !ld |> main_server 
 
 ## Also circular_buffer.o?
 #:main_windsensor.o udp_communication.o uart_communication.o log.o data_decoding.o |> !ld |> main_wind
