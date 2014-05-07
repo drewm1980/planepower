@@ -11,7 +11,7 @@
 
 // This code is for logging data on the plane bbone
 
-static LOG_errCode mount_sd_card();
+LOG_errCode mount_sd_card();
  
 FILE *lisa_log_file,*groundstation_log_file,*boneplane_log_file;
 
@@ -44,11 +44,12 @@ LOG_errCode init_log(){
 	return LOG_ERR_NONE;
 }
 
-static LOG_errCode mount_sd_card(){
-	#if DEBUG  > 1
-		printf("Entering mount_sd_card\n");
-	#endif
-	
+LOG_errCode mount_sd_card()
+{
+#if DEBUG  > 1
+	printf("Entering mount_sd_card\n");
+#endif
+
 	char str[256];
 	strcpy (str,"mount ");
 	strcat (str,SD_CARD_DEVICE_LOCATION);

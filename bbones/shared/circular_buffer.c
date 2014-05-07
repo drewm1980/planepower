@@ -1,6 +1,5 @@
 /*
- * AUTHOR: Jonas Van Pelt
- * source: wikipedia
+ * circular buffer source: wikipedia
  */
 
 /* Circular buffer example, keeps one slot open */
