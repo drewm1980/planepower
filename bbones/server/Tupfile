@@ -12,10 +12,6 @@ LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>
 
-#: main_arm.o SimpleGPIO.o udp_communication.o spi_communication.o log.o data_decoding.o circular_buffer.o |> !ld |> main_arm
-
-#: main_beaglebone.o udp_communication.o uart_communication.o log.o circular_buffer.o data_decoding.o |> !ld |> main_beaglebone
-
 :read_log.o ../shared/udp_communication.o data_decoding.o |> !ld |> read_log
 
 :main_server.o ../shared/log.o ../shared/udp_communication.o ../shared/uart_communication.o data_decoding.o analyze.o |> !ld |> main_server 
