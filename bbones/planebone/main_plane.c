@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
 	static UDP udp_server;
 	uint8_t input_stream[OUTPUT_BUFFER];
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 
 	//init the data decode pointers
 	init_decoding();
@@ -229,7 +229,7 @@ static void *lisa_to_pc(void *arg){
 
 	static UDP udp_client;
 	int message_length;
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	uint8_t input_buffer[INPUT_BUFFER_SIZE];
 
 	UDP_err_handler(openUDPClientSocket(&udp_client,connection.server_ip,connection.port_number_lisa_to_pc,UDP_SOCKET_TIMEOUT),write_udp_error_ptr);
@@ -295,7 +295,7 @@ static void *lisa_to_pc(void *arg){
 static void *data_logging_lisa(void *arg){
 /*-------------------------START OF THIRD THREAD: LISA TO PC LOGGING------------------------*/
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	LOG_err_handler(open_data_lisa_log(),write_log_error_ptr);
 
 	while(1){
@@ -318,7 +318,7 @@ static void *data_logging_lisa(void *arg){
 static void *data_logging_groundstation(void *arg){
 /*-------------------------START OF FOURTH THREAD: GROUNDSTATION TO LISA LOGGING------------------------*/
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	LOG_err_handler(open_data_groundstation_log(),write_log_error_ptr);
 	
 	while(1){
@@ -348,7 +348,7 @@ static void sendError(DEC_errCode err,library lib){
 		static UDP udp_client;
 		int message_length;
 		uint8_t encoded_data[MAX_STREAM_SIZE];
-		Data data;
+        //Data data;
 		Beagle_error error_message;
 
 		//encode an error package
