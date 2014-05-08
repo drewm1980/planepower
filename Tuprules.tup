@@ -4,7 +4,7 @@ CXX = clang++
 CXXFLAGS += -Wall -O3 -march=native -mtune=native
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
-CFLAGS = $(CXXFLAGS)
+CFLAGS = -Wall -Werr -O3
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
 export PKG_CONFIG_PATH
