@@ -15,14 +15,14 @@ LOG_errCode mount_sd_card();
  
 FILE *lisa_log_file,*groundstation_log_file,*boneplane_log_file;
 
-const char FILE_PATH_LISA_LOG[] = "/media/rootfs/data_lisa_log.txt";
-const char FILE_PATH_GROUND_LOG[] = "/media/rootfs/data_groundstation_log.txt";
-const char FILE_PATH_BONEPLANE_LOG[] = "/media/rootfs/data_boneplane_log.txt";
+const char FILE_PATH_LISA_LOG[] = "/home/ubuntu/log/data_lisa_log.txt";
+const char FILE_PATH_GROUND_LOG[] = "/home/ubuntu/log/data_groundstation_log.txt";
+const char FILE_PATH_BONEPLANE_LOG[] = "/home/ubuntu/log/data_boneplane_log.txt";
 
 const char FILE_PATH_PROGRAM_LOG[]="log/log.txt";
 const char FILE_PATH_PROGRAM_ERROR[]="log/error.txt";
 
-const char SD_CARD_MOUNT_LOCATION[] = "/media/rootfs/";
+const char SD_CARD_MOUNT_LOCATION[] = "/home/ubuntu/log";
 const char SD_CARD_DEVICE_LOCATION[] = "/dev/mmcblk0p2";
 /********************************
  * FUNCTIONS
@@ -35,7 +35,7 @@ LOG_errCode init_log(){
 	
 	//check if sdcard is present
 	FILE *file;
-	file = fopen("/media/rootfs/sdcard_present","r"); 
+	file = fopen("/home/ubuntu/log/log_folder_present","r"); 
 	if(file==NULL){	
 		//SD CARD IS NOT PRESENT!, try mounting it	
 		//mount_sd_card();
@@ -47,7 +47,7 @@ LOG_errCode init_log(){
 LOG_errCode mount_sd_card()
 {
 #if DEBUG  > 1
-	printf("Entering mount_sd_card\n");
+	printf("Entering Mount SD card\n");
 #endif
 
 	char str[256];
