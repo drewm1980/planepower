@@ -1,10 +1,3 @@
-/*
- * * Copyright (C) 2013 Alan Backlund
- * *
- * * This program is free software; you can redistribute it and/or modify
- * * it under the terms of the GNU General Public License version 2 as
- * * published by the Free Software Foundation.
- * */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,10 +6,11 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
+#include <unistd.h>
 
-#include "SimpleGPIO.h"
 #include "spi_communication.h"
 
+#include "bitbang_spi.c"
 
 const unsigned int CS0 = 113;
 const unsigned int CS1 = 114;
@@ -25,7 +19,8 @@ const unsigned int CLK = 110;
 const unsigned int status0 = 115;
 const unsigned int status1 = 116;
 
-SPI_errCode spi_open(){
+SPI_errCode spi_open()
+{
 	//Access GPIO Pins
 	gpio_export(CS0);
 	gpio_export(CS1);
@@ -42,14 +37,12 @@ SPI_errCode spi_open(){
 	gpio_set_value(CS0, HIGH);
 	gpio_set_value(CS1, HIGH);
 	gpio_set_value(CLK, LOW);	
-	
+
 	return SPI_ERR_NONE;
 }
 
-
-
-SPI_errCode spi_read(uint8_t data_sensors[]){
-
+SPI_errCode spi_read(uint8_t data_sensors[])
+{
 	uint32_t rsp;
 	uint16_t rsp_azimuth, rsp_elevation; 	
 	rsp_azimuth = 0;
@@ -63,34 +56,32 @@ SPI_errCode spi_read(uint8_t data_sensors[]){
 
 	gpio_set_value(CS0, LOW);	
 	usleep(10);
-	
+
 	int c = 0;
 	for (c; c < 16 ; c++){
 		//CLK GOES HIGH
 		gpio_set_value(CLK, HIGH);
-		int c0=0;
-		for(c0;c0<1000;c0++);
+		for(int c0=0;c0<1000;c0++); // Busy sleep
 
 		gpio_get_value(D0, &azimuth_bit);	//GET 1 BIT
 
 		//CLK GOES LOW 
 		gpio_set_value(CLK, LOW);
-		int c1=0;
-		for(c1;c1<1000;c1++);
-		
+		for(int c1=0;c1<1000;c1++); // Busy sleep
+
 		//PUSH 1 BIT INTO AN ARRAY
 		rsp_azimuth = rsp_azimuth<<1;		
 		rsp_azimuth = rsp_azimuth + azimuth_bit;
 
 	}
-		
+
 	rsp_azimuth = rsp_azimuth - (0x21c2);		//DEFINING THE ZERO FOR AZIMUTH     
 
-	
-        usleep(10);
+
+	usleep(10);
 	gpio_set_value(CS0, HIGH);
 
-	
+
 	usleep(10);					//DELAY BETWEEN READING OF AZIMUTH AND ELEVATION
 
 
@@ -112,7 +103,7 @@ SPI_errCode spi_read(uint8_t data_sensors[]){
 		gpio_set_value(CLK, LOW);	
 		int a1=0;
 		for(a1;a1<1000;a1++);
-		
+
 		//PUSH 1 BIT INTO AN ARRAY
 		rsp_elevation = rsp_elevation<<1;		
 		rsp_elevation = rsp_elevation + elevation_bit;			
@@ -120,54 +111,56 @@ SPI_errCode spi_read(uint8_t data_sensors[]){
 
 	rsp_elevation = rsp_elevation - (0xb9a1) + rsp_azimuth;	//DEFINING THE ZERO FOR ELEVATION AND MAKE IT NEUTRAL TO AZIMUTH MOVEMENT
 
-        usleep(10);
+	usleep(10);
 	gpio_set_value(CS1, HIGH);
 
 
 	/*// Print the values to sanity check them
-	int i;
-	printf("AZIMUTH:");
-	for(i=sizeof(rsp_azimuth)*8-1; i>=0; i--)
-		{
-		printf("%i", rsp_azimuth>>i & (uint16_t)1);
-		}
-	float angle_azimuth = ((float)rsp_azimuth)*(360/(pow(2,16)));
-	printf("   %f",angle_azimuth);
+	  int i;
+	  printf("AZIMUTH:");
+	  for(i=sizeof(rsp_azimuth)*8-1; i>=0; i--)
+	  {
+	  printf("%i", rsp_azimuth>>i & (uint16_t)1);
+	  }
+	  float angle_azimuth = ((float)rsp_azimuth)*(360/(pow(2,16)));
+	  printf("   %f",angle_azimuth);
 
-	int j;
-	printf("  ***  ELEVATION:");
-	for(j=sizeof(rsp_elevation)*8-1; j>=0; j--)
-		{
-		printf("%i", rsp_elevation>>j & (uint16_t)1);
-		} 
-	float angle_elevation = ((float)rsp_elevation)*(360/(pow(2,16)));
-	printf("   %f",angle_elevation);
-	printf("\n");*/
+	  int j;
+	  printf("  ***  ELEVATION:");
+	  for(j=sizeof(rsp_elevation)*8-1; j>=0; j--)
+	  {
+	  printf("%i", rsp_elevation>>j & (uint16_t)1);
+	  } 
+	  float angle_elevation = ((float)rsp_elevation)*(360/(pow(2,16)));
+	  printf("   %f",angle_elevation);
+	  printf("\n");*/
 
 
 	//PUT AZIMUTH AND ELEVATION DATA IN ONE ARRAY******(AZIMUTH.ELEVATION)
 	rsp = rsp + rsp_azimuth;
 	rsp = rsp << 16;
 	rsp = rsp + rsp_elevation;
-	
+
 	/*data_sensors[0] = rsp;
-	data_sensors[1] = rsp>>8;
-	data_sensors[2] = rsp>>16;
-	data_sensors[3] = rsp>>24;*/
-	
+	  data_sensors[1] = rsp>>8;
+	  data_sensors[2] = rsp>>16;
+	  data_sensors[3] = rsp>>24;*/
+
 	memcpy(data_sensors, &rsp , sizeof(uint32_t));
 
 
 	/*int k;
-	for(k=sizeof(rsp)*8-1; k>=0; k--)
-		{
-		printf("%i", rsp>>k & (uint32_t)1);
-		} 	printf("\n");*/
-		    
-	
+	  for(k=sizeof(rsp)*8-1; k>=0; k--)
+	  {
+	  printf("%i", rsp>>k & (uint32_t)1);
+	  } 	printf("\n");*/
+
+
 	return SPI_ERR_NONE;
 }
-SPI_errCode spi_close(){
+
+SPI_errCode spi_close()
+{
 
 	gpio_unexport(CS0);
 	gpio_unexport(CS1);
@@ -177,17 +170,18 @@ SPI_errCode spi_close(){
 	return SPI_ERR_NONE;
 }
 
-void SPI_err_handler(SPI_errCode err,void (*write_error_ptr)(char *,char *,int)){
+void SPI_err_handler(SPI_errCode err,void (*write_error_ptr)(char *,char *,int))
+{
 	//write error to local log
 	switch( err ) {
 		case SPI_ERR_NONE:
 			break;
-		/*case  SPI_ERR_UNDEFINED:
-			write_error_ptr(SOURCEFILE,"undefined spi error",err);
-			break;
-		case  SPI_ERR_OPEN_DEV:
-			write_error_ptr(SOURCEFILE,"failed to open spi port",err);
-			break;*/
+			/*case  SPI_ERR_UNDEFINED:
+			  write_error_ptr(SOURCEFILE,"undefined spi error",err);
+			  break;
+			  case  SPI_ERR_OPEN_DEV:
+			  write_error_ptr(SOURCEFILE,"failed to open spi port",err);
+			  break;*/
 		default: break;
 	}
 }

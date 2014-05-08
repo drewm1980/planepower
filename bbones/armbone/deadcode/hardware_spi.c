@@ -18,7 +18,7 @@
 
 #define RESPONSE_TYPE uint16_t // 64 causes crash here.
 
-int main(int argc, const char *argv[])
+int main()
 {
 	// Change status gpio pins to inputs
 	// ... should be done in device tree overlay...

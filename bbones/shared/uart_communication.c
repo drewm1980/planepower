@@ -78,11 +78,9 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 	//todo: oneindige loops vermijden
 	
 	uint8_t message_length;
-	int bytes_in_buffer;
 	uint8_t checksum_1=0;
 	uint8_t checksum_2=0;
-	int i;
-	int INDEX_START_BYTE=0,INDEX_LENGTH=1,INDEX_CH1,INDEX_CH2;
+	int INDEX_CH1,INDEX_CH2;
 
 	//1. SEARCH FOR START BYTE 0X99
 	do{
@@ -113,7 +111,7 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 	INDEX_CH1 = message_length-2;
 	INDEX_CH2 = message_length-1;
 	
-	for(i=1;i<message_length-2;i++) //read until message_length - checksum_1 - checksum_2
+	for(int i=1;i<message_length-2;i++) //read until message_length - checksum_1 - checksum_2
 	{
 		checksum_1 += buffer[i];
 		checksum_2 += checksum_1;
@@ -144,7 +142,6 @@ int serial_port_read_temp(uint8_t buffer[],int length)
 {
 	const char test_wind[] = "$IIMWV,226.0,R,000.00,N,A*0B\n$WIXDR,C,036.5,C,,*52\n";
 	static int index=0;
-	int i;
 	//printf("reading index %d ...\n",index);
 
 	buffer[0]=(uint8_t)test_wind[index];
@@ -166,7 +163,6 @@ int serial_input_get_windsensor_data(uint8_t buffer[]){
 	//Naser: Replace serial_port_read_temp with serial_port_read
 	
 		//check protocol here: http://en.wikipedia.org/wiki/NMEA_0183
-		int bytes_in_buffer;
 		unsigned int checksum_calc=0;
 		unsigned int checksum_recv=0;
 		uint8_t checksum_flag=0;
@@ -202,7 +198,7 @@ int serial_input_get_windsensor_data(uint8_t buffer[]){
 		//the checksum is the bitwise exclusive OR of ASCII codes of all characters between the $ and *
 		if(checksum_flag==1){
 			
-			sscanf(&buffer[length-2],"%x",(unsigned int *)&checksum_recv); //convert fake asci hex to real hex
+			sscanf((const char *) &buffer[length-2],"%x",(unsigned int *)&checksum_recv); //convert fake asci hex to real hex
 
 			for(i=1;i<length-3;i++){
 				checksum_calc ^= (char)buffer[i];
