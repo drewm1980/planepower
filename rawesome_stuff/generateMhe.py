@@ -170,7 +170,7 @@ int main( void )
     return 0;
 }
 
-""" % {"ss_code": ss_code, "weights_code": weights_code}
+""" % {"weights_code": weights_code}
 
     fw = open("mhe_speed_test.cpp", "w")
     fw.write( test )
@@ -305,10 +305,10 @@ if __name__=='__main__':
     conf = makeConf()
     conf[ 'stabilize_invariants' ] = False
     conf[ 'useVirtualTorques' ]    = True
-    conf[ 'useVirtualForces' ]     = True 
+    conf[ 'useVirtualForces' ]     = False
     
     # Cable length for steady state calculation
-    steadyStateCableLength = 1.275
+    steadyStateCableLength = 1.7
     # Speed for the steady state calculation
     steadyStateSpeed = -4.0
 
@@ -318,7 +318,7 @@ if __name__=='__main__':
             }
 
     # Get the steady state
-    steadyState, dSS = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'])
+    steadyState, dSS = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
     
     names = {"x": mhe.dae.xNames(), "u": mhe.dae.uNames(), "z": mhe.dae.zNames()}
     ss_code = ""

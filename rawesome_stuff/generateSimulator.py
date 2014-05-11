@@ -122,7 +122,7 @@ if __name__=='__main__':
     #
     
     # Cable length for steady state calculation
-    steadyStateCableLength = 1.275
+    steadyStateCableLength = 1.7
     # Speed for the steady state calculation
     steadyStateSpeed = -4.0
 
