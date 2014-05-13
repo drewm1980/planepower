@@ -38,7 +38,7 @@ typedef struct
 //	std::vector< double > SN;
 
 	//
-	// Sensor data (ATM, same as in the KinematicMhe component)
+	// Sensor data
 	//
 
 	/// Number of data samples
@@ -51,8 +51,8 @@ typedef struct
 	std::vector< double > cam_markers;
 	/// Pose and orientation w.r.t anchorframe point
 	std::vector< double > cam_pose;
-	/// Horizontal and vertical angle from LAS [V]; TODO Convert to [rad]
-	std::vector< double > las_data;
+	/// Horizontal and vertical angle from LAS [rad]
+	std::vector< double > las_avg;
 	/// Winch data: length, speed and motor current
 	std::vector< double > winch_data;
 	/// Averaged controls

@@ -15,6 +15,8 @@ using namespace RTT::os;
 
 /// Size of the IMU data buffer size
 #define MAX_NUM_IMU_SAMPLES 100
+/// Size of the LAS data buffer size
+#define MAX_NUM_LAS_SAMPLES 100
 /// Maxumum number of failures when we start the MHE
 #define MAX_NUM_FAILURES (2 * ACADO_N)
 
@@ -79,7 +81,7 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.enc_data.resize(3, 0.0);
 	debugData.cam_markers.resize(12, 0.0);
 	debugData.cam_pose.resize(12, 0.0);
-	debugData.las_data.resize(2, 0.0);
+	debugData.las_avg.resize(2, 0.0);
 	debugData.winch_data.resize(3, 0.0);
 	debugData.controls_avg.resize(3, 0.0);
 
@@ -87,6 +89,7 @@ DynamicMhe::DynamicMhe(std::string name)
 	portDebugData.write( debugData );
 
 	imuData.resize( MAX_NUM_IMU_SAMPLES );
+	lasData.resize( MAX_NUM_LAS_SAMPLES );
 }
 
 bool DynamicMhe::configureHook()
@@ -161,14 +164,19 @@ void DynamicMhe::updateHook()
 		for (unsigned i = 0; i < NY; ++i)
 			acadoVariables.y[runCnt * NY + i] = execY[ i ];
 
-		int ledInd = runCnt - mhe_ndelay;
-		if (ledInd >= 0)
+#ifdef offset_marker_positions
+		if (debugData.num_cam_samples > 0)
 		{
-			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
-			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+			int ledInd = runCnt - debugData.dbg_cam_delay;
+			if (ledInd >= 0)
+			{
+				for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+					acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+				for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+					acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+			}
 		}
+#endif
 
 		int cableInd = runCnt - debugData.dbg_winch_delay;
 		if (cableInd >= 0)
@@ -195,12 +203,16 @@ void DynamicMhe::updateHook()
 			acadoVariables.yN[ i ] = execYN[ i ];
 
 		// Embed marker positions
-		// TODO In principle, we do not need mhe_ndelay, it is calculated
-		int ledInd = N - mhe_ndelay;
-		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-			acadoVariables.y[ledInd * NY + el] = ledData[ i ];
-		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-			acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+#ifdef offset_marker_positions
+		if (debugData.num_cam_samples > 0)
+		{
+			int ledInd = N - debugData.dbg_cam_delay;
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+		}
+#endif
 
 		// Embed winch measurement
 		int cableInd = N - debugData.dbg_winch_delay;
@@ -355,7 +367,6 @@ bool DynamicMhe::prepareMeasurements( void )
 	
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
-
 	while ((numImuSamples < MAX_NUM_IMU_SAMPLES) && (portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData))
 		numImuSamples++;
 
@@ -385,7 +396,9 @@ bool DynamicMhe::prepareMeasurements( void )
 		for (unsigned i = 0; i < camData.weights.size(); ++i)
 			ledData[ i ] = ledWeights[ i ] = 0.0;
 	
-	FlowStatus lasStatus = portLASData.read( lasData );
+	unsigned numLasSamples = 0;
+	while ((numLasSamples < MAX_NUM_LAS_SAMPLES) && (portLASData.read( lasData[ numLasSamples ] ) == NewData))
+		numLasSamples++;
 
 	FlowStatus winchStatus = portWinchData.read( winchData );
 	cableLength = winchData.length * (double)(winchStatus == NewData);
@@ -410,6 +423,8 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.controls_avg[ i ] = 0.0;
 	
 	double prevTimestamp = debugData.ts_trigger - mhe_sampling_time * 1e9;
+
+	// Average IMU and ctrl surfaces data
 	unsigned numImuSamplesReal = 0;
 	for (unsigned i = 0; i < numImuSamples; ++i)
 	{
@@ -435,6 +450,23 @@ bool DynamicMhe::prepareMeasurements( void )
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
 		debugData.controls_avg[ i ] /= (double)numImuSamplesReal;
 
+	// Average LAS data
+	unsigned numLasSamplesReal = 0;
+	for (unsigned i = 0; i < numLasSamples; ++i)
+	{
+		// There can be some garbage in the buffer
+		if (lasData[ i ].ts_trigger < prevTimestamp)
+			continue;
+
+		debugData.las_avg[ 0 ] += lasData[ i ].angle_hor;
+		debugData.las_avg[ 1 ] += lasData[ i ].angle_ver;
+
+		++numLasSamplesReal;
+	}
+	for (unsigned i = 0; i < debugData.las_avg.size(); ++i)
+		debugData.las_avg[ i ] /= (double)numLasSamplesReal;
+
+
 	//
 	// Some debug stuff, record number of measurements we got
 	//
@@ -442,7 +474,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	debugData.num_imu_samples = numImuSamplesReal;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
-	debugData.num_las_samples = (lasStatus == NewData);
+	debugData.num_las_samples = numLasSamplesReal;
 	debugData.num_winch_samples = (winchStatus == NewData);
 
 	//
@@ -450,6 +482,8 @@ bool DynamicMhe::prepareMeasurements( void )
 	//
 	if (numImuSamplesReal == 0)
 		return false;
+
+	// TODO Conditionally return if there is no LAS data
 	
 	//
 	// Prepare the sensor data
@@ -526,16 +560,12 @@ bool DynamicMhe::prepareDebugData( void )
 	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_markers.begin());
 	copy(camData.pose.begin(), camData.pose.end(), debugData.cam_pose.begin());
 
-	debugData.las_data[ 0 ] = lasData.angle_hor;
-	debugData.las_data[ 1 ] = lasData.angle_ver;
-
 	return true;
 }
 
 bool DynamicMhe::prepareWeights( void )
 {
 	// XXX Weights for markers are done in a different way, by dflt = 0.0
-	// TODO Now that we generate offsets, remove offset inc stuff
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 

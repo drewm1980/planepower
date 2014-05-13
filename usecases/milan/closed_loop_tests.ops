@@ -299,14 +299,14 @@ connect("voltageController.eboxAnalog", "encoder.eboxAnalog", cp)
 
 var ConnPolicy cpImuMhe
 cpImuMhe.type = 1
-cpImuMhe.size = 1000
+cpImuMhe.size = 100
 
 // Sensor data -> MHE
 connect("masterTimer.controlsPlaybackClock", "mhe.trigger", cp)
 connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
 connect("encoder.data", "mhe.encoderData", cp)
 connect("LEDTracker.data", "mhe.ledTrackerData", cp)
-connect("lineAngleSensor.data", "mhe.lasData", cp)
+connect("lineAngleSensor.data", "mhe.lasData", cpImuMhe)
 connect("winch.data", "mhe.winchData", cp)
 
 // MHE state estimate -> NMPC feedback
