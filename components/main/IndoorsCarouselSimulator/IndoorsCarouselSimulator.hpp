@@ -155,6 +155,7 @@ private:
 
 	BufferWithDelay< McuHandlerDataType > mcu;
 	BufferWithDelay< EncoderDataType > enc;
+	BufferWithDelay< LineAngleSensorDataType > las;
 	BufferWithDelay< LEDTrackerDataType > cam;
 	BufferWithDelay< WinchControlDataType > winch;
 	BufferWithDelay< uint64_t > mhe;
@@ -162,6 +163,7 @@ private:
 	void updateControls();
 	void updateMcuData();
 	void updateEncData();
+	void updateLasData();
 	void updateCamData();
 	void updateWinchData();
 	void updateMheTrigger();

@@ -385,7 +385,12 @@ bool DynamicMhe::prepareMeasurements( void )
 				// We do not use weights from Andrew, but
 				// from rawesome simulation...
 				//ledWeights[ i ] = camData.weights[ i ];
+#ifdef offset_marker_positions
 				ledWeights[ i ] = weight_marker_positions;
+#else
+				ledWeights[ i ] = 0.0;
+#endif
+
 			}
 			else
 			{
@@ -452,6 +457,7 @@ bool DynamicMhe::prepareMeasurements( void )
 
 	// Average LAS data
 	unsigned numLasSamplesReal = 0;
+	for (unsigned i = 0; i < debugData.las_avg.size(); debugData.las_avg[ i++ ] = 0.0);
 	for (unsigned i = 0; i < numLasSamples; ++i)
 	{
 		// There can be some garbage in the buffer
@@ -478,12 +484,15 @@ bool DynamicMhe::prepareMeasurements( void )
 	debugData.num_winch_samples = (winchStatus == NewData);
 
 	//
-	// If we got no measurements from the IMU, abort
+	// If we got no measurements from the IMU or LAS, abort
 	//
 	if (numImuSamplesReal == 0)
 		return false;
 
-	// TODO Conditionally return if there is no LAS data
+#ifdef offset_lineAngles
+	if (numLasSamplesReal == 0)
+		return false;
+#endif
 	
 	//
 	// Prepare the sensor data
@@ -500,6 +509,11 @@ bool DynamicMhe::prepareMeasurements( void )
 	// Control surfaces; TODO we might skip this!
 	execY[ offset_aileron  ] = debugData.controls_avg[ 0 ]; // TODO check signs
 	execY[ offset_elevator ] = debugData.controls_avg[ 2 ]; // TODO check signs
+
+#ifdef offset_lineAngles
+	execY[offset_lineAngles + 0] = debugData.las_avg[ 0 ]; // angle_hor
+	execY[offset_lineAngles + 1] = debugData.las_avg[ 1 ]; // angle_ver
+#endif
 	
 	// r, dr, ddr
 	// Measurement for cable length "r" is embedded the same way we do
@@ -599,6 +613,11 @@ bool DynamicMhe::prepareWeights( void )
 	mheWeights[ offset_df2_disturbance ] = weight_df2_disturbance;
 	mheWeights[ offset_df3_disturbance ] = weight_df3_disturbance;
 #endif // offset_df1_disturbance
+
+#ifdef offset_lineAngles
+	mheWeights[offset_lineAngles + 0] = weight_lineAngles;
+	mheWeights[offset_lineAngles + 1] = weight_lineAngles;
+#endif
 
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)

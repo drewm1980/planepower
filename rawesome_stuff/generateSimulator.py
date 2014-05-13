@@ -8,7 +8,7 @@ import casadi as C
 
 import rawe
 from rawe.models.arianne_conf import makeConf
-from offline_mhe_test import MHE
+from offline_mhe_test import carouselModel
 from rawekite.carouselSteadyState import getSteadyState
 
 if __name__=='__main__':
@@ -23,12 +23,14 @@ if __name__=='__main__':
     
     Ts = 1e-3
     
-    # We make an MHE because there are defined all measurements (output functions)
-    # that we would like to simulate
-    mhe = MHE.makeMhe(Ts, propertiesDir = propsDir)
+    conf = makeConf()
+    dae = carouselModel.makeModel(conf, propertiesDir = propsDir)
     
-    sim = rawe.RtIntegrator(mhe.dae, ts = Ts, options = options,
-                            measurements = C.veccat([mhe.yx, mhe.yu]),
+    outputNames = ['IMU_angular_velocity', 'IMU_acceleration', 'marker_positions', 'lineAngles']
+    outputs = [dae[ name ] for name in outputNames]
+    
+    sim = rawe.RtIntegrator(dae, ts = Ts, options = options,
+                            measurements = C.veccat(outputs),
                             cgOptions = {'CXX': 'clang++', 'CC': 'clang',
                                          'CXXFLAGS': '-fPIC -O3 -march=native -mtune=native -finline-functions -I.',
                                          'CFLAGS': '-fPIC -O3 -march=native -mtune=native -finline-functions -I.',
@@ -63,24 +65,21 @@ if __name__=='__main__':
     fw.write("#define sim_sampling_time " + repr( Ts ) + "\n\n\n");
     
     fw.write("// Differential variables\n")
-    for k, name in enumerate( mhe.dae.xNames() ):
+    for k, name in enumerate( dae.xNames() ):
         fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
     fw.write("\n\n")
     
     fw.write("// Control variables\n")
-    for k, name in enumerate( mhe.dae.uNames() ):
+    for k, name in enumerate( dae.uNames() ):
         fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
     fw.write("\n\n")
     
     # Output offsets for measurements
     fw.write("// Measurement offsets\n")
     yOffset = 0
-    for name in mhe.yxNames:
+    for name in outputNames:
         fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
-        yOffset += mhe[ name ].shape[ 0 ]
-    for name in mhe.yuNames:
-        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
-        yOffset += mhe[ name ].shape[ 0 ]
+        yOffset += dae[ name ].shape[ 0 ]
     fw.write("\n\n")
     
     #
@@ -98,8 +97,9 @@ if __name__=='__main__':
     
     ### Encoder
     EncConf = TimeConf("enc", 1 / 1000.0, 0)
-    
-    ### TODO Line Angle Sensor
+
+    ### Line angle sensor
+    LasConf = TimeConf("las", 1 / 1000.0, 0)
     
     ### Winch
     WinchConf = TimeConf("winch", 1 / 50.0, 10e-3)
@@ -109,7 +109,7 @@ if __name__=='__main__':
     MheConf = TimeConf("mhe", 1/ 25.0, 0)
     
     fw.write("// Sensor configuration -- sampling times and delays in [sec]\n")
-    for k in [LedConf, McuConf, EncConf, WinchConf, MheConf]:
+    for k in [LedConf, McuConf, EncConf, LasConf, WinchConf, MheConf]:
         name = k.name
         ts = k.ts
         td = k.td
@@ -132,11 +132,10 @@ if __name__=='__main__':
             }
 
     # Get the steady state
-    conf = makeConf()
-    steadyState, _ = getSteadyState(mhe.dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
+    steadyState, _ = getSteadyState(dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
 
     # Write the steady state to the file
-    names = {"x": mhe.dae.xNames(), "u": mhe.dae.uNames(), "z": mhe.dae.zNames()}
+    names = {"x": dae.xNames(), "u": dae.uNames(), "z": dae.zNames()}
     for k, v in names.items():
         fw.write("const double ss_" + k + "[ " + str( len( v ) ) + " ] = {")
         fw.write(", ".join([repr( steadyState[ name ] ) + " /*" + name + "*/" for name in v]))

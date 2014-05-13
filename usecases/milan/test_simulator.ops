@@ -196,7 +196,7 @@ connect("simulator.trigger", "mhe.trigger", cp)
 connect("simulator.mcuData", "mhe.mcuData", cpImuMhe)
 connect("simulator.encoderData", "mhe.encoderData", cp)
 connect("simulator.ledTrackerData", "mhe.ledTrackerData", cp)
-connect("simulator.lasData", "mhe.lasData", cp)
+connect("simulator.lasData", "mhe.lasData", cpImuMhe)
 connect("simulator.winchData", "mhe.winchData", cp)
 // Simulator -> sensors and actuators telemetry
 connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)

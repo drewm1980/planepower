@@ -49,6 +49,9 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 	encData.ts_trigger = trigger;
 	portEncoderData.setDataSample( encData );
 
+	lasData.ts_trigger = trigger;
+	portLASData.setDataSample( lasData );
+
 	// NOTE: Dimensions are hard-coded, should be compatible with LEDTracker component
 	camData.positions.resize(CAM_DATA_SIZE, 0.0);
 	camData.weights.resize(CAM_DATA_SIZE, 0.0);
@@ -83,6 +86,13 @@ IndoorsCarouselSimulator::IndoorsCarouselSimulator(std::string name)
 
 	addConstant("enc_ts", enc.ts);
 	addConstant("enc_td", enc.td);
+
+	las.ts = las_ts / sim_sampling_time;
+	las.td = las_td / sim_sampling_time;
+	if (las.td > maxDelay) maxDelay = las.td;
+
+	addConstant("las_ts", las.ts);
+	addConstant("las_td", las.td);
 
 	cam.ts = cam_ts / sim_sampling_time;
 	cam.td = cam_td / sim_sampling_time;
@@ -129,6 +139,7 @@ bool IndoorsCarouselSimulator::startHook( )
 {
 	mcu.reset();
 	enc.reset();
+	las.reset();
 	cam.reset();
 	winch.reset();
 	mhe.reset();
@@ -169,6 +180,7 @@ void IndoorsCarouselSimulator::updateHook( )
 	// 3) Put outputs to the ports according to the specs (from python codegen)
 	updateMcuData();
 	updateEncData();
+	updateLasData();
 	updateCamData();
 	updateWinchData();
 
@@ -259,6 +271,19 @@ void IndoorsCarouselSimulator::updateEncData()
 
 	if (enc.update( encData  ) == true)
 		portEncoderData.write( encData );
+}
+
+void IndoorsCarouselSimulator::updateLasData()
+{
+	// TODO Check this once in the simulation
+	lasData.angle_hor = integratorIO[offset_lineAngles + 0];
+	lasData.angle_ver = integratorIO[offset_lineAngles + 1];
+
+	lasData.ts_trigger = trigger;
+	lasData.ts_elapsed = 0.0;
+
+	if (las.update( lasData  ) == true)
+		portLASData.write( lasData );
 }
 
 void IndoorsCarouselSimulator::updateCamData()

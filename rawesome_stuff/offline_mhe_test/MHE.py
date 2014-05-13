@@ -38,21 +38,32 @@ mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = True
 
 # mheOpts['CG_CONDENSED_HESSIAN_CHOLESKY'] = 'INTERNAL_N3'
 
-
-
 # And we introduce arrival cost computation
 # mheOpts['CG_USE_ARRIVAL_COST'] = True
 
 # Measurements depending only on diff. state variables
-# DO NOT CHANGE THIS ORDER
-measX  = ['marker_positions', 'cos_delta', 'sin_delta', 'IMU_angular_velocity', 'IMU_acceleration']
+
+useLedTracker    = False
+useLineAngleData = True
+useVirtualTorques = True
+useVirtualForces = False
+
+measX  = ['cos_delta', 'sin_delta', 'IMU_angular_velocity', 'IMU_acceleration']
 measX += ['aileron', 'elevator']
 measX += ['r', 'dr', 'ddr']
 
+if useLedTracker is True:
+    measX += ['marker_positions']
+if useLineAngleData is True:
+    measX += ['lineAngles']
+
 # Measurements depending only on control variables
 measU  = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
-measU += ['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']
-# measU += ['df1_disturbance', 'df2_disturbance', 'df3_disturbance']
+
+if useVirtualTorques is True:
+    measU += ['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']
+if useVirtualForces is True:
+    measU += ['df1_disturbance', 'df2_disturbance', 'df3_disturbance']
 
 #
 # Standard deviations for measurements
@@ -70,30 +81,32 @@ measU += ['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']
 # 			   'dmotor_torque':1e-4,
 # 			   'dddr':1e-4}
 
-gyro_lsb = np.radians( 0.2 )
-accl_lsb = 3.33 / 1000.0 * 9.81
+gyro_lsb = np.radians( 0.2 ) # 1 LSB of the gyroscope
+accl_lsb = 3.33 / 1000.0 * 9.81 # 1 LSB of the accelerometer
 servo_lsb = 2.0 * np.pi / 1024.0
 
 # New, verified with experimental data
-mheSigmas = {
-				'marker_positions': 2e1, # pixels
+mheSigmas = {'cos_delta': 1e-3, 'sin_delta': 1e-3,
 
-				'cos_delta': 1e-3, 'sin_delta': 1e-3,
+             'IMU_angular_velocity': 50.0 * gyro_lsb, 
+             'IMU_acceleration': 50.0 * accl_lsb, 
+             
+             'aileron': servo_lsb, 'elevator': servo_lsb,
+             'daileron': 1e0, 'delevator': 1e0,
 
-				'IMU_angular_velocity': 50.0 * gyro_lsb, # 1 LSB of the gyroscope
-				'IMU_acceleration': 50.0 * accl_lsb, # 1 LSB of the accelerometer
+             'r': 1e-1, 'dr': 1e-1, 'ddr': 1e-1, 'dddr': 1e-1,
 
-				'aileron': servo_lsb, 'elevator': servo_lsb,
-				'daileron': 1e0, 'delevator': 1e0,
-
-				'r': 1e-1, 'dr': 1e-1, 'ddr': 1e-1, 'dddr': 1e-1,
-
-				'dmotor_torque': 1e1,
-				
-				'dt1_disturbance': 1e1, 'dt2_disturbance': 1e1, 'dt3_disturbance' : 1e1
-				
-# 				, 'df1_disturbance': 1e2, 'df2_disturbance': 1e2, 'df3_disturbance' : 1e2,
+             'dmotor_torque': 1e1
 			 }
+
+if useLedTracker is True:
+    mheSigmas.update({'marker_positions': 2e1}) # pixels
+if useLineAngleData is True:
+    mheSigmas.update({'lineAngles': 2.0 * 4.0 * servo_lsb})
+if useVirtualTorques is True:
+    mheSigmas.update({'dt1_disturbance': 1e1, 'dt2_disturbance': 1e1, 'dt3_disturbance' : 1e1})
+if useVirtualForces is True:
+    mheSigmas.update({'df1_disturbance': 1e2, 'df2_disturbance': 1e2, 'df3_disturbance' : 1e2})
 
 # Weights
 mheWeightScaling = 1e-3
