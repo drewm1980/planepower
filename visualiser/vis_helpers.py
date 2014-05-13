@@ -239,8 +239,8 @@ class OcpWorker( zmq_protobuf_helpers.ZmqSubProtobufWorker ):
 			# roll = atan2(e23, e33)
 			self._buffer["roll"][ n ] = np.rad2deg( np.arctan2(self._buffer["e23"][ n ], self._buffer["e33"][ n ]) )
 
-		for name in ["aileron", "daileron", "elevator", "delevator"]:
-			self._buffer[ name ] = np.rad2deg( self._buffer[ name ] )
+#		for name in ["aileron", "daileron", "elevator", "delevator"]:
+#			self._buffer[ name ] = np.rad2deg( self._buffer[ name ] )
 
 		self._buffer[ "ddelta" ] = np.array(self._buffer[ "ddelta" ]) * 60.0 / (2.0 * np.pi)
 
