@@ -32,6 +32,7 @@ def generateTestFile( mhe ):
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <cstdlib>
 
 #include "acado_common.h"
 #include "acado_auxiliary_functions.h"
