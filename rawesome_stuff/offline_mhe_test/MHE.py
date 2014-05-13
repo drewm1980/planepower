@@ -36,6 +36,10 @@ mheOpts['FIX_INITIAL_STATE'] = False
 # This is somehow mandatory, cause we use it on the real system (always!)
 mheOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = True
 
+# mheOpts['CG_CONDENSED_HESSIAN_CHOLESKY'] = 'INTERNAL_N3'
+
+
+
 # And we introduce arrival cost computation
 # mheOpts['CG_USE_ARRIVAL_COST'] = True
 
@@ -48,6 +52,7 @@ measX += ['r', 'dr', 'ddr']
 # Measurements depending only on control variables
 measU  = ['daileron', 'delevator', 'dmotor_torque', 'dddr']
 measU += ['dt1_disturbance', 'dt2_disturbance', 'dt3_disturbance']
+# measU += ['df1_disturbance', 'df2_disturbance', 'df3_disturbance']
 
 #
 # Standard deviations for measurements
@@ -86,6 +91,8 @@ mheSigmas = {
 				'dmotor_torque': 1e1,
 				
 				'dt1_disturbance': 1e1, 'dt2_disturbance': 1e1, 'dt3_disturbance' : 1e1
+				
+# 				, 'df1_disturbance': 1e2, 'df2_disturbance': 1e2, 'df3_disturbance' : 1e2,
 			 }
 
 # Weights
