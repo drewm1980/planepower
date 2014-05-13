@@ -42,9 +42,10 @@ def processFiles(folder, savePlots):
     lasPlots = processLasData(logName,  las)
     
     gyroSCPlots = gyroSanityCheck(logName, imu, enc)
+    posCompPlots = positionComparison(logName, cam, winch, las)
     
     if savePlots is True:
-        savePlotsToPdf(imuPlots + encPlots + camPlots + winchPlots + lasPlots + gyroSCPlots,
+        savePlotsToPdf(imuPlots + encPlots + camPlots + winchPlots + lasPlots + gyroSCPlots + posCompPlots,
                        folder,
                        prefix = "sensors_actuators_timing")
 
@@ -306,6 +307,52 @@ def gyroSanityCheck(logName, imu, enc):
     plt.suptitle("Sanity check for gyros\n" + logName)
     
     return [f1]
+
+def positionComparison(logName, cam, winch, las):
+
+    t_min = np.min([cam["ts_trigger"][ 0 ], winch["ts_trigger"][ 0 ], las["ts_trigger"][ 0 ]])
+                     
+    t_cam = (cam["ts_trigger"] - t_min) * 1e-9
+    t_winch = (winch["ts_trigger"] - t_min) * 1e-9
+    t_las = (las["ts_trigger"] - t_min) * 1e-9
+
+    #
+    # Interpolation of the LAS data on winch data points
+    #
+
+    angle_hor = np.interp(t_winch, t_las, las["angle_hor"])
+    angle_ver = np.interp(t_winch, t_las, las["angle_ver"])
+
+    plt.figure()
+    plt.step(t_las, las["angle_hor"], 'b')
+    plt.step(t_winch, angle_hor, 'r')
+
+    x_las_winch = np.cos( angle_ver ) * winch["length"]
+    y_las_winch = np.sin( angle_hor ) * winch["length"]
+    z_las_winch = np.sin( angle_ver ) * winch["length"]
+
+    f1 = plt.figure()
+    plt.subplot(3, 1, 1)
+    plt.step(t_cam, cam["pose"][:, 0], 'g')
+    plt.step(t_winch, x_las_winch, 'm')
+    plt.ylabel("x [m]")
+
+    plt.subplot(3, 1, 2)
+    plt.step(t_cam, -cam["pose"][:, 1], 'g')
+    plt.step(t_winch, y_las_winch, 'm')
+    plt.ylabel("y [m]")
+
+    plt.subplot(3, 1, 3)
+    plt.step(t_cam, -cam["pose"][:, 2], 'g')
+    plt.step(t_winch, z_las_winch, 'm')
+    plt.ylabel("z [m]")
+
+    plt.xlabel("Time [s]")
+    
+    plt.suptitle("Position comparison; green - camera; magenta - Winch+LineAngle\n" + logName)
+
+    return [f1]
+    
 
 if __name__ == '__main__':
     import argparse
