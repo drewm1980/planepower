@@ -24,6 +24,10 @@ def generateReference(propDir, refCableLength, refSpeed):
     # Make conf and the DAE
     conf = makeConf()
     dae = carouselModel.makeModel(conf, propertiesDir = propDir)
+
+    # Actuator limitations
+    aileron_bound = conf['aileron_bound']
+    elevator_bound = conf['elevator_bound']
     
     #
     # Configuration for steady state computation
@@ -58,26 +62,26 @@ def generateReference(propDir, refCableLength, refSpeed):
                 'aileron':0, 'elevator':0, 'rudder':0, 'flaps':0,
                 'motor_torque':0, 'ddr':0}
 
-    bounds = {'x':(-0.1 * r0, r0 * 2), 'y':(-1.1 * r0, 1.1 * r0), 'z':(-1.1 * r0, 1.1 * r0),
+    bounds = {'x':(-1.1 * r0, 1.1 * r0), 'y':(-1.1 * r0, 1.1 * r0), 'z':(-1.1 * r0, 1.1 * r0),
              'dx':(0, 0), 'dy':(0, 0), 'dz':(0, 0),
              'r':(r0, r0), 'dr':(0, 0), 'ddr':(0, 0), 'dddr':(0, 0),
              'e11':(-2, 2), 'e12':(-2, 2), 'e13':(-2, 2),
              'e21':(-2, 2), 'e22':(-2, 2), 'e23':(-2, 2),
              'e31':(-2, 2), 'e32':(-2, 2), 'e33':(-2, 2),
-             'w_bn_b_x':(-50, 50), 'w_bn_b_y':(-50, 50), 'w_bn_b_z':(-50, 50),
+             'w_bn_b_x':(-100, 100), 'w_bn_b_y':(-100, 100), 'w_bn_b_z':(-100, 100),
              'ddelta':(omega0, omega0),
              'cos_delta':(1, 1), 'sin_delta':(0, 0),
              
-             'aileron':(-0.2, 0.2), 'elevator':(-0.2, 0.2), 'rudder':(-0.2, 0.2), 'flaps':(-0.2, 0.2),
+              'aileron':(-aileron_bound, aileron_bound), 'elevator':(-elevator_bound, elevator_bound), 'rudder':(-0.2, 0.2), 'flaps':(-0.2, 0.2),
              
              'daileron':(0, 0), 'delevator':(0, 0), 'drudder':(0, 0), 'dflaps':(0, 0),
               
              
-             'motor_torque':(-500, 500), 'dmotor_torque':(0, 0),
+             'motor_torque':(-1000, 1000), 'dmotor_torque':(0, 0),
              
              'w0':(0, 0),
              
-             'nu':(0, 1000),
+             'nu':(0, 3000),
              }
 
     dotBounds = {'x':(-1, 1), 'y':(-1, 1), 'z':(-1, 1),
