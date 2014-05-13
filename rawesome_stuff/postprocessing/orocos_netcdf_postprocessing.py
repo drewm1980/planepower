@@ -24,18 +24,31 @@ def getTimeStampKey( keys ):
 			return k
 	raise TypeError("There is no key named ts_trigger.")
 
-def processNetCdfFile( fileName ):
+def processNetCdfFile(fileName, removeDuplicates = True, trimDataSets = False):
 	assert os.path.isfile( fileName )
 	name = os.path.basename( fileName )
 	info = "Processing file " + name
 
 	# Open file in read mode
-	h = nc.Dataset(f, 'r')
+	h = nc.Dataset(fileName, 'r')
 	keys = h.variables.keys()
 	numKeys = len( keys )
-	# There are duplicates in the log file and here we want to get rid of them
-	_, indices = np.unique(h.variables[ getTimeStampKey( keys ) ], return_index=True)
+	if removeDuplicates is True:
+		# There are duplicates in the log file and here we want to get rid of them
+		_, _indices = np.unique(h.variables[ getTimeStampKey( keys ) ], return_index=True)
+                if trimDataSets is True:
+                        # Usually the first and the last sample are some crap
+                        indices = _indices[1: -2]
+                else:
+                        indices = _indices
+                        
 
+	else:
+		if trimDataSets is True:
+			indices = xrange(5, len( h.variables[ getTimeStampKey( keys ) ] ) - 5)
+		else:
+			indices = xrange( len( h.variables[ getTimeStampKey( keys ) ] ) )
+	
 	res = {}
 	for it, k in enumerate( keys ):
 		_k = k.split( '.' )
@@ -58,7 +71,7 @@ def processNetCdfFile( fileName ):
 		# Update the progress bar
 		cli_progress(info, it + 1, numKeys)
 
-        print "\n"
+	print "\n"
 	
 	return res
 

@@ -81,7 +81,7 @@ mheSigmas = {
 				'aileron': servo_lsb, 'elevator': servo_lsb,
 				'daileron': 1e0, 'delevator': 1e0,
 
-				'r': 1e-2, 'dr': 1e-1, 'ddr': 1e-1, 'dddr': 1e-1,
+				'r': 1e-1, 'dr': 1e-1, 'ddr': 1e-1, 'dddr': 1e-1,
 
 				'dmotor_torque': 1e1,
 				

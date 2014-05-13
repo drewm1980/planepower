@@ -64,7 +64,7 @@ mhePlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
 layout.nextRow()
 
 # aileron, elevator; daileron, delevator
-ctrlNames = [("aileron", "deg"), ("daileron", "deg/s"), "elevator", "delevator"]
+ctrlNames = [("aileron", "rad"), ("daileron", "rad/s"), "elevator", "delevator"]
 mhePlots.update( addPlotsToLayout(layout.addLayout( ), ctrlNames, ctrlNames) )
 # ddelta, motor_torque, dmotor_torque, [cos, sin delta]
 carNames = [("ddelta", "rpm"), ("motor_torque", "Nm"), ("dmotor_torque", "Nm/s")]
