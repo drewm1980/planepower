@@ -357,7 +357,7 @@ bool DynamicMpc::prepareWeights( void )
 	for (unsigned el = 0; el < NY; ++el)
 		acadoVariables.W[el * NY + el] = mpc_weights[ el ];
 	for (unsigned el = 0; el < NYN; ++el)
-		acadoVariables.WN[el * NYN + el] = 10 * mpc_weights[ el ];
+		acadoVariables.WN[el * NYN + el] = mpc_weights[ el ];
 	
 	return true;
 }
