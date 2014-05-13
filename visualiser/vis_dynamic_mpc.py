@@ -57,11 +57,11 @@ mpcPlots.update( addPlotsToLayout(layout.addLayout( ), gyroNames, gyroNames) )
 layout.nextRow()
 
 # aileron, elevator; daileron, delevator
-uaNames = [[("aileron", "deg"), "y_aileron"],
-		   [("daileron", "deg/s"), "y_daileron"]]
+uaNames = [[("aileron", "rad"), "y_aileron"],
+		   [("daileron", "rad/s"), "y_daileron"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), uaNames, uaNames) )
-ueNames = [[("elevator", "deg"), "y_elevator"],
-		   [("delevator", "deg/s"), "y_delevator"]]
+ueNames = [[("elevator", "rad"), "y_elevator"],
+		   [("delevator", "rad/s"), "y_delevator"]]
 mpcPlots.update( addPlotsToLayout(layout.addLayout( ), ueNames, ueNames) )
 # obj_value, kkt_value, exec_prep, exec_fdb
 perfNames = ["n_asc", "obj_value", "kkt_value"]

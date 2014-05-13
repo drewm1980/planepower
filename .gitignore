@@ -40,3 +40,6 @@ dataset
 *.aux
 *.log
 *.synctex.gz
+
+# No zip files
+*.zip

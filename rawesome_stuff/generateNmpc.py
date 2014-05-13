@@ -87,7 +87,7 @@ if __name__=='__main__':
 	measCableLength = 1.7
 	
 	# Speed for the steady state calculation
-	steadyStateSpeed = -4.0
+	steadyStateSpeed = -5.75
 
 	# Reference parameters
 	refP = {'r0': measCableLength,
