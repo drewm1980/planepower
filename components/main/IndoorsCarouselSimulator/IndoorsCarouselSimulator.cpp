@@ -276,8 +276,8 @@ void IndoorsCarouselSimulator::updateEncData()
 void IndoorsCarouselSimulator::updateLasData()
 {
 	// TODO Check this once in the simulation
-	lasData.angle_hor = integratorIO[offset_lineAngles + 0];
-	lasData.angle_ver = integratorIO[offset_lineAngles + 1];
+	lasData.angle_hor = outputs[offset_lineAngles + 0];
+	lasData.angle_ver = outputs[offset_lineAngles + 1];
 
 	lasData.ts_trigger = trigger;
 	lasData.ts_elapsed = 0.0;
@@ -297,6 +297,12 @@ void IndoorsCarouselSimulator::updateCamData()
 
 		camData.positions[ el ] = pos;
 		camData.weights[ el ] = weight;
+
+		camData.pose[ 0 ] = integratorIO[ idx_x ];
+		camData.pose[ 1 ] = integratorIO[ idx_y ] * -1.0;
+		camData.pose[ 2 ] = integratorIO[ idx_z ] * -1.0;
+
+		// TODO do the same for the rotation matrix!
 	}
 
 	camData.ts_trigger = trigger;
