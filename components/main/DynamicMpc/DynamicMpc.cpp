@@ -348,11 +348,13 @@ bool DynamicMpc::prepareInitialGuess( void )
 
 bool DynamicMpc::prepareWeights( void )
 {
-	for (unsigned el = 0; el < NY; ++el)
-		acadoVariables.W[el * NY + el] = mpc_weights[ el ];
+	// Here we setup dflt values for weighting matrices
+	for (unsigned blk = 0; blk < N; ++blk)
+		for (unsigned el = 0; el < NY; ++el)
+			acadoVariables.W[blk * NY * NY + el * NY + el] = mpc_weights[ el ];
+
 	for (unsigned el = 0; el < NYN; ++el)
 		acadoVariables.WN[el * NYN + el] = mpc_weights[ el ];
-//		acadoVariables.WN[el * NYN + el] = mpc_wn_multiplier * mpc_weights[ el ];
 
 	
 	return true;

@@ -28,6 +28,7 @@ mpcOpts['HOTSTART_QP'] = True
 mpcOpts['MAX_NUM_QP_ITERATIONS'] = 50
 mpcOpts['SPARSE_QP_SOLUTION'] = 'FULL_CONDENSING_N2'
 mpcOpts['FIX_INITIAL_STATE'] = True
+mpcOpts['CG_USE_VARIABLE_WEIGHTING_MATRIX'] = True
 
 #
 # Define the weights
@@ -61,19 +62,50 @@ mpcOpts['FIX_INITIAL_STATE'] = True
 # V2 Experimenting
 #
 
-mpcWeights = {}
-for name in ['x', 'y', 'z']: mpcWeights[ name ] = 1e2
-for name in ['dx', 'dy', 'dz']: mpcWeights[ name ] = 1e1
-for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcWeights[name] = 1e0
-for name in ['w_bn_b_x', 'w_bn_b_y', 'w_bn_b_z']: mpcWeights[ name ] = 1e0
+# We need configuration, make it first
+conf = makeConf()
 
-for name in ['aileron', 'elevator']: mpcWeights[ name ] = 1e-2
-for name in ['daileron', 'delevator']: mpcWeights[ name ] = 1e0
+# Actuator limitations
+aileron_bound = conf['aileron_bound']
+elevator_bound = conf['elevator_bound']
+    
+mpc_aileron_bound = aileron_bound / 2
+mpc_elevator_bound = elevator_bound / 2
+
+mpc_daileron_bound = aileron_bound * 2
+mpc_delevator_bound = elevator_bound * 2
+
+
+
+mpcWeights = {}
+
+def scale( scl ):
+    return 1.0 / mpcHorizonN * 1.0 / (scl * scl)
+
+mpcWeights[ 'x' ] = scale( 2.0 )
+mpcWeights[ 'y' ] = scale( 0.5 )
+mpcWeights[ 'z' ] = scale( 0.5 )
+
+
+for name in ['dx', 'dy', 'dz']: mpcWeights[ name ] = scale( 0.5 )
+for name in ['e11', 'e12', 'e13', 'e21', 'e22', 'e23', 'e31', 'e32', 'e33']: mpcWeights[name] = scale( 1.0 )
+
+mpcWeights[ 'w_bn_b_x' ] = scale( 1.0 )
+mpcWeights[ 'w_bn_b_y' ] = scale( 5.0 )
+mpcWeights[ 'w_bn_b_z' ] = scale( 5.0 )
+
+# Aileron
+mpcWeights[ "aileron" ] = scale( mpc_aileron_bound ) * 1e2
+mpcWeights[ "daileron" ] = scale( mpc_daileron_bound ) * 1e3
+
+# Elevator
+mpcWeights[ "elevator" ] = scale( mpc_elevator_bound ) * 5e3
+mpcWeights[ "delevator" ] = scale( mpc_delevator_bound ) * 1e3
 
 # Those guys are fixed anyways, we don't control them
-for name in ['r', 'dr', 'ddr', 'dddr']: mpcWeights[ name ] = 1e-4
-for name in ['sin_delta', 'cos_delta']: mpcWeights[ name ] = 1e-4
-for name in ['ddelta', 'motor_torque', 'dmotor_torque']: mpcWeights[ name ] = 1e-4
+for name in ['r', 'dr', 'ddr', 'dddr']: mpcWeights[ name ] = scale( 1e2 )
+for name in ['sin_delta', 'cos_delta']: mpcWeights[ name ] = scale( 1e2 )
+for name in ['ddelta', 'motor_torque', 'dmotor_torque']: mpcWeights[ name ] = scale( 1e2 )
 
 mpcWeightScaling = 1 / float( mpcHorizonN )
 
@@ -81,7 +113,7 @@ for name in mpcWeights:
     mpcWeights[ name ] *= mpcWeightScaling
 
 def makeNmpc(Ts = None, propertiesDir = '../../properties'):
-    conf = makeConf()
+
     conf['stabilize_invariants'] = False
     dae = carouselModel.makeModel(conf, propertiesDir = propertiesDir)
     
@@ -92,18 +124,8 @@ def makeNmpc(Ts = None, propertiesDir = '../../properties'):
     
     mpc = rawe.Mpc(dae, N = mpcHorizonN, ts = execSamplingTime)
 
-    # Actuator limitations
-    aileron_bound = conf['aileron_bound']
-    elevator_bound = conf['elevator_bound']
-    
-    mpc_aileron_bound = aileron_bound / 2
-    mpc_elevator_bound = elevator_bound / 2
-
     mpc.constrain(-mpc_aileron_bound, '<=', mpc['aileron'], '<=', mpc_aileron_bound)
     mpc.constrain(-mpc_elevator_bound, '<=', mpc['elevator'], '<=', mpc_elevator_bound)
-    
-    mpc_daileron_bound = aileron_bound * 2
-    mpc_delevator_bound = elevator_bound * 2
 
     mpc.constrain(-mpc_daileron_bound, '<=', mpc['daileron'], '<=', mpc_daileron_bound)
     mpc.constrain(-mpc_delevator_bound, '<=', mpc['delevator'], '<=', mpc_delevator_bound)
