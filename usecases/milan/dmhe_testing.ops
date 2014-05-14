@@ -340,6 +340,7 @@ global bool setTetherLength(double length)
 
 global void abort( void )
 {
+	inputSignalGenerator.reset()
 	mhe.stop()
 
 	setSpeed( 0 )

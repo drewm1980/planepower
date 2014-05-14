@@ -51,6 +51,10 @@ import("DynamicMpc")
 loadComponent("mpc", "DynamicMpc")
 loadComponent("mpcTelemetry", "DynamicMpcTelemetry")
 
+// Input signal generator
+import("inputSignalGenerator")
+loadComponent("inputSignalGenerator", "InputSignalGenerator")
+
 // OCL NETcdf reporter
 loadComponent("imuReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
@@ -158,6 +162,7 @@ var int sineGenPrio = 60
 var int telemetryPrio = 50
 
 setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT, 1)
+setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,1)
 
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT, 2)
 setActivityOnCPU("mpc", 0.0, ocpPrio, ORO_SCHED_RT, 3)
@@ -201,15 +206,19 @@ connect("simulator.winchData", "mhe.winchData", cp)
 // Simulator -> sensors and actuators telemetry
 connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
 connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
+connect("simulator.lasData", "lineAngleSensorTelemetry.msgData", cp)
 connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
 connect("simulator.winchData", "winchTelemetry.msgData", cp)
 // MHE -> NMPC
 connect("mhe.stateEstimate", "mpc.feedback", cp)
 // NMPC -> Simulator
-connect("mpc.controls", "simulator.controls", cp)
+// connect("mpc.controls", "simulator.controls", cp)
 // MHE & NMPC -> telemetry
 connect("mhe.debugData", "mheTelemetry.msgData", cp)
 connect("mpc.debugData", "mpcTelemetry.msgData", cp)
+
+// OR, we can use signal generator
+connect("inputSignalGenerator.data", "simulator.controls", cp)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -275,6 +284,9 @@ mhe.configure()
 
 mpc.configure()
 // mpc.start()
+
+inputSignalGenerator.configure()
+inputSignalGenerator.start()
 
 mheTelemetry.configure()
 mheTelemetry.start()
