@@ -3,7 +3,7 @@
 
 /{
 	       compatible = "ti,beaglebone", "ti,beaglebone-black";
-	       part-number = "DM-GPIO-Test";
+	       part-number = "BB-Bitbanging";
 	       version = "00A0";
 	       fragment@0 {
 		       target = <&am33xx_pinmux>;						         
