@@ -75,8 +75,6 @@ mpc_elevator_bound = elevator_bound / 2
 mpc_daileron_bound = aileron_bound * 2
 mpc_delevator_bound = elevator_bound * 2
 
-
-
 mpcWeights = {}
 
 def scale( scl ):
