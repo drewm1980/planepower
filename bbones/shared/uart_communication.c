@@ -26,7 +26,7 @@ int wait_for_data();
 
 
 
-static const char FILENAME[] = "uart_communication.c";
+static char FILENAME[] = "uart_communication.c";
 
 extern serial_port *serial_stream;
 
@@ -462,7 +462,6 @@ void UART_err_handler( UART_errCode err_p,void (*write_error_ptr)(char *,char *,
 		printf("Entering UART_err_handler\n");
 	#endif
 	
-	static char SOURCEFILE[] = "uart_communication.c";
 	int8_t err = (int8_t)err_p; //because uart erros can be negative
 		
 	switch( err ) {
