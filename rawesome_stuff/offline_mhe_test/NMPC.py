@@ -99,7 +99,7 @@ mpcWeights[ "aileron" ] = scale( mpc_aileron_bound ) * 1e2
 mpcWeights[ "daileron" ] = scale( mpc_daileron_bound ) * 1e3
 
 # Elevator
-mpcWeights[ "elevator" ] = scale( mpc_elevator_bound ) * 5e3
+mpcWeights[ "elevator" ] = scale( mpc_elevator_bound ) * 2e3
 mpcWeights[ "delevator" ] = scale( mpc_delevator_bound ) * 1e3
 
 # Those guys are fixed anyways, we don't control them
@@ -125,10 +125,13 @@ def makeNmpc(Ts = None, propertiesDir = '../../properties'):
     mpc = rawe.Mpc(dae, N = mpcHorizonN, ts = execSamplingTime)
 
     mpc.constrain(-mpc_aileron_bound, '<=', mpc['aileron'], '<=', mpc_aileron_bound)
-    mpc.constrain(-mpc_elevator_bound, '<=', mpc['elevator'], '<=', mpc_elevator_bound)
-
     mpc.constrain(-mpc_daileron_bound, '<=', mpc['daileron'], '<=', mpc_daileron_bound)
+
+    mpc.constrain(-mpc_elevator_bound, '<=', mpc['elevator'], '<=', mpc_elevator_bound)
     mpc.constrain(-mpc_delevator_bound, '<=', mpc['delevator'], '<=', mpc_delevator_bound)
+	# OR
+#    mpc.constrain(mpc['elevator'], '==', 0, when = 'AT_START')
+#    mpc.constrain(mpc['delevator'], '==', 0)
 
     # We cannot influence the rotational speed of the carousel, nor torque,
     # thus whatever the estimator says, we don't want to influence that
@@ -136,6 +139,9 @@ def makeNmpc(Ts = None, propertiesDir = '../../properties'):
     mpc.constrain(mpc['dr'], '==', 0, when = 'AT_START')
     mpc.constrain(mpc['ddr'], '==', 0, when = 'AT_START')
     mpc.constrain(mpc['dddr'], '==', 0)
+
+    # Safety constraint
+    mpc.constrain(-0.1, '<=', mpc['z'])
 
     return mpc
 
