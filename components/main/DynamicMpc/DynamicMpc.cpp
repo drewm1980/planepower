@@ -233,6 +233,7 @@ void DynamicMpc::updateHook()
 	prepStart = TimeService::Instance()->getTicks();
 	if ( runCnt )
 	{
+		// Shift states and controls
 		shiftStates(2, 0, 0);
 		shiftControls( 0 );
 	}
@@ -355,7 +356,6 @@ bool DynamicMpc::prepareWeights( void )
 
 	for (unsigned el = 0; el < NYN; ++el)
 		acadoVariables.WN[el * NYN + el] = mpc_weights[ el ];
-
 	
 	return true;
 }
@@ -376,6 +376,9 @@ bool DynamicMpc::prepareReference( void )
 {
 	if (refActive == false)
 	{
+		// Stupid, but does the job
+		prepareWeights();
+
 		// Set precomputed steady state as a reference!!!
 		for (unsigned blk = 0; blk < N; ++blk)
 			for (unsigned el = 0; el < NX; ++el)
@@ -390,8 +393,7 @@ bool DynamicMpc::prepareReference( void )
 //			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
 			angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
 		}
-
-		// Here I kinda assume that those are zero...
+		
 		for (unsigned blk = 0; blk < N; ++blk)
 			for (unsigned el = 0; el < NU; ++el)
 				acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
@@ -408,6 +410,16 @@ bool DynamicMpc::prepareReference( void )
 			refPrescalerCnt = 0;
 			refCnt = (refCnt + 1) % REF_NUM_POINTS;
 		}
+
+		// Shift weighting matrices
+		for (unsigned blk = 0; blk < N - 1; ++blk)
+			for (unsigned el = 0; el < NY; ++ el)
+				acadoVariables.W[blk * NY * NY + el * NY + el] = 
+					acadoVariables.W[(blk + 1) * NY * NY + el * NY + el];
+
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.W[(N - 1) * NY * NY + el * NY + el] =
+				acadoVariables.WN[el * NYN + el];
 		
 		// Shift the reference
 		for (unsigned blk = 0; blk < N - 1; ++blk)
@@ -420,7 +432,6 @@ bool DynamicMpc::prepareReference( void )
 		// Add the new reference point at the end of the horizon
 		for (unsigned el = 0; el < NX; ++el)
 			acadoVariables.yN[ el ] = references[ refCnt ].x[ el ];
-
 		
 		for (unsigned el = 0; el < NU; ++el)
 			acadoVariables.y[(N - 1) * NY + NX + el] = references[ refCnt ].u[ el ];
