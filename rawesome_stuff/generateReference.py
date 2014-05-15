@@ -117,9 +117,9 @@ def generateReference(propDir, refCableLength, refSpeed):
     
     ssZ = ss[ "z" ]
     
-    ddz = 0.05
+    ddz = 0.025
     
-    x = np.linspace(-12, 12, num = 100)
+    x = np.linspace(-12 * 2, 12 * 2, num = 75)
     sszVec = ssZ - ddz * 1.0 / (1.0 + np.exp(-1.0 * x))
 
     for z in sszVec:
