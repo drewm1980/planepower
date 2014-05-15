@@ -424,8 +424,7 @@ UART_errCode serial_port_create()
 		#if DEBUG
             printf("Uart not enabled, trying to enable...\n");
 	    #endif
-        char command[100];
-        strcat(command, "echo ");
+        char command[100]= "echo ";
         strcat(command, device_enabled_check);
         strcat(command, " > ");
         strcat(command, device_path);
@@ -470,37 +469,37 @@ void UART_err_handler( UART_errCode err_p,void (*write_error_ptr)(char *,char *,
 			case UART_ERR_NONE:
 				break;
 			case  UART_ERR_READ_START_BYTE:
-				write_error_ptr(SOURCEFILE,"serial port failed to read start byte",err);
+                write_error_ptr(FILENAME,"serial port failed to read start byte",err);
 				break;
 			case  UART_ERR_READ_CHECKSUM:
-				write_error_ptr(SOURCEFILE,"serial port wrong checksum",err);
+                write_error_ptr(FILENAME,"serial port wrong checksum",err);
 				break;
 			case  UART_ERR_READ_LENGTH:
-				write_error_ptr(SOURCEFILE,"serial port failed reading message length",err);
+                write_error_ptr(FILENAME,"serial port failed reading message length",err);
 				break;
 			case  UART_ERR_READ_MESSAGE:
-				write_error_ptr(SOURCEFILE,"serial port failed reading message based on length",err);
+                write_error_ptr(FILENAME,"serial port failed reading message based on length",err);
 				break;
 			case UART_ERR_SERIAL_PORT_FLUSH_INPUT:
-				write_error_ptr(SOURCEFILE,"serial port flush input failed",err);
+                write_error_ptr(FILENAME,"serial port flush input failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_FLUSH_OUTPUT:
-				write_error_ptr(SOURCEFILE,"serial port flush output failed",err);
-				break;
+                write_error_ptr(FILENAME,"serial port flush output failed",err);
+                break;
 			case UART_ERR_SERIAL_PORT_OPEN:
-				write_error_ptr(SOURCEFILE,"serial port open failed",err);
+                write_error_ptr(FILENAME,"serial port open failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_CLOSE:
-				write_error_ptr(SOURCEFILE,"serial port close failed",err);
+                write_error_ptr(FILENAME,"serial port close failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_CREATE:
-				write_error_ptr(SOURCEFILE,"serial port create failed",err);
+                write_error_ptr(FILENAME,"serial port create failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_WRITE:
-				write_error_ptr(SOURCEFILE,"serial port write failed",err);
+                write_error_ptr(FILENAME,"serial port write failed",err);
 				break;
 			case UART_ERR_UNDEFINED:
-				write_error_ptr(SOURCEFILE,"undefined UART error",err);
+                write_error_ptr(FILENAME,"undefined UART error",err);
 				break;
 			default: break;
 		}
