@@ -1,0 +1,18 @@
+include_rules
+
+ifdef BBONE
+
+CC=clang
+CPPFLAGS += -Iinclude -Wall -Werror
+CPPFLAGS += -I..
+CPPFLAGS += -I../shared
+CFLAGS += -ggdb -pthread -D _BSD_SOURCE 
+CFLAGS += -DDEBUG=1 -DANALYZE=0 
+LDFLAGS += -lpthread
+
+: foreach *.c |> !cc |>
+
+:main_plane.o ../shared/uart_communication.o ../shared/data_decoding.o ../shared/udp_communication.o ../shared/log.o ../shared/circular_buffer.o|> !ld |> main_plane
+
+
+endif

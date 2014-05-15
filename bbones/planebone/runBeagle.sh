@@ -1,6 +1,6 @@
  #!/bin/bash
 clear
-gcc main_plane.c udp_communication.c uart_communication.c log.c circular_buffer.c data_decoding.c  -pthread -DDEBUG=0 -o main_plane
+gcc main_plane.c ../shared/udp_communication.c ../shared/uart_communication.c ../shared/log.c ../shared/circular_buffer.c ../shared/data_decoding.c  -pthread -DDEBUG=0 -o main_plane
 
 # Milan
 #./main_plane 10.33.132.47 8888 7777

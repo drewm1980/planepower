@@ -11,7 +11,7 @@
 #include "uart_communication.h"
 
 #ifndef DEBUG 
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 int serial_port_read(uint8_t buffer[],int length); 
@@ -24,12 +24,18 @@ UART_errCode serial_port_flush_input(void);
 UART_errCode serial_port_flush_output(void);
 int wait_for_data();
 
+
+
 static const char FILENAME[] = "uart_communication.c";
 
 extern serial_port *serial_stream;
 
 speed_t speed = B921600;
+//Variables for serial port
 const char device[]="/dev/ttyO4";
+const char device_enabled_check[] = "ttyO4_armhf.com"; //For Angstrom: enable-uart5
+const char device_path[] = "/sys/devices/bone_capemgr.9/slots"; //For Angstrom: /sys/devices/bone_capemgr.8/slots
+
 
 int wait_for_data(){
 	struct pollfd fds[1];
@@ -353,7 +359,7 @@ UART_errCode serial_port_setup(void)
 	
 	int err;
 	
-	err = serial_port_new();
+    err = serial_port_new();
 	if(err!=UART_ERR_NONE){
 			return err;
 	}
@@ -382,7 +388,7 @@ UART_errCode serial_port_create()
 	FILE *fp ;
 	int fd;
 
-	fp = fopen("/sys/devices/bone_capemgr.8/slots", "r");
+    fp = fopen(device_path, "r");
 	if (fp == NULL){
 		
 		return UART_ERR_SERIAL_PORT_CREATE;
@@ -391,7 +397,7 @@ UART_errCode serial_port_create()
 	//search enable-uart5 is present int the file
 	while(flag!=1 && fp!=NULL && fgets(tmp, sizeof(tmp), fp)!=NULL)
 	{
-		if (strstr(tmp, "enable-uart5"))
+        if (strstr(tmp, device_enabled_check))
 		{
 			flag = 1;
 		}
@@ -413,13 +419,17 @@ UART_errCode serial_port_create()
 	{
 		return UART_ERR_NONE;
 	} else {
-		fd = open("/sys/devices/bone_capemgr.8/slots", O_RDWR);
+        fd = open(device_path, O_RDWR);
 		
 		#if DEBUG
-			printf("Uart5 not enabled, trying to enable...\n");
+            printf("Uart not enabled, trying to enable...\n");
 	    #endif
-
-		if (system("echo enable-uart5 > /sys/devices/bone_capemgr.8/slots")==0)
+        char command[100];
+        strcat(command, "echo ");
+        strcat(command, device_enabled_check);
+        strcat(command, " > ");
+        strcat(command, device_path);
+        if (system(command)==0)
 		{
 			close(fd);
 			return UART_ERR_NONE;
