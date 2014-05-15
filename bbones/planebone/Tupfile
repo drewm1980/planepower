@@ -7,7 +7,7 @@ CPPFLAGS += -Iinclude -Wall -Werror
 CPPFLAGS += -I..
 CPPFLAGS += -I../shared
 CFLAGS += -ggdb -pthread -D _BSD_SOURCE 
-CFLAGS += -DDEBUG=1 -DANALYZE=0 
+CFLAGS += -DDEBUG=1 -DANALYZE=0 -Wall -Werror
 LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>
