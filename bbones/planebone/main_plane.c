@@ -30,7 +30,6 @@
 static void *lisa_to_pc(void *connection);
 static void *data_logging_lisa(void *);
 static void *data_logging_groundstation(void *arg);
-static void enable_ptp();
 static void sendError(DEC_errCode err,library lib);
 static void switch_cb_lisa_pointers();
 static void switch_cb_ground_pointers();
@@ -84,7 +83,7 @@ void (*write_log_error_ptr)(char *,char *,int);
 int main(int argc, char *argv[]){
 	write_uart_error_ptr = &write_uart_error;  //initialize the function pointer to write error
 	write_udp_error_ptr = &write_udp_error; 
-	write_decode_error_ptr = &write_decode_error;  
+    write_decode_error_ptr = &write_decode_error;
 	write_log_error_ptr = &write_log_error;  
  
 	//parse arguments
@@ -107,7 +106,6 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);		//mounting SD card failed
 	}
 	
-	enable_ptp();
 
 	#if LOGGING > 0
 	//init circular data log buffers
@@ -363,13 +361,7 @@ static void sendError(DEC_errCode err,library lib){
 		closeUDPClientSocket(&udp_client);
 }
 
-static void enable_ptp(){
-	int err = system("./ptpd-2.2.0/src/ptpd2 -b eth0 -g -y 0 -D -f /var/log/ptpd.log -L");
-	if(err!=0 && err != 768){ //768 = ptp already running
-		printf("could not enable ptp: error code %d\n",err);
-		exit(EXIT_FAILURE);
-	}
-}
+
 
 static void switch_cb_lisa_pointers(){
 		CircularBuffer *temp = cb_read_lisa;
