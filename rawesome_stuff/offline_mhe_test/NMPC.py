@@ -141,13 +141,13 @@ def makeNmpc(Ts = None, propertiesDir = '../../properties'):
     # Safety constraint
     mpc.constrain(-0.1, '<=', mpc['z'])
 
-    return mpc
+    return mpc, conf
 
 def makeNmpcRT(Ts, lqrDae = None, propertiesDir = '../../properties', cgOptions = None):
     if cgOptions is None:
         cgOptions = {'CXX': 'clang++', 'CC': 'clang',
                      'CXXFLAGS': '-O3 -fPIC -finline-functions',
                      'CFLAGS': '-O3 -fPIC -finline-functions'}
-    mpc = makeNmpc(Ts = Ts, propertiesDir = propertiesDir)
+    mpc, _ = makeNmpc(Ts = Ts, propertiesDir = propertiesDir)
     return rawe.MpcRT(mpc, lqrDae = lqrDae, ocpOptions = mpcOpts,
                       integratorOptions = mpcIntOpts, codegenOptions = cgOptions)

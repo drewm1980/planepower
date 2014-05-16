@@ -154,7 +154,7 @@ def makeMhe(Ts = None, propertiesDir = '../../properties'):
 
     mhe.constrain(mhe['ConstDelta'], '==', 0, when = mheConstraintsWhen)
 
-    return mhe
+    return mhe, conf
 
 def makeMheRT(Ts, propertiesDir = '../../properties', cgOptions = None):
     if cgOptions is None:
@@ -166,5 +166,5 @@ def makeMheRT(Ts, propertiesDir = '../../properties', cgOptions = None):
     # If we want to export to a specific part, we would need the following option:
     # 'export_without_build_path': '<path>'
 
-    mhe = makeMhe(Ts = Ts, propertiesDir = propertiesDir)
+    mhe, _ = makeMhe(Ts = Ts, propertiesDir = propertiesDir)
     return rawe.MheRT(mhe, ocpOptions = mheOpts, integratorOptions = mheIntOpts, codegenOptions = cgOptions)

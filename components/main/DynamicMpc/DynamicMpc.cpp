@@ -141,7 +141,7 @@ void DynamicMpc::updateHook()
 
 	// This is a hack, more/less. Here is assumed that first MPC.NX components
 	// of the state estimate are the same. In other words, MHE state estimate 
-	// can be longer, but MPC with take first MPC.NX components.
+	// can be longer, but MPC will take first MPC.NX components.
 	if (feedback.x_hat.size() < NX)
 	{
 		errorCode = ERR_FEEDBACK_SIZE;
@@ -381,27 +381,23 @@ bool DynamicMpc::prepareReference( void )
 
 		// Set precomputed steady state as a reference!!!
 		for (unsigned blk = 0; blk < N; ++blk)
-			for (unsigned el = 0; el < NX; ++el)
-				acadoVariables.y[blk * NY + el] = ss_x[ el ];
+			for (unsigned el = 0; el < NY; ++el)
+				acadoVariables.y[blk * NY + el] = references[ 0 ][ el ];
 
 		// Set cos_delta and sin_delta from feedback
 		double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
 		for (unsigned blk = 0; blk < N; ++blk)
 		{
-			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
-			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
-//			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
-			angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
+			acadoVariables.y[blk * NY + offset_cos_delta] = cos( angle );
+			acadoVariables.y[blk * NY + offset_sin_delta] = sin( angle );
+//			angle += feedback.x_hat[ offset_ddelta ] * mpc_sampling_time;
+			angle += references[ 0 ][ offset_ddelta ] * mpc_sampling_time;
 		}
-		
-		for (unsigned blk = 0; blk < N; ++blk)
-			for (unsigned el = 0; el < NU; ++el)
-				acadoVariables.y[blk * NY + NX + el] = ss_u[ el ];
 	
-		for (unsigned el = 0; el < NX; ++el)
-			acadoVariables.yN[ el ] = ss_x[ el ];
-		acadoVariables.yN[ idx_cos_delta ] = cos( angle );
-		acadoVariables.yN[ idx_sin_delta ] = sin( angle );
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.yN[ el ] = references[ 0 ][ el ];
+		acadoVariables.yN[ offset_cos_delta ] = cos( angle );
+		acadoVariables.yN[ offset_sin_delta ] = sin( angle );
 	}
 	else
 	{
@@ -430,24 +426,24 @@ bool DynamicMpc::prepareReference( void )
 			acadoVariables.y[(N - 1) * NY + el] = acadoVariables.yN[ el ];
 
 		// Add the new reference point at the end of the horizon
-		for (unsigned el = 0; el < NX; ++el)
-			acadoVariables.yN[ el ] = references[ refCnt ].x[ el ];
+		for (unsigned el = 0; el < NYN; ++el)
+			acadoVariables.yN[ el ] = references[ refCnt ][ el ];
 		
-		for (unsigned el = 0; el < NU; ++el)
-			acadoVariables.y[(N - 1) * NY + NX + el] = references[ refCnt ].u[ el ];
+		for (unsigned el = NYN; el < NY; ++el)
+			acadoVariables.y[(N - 1) * NY + el] = references[ refCnt ][ el ];
 
 		// Set cos_delta and sin_delta from feedback
 		double angle = atan2(feedback.x_hat[idx_sin_delta], feedback.x_hat[idx_cos_delta]);
 		for (unsigned blk = 0; blk < N; ++blk)
 		{
-			acadoVariables.y[blk * NY + idx_cos_delta] = cos( angle );
-			acadoVariables.y[blk * NY + idx_sin_delta] = sin( angle );
+			acadoVariables.y[blk * NY + offset_cos_delta] = cos( angle );
+			acadoVariables.y[blk * NY + offset_sin_delta] = sin( angle );
 //			angle += feedback.x_hat[ idx_ddelta ] * mpc_sampling_time;
-			angle += ss_x[ idx_ddelta ] * mpc_sampling_time;
+			angle += references[ refCnt ][ offset_ddelta ] * mpc_sampling_time;
 		}
 
-		acadoVariables.yN[ idx_cos_delta ] = cos( angle );
-		acadoVariables.yN[ idx_sin_delta ] = sin( angle );
+		acadoVariables.yN[ offset_cos_delta ] = cos( angle );
+		acadoVariables.yN[ offset_sin_delta ] = sin( angle );
 	}
 
 	return true;

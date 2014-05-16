@@ -5,12 +5,11 @@ import numpy as np
 
 from rawe.ocp.Ocp import generateProto
 
-from rawe.models.arianne_conf import makeConf
 from offline_mhe_test import NMPC
 
 from rawekite.carouselSteadyState import getSteadyState
 
-def generateReference(dae, conf, refCableLength, refSpeed, visualize = False):
+def generateReference(nmpc, conf, refCableLength, refSpeed, visualize = False):
     """
     A function for generation of reference around the steady state.
     
@@ -104,7 +103,7 @@ def generateReference(dae, conf, refCableLength, refSpeed, visualize = False):
     
     # Generate the first reference
     pt = 1
-    ss, dss = getSteadyState(dae, conf, refSpeed, refCableLength,
+    ss, dss = getSteadyState(nmpc.dae, conf, refSpeed, refCableLength,
                              guess = guess, dotGuess = dotGuess,
                              bounds = bounds, dotBounds = dotBounds,
                              verbose = False
@@ -120,7 +119,7 @@ def generateReference(dae, conf, refCableLength, refSpeed, visualize = False):
     sszVec = ssZ - ddz * 1.0 / (1.0 + np.exp(-1.0 * x))
     for z in sszVec:
         rDict = {"z": (z, z)}
-        ss, dss = getSteadyState(dae, conf, refSpeed, refCableLength, ref_dict = rDict,
+        ss, dss = getSteadyState(nmpc.dae, conf, refSpeed, refCableLength, ref_dict = rDict,
                                  guess = ss, dotGuess = dss,
                                  bounds = bounds, dotBounds = dotBounds,
                                  verbose = False
@@ -130,46 +129,52 @@ def generateReference(dae, conf, refCableLength, refSpeed, visualize = False):
         print repr( pt ) + ". point of the reference trajectory is generated."
         
     refOut = {}
-    for name in dae.xNames() + dae.zNames() + dae.uNames() + dae.pNames():
+    for name in nmpc.dae.xNames() + nmpc.dae.zNames() + nmpc.dae.uNames() + nmpc.dae.pNames():
         points = [pts[ name ] for pts in ref]
         # Go away and return back...
         refOut[ name ] = np.concatenate((points, points[::-1]), axis = 0)
     refUpDown = ref + ref[::-1]
-        
+    
     #
     # Now prepare a string with references
     #
-
-    refCode = []
-
-    nx = len(dae.xNames())
-    nu = len(dae.uNames())
-    xNames = dae.xNames()
-    uNames = dae.uNames()
     
+    import casadi as C
+    yxFun = C.SXFunction([nmpc.dae.xVec()], [C.densify(nmpc.yx)])
+    yuFun = C.SXFunction([nmpc.dae.uVec()], [C.densify(nmpc.yu)])
+    yxFun.init()
+    yuFun.init()
+    
+    refCode = []
     for r in refUpDown:
-        t = "{ {" + \
-            ", ".join([repr( r[ name ] ) for name in xNames]) + \
-            "}, {" + \
-            ", ".join([repr( r[ name ] ) for name in uNames]) + \
-            "} }"
+        _x = [r[ name ] for name in nmpc.dae.xNames()]
+        _u = [r[ name ] for name in nmpc.dae.uNames()]
+        
+        yxFun.setInput(_x, 0)
+        yxFun.evaluate()  
+        
+        yuFun.setInput(_u, 0)
+        yuFun.evaluate()  
+        
+        _r = np.concatenate((np.squeeze(np.array( yxFun.output( 0 ) )),
+                             np.squeeze(np.array( yuFun.output( 0 ) ))),
+                             axis = 0)
+        
+        t = "{" + ", ".join([repr( el ) for el in _r]) + "}"
         refCode.append( t )
-        refs = ",\n".join( refCode )
+    
+    refs = ",\n".join( refCode )
     
     code = """\
 #define REF_NUM_POINTS %(nRef)d
 
-struct Reference
-{
-    double x[%(nx)d];
-    double u[%(nu)d];
-};
-
-static const Reference references[ %(nRef)d ] =
+static const double references[ %(nRef)d ][ %(yDim)d ] =
 { 
 %(refs)s
 };
-""" % {"nx": nx, "nu": nu, "nRef": len( refUpDown ), "refs": refs}
+""" % {"yDim": nmpc.yx.shape[ 0 ] + nmpc.yu.shape[ 0 ],
+       "nRef": len( refUpDown ),
+       "refs": refs}
 
     if visualize is True:
         import matplotlib.pyplot as plt
@@ -211,7 +216,7 @@ if __name__=='__main__':
         'need to call generateNmpc.py with the properties directory'
     propsDir = sys.argv[1]
 
-    nmpc = NMPC.makeNmpc(propertiesDir=propsDir)
+    nmpc, conf = NMPC.makeNmpc(propertiesDir=propsDir)
 
     #
     # NMPC export options
@@ -281,6 +286,17 @@ if __name__=='__main__':
         fw.write("#define idx_" + str( name ) + " " + str( k ) + "\n")
     fw.write("\n\n")
     
+    # Output offsets for references
+    fw.write("// References offsets\n")
+    yOffset = 0
+    for name in nmpc.yxNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += nmpc[ name ].shape[ 0 ]
+    for name in nmpc.yuNames:
+        fw.write("#define offset_" + str( name ) + " " + str( yOffset ) + "\n")
+        yOffset += nmpc[ name ].shape[ 0 ]
+    fw.write("\n\n")
+    
     #
     # Generate steady state for NMPC
     #
@@ -289,7 +305,6 @@ if __name__=='__main__':
     refP = {'r0': measCableLength, 'ddelta0': steadyStateSpeed}
 
     # Get the steady state
-    conf = makeConf()
     steadyState, dSS = getSteadyState(nmpc.dae, conf, refP['ddelta0'], refP['r0'], verbose = False)
 
     # Write the steady state to the file
@@ -302,7 +317,7 @@ if __name__=='__main__':
     #
     # Generate reference for the NMPC
     #
-    _, code = generateReference(nmpc.dae, conf, measCableLength, steadyStateSpeed)
+    _, code = generateReference(nmpc, conf, measCableLength, steadyStateSpeed)
     fw.write( code )
     
     fw.write("#endif // NMPC_CONFIGURATION\n")
