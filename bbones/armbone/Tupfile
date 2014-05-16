@@ -19,6 +19,9 @@ CFLAGS += -std=gnu99
 
 :test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
 
+# For loading into python make a bitbang so
+: bitbang_spi.c SimpleGPIO.c |> $(CC) -shared -Wl,-soname,%O -o %o -fPIC %f |> bitbang_spi.so
+
 # TODO: Make spi_communication.c and .h call bitbang_spi
 #: main_arm.o SimpleGPIO.o udp_communication.o spi_communication.o log.o data_decoding.o circular_buffer.o |> !ld |> main_arm
 

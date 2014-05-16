@@ -6,3 +6,4 @@
 #echo "capemgr.enable_partno=BB-Bitbanging"
 
 echo BB-Bitbanging > /sys/devices/bone_capemgr.9/slots 
+cat /sys/devices/bone_capemgr.9/slots 

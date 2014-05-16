@@ -35,3 +35,8 @@ dataset
 # Images
 *.png
 
+# Vim spits these
+*.swp
+
+# Prevent people from committing their config
+tup.config
