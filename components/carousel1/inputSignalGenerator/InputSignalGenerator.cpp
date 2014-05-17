@@ -26,12 +26,12 @@ InputSignalGenerator::InputSignalGenerator(string name)
 	portData.write( data );
 
 	addProperty("fsine", fsine)
-		.doc("Frequency of the sine wave");
+		.doc("Frequency of the sine wave [Hz]");
 	fsine = 0.0;
 
 	addProperty("amplitude", amplitude)
-		.doc("Amplitude of the sine wave");
-	amplitude = 0.2;
+		.doc("Amplitude of the sine wave [rad]");
+	amplitude = 0.05;
 
 	aileron = elevator = 0.0;
 	addProperty("aileron", aileron)
