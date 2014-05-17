@@ -253,7 +253,7 @@ if __name__ == "__main__":
         folder = args.cwd
         savePlots = True
     
-    mpc = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = args.properties[0])
+    mpc, _ = NMPC.makeNmpc(NMPC.samplingTime, propertiesDir = args.properties[0])
 
     mheData, _ = gimmeMheData( str( folder ) )
     mpcData, logName = gimmeMpcData( str( folder ) )

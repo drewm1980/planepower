@@ -263,7 +263,7 @@ if __name__ == "__main__":
         folder = args.cwd
         savePlots = True
     
-    mhe = MHE.makeMhe(MHE.samplingTime, propertiesDir = args.properties[0])
+    mhe, _ = MHE.makeMhe(MHE.samplingTime, propertiesDir = args.properties[0])
     
     data, logName = gimmeMheData( str(folder) )
     plots = makePlots(logName, mhe, data)
