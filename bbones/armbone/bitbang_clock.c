@@ -61,15 +61,15 @@ void bitbang_init()
 	if(err!=0) printf("Trouble Setting a pin value!\n");
 
 	// Open all of our device files ONCE
-	int fd_CS0, fd_CS1, fd_MISO, fd_CLK;
 	fd_CS0 = open(CS0_VALUE_FILE,O_RDWR);
 	fd_CS1 = open(CS1_VALUE_FILE,O_RDWR);
 	fd_MISO  = open(MISO_VALUE_FILE,O_RDWR);
 	fd_CLK = open(CLK_VALUE_FILE,O_RDWR);
-	if (fd_CS0 == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
-	if (fd_CS1 == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
-	if (fd_MISO  == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
-	if (fd_CLK == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
+	printf(CS0_VALUE_FILE "\n");
+	if (fd_CS0 == -1){ printf("Couldn't open CS0 device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CS1 == -1){ printf("Couldn't open CS1 device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_MISO  == -1){ printf("Couldn't open MISO device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CLK == -1){ printf("Couldn't open CLK device file!!!\n"); exit(EXIT_FAILURE);}
 }    
 void bitbang_close()
 {
@@ -104,6 +104,7 @@ int main()
 	while(1)
 	{
 #if 0
+		int err;
 		err = gpio_set_value(CLK_PIN, HIGH);
 		err = gpio_set_value(CLK_PIN, LOW);
 #else
