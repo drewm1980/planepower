@@ -4,8 +4,12 @@ include_rules
 propsdir = $(PLANEPOWER_ROOT)/properties
 export PYTHONPATH
 genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateMhe.py
-: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h ocp.o acado_qpoases_interface.hpp whereami.txt mhe_configuration.h DynamicMheTelemetry.proto
+: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h acado_auxiliary_functions.h ocp.o ocp.a acado_qpoases_interface.hpp whereami.txt mhe_configuration.h DynamicMheTelemetry.proto Makefile mhe_speed_test.cpp 
 
 # Generate the protobuf file
 : DynamicMheTelemetry.proto |> protoc --cpp_out=. DynamicMheTelemetry.proto |> DynamicMheTelemetry.pb.cc DynamicMheTelemetry.pb.h
 : DynamicMheTelemetry.proto |> protoc --python_out=. DynamicMheTelemetry.proto |> DynamicMheTelemetry_pb2.py
+
+# Compile the file for speed testing
+: mhe_speed_test.cpp | acado_common.h acado_auxiliary_functions.h acado_qpoases_interface.hpp mhe_configuration.h |> !cxx |>
+: mhe_speed_test.o | ocp.a |> $(CXX) %f -o %o ocp.a $(LDFLAGS) |> mhe_speed_test

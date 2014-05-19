@@ -45,3 +45,12 @@ dataset
 
 # Prevent people from committing their config
 tup.config
+
+# Latex stuff
+*.pdf
+*.aux
+*.log
+*.synctex.gz
+
+# No zip files
+*.zip

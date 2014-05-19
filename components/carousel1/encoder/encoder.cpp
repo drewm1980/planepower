@@ -20,7 +20,7 @@ using namespace soem_ebox;
 #define PI 3.14159265358979323846264338327950288419716939937510
 
 /// Cut-off Frequency of the filter [Hz]
-#define DFILTER_FC 0.5
+#define DFILTER_FC 5.0
 
 /// Digital filter coefficient calculation
 #define DFILTER_K(fc, fs) \
@@ -28,6 +28,9 @@ using namespace soem_ebox;
 /// 1-order low-pass digital filter
 #define DFILTER(Output, OldOutput, Input, fc, fs) \
 	Output = ( 1 - DFILTER_K(fc, fs) ) * Input + DFILTER_K(fc, fs) * OldOutput;
+
+/// Sampling frequency for the speed "estimate"
+#define OMEGA_FS 50.0
 
 
 Encoder::Encoder(std::string name)
@@ -78,6 +81,10 @@ bool  Encoder::startHook()
 	omegaFiltNew = omegaFiltOld = 0.0;
 	posAcc = posRaw = 0.0;
 
+	omegaPeriod = (1.0 / OMEGA_FS) / Ts;
+	omegaCnt = 0;
+	omegaPosAcc = 0.0;
+
 	analogConn = portEboxAnalog.connected();
 	encoderData.dbg_speed_voltage = 0.0;
 	
@@ -103,9 +110,6 @@ void  Encoder::updateHook()
 	// Read and log the new, raw, position
 	posNew = eboxOut.encoder[ encoderPort ];
 	encoderData.dbg_raw_angle = posNew;
-		
-	// Read elapsed time since the last position reading
-	elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
 	
 	// Knowing that posOld, posNew and posDelta are 32bit signed numbers
 	// (int's) there are no sign nor overflow problems. Sign is inverted
@@ -114,6 +118,7 @@ void  Encoder::updateHook()
 	
 	// Convert encoder ticks to real angle in radians and bound it to -pi.. pi
 	posDeltaReal = (double)posDelta * 2.0 * M_PI / GEAR_RATIO / PULSES_PER_REVOLUTION;
+	omegaPosAcc += posDeltaReal;
 
 	// Just for debugging, log the raw angle
 	posRaw += posDeltaReal;
@@ -125,10 +130,22 @@ void  Encoder::updateHook()
 		posAcc -= 2.0 * M_PI;
 	else if (posAcc < -PI)
 		posAcc += 2.0 * M_PI;
-	
-	// Calculate angular velocity [rad/s], and filter it through low-pass filter
-	omegaNew = posDeltaReal / elapsedTime;
-	DFILTER(omegaFiltNew, omegaFiltOld, omegaNew, DFILTER_FC, (1 / Ts));
+
+	if (++omegaCnt == omegaPeriod)
+	{
+		// Read elapsed time since the last position reading
+		elapsedTime = TimeService::Instance()->secondsSince( timeStampOld );
+
+		// Calculate angular velocity [rad/s], and filter it through low-pass filter
+		omegaNew = omegaPosAcc / elapsedTime;
+		DFILTER(omegaFiltNew, omegaFiltOld, omegaNew, DFILTER_FC, OMEGA_FS);
+
+		timeStampOld = timeStampNew;
+		omegaFiltOld = omegaFiltNew;
+
+		omegaPosAcc = 0.0;
+		omegaCnt = 0;
+	}
 	
 	// Fill in the output vector
 	encoderData.theta = posAcc;
@@ -139,8 +156,6 @@ void  Encoder::updateHook()
 	
 	// Prepare for the next sampling time.
 	posOld = posNew;
-	timeStampOld = timeStampNew;
-	omegaFiltOld = omegaFiltNew;
 	
 	// Output data to the port
 	encoderData.ts_trigger = timeStampNew;

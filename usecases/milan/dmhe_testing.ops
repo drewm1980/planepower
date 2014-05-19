@@ -1,100 +1,100 @@
-# Description: Testing the dynamic MHE
-#
-# Author:      Milan Vukov, milan.vukov@esat.kuleuven.be
-# Date:        August, 2013
+// Description: Testing the dynamic MHE
+//
+// Author:      Milan Vukov, milan.vukov@esat.kuleuven.be
+// Date:        August, 2013
 
-################################################################################
-#
-# Import our own plugins
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import our own plugins
+//
+////////////////////////////////////////////////////////////////////////////////
 import( "HighwindStuff" )
 require( "HighwindServices" )
 
-#import("jitter")
+//import("jitter")
 
-################################################################################
-#
-# Start with import, config and starting of the SOEM master
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Start with import, config and starting of the SOEM master
+//
+////////////////////////////////////////////////////////////////////////////////
 
-# Import
+// Import
 import("soem_master")
 import("soem_ebox")
 loadComponent("soemMaster", "soem_master::SoemMasterComponent")
 
-# Configure
-# TODO Move this property to a .cpf file
+// Configure
+// TODO Move this property to a .cpf file
 soemMaster.ifname = "eth2"
 
-# Set activivity
+// Set activivity
 var int soemPrio = 98
 setActivityOnCPU("soemMaster", 0.001, soemPrio, ORO_SCHED_RT,2)
 
 soemMaster.configure()
 soemMaster.start()
 
-################################################################################
-#
-# Import and load components
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import and load components
+//
+////////////////////////////////////////////////////////////////////////////////
 
-# Dot Service
-#import("rtt_dot_service")
-#loadService("Deployer","dot")
+// Dot Service
+//import("rtt_dot_service")
+//loadService("Deployer","dot")
 
-# Master Timer
+// Master Timer
 import("masterTimer")
 loadComponent("masterTimer", "MasterTimer")
 
-# MCU Handler & telemetry
+// MCU Handler & telemetry
 import("mcuHandler")
 loadComponent("mcuHandler", "McuHandler")
 loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
-#loadService("mcuHandler", "jitter")
+//loadService("mcuHandler", "jitter")
 
-# Voltage controller
+// Voltage controller
 import("voltageController")
 loadComponent("voltageController", "VoltageController")
 
-# Encoder & telemetry
+// Encoder & telemetry
 import("encoder")
 loadComponent("encoder", "Encoder")
 loadComponent("encoderTelemetry", "EncoderTelemetry")
 
-# Camera trigger
+// Camera trigger
 import("cameraTrigger")
 loadComponent("cameraTrigger", "CameraTrigger")
 
-# Line Angle Sensor & telemetry
+// Line Angle Sensor & telemetry
 import("lineAngleSensor")
 loadComponent("lineAngleSensor", "LineAngleSensor")
 loadComponent("lineAngleSensorTelemetry", "LineAngleSensorTelemetry")
 
-# LEDTracker & telemetry
+// LEDTracker & telemetry
 import("LEDTracker")
 loadComponent("LEDTracker", "LEDTracker")
 loadComponent("ledTrackerTelemetry", "LEDTrackerTelemetry")
 
-# Winch & telemetry
+// Winch & telemetry
 import("winchControl")
 loadComponent("winch", "WinchControl")
 loadComponent("winchTelemetry", "WinchControlTelemetry")
 
-# Dynamic MHE component
+// Dynamic MHE component
 import("DynamicMhe")
 loadComponent("mhe", "DynamicMhe")
 loadComponent("mheTelemetry", "DynamicMheTelemetry")
 
-# Input signal generator
+// Input signal generator
 import("inputSignalGenerator")
 loadComponent("inputSignalGenerator", "InputSignalGenerator")
 
-# OCL NETcdf reporter
+// OCL NETcdf reporter
 loadComponent("imuReporter", "OCL::NetcdfReporting")
-#loadComponent("imuJitterReporter", "OCL::NetcdfReporting")
+//loadComponent("imuJitterReporter", "OCL::NetcdfReporting")
 loadComponent("cameraReporter", "OCL::NetcdfReporting")
 loadComponent("encoderReporter", "OCL::NetcdfReporting")
 loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
@@ -102,44 +102,44 @@ loadComponent("winchReporter", "OCL::NetcdfReporting")
 
 loadComponent("mheReporter", "OCL::NetcdfReporting")
 
-################################################################################
-#
-# Configure components' properties
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure components' properties
+//
+////////////////////////////////////////////////////////////////////////////////
 
-# Master timer
+// Master timer
 loadService("masterTimer", "marshalling")
 masterTimer.marshalling.loadProperties("../../properties/masterTimer.cpf")
 var double base_hz = masterTimer.imu_target_hz
 
-# MCU
+// MCU
 loadService("mcuHandler","marshalling")
 mcuHandler.marshalling.loadProperties("../../properties/tcp.cpf")
 mcuHandler.Ts = 1.0 / base_hz
 mcuHandler.rtMode = true
 
-# Voltage controller
+// Voltage controller
 
-# Encoder
+// Encoder
 encoder.encoderPort = 0;
-# Same as for SOEM
+// Same as for SOEM
 encoder.Ts = 0.001;
 
-# Camera trigger
+// Camera trigger
 
-# LED tracker - hangs until frame arrival, does processing, and re-triggers itself.
+// LED tracker - hangs until frame arrival, does processing, and re-triggers itself.
 LEDTracker.useExternalTrigger = true;
 LEDTracker.sigma_marker = 20;
 
-# Winch communication
-# TODO All configuration is hard-coded in C++, move some of them to properties
+// Winch communication
+// TODO All configuration is hard-coded in C++, move some of them to properties
 
-# Dynamic MHE -- everything is hard-coded
+// Dynamic MHE -- everything is hard-coded
 
-#
-# Telemetry
-#
+//
+// Telemetry
+//
 
 mcuHandlerTelemetry.port = "tcp://*:5563"
 encoderTelemetry.port = "tcp://*:5564"
@@ -148,10 +148,10 @@ lineAngleSensorTelemetry.port = "tcp://*:5566"
 winchTelemetry.port = "tcp://*:5567"
 mheTelemetry.port = "tcp://*:5570"
 
-# OK, so here we take the current timestamp and set
-# it to all telemetry components so that time on the
-# live plots begins from approx the start of the
-# experiments...
+// OK, so here we take the current timestamp and set
+// it to all telemetry components so that time on the
+// live plots begins from approx the start of the
+// experiments...
 var uint64_t startTime = HighwindServices.getTimestamp()
 
 mcuHandlerTelemetry.startTime = startTime
@@ -161,18 +161,18 @@ lineAngleSensorTelemetry.startTime = startTime
 winchTelemetry.startTime = startTime
 mheTelemetry.startTime = startTime
 
-#
-# Reporters
-#
+//
+// Reporters
+//
 
-# Set reporter policy: we use circular buffer connection with quite a long 
-# buffer
+// Set reporter policy: we use circular buffer connection with quite a long 
+// buffer
 var ConnPolicy rp
-# rp.type = DATA
+// rp.type = DATA
 rp.type = CIRCULAR_BUFFER
 rp.size = 100
 rp.lock_policy = LOCKED
-# rp.lock_policy = LOCK_FREE
+// rp.lock_policy = LOCK_FREE
 
 var ConnPolicy rp_sensors
 rp_sensors.type = CIRCULAR_BUFFER
@@ -182,9 +182,9 @@ imuReporter.ReportFile = "imuData.nc"
 imuReporter.ReportPolicy = rp_sensors
 imuReporter.ReportOnlyNewData = false
 
-#imuJitterReporter.ReportFile = "imuJitterData.nc"
-#imuJitterReporter.ReportPolicy = rp_sensors
-#imuJitterReporter.ReportOnlyNewData = false
+// imuJitterReporter.ReportFile = "imuJitterData.nc"
+// imuJitterReporter.ReportPolicy = rp_sensors
+// imuJitterReporter.ReportOnlyNewData = false
 
 cameraReporter.ReportFile = "cameraData.nc"
 cameraReporter.ReportPolicy = rp_sensors
@@ -206,11 +206,11 @@ mheReporter.ReportFile = "dynamicMheData.nc"
 mheReporter.ReportPolicy = rp
 mheReporter.ReportOnlyNewData = false
 
-################################################################################
-#
-# Set activities and priorities
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Set activities and priorities
+//
+////////////////////////////////////////////////////////////////////////////////
 
 var int masterTimerPrio = 98
 var int sensorPrio = 97
@@ -229,8 +229,8 @@ setActivityOnCPU("cameraTrigger", 0.0, sensorPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("lineAngleSensor", 0.0, sensorPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("LEDTracker", 0.0, LEDTrackerPrio, ORO_SCHED_RT,6)
 setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,6)
-# TODO set period of the winch to the same or <int> * LED tracker period
-#      in a conf file
+// TODO set period of the winch to the same or <int> * LED tracker period
+//      in a conf file
 setActivityOnCPU("winch", 1.0 / 50, winchPrio, ORO_SCHED_RT,6)
 
 setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT,3)
@@ -249,11 +249,11 @@ setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER,0)
 
-################################################################################
-#
-# Connect components
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Connect components
+//
+////////////////////////////////////////////////////////////////////////////////
 
 connectPeers("soemMaster", "encoder")
 connectPeers("cameraTrigger", "soemMaster")
@@ -275,17 +275,17 @@ connect("voltageController.eboxAnalog", "encoder.eboxAnalog", cp)
 
 connect("inputSignalGenerator.data", "mcuHandler.controls", cp)
 
-# MHE connections
+// MHE connections
 
 var ConnPolicy cpImuMhe
 cpImuMhe.type = 1
-cpImuMhe.size = 1000
+cpImuMhe.size = 100
 
 connect("masterTimer.controlsPlaybackClock", "mhe.trigger", cp)
 connect("mcuHandler.data", "mhe.mcuData", cpImuMhe)
 connect("encoder.data", "mhe.encoderData", cp)
 connect("LEDTracker.data", "mhe.ledTrackerData", cp)
-connect("lineAngleSensor.data", "mhe.lasData", cp)
+connect("lineAngleSensor.data", "mhe.lasData", cpImuMhe)
 connect("winch.data", "mhe.winchData", cp)
 
 connect("mcuHandler.data", "mcuHandlerTelemetry.msgData", cp)
@@ -296,16 +296,16 @@ connect("winch.data", "winchTelemetry.msgData", cp)
 
 connect("mhe.debugData", "mheTelemetry.msgData", cp)
 
-################################################################################
-#
-# Reporter configuration
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Reporter configuration
+//
+////////////////////////////////////////////////////////////////////////////////
 
 connectPeers("imuReporter", "mcuHandler")
-#connectPeers("imuJitterReporter", "mcuHandler")
+//connectPeers("imuJitterReporter", "mcuHandler")
 imuReporter.reportComponent( "mcuHandler" )
-#imuJitterReporter.reportPort( "mcuHandler", "jitter.jitter" )
+//imuJitterReporter.reportPort( "mcuHandler", "jitter.jitter" )
 
 connectPeers("cameraReporter", "LEDTracker")
 cameraReporter.reportComponent( "LEDTracker" )
@@ -322,11 +322,11 @@ winchReporter.reportComponent( "winch" )
 connectPeers("mheReporter", "mhe")
 mheReporter.reportPort("mhe", "debugData")
 
-################################################################################
-#
-# Define some functions
-#
-################################################################################
+////////////////////////////////////////////////////////////////////////////////
+//
+// Define some functions
+//
+////////////////////////////////////////////////////////////////////////////////
 
 global bool setSpeed(double voltage)
 {
@@ -338,14 +338,23 @@ global bool setTetherLength(double length)
 	return winch.setTetherLength( length )
 }
 
-################################################################################
-#
-# Configure and start components
-#
-################################################################################
+global void abort( void )
+{
+	inputSignalGenerator.reset()
+	mhe.stop()
 
-# Just configure the master timer component.
-# NOTE This must be the first component to be configured
+	setSpeed( 0 )
+	setTetherLength( 1.275 ) # This is the current homing tether length
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure and start components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Just configure the master timer component.
+// NOTE This must be the first component to be configured
 masterTimer.configure()
 
 mcuHandler.configure()
@@ -385,7 +394,7 @@ winchTelemetry.configure()
 winchTelemetry.start()
 
 mhe.configure()
-#mhe.start()
+//mhe.start()
 
 mheTelemetry.configure()
 mheTelemetry.start()
@@ -393,8 +402,8 @@ mheTelemetry.start()
 imuReporter.configure()
 imuReporter.start()
 
-#imuJitterReporter.configure()
-#imuJitterReporter.start()
+//imuJitterReporter.configure()
+//imuJitterReporter.start()
 
 cameraReporter.configure()
 cameraReporter.start()
@@ -414,5 +423,5 @@ mheReporter.start()
 inputSignalGenerator.configure()
 inputSignalGenerator.start()
 
-# Now, when all other components are started, start the master timer component.
+// Now, when all other components are started, start the master timer component.
 masterTimer.start()

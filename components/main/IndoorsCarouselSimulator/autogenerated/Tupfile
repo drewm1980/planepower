@@ -1,0 +1,7 @@
+include_rules
+
+# make rawesome export the integrator
+propsdir = $(PLANEPOWER_ROOT)/properties
+export PYTHONPATH
+genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateSimulator.py
+: $(genfile) |> python -B $(genfile) $(propsdir) |> acado_common.h integrator.o whereami.txt sim_configuration.h
