@@ -42,6 +42,7 @@ dataset
 
 # Vim spits these
 *.swp
+*.swo
 
 # Prevent people from committing their config
 tup.config
