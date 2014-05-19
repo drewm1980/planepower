@@ -1,3 +1,9 @@
+ifdef CAROUSEL1
+ifdef PC
+
 :simple_client.c |> make simple_client |> simple_client.o simple_client simple_client.d
 
 .gitignore
+
+endif
+endif
