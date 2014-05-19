@@ -16,10 +16,9 @@ CFLAGS += -std=gnu99
 
 : test_spi.c |> !cc |>
 : bitbang_spi.c |> !cc |>
-: bitbang_lowerlevel.c |> !cc |>
 : SimpleGPIO.c |> !cc |>
 
-:test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
+: test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
 
 : bitbang_clock.c |> !cc |>
 : bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock

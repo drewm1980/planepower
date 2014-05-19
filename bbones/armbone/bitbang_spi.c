@@ -8,11 +8,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
-#include "SimpleGPIO.h"
-#include "assert.h"
+#include <assert.h>
 
+#include "SimpleGPIO.h"
 #include "pins.h"
 #include "encoder_calibration.h"
+#include "bitbang_spi.h"
+
+int fd_CS0, fd_CS1, fd_MISO, fd_CLK;
 
 void bitbang_init()
 {
@@ -51,23 +54,44 @@ void bitbang_init()
 	if(err!=0) printf("Trouble Setting a pin value!\n");
 	err = gpio_set_value(CLK_PIN, LOW);
 	if(err!=0) printf("Trouble Setting a pin value!\n");
-}
+
+	// Open all of our device files ONCE
+	fd_CS0 = open(CS0_VALUE_FILE,O_RDWR);
+	fd_CS1 = open(CS1_VALUE_FILE,O_RDWR);
+	fd_MISO  = open(MISO_VALUE_FILE,O_RDWR);
+	fd_CLK = open(CLK_VALUE_FILE,O_RDWR);
+	printf(CS0_VALUE_FILE "\n");
+	if (fd_CS0 == -1){ printf("Couldn't open CS0 device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CS1 == -1){ printf("Couldn't open CS1 device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_MISO  == -1){ printf("Couldn't open MISO device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CLK == -1){ printf("Couldn't open CLK device file!!!\n"); exit(EXIT_FAILURE);}
+}    
 void bitbang_close()
 {
 	int err;
 	err = gpio_unexport(CS0_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
 	err = gpio_unexport(CS1_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
 	err = gpio_unexport(MISO_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
 	err = gpio_unexport(CLK_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
 	err = gpio_unexport(AZIMUTH_STATUS_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
 	err = gpio_unexport(ELEVATION_STATUS_PIN);
-	if(err!=0) printf("Trouble Unexporting a pin!\n");
+	if(err!=0) {printf("Trouble Unexporting a pin!\n"); exit(EXIT_FAILURE);};
+
+	err = close(fd_CS0); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
+	err = close(fd_CS1); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
+	err = close(fd_MISO); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
+	err = close(fd_CLK); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
 }
+
 
 // Read the values of an SPI attached encoder using bitbanging of GPIO pins.
 // Inputs are the numbers of pins... not sure where they're documented...
@@ -89,18 +113,20 @@ int bitbang_read(unsigned int cs_pin,
 	if(err!=0) printf("Error reading status pin!\n");
 	unsigned int bit = LOW;
 
+	char value;
 	for (int c=0; c < 16 ; c++)
 	{
-		err = gpio_set_value(clk_pin, HIGH);
-		if(err!=0) printf("Error setting clock pin value!\n");
+		write(fd_CLK,"1",2);
 
 		for(int c0=0; c0<1000; c0++);
-		err = gpio_get_value(miso_pin, &bit);
-		if(err!=0) printf("Error getting miso pin value!\n");
 
-		err = gpio_set_value(clk_pin, LOW);
-		assert(err==0);
+		read(fd_MISO,&value,1);
+		bit = value == '1';
+
+		write(fd_CLK,"0",2);
+
 		for(int c1=0; c1<1000; c1++);
+
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
 	}
