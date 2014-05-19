@@ -39,7 +39,7 @@ else
 	echo			installed rawesome repo in a non-standard place
 fi
 export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
-export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/bbones/rf_laird
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/bbones/shared
 
 export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/rawesome_stuff
 
