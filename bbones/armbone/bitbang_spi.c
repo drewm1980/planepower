@@ -98,8 +98,6 @@ void bitbang_close()
 // Output is the raw encoder value.
 // Return value:  Zero if no error, 1 if encoder has bad status during read
 int bitbang_read(unsigned int cs_pin,
-		unsigned int clk_pin,
-		unsigned int miso_pin,
 		unsigned int status_pin,
 		uint16_t *rsp_raw)
 {
@@ -177,10 +175,10 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	uint16_t azimuth_raw=0.0, elevation_raw=0.0; 
 
 	//printf("Reading azimuth...\n");
-	bitbang_read(CS0_PIN,CLK_PIN,MISO_PIN,AZIMUTH_STATUS_PIN,
+	bitbang_read(CS0_PIN,AZIMUTH_STATUS_PIN,
 			&azimuth_raw);
 	//printf("Reading elevation...\n");
-	bitbang_read(CS1_PIN,CLK_PIN,MISO_PIN,ELEVATION_STATUS_PIN,
+	bitbang_read(CS1_PIN,ELEVATION_STATUS_PIN,
 			&elevation_raw);
 
 #if 0

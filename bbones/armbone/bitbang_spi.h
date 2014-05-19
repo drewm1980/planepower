@@ -14,8 +14,6 @@ void plot_two_angles(float az, float el);
 /*----------  Below here are utility functions ------------ */
 
 int bitbang_read(unsigned int cs_pin,
-		unsigned int clk_pin,
-		unsigned int miso_pin,
 		unsigned int status_pin,
 		uint16_t *rsp_raw);
 
