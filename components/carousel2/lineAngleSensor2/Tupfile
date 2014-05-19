@@ -1,14 +1,16 @@
 ifdef CAROUSEL2
+ifdef ARMBONE
 
 include_rules
 
-
 #LDFLAGS_OROCOS += -lprotobuf -lzmq
+
+: LineAngleSensor2Telemetry.proto |> !protoc |>
 
 # Generate the protobuf file
 #: LineAngleSensorTelemetry.proto |> protoc --cpp_out=. LineAngleSensorTelemetry.proto |> LineAngleSensorTelemetry.pb.cc LineAngleSensorTelemetry.pb.h
 
-: LineAngleSensor2Telemetry.proto |> protoc --python_out=. LineAngleSensor2Telemetry.proto |> LineAngleSensorTelemetry_pb2.py
+#: LineAngleSensor2Telemetry.proto |> protoc --python_out=. LineAngleSensor2Telemetry.proto |> LineAngleSensorTelemetry_pb2.py
 
 # Compile the code
 #: LineAngleSensorTelemetry.pb.cc | LineAngleSensorTelemetry.pb.h  |> !cxx_orocos |>
@@ -16,3 +18,5 @@ include_rules
 #: *.o |> !ld_orocos |> 
 
 endif
+endif
+
