@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 BOOST_LIBS = -lboost_system-mt -lboost_thread-mt -pthread
@@ -18,3 +21,6 @@ LDFLAGS_OROCOS += $(BOOST_LIBS)
 : winchControl.o Epos2.o WinchControlTelemetry.o WinchControlTelemetry.pb.o |> !ld_orocos |> %d.so
 # Create the test file
 : configtest.o Epos2.o |> !ld |> configtest
+
+endif
+endif

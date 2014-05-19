@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 # make rawesome export the solver
@@ -13,3 +16,6 @@ genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateMhe.py
 # Compile the file for speed testing
 : mhe_speed_test.cpp | acado_common.h acado_auxiliary_functions.h acado_qpoases_interface.hpp mhe_configuration.h |> !cxx |>
 : mhe_speed_test.o | ocp.a |> $(CXX) %f -o %o ocp.a $(LDFLAGS) |> mhe_speed_test
+
+endif
+endif

@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 CC = gcc
 CXX = g++
@@ -6,3 +9,6 @@ CFLAGS = -Wall -fPIC
 : foreach *.c |> !cc |>
 #: *.o |> !ld_orocos |> 
 : *.o |> !ld_library |> libsoem_core.so
+
+endif
+endif

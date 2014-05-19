@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 LDFLAGS_OROCOS += -lprotobuf -lzmq
@@ -14,3 +17,6 @@ LDFLAGS_OROCOS += -lprotobuf -lzmq
 : finder.c |> !cc |>
 : finder.o |> $(CC) finder.o -o finder |> finder
 
+
+endif
+endif

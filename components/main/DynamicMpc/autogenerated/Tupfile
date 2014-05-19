@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 # make rawesome export the solver
@@ -9,3 +12,6 @@ genfile = $(PLANEPOWER_ROOT)/rawesome_stuff/generateNmpc.py
 # Generate the protobuf file
 : DynamicMpcTelemetry.proto |> protoc --cpp_out=. DynamicMpcTelemetry.proto |> DynamicMpcTelemetry.pb.cc DynamicMpcTelemetry.pb.h
 : DynamicMpcTelemetry.proto |> protoc --python_out=. DynamicMpcTelemetry.proto |> DynamicMpcTelemetry_pb2.py
+
+endif
+endif
