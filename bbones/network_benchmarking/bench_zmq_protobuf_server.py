@@ -12,5 +12,4 @@ while True:
 	message = socket.recv()
 	print "Sending response!"
 	socket.send("World")
-}
 
