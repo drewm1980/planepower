@@ -11,7 +11,7 @@
 #include "uart_communication.h"
 
 #ifndef DEBUG 
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 int serial_port_read(uint8_t buffer[],int length); 
@@ -24,12 +24,18 @@ UART_errCode serial_port_flush_input(void);
 UART_errCode serial_port_flush_output(void);
 int wait_for_data();
 
-static const char FILENAME[] = "uart_communication.c";
+
+
+static char FILENAME[] = "uart_communication.c";
 
 extern serial_port *serial_stream;
 
 speed_t speed = B921600;
+//Variables for serial port
 const char device[]="/dev/ttyO4";
+const char device_enabled_check[] = "ttyO4_armhf.com"; //For Angstrom: enable-uart5
+const char device_path[] = "/sys/devices/bone_capemgr.9/slots"; //For Angstrom: /sys/devices/bone_capemgr.8/slots
+
 
 int wait_for_data(){
 	struct pollfd fds[1];
@@ -353,7 +359,7 @@ UART_errCode serial_port_setup(void)
 	
 	int err;
 	
-	err = serial_port_new();
+    err = serial_port_new();
 	if(err!=UART_ERR_NONE){
 			return err;
 	}
@@ -382,7 +388,7 @@ UART_errCode serial_port_create()
 	FILE *fp ;
 	int fd;
 
-	fp = fopen("/sys/devices/bone_capemgr.8/slots", "r");
+    fp = fopen(device_path, "r");
 	if (fp == NULL){
 		
 		return UART_ERR_SERIAL_PORT_CREATE;
@@ -391,7 +397,7 @@ UART_errCode serial_port_create()
 	//search enable-uart5 is present int the file
 	while(flag!=1 && fp!=NULL && fgets(tmp, sizeof(tmp), fp)!=NULL)
 	{
-		if (strstr(tmp, "enable-uart5"))
+        if (strstr(tmp, device_enabled_check))
 		{
 			flag = 1;
 		}
@@ -413,13 +419,16 @@ UART_errCode serial_port_create()
 	{
 		return UART_ERR_NONE;
 	} else {
-		fd = open("/sys/devices/bone_capemgr.8/slots", O_RDWR);
+        fd = open(device_path, O_RDWR);
 		
 		#if DEBUG
-			printf("Uart5 not enabled, trying to enable...\n");
+            printf("Uart not enabled, trying to enable...\n");
 	    #endif
-
-		if (system("echo enable-uart5 > /sys/devices/bone_capemgr.8/slots")==0)
+        char command[100]= "echo ";
+        strcat(command, device_enabled_check);
+        strcat(command, " > ");
+        strcat(command, device_path);
+        if (system(command)==0)
 		{
 			close(fd);
 			return UART_ERR_NONE;
@@ -453,44 +462,43 @@ void UART_err_handler( UART_errCode err_p,void (*write_error_ptr)(char *,char *,
 		printf("Entering UART_err_handler\n");
 	#endif
 	
-	static char SOURCEFILE[] = "uart_communication.c";
 	int8_t err = (int8_t)err_p; //because uart erros can be negative
 		
 	switch( err ) {
 			case UART_ERR_NONE:
 				break;
 			case  UART_ERR_READ_START_BYTE:
-				write_error_ptr(SOURCEFILE,"serial port failed to read start byte",err);
+                write_error_ptr(FILENAME,"serial port failed to read start byte",err);
 				break;
 			case  UART_ERR_READ_CHECKSUM:
-				write_error_ptr(SOURCEFILE,"serial port wrong checksum",err);
+                write_error_ptr(FILENAME,"serial port wrong checksum",err);
 				break;
 			case  UART_ERR_READ_LENGTH:
-				write_error_ptr(SOURCEFILE,"serial port failed reading message length",err);
+                write_error_ptr(FILENAME,"serial port failed reading message length",err);
 				break;
 			case  UART_ERR_READ_MESSAGE:
-				write_error_ptr(SOURCEFILE,"serial port failed reading message based on length",err);
+                write_error_ptr(FILENAME,"serial port failed reading message based on length",err);
 				break;
 			case UART_ERR_SERIAL_PORT_FLUSH_INPUT:
-				write_error_ptr(SOURCEFILE,"serial port flush input failed",err);
+                write_error_ptr(FILENAME,"serial port flush input failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_FLUSH_OUTPUT:
-				write_error_ptr(SOURCEFILE,"serial port flush output failed",err);
-				break;
+                write_error_ptr(FILENAME,"serial port flush output failed",err);
+                break;
 			case UART_ERR_SERIAL_PORT_OPEN:
-				write_error_ptr(SOURCEFILE,"serial port open failed",err);
+                write_error_ptr(FILENAME,"serial port open failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_CLOSE:
-				write_error_ptr(SOURCEFILE,"serial port close failed",err);
+                write_error_ptr(FILENAME,"serial port close failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_CREATE:
-				write_error_ptr(SOURCEFILE,"serial port create failed",err);
+                write_error_ptr(FILENAME,"serial port create failed",err);
 				break;
 			case UART_ERR_SERIAL_PORT_WRITE:
-				write_error_ptr(SOURCEFILE,"serial port write failed",err);
+                write_error_ptr(FILENAME,"serial port write failed",err);
 				break;
 			case UART_ERR_UNDEFINED:
-				write_error_ptr(SOURCEFILE,"undefined UART error",err);
+                write_error_ptr(FILENAME,"undefined UART error",err);
 				break;
 			default: break;
 		}

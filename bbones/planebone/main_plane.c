@@ -30,7 +30,6 @@
 static void *lisa_to_pc(void *connection);
 static void *data_logging_lisa(void *);
 static void *data_logging_groundstation(void *arg);
-static void enable_ptp();
 static void sendError(DEC_errCode err,library lib);
 static void switch_cb_lisa_pointers();
 static void switch_cb_ground_pointers();
@@ -84,7 +83,7 @@ void (*write_log_error_ptr)(char *,char *,int);
 int main(int argc, char *argv[]){
 	write_uart_error_ptr = &write_uart_error;  //initialize the function pointer to write error
 	write_udp_error_ptr = &write_udp_error; 
-	write_decode_error_ptr = &write_decode_error;  
+    write_decode_error_ptr = &write_decode_error;
 	write_log_error_ptr = &write_log_error;  
  
 	//parse arguments
@@ -107,7 +106,6 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);		//mounting SD card failed
 	}
 	
-	enable_ptp();
 
 	#if LOGGING > 0
 	//init circular data log buffers
@@ -151,7 +149,7 @@ int main(int argc, char *argv[]){
 	static UDP udp_server;
 	uint8_t input_stream[OUTPUT_BUFFER];
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 
 	//init the data decode pointers
 	init_decoding();
@@ -229,7 +227,7 @@ static void *lisa_to_pc(void *arg){
 
 	static UDP udp_client;
 	int message_length;
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	uint8_t input_buffer[INPUT_BUFFER_SIZE];
 
 	UDP_err_handler(openUDPClientSocket(&udp_client,connection.server_ip,connection.port_number_lisa_to_pc,UDP_SOCKET_TIMEOUT),write_udp_error_ptr);
@@ -295,7 +293,7 @@ static void *lisa_to_pc(void *arg){
 static void *data_logging_lisa(void *arg){
 /*-------------------------START OF THIRD THREAD: LISA TO PC LOGGING------------------------*/
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	LOG_err_handler(open_data_lisa_log(),write_log_error_ptr);
 
 	while(1){
@@ -318,7 +316,7 @@ static void *data_logging_lisa(void *arg){
 static void *data_logging_groundstation(void *arg){
 /*-------------------------START OF FOURTH THREAD: GROUNDSTATION TO LISA LOGGING------------------------*/
 
-	ElemType cb_elem = {0};
+    ElemType cb_elem = {{0}};
 	LOG_err_handler(open_data_groundstation_log(),write_log_error_ptr);
 	
 	while(1){
@@ -348,7 +346,7 @@ static void sendError(DEC_errCode err,library lib){
 		static UDP udp_client;
 		int message_length;
 		uint8_t encoded_data[MAX_STREAM_SIZE];
-		Data data;
+        //Data data;
 		Beagle_error error_message;
 
 		//encode an error package
@@ -363,13 +361,7 @@ static void sendError(DEC_errCode err,library lib){
 		closeUDPClientSocket(&udp_client);
 }
 
-static void enable_ptp(){
-	int err = system("./ptpd-2.2.0/src/ptpd2 -b eth0 -g -y 0 -D -f /var/log/ptpd.log -L");
-	if(err!=0 && err != 768){ //768 = ptp already running
-		printf("could not enable ptp: error code %d\n",err);
-		exit(EXIT_FAILURE);
-	}
-}
+
 
 static void switch_cb_lisa_pointers(){
 		CircularBuffer *temp = cb_read_lisa;
