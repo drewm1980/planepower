@@ -25,60 +25,60 @@
 #143:          1      INTC 127
 #150:          0      GPIO   6  mmc0
 
-#---- First, the general cases:
+echo "Making the following settings (with chrt):"
+echo -e "irq \t pid \t prio \t pattern"
+
 function setprio()
 {
 	prio=$1
-	echo prio=$prio
+	#echo prio=$prio
 	pattern=$2
-	echo pattern=$pattern
-	irq=`grep "$pattern" /proc/interrupts | cut -d":" -f1| tr -d ' '`
-	echo irq=$irq
-	pid=`pgrep irq/$irq`
-	echo pid=$pid
-	chrt -f -p $prio $pid
-}
-function setprio_multi()
-{
-	prio=$1
-	echo prio=$prio
-	pattern=$2
-	echo pattern=$pattern
+	#echo pattern=$pattern
 	irqs=`grep "$pattern" /proc/interrupts | cut -d":" -f1| tr -d ' '`
 	for irq in $irqs; do
 		pid=`pgrep irq/$irq`
-		echo irq=$irq
-		echo pid=$pid
+		#echo irq=$irq
+		#echo pid=$pid
 		chrt -f -p $prio $pid
+		echo -e "$irq \t $pid \t $prio \t $pattern"
 		prio=$(($prio+1))
 	done
 }
 
-setprio 14 edma_error
-#setprio 17 47400000.dma-controller # Not present in /proc/interrupts!
-setprio 28 mmc1
-setprio 30 4819c000.i2c
-#setprio 36 tilcdc # Not present in /proc/interrupts!
-setprio 64 "INTC  mmc0"
-#setprio 68 gp_timer # Can't find which pid is associated with gp_timer!
-setprio 70 44e0b000.i2c
-setprio 72 "OMAP UART0"
-setprio  6 "GPIO" # mmc0
 setprio 12 "\<edma\>"
+
+setprio 14 edma_error
+
+# USB; Seems to include the usb-ethernet adapter (implemented in software on bbone?)
+setprio 18 musb
+
+#setprio 17 47400000.dma-controller # Not present in /proc/interrupts!
+
+setprio 28 mmc1
+
+setprio 30 4819c000.i2c
+
+#setprio 36 tilcdc # Not present in /proc/interrupts!
+
+# Ethernet; This is the HARD ethernet, not the usb-ethernet adapter
+setprio 40 ethernet
+
+setprio 64 "INTC  mmc0"
+
+#setprio 68 gp_timer # Can't find which pid is associated with gp_timer!
+
+setprio 70 44e0b000.i2c
+
+setprio 72 "OMAP UART0"
+
+# RTC
+setprio 75 rtc0
+
+setprio  6 "GPIO" # mmc0
 
 setprio 15 sham # OMAP hardware SHA crypto module?
 
-
-# USB; Seems to include the usb-ethernet adapter (implemented in software on bbone?)
-setprio_multi 18 musb
-
-# Ethernet; This is the HARD ethernet, not the usb-ethernet adapter
-setprio_multi 40 ethernet
-
-# RTC
-setprio_multi 75 rtc0
-
-echo "Resulting FIFO process priorities:"
+echo "Resulting FIFO process priorities (from ps):"
 echo "Sched rtprio, pid, cmd"
 ps -eLo cls,rtprio,pid,cmd | grep "^ FF" | sort -k 2 -rg
 
