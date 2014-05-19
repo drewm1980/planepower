@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+# Set up the IRQ priorities
+
+# We use the irq priorities from OSADL's website as a starting point:
+#
+#28:     667972      INTC  12  edma
+# 30:          0      INTC  14  edma_error
+# 33:          0      INTC  17  47400000.dma-controller
+# 34:          0      INTC  18  musb-hdrc.0.auto
+# 35:          1      INTC  19  musb-hdrc.1.auto
+# 44:       2235      INTC  28  mmc1
+# 46:        168      INTC  30  4819c000.i2c
+# 52:          0      INTC  36  tilcdc
+# 56:          0      INTC  40  4a100000.ethernet
+# 57:    2939684      INTC  41  4a100000.ethernet
+# 58:    2357663      INTC  42  4a100000.ethernet
+# 59:          0      INTC  43  4a100000.ethernet
+# 80:    3319938      INTC  64  mmc0
+# 84: 1174844055      INTC  68  gp_timer
+# 86:    2730404      INTC  70  44e0b000.i2c
+# 88:        356      INTC  72  OMAP UART0
+# 91:          0      INTC  75  rtc0
+# 92:          0      INTC  76  rtc0
+#143:          1      INTC 127
+#150:          0      GPIO   6  mmc0
+
+#---- First, the general cases:
+function setprio()
+{
+	prio=$1
+	echo prio=$prio
+	pattern=$2
+	echo pattern=$pattern
+	irq=`grep "$pattern" /proc/interrupts | cut -d":" -f1| tr -d ' '`
+	echo irq=$irq
+	pid=`pgrep irq/$irq`
+	echo pid=$pid
+	chrt -f -p $prio $pid
+}
+function setprio_multi()
+{
+	prio=$1
+	echo prio=$prio
+	pattern=$2
+	echo pattern=$pattern
+	irqs=`grep "$pattern" /proc/interrupts | cut -d":" -f1| tr -d ' '`
+	for irq in $irqs; do
+		pid=`pgrep irq/$irq`
+		echo irq=$irq
+		echo pid=$pid
+		chrt -f -p $prio $pid
+		prio=$(($prio+1))
+	done
+}
+
+setprio 14 edma_error
+#setprio 17 47400000.dma-controller # Not present in /proc/interrupts!
+setprio 28 mmc1
+setprio 30 4819c000.i2c
+#setprio 36 tilcdc # Not present in /proc/interrupts!
+setprio 64 "INTC  mmc0"
+#setprio 68 gp_timer # Can't find which pid is associated with gp_timer!
+setprio 70 44e0b000.i2c
+setprio 72 "OMAP UART0"
+setprio  6 "GPIO" # mmc0
+setprio 12 "\<edma\>"
+
+setprio 15 sham # OMAP hardware SHA crypto module?
+
+
+# USB; Seems to include the usb-ethernet adapter (implemented in software on bbone?)
+setprio_multi 18 musb
+
+# Ethernet; This is the HARD ethernet, not the usb-ethernet adapter
+setprio_multi 40 ethernet
+
+# RTC
+setprio_multi 75 rtc0
+
+echo "Resulting FIFO process priorities:"
+echo "Sched rtprio, pid, cmd"
+ps -eLo cls,rtprio,pid,cmd | grep "^ FF" | sort -k 2 -rg
+
