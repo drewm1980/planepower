@@ -1,2 +1,8 @@
+ifdef CAROUSEL2
+ifdef PC
+
 include_rules
 : foreach *.c |> !cc |> 
+
+endif
+endif
