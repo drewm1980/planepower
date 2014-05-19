@@ -2,7 +2,8 @@ include_rules
 .gitignore
 
 # If you want to buld the bbone code from tup, add CONFIG_BBONE= to your tup.config
-ifdef BBONE
+ifdef CAROUSEL2
+ifdef ARMBONE
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror -Wextra
@@ -27,4 +28,4 @@ CFLAGS += -std=gnu99
 
 
 endif
-
+endif
