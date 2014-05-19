@@ -1,18 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <poll.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <string.h>
-#include <unistd.h>
 #include <math.h>
+#include "pins.h"
 #include "SimpleGPIO.h"
-#include "assert.h"
+
+// Try doing bitbanging without SimpleGPIO (in the tight loop)
+// to save on device file opening overhead
 
 #include "pins.h"
 #include "encoder_calibration.h"
+
+int fd_CS0, fd_CS1, fd_MISO, fd_CLK;
 
 void bitbang_init()
 {
@@ -51,7 +59,18 @@ void bitbang_init()
 	if(err!=0) printf("Trouble Setting a pin value!\n");
 	err = gpio_set_value(CLK_PIN, LOW);
 	if(err!=0) printf("Trouble Setting a pin value!\n");
-}
+
+	// Open all of our device files ONCE
+	int fd_CS0, fd_CS1, fd_MISO, fd_CLK;
+	fd_CS0 = open(CS0_VALUE_FILE,O_RDWR);
+	fd_CS1 = open(CS1_VALUE_FILE,O_RDWR);
+	fd_MISO  = open(MISO_VALUE_FILE,O_RDWR);
+	fd_CLK = open(CLK_VALUE_FILE,O_RDWR);
+	if (fd_CS0 == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CS1 == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_MISO  == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_CLK == -1){ printf("Couldn't open device file!!!\n"); exit(EXIT_FAILURE);}
+}    
 void bitbang_close()
 {
 	int err;
@@ -67,6 +86,16 @@ void bitbang_close()
 	if(err!=0) printf("Trouble Unexporting a pin!\n");
 	err = gpio_unexport(ELEVATION_STATUS_PIN);
 	if(err!=0) printf("Trouble Unexporting a pin!\n");
+
+	err = close(fd_CS0); 
+	if (err==-1) printf("Unable to close a device file!\n");
+	err = close(fd_CS1); 
+	if (err==-1) printf("Unable to close a device file!\n");
+	err = close(fd_MISO); 
+	if (err==-1) printf("Unable to close a device file!\n");
+	err = close(fd_CLK); 
+	if (err==-1) printf("Unable to close a device file!\n");
+
 }
 
 // Read the values of an SPI attached encoder using bitbanging of GPIO pins.
@@ -99,14 +128,14 @@ int bitbang_read(unsigned int cs_pin,
 		if(err!=0) printf("Error getting miso pin value!\n");
 
 		err = gpio_set_value(clk_pin, LOW);
-		assert(err==0);
+		if(err!=0) printf("Error setting clk pin value!\n");
 		for(int c1=0; c1<1000; c1++);
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
 	}
 	usleep(10);
 	err = gpio_set_value(cs_pin, HIGH);
-	assert(err==0);
+	if(err!=0) printf("Error setting cs pin value!\n");
 	usleep(10);
 	if (status==0)
 	{
