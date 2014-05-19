@@ -111,19 +111,35 @@ int bitbang_read(unsigned int cs_pin,
 	if(err!=0) printf("Error reading status pin!\n");
 	unsigned int bit = LOW;
 
-	char value;
 	for (int c=0; c < 16 ; c++)
 	{
-		write(fd_CLK,"1",2);
+
+#if 1
+		// This implementation is re-opening the device files every clock edge:
+		err = gpio_set_value(CLK_PIN, HIGH);
+		if(err!=0) printf("Error setting clock pin value!\n");
+
+		for(int c0=0; c0<1000; c0++);
+		err = gpio_get_value(MISO_PIN, &bit);
+		if(err!=0) printf("Error getting miso pin value!\n");
+
+		err = gpio_set_value(CLK_PIN, LOW);
+		assert(err==0);
+		for(int c1=0; c1<1000; c1++);
+#else
+		// This implementation re-uses the already opened device files.
+		writr(fd_CLK,"1",2);
 
 		for(int c0=0; c0<1000; c0++);
 
+		char value;
 		read(fd_MISO,&value,1);
 		bit = value == '1';
 
 		write(fd_CLK,"0",2);
 
 		for(int c1=0; c1<1000; c1++);
+#endif
 
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
