@@ -1,5 +1,11 @@
+ifdef CAROUSEL1
+ifdef PC
+
 SO_NAME = EncoderTypekit
 
 include_rules
 : foreach *.cpp |> !cxx_orocos |>
 : *.o |> !ld_orocos_custom |> 
+
+endif
+endif

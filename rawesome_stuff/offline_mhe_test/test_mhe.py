@@ -109,7 +109,7 @@ if plot_speed:
 # Get the plane configuration parameters
 conf = makeConf()
 conf['stabilize_invariants'] = True
-daeSim = carouselModel.makeModel(conf, propertiesDir = '../../properties')
+dae = carouselModel.makeModel(conf, propertiesDir = '../../properties')
 
 # Create the MHE class
 mheRT = MHE.makeMheRT(Ts = Ts)
@@ -176,7 +176,7 @@ ref_dict = {
 #            }
 
 # Get the steady state
-steadyState,dSS = getSteadyState(daeSim, conf, refP['ddelta0'], refP['r0'], ref_dict)
+steadyState,dSS = getSteadyState(dae, conf, refP['ddelta0'], refP['r0'], ref_dict)
 
 # Utility functions
 def getDeltaRange(delta0, kRange):
@@ -319,7 +319,7 @@ for k in range(12):
 # Number of simulations steps
 nSim = 1
 # Maximum number of SQP iterations
-nSqp = 5
+nSqpMhe = 5
 # Initialized flag
 initialized = False
 
@@ -343,7 +343,7 @@ for itSim in range( nSim ):
 		# Shift measurements
 # 		mheRT.simpleShiftReference(y_Nm1, yN)
 	
-	for itSqp in range( nSqp ):
+	for itSqp in range( nSqpMhe ):
 		mheRT.preparationStep()
 		mheRT.feedbackStep()
 	
@@ -362,7 +362,7 @@ exit( 0 )
 ###############################################################################
 
 # This is just a quick hack to make the class constructor happy
-sim = rawe.RtIntegrator(daeSim, ts = Ts, options = MHE.mheIntOpts)
+sim = rawe.RtIntegrator(dae, ts = Ts, options = MHE.mheIntOpts)
 
 plotter = Plotter(sim, mheRT, sim)
 

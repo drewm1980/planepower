@@ -15,11 +15,33 @@ using namespace RTT::os;
 
 /// Size of the IMU data buffer size
 #define MAX_NUM_IMU_SAMPLES 100
+/// Size of the LAS data buffer size
+#define MAX_NUM_LAS_SAMPLES 100
+/// Maxumum number of failures when we start the MHE
+#define MAX_NUM_FAILURES (2 * ACADO_N)
 
 /// Check port connection
 #define checkPortConnection( port ) \
 	if (port.connected() == false) \
 	{log( Error ) << "Port " << port.getName() << " is not connected." << endlog(); return false;}
+
+/// For internal use
+enum DynamicMheErrorCodes
+{
+	ERR_OK = 0,
+	ERR_NANS,
+	ERR_QP_STATUS,
+	ERR_MEAS_FAILED
+};
+
+static bool isNaN(double* array, unsigned dim)
+{
+	for (unsigned i = 0; i < dim; ++i)
+		if ((array[ i ] != array[ i ]) || (array[ i ] < -1e12) || (array[ i ] > 1e12))
+			return true;
+
+	return false;	
+}
 
 DynamicMhe::DynamicMhe(std::string name)
 	: TaskContext(name, PreOperational)
@@ -59,7 +81,7 @@ DynamicMhe::DynamicMhe(std::string name)
 	debugData.enc_data.resize(3, 0.0);
 	debugData.cam_markers.resize(12, 0.0);
 	debugData.cam_pose.resize(12, 0.0);
-	debugData.las_data.resize(2, 0.0);
+	debugData.las_avg.resize(2, 0.0);
 	debugData.winch_data.resize(3, 0.0);
 	debugData.controls_avg.resize(3, 0.0);
 
@@ -67,6 +89,7 @@ DynamicMhe::DynamicMhe(std::string name)
 	portDebugData.write( debugData );
 
 	imuData.resize( MAX_NUM_IMU_SAMPLES );
+	lasData.resize( MAX_NUM_LAS_SAMPLES );
 }
 
 bool DynamicMhe::configureHook()
@@ -99,15 +122,22 @@ bool DynamicMhe::startHook()
 
 	runCnt = 0;
 
+	numOfFailures = 0;
+
 	return true;
 }
 
 void DynamicMhe::updateHook()
 {
 	TIME_TYPE prepStart, fdbStart;
+	bool runMhe = false;
 
-	debugData.ts_entry = stateEstimate.ts_entry = TimeService::Instance()->getTicks();
+	debugData.ts_entry = TimeService::Instance()->getTicks();
 	
+	// Reset the error codes
+	errorCode = ERR_OK;
+	mheStatus = 0;
+
 	// Read the trigger port
 	TIME_TYPE trigger;
 	portTrigger.read( trigger );
@@ -115,27 +145,38 @@ void DynamicMhe::updateHook()
 	
 	// Read and prepare sensor data
 	if (prepareMeasurements() == false)
-		exception();
+	{
+		if (runCnt > 0 and ++numOfFailures > MAX_NUM_FAILURES)
+		{
+			errorCode = ERR_MEAS_FAILED;
+			stop();
+		}
+		else
+			goto DynamicMheUpdateHookExit;
+	}
 	
 	//
 	// MHE "state-machine"
 	//
-	
-	bool runMhe = false;
 	
 	if (runCnt < N)
 	{
 		for (unsigned i = 0; i < NY; ++i)
 			acadoVariables.y[runCnt * NY + i] = execY[ i ];
 
-		int ledInd = runCnt - mhe_ndelay;
-		if (ledInd >= 0)
+#ifdef offset_marker_positions
+		if (debugData.num_cam_samples > 0)
 		{
-			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
-			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+			int ledInd = runCnt - debugData.dbg_cam_delay;
+			if (ledInd >= 0)
+			{
+				for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+					acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+				for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+					acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+			}
 		}
+#endif
 
 		int cableInd = runCnt - debugData.dbg_winch_delay;
 		if (cableInd >= 0)
@@ -162,12 +203,16 @@ void DynamicMhe::updateHook()
 			acadoVariables.yN[ i ] = execYN[ i ];
 
 		// Embed marker positions
-		// TODO In principle, we do not need mhe_ndelay, it is calculated
-		int ledInd = N - mhe_ndelay;
-		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-			acadoVariables.y[ledInd * NY + el] = ledData[ i ];
-		for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
-			acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+#ifdef offset_marker_positions
+		if (debugData.num_cam_samples > 0)
+		{
+			int ledInd = N - debugData.dbg_cam_delay;
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.y[ledInd * NY + el] = ledData[ i ];
+			for (unsigned i = 0, el = offset_marker_positions; i < mhe_num_markers; ++i, ++el)
+				acadoVariables.W[ledInd * NY * NY + el * NY + el] = ledWeights[ i ];
+		}
+#endif
 
 		// Embed winch measurement
 		int cableInd = N - debugData.dbg_winch_delay;
@@ -201,6 +246,12 @@ void DynamicMhe::updateHook()
 		// Execute feedback step of the RTI scheme
 		mheStatus = feedbackStep();
 
+		if (isNaN(acadoVariables.x, NX * (N + 1)) == true || isNaN(acadoVariables.u, NU * N) == true)
+		{
+			mheStatus = -100;
+			errorCode = ERR_NANS;
+		}
+
 		stateEstimate.ready = debugData.ready = mheStatus ? false : true;
 			
 		// Copy the current state estimate to the output port
@@ -210,7 +261,7 @@ void DynamicMhe::updateHook()
 		//
 		// Output the current state estimate
 		//
-		stateEstimate.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+		stateEstimate.ts_trigger = TimeService::Instance()->getTicks();
 		portStateEstimate.write( stateEstimate );
 	}
 	debugData.exec_fdb = TimeService::Instance()->secondsSince( fdbStart );
@@ -252,18 +303,46 @@ void DynamicMhe::updateHook()
 	}
 	debugData.exec_prep = TimeService::Instance()->secondsSince( prepStart );
 
+DynamicMheUpdateHookExit:
+
 	//
 	// Output debug data to the port
 	//
 	debugData.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDebugData.write( debugData );
 
-	if ( mheStatus )
-		exception();
+	if (mheStatus and errorCode == ERR_OK)
+		errorCode = ERR_QP_STATUS;
+	if (errorCode != ERR_OK)
+		stop();
 }
 
 void DynamicMhe::stopHook()
-{}
+{
+	Logger::In in( getName() );
+
+	switch( errorCode )
+	{
+	case ERR_OK:
+		log( Info ) << "Successfully stopped." << endlog();
+		break;
+	case ERR_NANS:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": NANs detected in the estimator structures." << endlog();
+		break;
+	case ERR_QP_STATUS:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": mHE returned error code " << mheStatus << "." << endlog();
+		break;
+	case ERR_MEAS_FAILED:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": gathering of measurements failed." << endlog();
+		break;
+	default:
+		log( Error ) << "Runtime counter " << runCnt
+					 << ": unknown error." << endlog();
+	}
+}
 
 void DynamicMhe::cleanupHook()
 {}
@@ -273,7 +352,9 @@ void DynamicMhe::errorHook()
 
 void DynamicMhe::exceptionHook()
 {
-	log( Error ) << "Exception happened..." << endlog();
+	Logger::In in( getName() );
+	
+	log( Error ) << "Unknown exception happened..." << endlog();
 	// Try to recover the component ...
 	recover();
 }
@@ -286,7 +367,6 @@ bool DynamicMhe::prepareMeasurements( void )
 	
 	// It is assumed that this port will be buffered
 	unsigned numImuSamples = 0;
-
 	while ((numImuSamples < MAX_NUM_IMU_SAMPLES) && (portMcuHandlerData.read( imuData[ numImuSamples ] ) == NewData))
 		numImuSamples++;
 
@@ -305,7 +385,12 @@ bool DynamicMhe::prepareMeasurements( void )
 				// We do not use weights from Andrew, but
 				// from rawesome simulation...
 				//ledWeights[ i ] = camData.weights[ i ];
+#ifdef offset_marker_positions
 				ledWeights[ i ] = weight_marker_positions;
+#else
+				ledWeights[ i ] = 0.0;
+#endif
+
 			}
 			else
 			{
@@ -316,7 +401,9 @@ bool DynamicMhe::prepareMeasurements( void )
 		for (unsigned i = 0; i < camData.weights.size(); ++i)
 			ledData[ i ] = ledWeights[ i ] = 0.0;
 	
-	FlowStatus lasStatus = portLASData.read( lasData );
+	unsigned numLasSamples = 0;
+	while ((numLasSamples < MAX_NUM_LAS_SAMPLES) && (portLASData.read( lasData[ numLasSamples ] ) == NewData))
+		numLasSamples++;
 
 	FlowStatus winchStatus = portWinchData.read( winchData );
 	cableLength = winchData.length * (double)(winchStatus == NewData);
@@ -327,6 +414,7 @@ bool DynamicMhe::prepareMeasurements( void )
 	//
 	// Average data that come from MCU handler component
 	//
+	
 	debugData.imu_first[ 0 ] = imuData[numImuSamples - 1].gyro_x;
 	debugData.imu_first[ 1 ] = imuData[numImuSamples - 1].gyro_y;
 	debugData.imu_first[ 2 ] = imuData[numImuSamples - 1].gyro_z;
@@ -338,8 +426,17 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ i ] = 0.0;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
 		debugData.controls_avg[ i ] = 0.0;
+	
+	double prevTimestamp = debugData.ts_trigger - mhe_sampling_time * 1e9;
+
+	// Average IMU and ctrl surfaces data
+	unsigned numImuSamplesReal = 0;
 	for (unsigned i = 0; i < numImuSamples; ++i)
 	{
+		// There can be some garbage in the buffer
+		if (imuData[ i ].ts_trigger < prevTimestamp)
+			continue;
+
 		debugData.imu_avg[ 0 ] += imuData[ i ].gyro_x;
 		debugData.imu_avg[ 1 ] += imuData[ i ].gyro_y;
 		debugData.imu_avg[ 2 ] += imuData[ i ].gyro_z;
@@ -347,24 +444,55 @@ bool DynamicMhe::prepareMeasurements( void )
 		debugData.imu_avg[ 4 ] += imuData[ i ].accl_y;
 		debugData.imu_avg[ 5 ] += imuData[ i ].accl_z;
 
-		debugData.controls_avg[ 0 ] += imuData[ i ].ua1;
-		debugData.controls_avg[ 1 ] += imuData[ i ].ua2;
-		debugData.controls_avg[ 2 ] += imuData[ i ].ue;
+		debugData.controls_avg[ 0 ] += imuData[ i ].ctrl.ua1;
+		debugData.controls_avg[ 1 ] += imuData[ i ].ctrl.ua2;
+		debugData.controls_avg[ 2 ] += imuData[ i ].ctrl.ue;
+
+		++numImuSamplesReal;
 	}
 	for (unsigned i = 0; i < debugData.imu_avg.size(); ++i)
-		debugData.imu_avg[ i ] /= (double)numImuSamples;
+		debugData.imu_avg[ i ] /= (double)numImuSamplesReal;
 	for (unsigned i = 0; i < debugData.controls_avg.size(); ++i)
-		debugData.controls_avg[ i ] /= (double)numImuSamples;
+		debugData.controls_avg[ i ] /= (double)numImuSamplesReal;
+
+	// Average LAS data
+	unsigned numLasSamplesReal = 0;
+	for (unsigned i = 0; i < debugData.las_avg.size(); debugData.las_avg[ i++ ] = 0.0);
+	for (unsigned i = 0; i < numLasSamples; ++i)
+	{
+		// There can be some garbage in the buffer
+		if (lasData[ i ].ts_trigger < prevTimestamp)
+			continue;
+
+		debugData.las_avg[ 0 ] += lasData[ i ].angle_hor;
+		debugData.las_avg[ 1 ] += lasData[ i ].angle_ver;
+
+		++numLasSamplesReal;
+	}
+	for (unsigned i = 0; i < debugData.las_avg.size(); ++i)
+		debugData.las_avg[ i ] /= (double)numLasSamplesReal;
+
 
 	//
 	// Some debug stuff, record number of measurements we got
 	//
 	
-	debugData.num_imu_samples = numImuSamples;
+	debugData.num_imu_samples = numImuSamplesReal;
 	debugData.num_enc_samples = (encStatus == NewData);
 	debugData.num_cam_samples = (camStatus == NewData);
-	debugData.num_las_samples = (lasStatus == NewData);
+	debugData.num_las_samples = numLasSamplesReal;
 	debugData.num_winch_samples = (winchStatus == NewData);
+
+	//
+	// If we got no measurements from the IMU or LAS, abort
+	//
+	if (numImuSamplesReal == 0)
+		return false;
+
+#ifdef offset_lineAngles
+	if (numLasSamplesReal == 0)
+		return false;
+#endif
 	
 	//
 	// Prepare the sensor data
@@ -381,6 +509,11 @@ bool DynamicMhe::prepareMeasurements( void )
 	// Control surfaces; TODO we might skip this!
 	execY[ offset_aileron  ] = debugData.controls_avg[ 0 ]; // TODO check signs
 	execY[ offset_elevator ] = debugData.controls_avg[ 2 ]; // TODO check signs
+
+#ifdef offset_lineAngles
+	execY[offset_lineAngles + 0] = debugData.las_avg[ 0 ]; // angle_hor
+	execY[offset_lineAngles + 1] = debugData.las_avg[ 1 ]; // angle_ver
+#endif
 	
 	// r, dr, ddr
 	// Measurement for cable length "r" is embedded the same way we do
@@ -441,16 +574,12 @@ bool DynamicMhe::prepareDebugData( void )
 	copy(camData.positions.begin(), camData.positions.end(), debugData.cam_markers.begin());
 	copy(camData.pose.begin(), camData.pose.end(), debugData.cam_pose.begin());
 
-	debugData.las_data[ 0 ] = lasData.angle_hor;
-	debugData.las_data[ 1 ] = lasData.angle_ver;
-
 	return true;
 }
 
 bool DynamicMhe::prepareWeights( void )
 {
 	// XXX Weights for markers are done in a different way, by dflt = 0.0
-	// TODO Now that we generate offsets, remove offset inc stuff
 
 	for (unsigned el = 0; el < NY; mheWeights[ el++ ] = 0.0);
 
@@ -472,6 +601,23 @@ bool DynamicMhe::prepareWeights( void )
 
 	mheWeights[ offset_dmotor_torque ] = weight_dmotor_torque;
 	mheWeights[ offset_dddr ] = weight_dddr;
+
+#ifdef offset_dt1_disturbance
+	mheWeights[ offset_dt1_disturbance ] = weight_dt1_disturbance;
+	mheWeights[ offset_dt2_disturbance ] = weight_dt2_disturbance;
+	mheWeights[ offset_dt3_disturbance ] = weight_dt3_disturbance;
+#endif // offset_dt1_disturbance
+
+#ifdef offset_df1_disturbance
+	mheWeights[ offset_df1_disturbance ] = weight_df1_disturbance;
+	mheWeights[ offset_df2_disturbance ] = weight_df2_disturbance;
+	mheWeights[ offset_df3_disturbance ] = weight_df3_disturbance;
+#endif // offset_df1_disturbance
+
+#ifdef offset_lineAngles
+	mheWeights[offset_lineAngles + 0] = weight_lineAngles;
+	mheWeights[offset_lineAngles + 1] = weight_lineAngles;
+#endif
 
 	// Here we setup dflt values for weighting matrices
 	for (unsigned blk = 0; blk < N; ++blk)
@@ -501,26 +647,17 @@ bool DynamicMhe::prepareInitialGuess( void )
 		for (unsigned el = 0; el < NX; ++el)
 			acadoVariables.x[blk * NX + el] = ss_x[ el ];
 
-	// Initialize cos_delta and sin_delta from measurements:
+	// Initialize cos_delta and sin_delta by simulation from the first
+	// measurement using precomputed steady-state speed
+	double ddelta_ss = ss_x[ idx_ddelta ];
+	double angle = atan2(acadoVariables.y[ offset_sin_delta ], acadoVariables.y[ offset_cos_delta ]);
 
-	// Nodes 0.. N - 1
-	for (unsigned blk = 0; blk < N; ++blk)
-		for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
-			acadoVariables.x[blk * NX + el] = acadoVariables.y[blk * NY + yIt];
-
-	// Node N
-	// Take cos_delta and sin_delta from the last row from y and based on the 
-	// steady state speed construct initial guess for the last node
-	
-	double angle = atan2(acadoVariables.x[(N - 1) * NX + idx_sin_delta],
-						 acadoVariables.x[(N - 1) * NX + idx_cos_delta]);
-	angle += ss_x[ idx_ddelta ] * mhe_sampling_time;
-	acadoVariables.x[N * NX + idx_cos_delta] = cos( angle );
-	acadoVariables.x[N * NX + idx_sin_delta] = sin( angle );
-
-//	// Last node must be initialized from yN
-//	for (unsigned el = NX - 2, yIt = mhe_num_markers; el < NX; ++el, ++yIt)
-//		acadoVariables.x[N * NX + el] = acadoVariables.yN[ yIt ];
+	for (unsigned blk = 0; blk < N + 1; ++blk)
+	{
+		acadoVariables.x[blk * NX + idx_cos_delta] = cos( angle );
+		acadoVariables.x[blk * NX + idx_sin_delta] = sin( angle );
+		angle += mhe_sampling_time * ddelta_ss;
+	}
 
 	//
 	// Initialize algebraic variables

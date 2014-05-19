@@ -15,8 +15,6 @@ namespace boost
 			using boost::serialization::make_nvp;
 			
 			a & make_nvp("ts_trigger", l.ts_trigger);
-			a & make_nvp("ts_entry", l.ts_entry);
-			a & make_nvp("ts_elapsed", l.ts_elapsed);
 
 			a & make_nvp("ready", l.ready);
 			a & make_nvp("x_hat", l.x_hat);
@@ -60,7 +58,7 @@ namespace boost
 			a & make_nvp("enc_data", l.enc_data);
 			a & make_nvp("cam_markers", l.cam_markers);
 			a & make_nvp("cam_pose", l.cam_pose);
-			a & make_nvp("las_data", l.las_data);
+			a & make_nvp("las_avg", l.las_avg);
 			a & make_nvp("winch_data", l.winch_data);
 			a & make_nvp("controls_avg", l.controls_avg);
 

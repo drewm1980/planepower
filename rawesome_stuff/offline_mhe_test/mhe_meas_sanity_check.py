@@ -38,6 +38,8 @@ import scipy.io as sio
 #data = sio.loadmat('dataset_20130831_200853_kmhe_timings.mat')
 data = sio.loadmat('dataset_20140206_185035_dmhe_testing.mat')
 
+data = sio.loadmat('dataset_20140403_160157_dmhe_testing.mat')
+
 # #samples, representing camera delay
 nDelay = 2
 
@@ -85,12 +87,18 @@ plt.plot(logR * cam_flag[ k ], 'or')
 
 plt.figure()
 plt.subplot(3, 1, 1)
-plt.plot(cam_time, cam_rpy[:, 0], 'or')
+plt.plot(cam_rpy[:, 0], 'or')
 plt.subplot(3, 1, 2)
-plt.plot(cam_time, cam_rpy[:, 1], 'og')
+plt.plot(cam_rpy[:, 1], 'og')
 plt.subplot(3, 1, 3)
-plt.plot(cam_time, cam_rpy[:, 2], 'ob')
+plt.plot(cam_rpy[:, 2], 'ob')
+
+plt.figure()
+plt.subplot(3, 1, 1)
+plt.plot( control_surf[:, 0] )
+plt.subplot(3, 1, 2)
+plt.plot( control_surf[:, 1] )
+plt.subplot(3, 1, 3)
+plt.plot( control_surf[:, 2] )
 
 plt.show()
-
-

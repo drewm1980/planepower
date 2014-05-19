@@ -75,7 +75,7 @@ Tf = 50.0   # Simulation duration
 
 # Reference parameters
 refP = {'r0':2,
-        'ddelta0':2*numpy.pi}
+        'ddelta0':4}
 
 # utility function
 def getDeltaRange(delta0, kRange):

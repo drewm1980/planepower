@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 CC = gcc
 CXX = g++
@@ -10,3 +13,6 @@ LDFLAGS_OROCOS+= -Wl,-rpath,$PLANEPOWER_ROOT/components/carousel1/soem_core/
 LDFLAGS_OROCOS+=-lsoem_core
 
 : ../*.o | ../../soem_core/libsoem_core.so ../../soem_master/lib/libsoem_driver_factory.so |> !ld_orocos |> soem_ebox.so
+
+endif
+endif

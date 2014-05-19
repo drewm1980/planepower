@@ -111,6 +111,7 @@ void DynamicMheTelemetry::fill()
 	msg.set_solver_status( data.solver_status );
 	msg.set_kkt_value( data.kkt_value );
 	msg.set_obj_value( data.obj_value );
+	msg.set_n_asc( data.n_asc );
 
 	msg.set_exec_fdb( data.exec_fdb );
 	msg.set_exec_prep( data.exec_prep );

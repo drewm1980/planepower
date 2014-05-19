@@ -28,13 +28,12 @@ public:
 	/// Trigger the component to write the current control value
 	RTT::InputPort< TIME_TYPE > portTrigger;
 	/// Connect this to the mcuHandler
-	RTT::OutputPort< std::vector< double > > portControls;
+	RTT::OutputPort< ControlSurfacesValues > portControls;
 
-	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+	void setControlsUnitless(float right_aileron, float left_aileron, float elevator);
 	
 	// Holder for the control action to be send
-	std::vector< double > controls; // In radians!!!
-
+	ControlSurfacesValues controls; // In radians!!!
 };
 
 #endif

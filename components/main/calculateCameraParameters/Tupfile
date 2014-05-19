@@ -1,4 +1,10 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 CPPFLAGS_OROCOS +=-I/usr/include/eigen3
 #: foreach *.cpp |> !cxx_orocos |>
 #: *.o |> !ld_orocos |> 
+
+endif
+endif

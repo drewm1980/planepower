@@ -10,6 +10,22 @@ namespace boost
 	namespace serialization
 	{
 		template< class Archive >
+		void serialize(Archive& a, ControlSurfacesValues& l, unsigned int)
+		{
+			using boost::serialization::make_nvp;
+			
+			a & make_nvp("ua1", l.ua1);
+			a & make_nvp("ua2", l.ua2);
+			a & make_nvp("ue", l.ue);
+
+			a & make_nvp("d_ua1", l.d_ua1);
+			a & make_nvp("d_ua2", l.d_ua2);
+			a & make_nvp("d_ue", l.d_ue);
+
+			a & make_nvp("der_ctrl", l.der_ctrl);
+		}
+
+		template< class Archive >
 		void serialize(Archive& a, McuHandlerDataType& mht, unsigned int)
 		{
 			using boost::serialization::make_nvp;
@@ -22,9 +38,7 @@ namespace boost
 			a & make_nvp("accl_y", mht.accl_y);
 			a & make_nvp("accl_z", mht.accl_z);
 			
-			a & make_nvp("ua1", mht.ua1);
-			a & make_nvp("ua2", mht.ua2);
-			a & make_nvp("ue", mht.ue);
+			a & make_nvp("ctrl", mht.ctrl);
 			
 			a & make_nvp("ts_trigger", mht.ts_trigger);
 			a & make_nvp("ts_elapsed", mht.ts_elapsed);
@@ -37,6 +51,14 @@ struct McuHandlerDataTypeInfo
 {
 	McuHandlerDataTypeInfo()
 		: RTT::types::StructTypeInfo< McuHandlerDataType >( "McuHandlerData" )
+	{}
+};
+
+struct ControlSurfacesValuesTypeInfo
+	: public RTT::types::StructTypeInfo< ControlSurfacesValues >
+{
+    ControlSurfacesValuesTypeInfo()
+		: RTT::types::StructTypeInfo< ControlSurfacesValues >( "ControlSurfacesValues" )
 	{}
 };
 

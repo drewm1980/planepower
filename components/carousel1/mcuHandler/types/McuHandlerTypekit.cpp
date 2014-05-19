@@ -8,6 +8,7 @@ std::string McuHandlerTypekit::getName()
 bool McuHandlerTypekit::loadTypes()
 {
 	RTT::types::Types()->addType(new McuHandlerDataTypeInfo());
+	RTT::types::Types()->addType(new ControlSurfacesValuesTypeInfo());
 
 	return true;
 }

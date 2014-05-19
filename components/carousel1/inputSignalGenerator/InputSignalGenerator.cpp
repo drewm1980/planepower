@@ -21,17 +21,26 @@ InputSignalGenerator::InputSignalGenerator(string name)
 	addPort("data", portData)
 		.doc("Input data for the airplane...");
 
-	data.resize(3, 0.0);
+	data.reset();
 	portData.setDataSample( data );
 	portData.write( data );
 
 	addProperty("fsine", fsine)
-		.doc("Frequency of the sine wave");
+		.doc("Frequency of the sine wave [Hz]");
 	fsine = 0.0;
 
 	addProperty("amplitude", amplitude)
-		.doc("Amplitude of the sine wave");
-	amplitude = 0.2;
+		.doc("Amplitude of the sine wave [rad]");
+	amplitude = 0.05;
+
+	aileron = elevator = 0.0;
+	addProperty("aileron", aileron)
+		.doc("Value of the aileron angle [rad]");
+	addProperty("elevator", elevator)
+		.doc("Value of the elevator angle [rad]");
+
+	addOperation("reset", &InputSignalGenerator::reset, this, OwnThread)
+		.doc("Reset control surfaces to zero");
 }
 
 bool InputSignalGenerator::configureHook()
@@ -42,12 +51,6 @@ bool InputSignalGenerator::configureHook()
 	if (abs( Ts ) < 1e-10)
 	{
 		log( Error ) << "This component must be periodic" << endlog();
-		return false;
-	}
-
-	if (fsine < 0.0)
-	{
-		log( Error ) << "Nope, frequency has to be a positive number" << endlog();
 		return false;
 	}
 	
@@ -74,21 +77,19 @@ void InputSignalGenerator::updateHook()
 
 	if (abs(fsine) > 1e-4)
 	{
-		data[ 0 ] = amplitude * sin_angle;
-		data[ 1 ] = amplitude * sin_angle;
-		data[ 2 ] = 0.0;
+		aileron  = amplitude * sin_angle;
+		elevator = 0.0;
 	}
-	else
-	{
-		data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
-	}
+
+	data.ua1 = data.ua2 = aileron;
+	data.ue = elevator;
 
 	portData.write( data );
 }
 
 void InputSignalGenerator::stopHook()
 {
-	data[ 0 ] = data[ 1 ] = data[ 2 ] = 0.0;
+	data.reset();
 	portData.write( data );
 }
 
@@ -97,5 +98,10 @@ void InputSignalGenerator::errorHook()
 
 void InputSignalGenerator::cleanupHook()
 {}
+
+void InputSignalGenerator::reset()
+{
+	fsine = aileron = elevator = 0.0;
+}
 
 ORO_CREATE_COMPONENT( InputSignalGenerator )
