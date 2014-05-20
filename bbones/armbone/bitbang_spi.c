@@ -104,7 +104,6 @@ int bitbang_read(unsigned int cs_pin,
 	gpio_set_value(cs_pin, LOW);
 	uint16_t rsp = 0;
 
-	usleep(10);	
 	unsigned int status = 0;
 	int err;
 	err = gpio_get_value(status_pin, &status);
@@ -114,7 +113,7 @@ int bitbang_read(unsigned int cs_pin,
 	for (int c=0; c < 16 ; c++)
 	{
 
-#if 1
+#if 0
 		// This implementation is re-opening the device files every clock edge:
 		err = gpio_set_value(CLK_PIN, HIGH);
 		if(err!=0) printf("Error setting clock pin value!\n");
@@ -128,26 +127,17 @@ int bitbang_read(unsigned int cs_pin,
 		for(int c1=0; c1<1000; c1++);
 #else
 		// This implementation re-uses the already opened device files.
-		writr(fd_CLK,"1",2);
-
-		for(int c0=0; c0<1000; c0++);
-
+		write(fd_CLK,"1",2);
 		char value;
-		read(fd_MISO,&value,1);
+		pread(fd_MISO,&value,1,0);  // pread to reset the file pointer to the beginning before reading
 		bit = value == '1';
-
 		write(fd_CLK,"0",2);
-
-		for(int c1=0; c1<1000; c1++);
 #endif
-
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
 	}
-	usleep(10);
 	err = gpio_set_value(cs_pin, HIGH);
 	assert(err==0);
-	usleep(10);
 	if (status==0)
 	{
 		printf("Warning! Line angle sensor reports bad status; probably misalignmened?!!!\n");

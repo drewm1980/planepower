@@ -20,6 +20,7 @@ CFLAGS += -std=gnu99
 
 : test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
 
+# Test code that generates a fast software clock
 : bitbang_clock.c |> !cc |>
 : bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock
 
