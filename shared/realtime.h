@@ -1,42 +1,9 @@
-// This header enables RealTime conditions
+// NO INCLUDE GUARD.  These functions do NOT support nesting,
+// i.e. if you ~do nest them, the last part of the outer enable/disable
+// region will NOT be realtime!
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/resource.h>
-#include <sys/time.h>
+// Set process piority to realtime and pin cpu clock speed to maximum for first core
+void realtime_enable();
+void realtime_disable();
+void realtime_print_priority();
 
-void enableRT() {
-	system("cpufreq-set -g performance");
-	int pid = (int) getpid();
-	char pid_str[20];
-	sprintf(pid_str, "%d", pid);
-	char cmd[80];
-	strcpy(cmd, "chrt -f -p 99 ");
-	strcat(cmd, pid_str);
-	system(cmd);
-	usleep(300);
-}
-
-void disableRT() {
-	system("cpufreq-set -g ondemand");
-	int pid = getpid();
-	char pid_str[20];
-	sprintf(pid_str, "%d", pid);
-	char cmd[80];
-	strcpy(cmd, "chrt -o -p ");
-	strcat(cmd, pid_str);
-	system(cmd);
-	usleep(300);
-}
-
-void printPrio() {
-	int which = PRIO_PROCESS;
-	id_t pid;
-	int ret;
-
-	pid = getpid();
-	ret = getpriority(which, 0);
-	printf("Current Priority is: %i \n", ret);
-}

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# See readme_realtime.txt
+
 from time import time, sleep
 import os
 
@@ -15,7 +17,7 @@ def busy_sleep(dt):
 def enable():
 	os.system('cpufreq-set -g performance') # Max out cpu clock speed
 	pid = os.getpid()
-	prio = 99
+	prio = 51
 	# Set FIFO scheduler, realtime priority
 	os.system('chrt -f -p ' + str(prio) + ' ' + str(pid)) 
 	sleep(300*.000001) # cpufreq-info says the transition latency is 300 us.
