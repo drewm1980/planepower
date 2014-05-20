@@ -20,16 +20,18 @@ def read_angle_sensors():
 
 if __name__=="__main__":
 	realtime.enable()
+	str = "Avg. time in sec: "
 	t0 = time()
-	str = "Time in sec: "
-	for i in range(1,101):
-		realtime.sleep(.001)
-		t1 = time()-t0
+	for i in range(1,1001):
+		#realtime.sleep(.001)
+		#t1 = time()-t0
 		a,b = read_angle_sensors()
-		t2 = time()-t0
-		t3 = t2 - t1
-		print a,b,str,t3
+		#t2 = time()-t0
+		#t3 = t2 - t1
+		#print a,b,str,t3
 		#print t1,t2,a,b,t3
+	t3 = (time() - t0)/1000
+	print str, t3
 	realtime.disable()
 
 

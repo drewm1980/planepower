@@ -15,7 +15,11 @@
 #include "encoder_calibration.h"
 #include "bitbang_spi.h"
 
-int fd_CS0, fd_CS1, fd_MISO, fd_CLK;
+int fd_CS0, fd_CS1, fd_MISO, fd_CLK, fd_AZ_STATUS, fd_EL_STATUS;
+
+static float raw_to_radians(uint16_t raw);
+static void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_raw,
+			float *azimuth_radians, float *elevation_radians);
 
 void bitbang_init()
 {
@@ -60,11 +64,16 @@ void bitbang_init()
 	fd_CS1 = open(CS1_VALUE_FILE,O_RDWR);
 	fd_MISO  = open(MISO_VALUE_FILE,O_RDWR);
 	fd_CLK = open(CLK_VALUE_FILE,O_RDWR);
+	fd_AZ_STATUS = open(AZ_STATUS_VALUE_FILE,O_RDONLY);
+	fd_EL_STATUS = open(EL_STATUS_VALUE_FILE,O_RDONLY);
+
 	printf(CS0_VALUE_FILE "\n");
 	if (fd_CS0 == -1){ printf("Couldn't open CS0 device file!!!\n"); exit(EXIT_FAILURE);}
 	if (fd_CS1 == -1){ printf("Couldn't open CS1 device file!!!\n"); exit(EXIT_FAILURE);}
 	if (fd_MISO  == -1){ printf("Couldn't open MISO device file!!!\n"); exit(EXIT_FAILURE);}
 	if (fd_CLK == -1){ printf("Couldn't open CLK device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_AZ_STATUS == -1){ printf("Couldn't open AZIMUTH_STATUS device file!!!\n"); exit(EXIT_FAILURE);}
+	if (fd_EL_STATUS == -1){ printf("Couldn't open ELEVATION_STATUS device file!!!\n"); exit(EXIT_FAILURE);}
 }    
 void bitbang_close()
 {
@@ -90,6 +99,10 @@ void bitbang_close()
 	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
 	err = close(fd_CLK); 
 	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
+	err = close(fd_AZ_STATUS); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
+	err = close(fd_EL_STATUS); 
+	if (err==-1) {printf("Unable to close a device file!\n"); exit(EXIT_FAILURE);};
 }
 
 
@@ -97,22 +110,38 @@ void bitbang_close()
 // Inputs are the numbers of pins... not sure where they're documented...
 // Output is the raw encoder value.
 // Return value:  Zero if no error, 1 if encoder has bad status during read
-int bitbang_read(unsigned int cs_pin,
+static inline int bitbang_read(unsigned int cs_pin,
 		unsigned int status_pin,
 		uint16_t *rsp_raw)
 {
-	gpio_set_value(cs_pin, LOW);
+	_Bool cs0 = cs_pin == CS0_PIN;
+	_Bool azimuthStatus = status_pin == AZIMUTH_STATUS_PIN;
+	// gpio_set_value(cs_pin, LOW);
+	if (cs0) {
+		write(fd_CS0, "0", 2);	
+	} else {
+		write(fd_CS1, "0", 2);	
+	}
+
 	uint16_t rsp = 0;
 
 	unsigned int status = 0;
-	int err;
-	err = gpio_get_value(status_pin, &status);
-	if(err!=0) printf("Error reading status pin!\n");
+	// int err;
+
+	//err = gpio_get_value(status_pin, &status);
+	char status_char;
+	if (azimuthStatus) {
+		pread(fd_AZ_STATUS, &status_char, 1, 0);
+	} else {
+		pread(fd_EL_STATUS, &status_char, 1, 0);
+	}
+	if (status_char == '1') status = 1;
+
+	// if(err!=0) printf("Error reading status pin!\n");
 	unsigned int bit = LOW;
 
 	for (int c=0; c < 16 ; c++)
 	{
-
 #if 0
 		// This implementation is re-opening the device files every clock edge:
 		err = gpio_set_value(CLK_PIN, HIGH);
@@ -136,8 +165,13 @@ int bitbang_read(unsigned int cs_pin,
 		rsp = rsp<<1;		
 		rsp = rsp + bit;
 	}
-	err = gpio_set_value(cs_pin, HIGH);
-	assert(err==0);
+	if (cs0) {
+		write(fd_CS0, "1", 2);
+	} else {
+		write(fd_CS1, "1", 2);
+	}
+	// err = gpio_set_value(cs_pin, HIGH);
+	// assert(err==0);
 	if (status==0)
 	{
 		printf("Warning! Line angle sensor reports bad status; probably misalignmened?!!!\n");
@@ -149,14 +183,14 @@ int bitbang_read(unsigned int cs_pin,
 	return !status;
 }
 
-float raw_to_radians(uint16_t raw)
+static inline float raw_to_radians(uint16_t raw)
 {
 	const unsigned int counts = 0x1 << 16;
 	const float rescale = 2.0*3.1415 / counts;
 	return ((float)raw) * rescale;
 }
 
-void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_raw,
+static inline void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_raw,
 			float *azimuth_radians, float *elevation_radians)
 {
 	// Correct for the offsets and add the angles
@@ -166,14 +200,6 @@ void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_raw,
 	// Convert to angles in radians
 	*azimuth_radians = raw_to_radians(azimuth_raw);
 	*elevation_radians = raw_to_radians(elevation_raw);
-}
-
-void print_uint16_as_binary(uint16_t raw)
-{
-	for(int i=sizeof(raw)*8-1; i>=0; i--)
-	{
-		printf("%i", raw>>i & (uint16_t)1);
-	}
 }
 
 void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
@@ -187,18 +213,8 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	bitbang_read(CS1_PIN,ELEVATION_STATUS_PIN,
 			&elevation_raw);
 
-#if 0
-	// Print the raw values in binary
-	printf("AZ: ");
-	print_uint16_as_binary(azimuth_raw);
-	printf(" EL: ");
-	print_uint16_as_binary(elevation_raw);
-	printf("\n");
-#endif
-
 	encoders_to_angles(azimuth_raw, elevation_raw,
 			azimuth_radians, elevation_radians);
-
 }
 
 #define PLOT_H 32
