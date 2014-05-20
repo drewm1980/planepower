@@ -110,13 +110,13 @@ void bitbang_close()
 // Inputs are the numbers of pins... not sure where they're documented...
 // Output is the raw encoder value.
 // Return value:  Zero if no error, 1 if encoder has bad status during read
+/*
+*/
 static inline int bitbang_read(unsigned int cs_pin,
-		unsigned int status_pin,
 		uint16_t *rsp_raw)
 {
 	_Bool cs0 = cs_pin == CS0_PIN;
-	_Bool azimuthStatus = status_pin == AZIMUTH_STATUS_PIN;
-	// gpio_set_value(cs_pin, LOW);
+	// Depending on the CSx_PIN write to file that it belongs
 	if (cs0) {
 		write(fd_CS0, "0", 2);	
 	} else {
@@ -130,11 +130,14 @@ static inline int bitbang_read(unsigned int cs_pin,
 
 	//err = gpio_get_value(status_pin, &status);
 	char status_char;
-	if (azimuthStatus) {
+	// If the Function is called with the CS0_PIN(Read Azimuth) 
+	// we have to read the AZIMUTH_STATUS_PIN
+	if (cs0) {
 		pread(fd_AZ_STATUS, &status_char, 1, 0);
 	} else {
 		pread(fd_EL_STATUS, &status_char, 1, 0);
 	}
+	// Check the actual status
 	if (status_char == '1') status = 1;
 
 	// if(err!=0) printf("Error reading status pin!\n");
@@ -207,11 +210,9 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	uint16_t azimuth_raw=0.0, elevation_raw=0.0; 
 
 	//printf("Reading azimuth...\n");
-	bitbang_read(CS0_PIN,AZIMUTH_STATUS_PIN,
-			&azimuth_raw);
+	bitbang_read(CS0_PIN, &azimuth_raw);
 	//printf("Reading elevation...\n");
-	bitbang_read(CS1_PIN,ELEVATION_STATUS_PIN,
-			&elevation_raw);
+	bitbang_read(CS1_PIN, &elevation_raw);
 
 	encoders_to_angles(azimuth_raw, elevation_raw,
 			azimuth_radians, elevation_radians);
