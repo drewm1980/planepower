@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from time import time, sleep
 import numpy
 import os
@@ -13,6 +12,7 @@ f = lib.read_angle_sensors
 f.argtypes=[POINTER(c_float),POINTER(c_float)]
 
 def read_angle_sensors():
+	"""Returns the line angles (azimuth,elevation) in radians"""
 	a = c_float()
 	b = c_float()
 	f(byref(a),byref(b))
