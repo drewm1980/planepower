@@ -30,6 +30,5 @@ CFLAGS += -std=gnu99
 # TODO: Make spi_communication.c and .h call bitbang_spi
 #: main_arm.o SimpleGPIO.o udp_communication.o spi_communication.o log.o data_decoding.o circular_buffer.o |> !ld |> main_arm
 
-
 endif
 endif
