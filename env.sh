@@ -42,6 +42,7 @@ export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
 export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/bbones/shared
 
 export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/rawesome_stuff
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/shared
 
 # TODO ACADO related (next two lines) stuff should be optional, same as for rawesome. 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build
