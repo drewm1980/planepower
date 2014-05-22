@@ -1,0 +1,16 @@
+include_rules
+.gitignore
+
+# If you want to buld the bbone code from tup, add CONFIG_BBONE= to your tup.config
+ifdef CAROUSEL2
+
+CC=clang
+CPPFLAGS += -Iinclude -Wall -Werror -Wextra
+CPPFLAGS += -I..
+CPPFLAGS += -I../shared
+CFLAGS += -ggdb -pthread -DDEBUG=1
+
+: raw_ethernet.c |> !cc |>
+: raw_ethernet.o |> !ld |> raw_ethernet_send
+
+endif

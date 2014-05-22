@@ -1,5 +1,4 @@
 ifdef CAROUSEL2
-ifdef ARMBONE
 
 include_rules
 
@@ -17,6 +16,5 @@ include_rules
 #: foreach *.cpp | LineAngleSensorTelemetry.pb.h |> !cxx_orocos |>
 #: *.o |> !ld_orocos |> 
 
-endif
 endif
 
