@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
             		//printf("Error in decoding: %i\n", err_decode);
 			//return 1;
 		}
-		usleep(1000);
+		usleep(2000);
 	}
 	UDP_err_handler(closeUDPClientSocket(&udp_client),0);
 	usleep(5000);
