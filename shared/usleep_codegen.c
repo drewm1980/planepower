@@ -24,9 +24,9 @@ void generate()
 	int64_t dt2 = (t2.tv_nsec - t1.tv_nsec); // ns
 	int64_t dt = (dt1 + dt2) / 1000; // us
 	int64_t loops = TEST_LOOPS/dt; // loops / us
-	printf("// Time (us) for %i loops: %lli\n",TEST_LOOPS,dt);
-	printf("// Loops per microsecond: %lli\n\n",loops);
-	printf("#define usleep_busy(x) {for(int i=%lli; i>0; i--);}\n",loops);
+	printf("// Time (us) for %i loops: %ld\n",TEST_LOOPS,dt);
+	printf("// Loops per microsecond: %ld\n\n",loops);
+	printf("#define usleep_busy(x) {for(int i=%ld; i>0; i--);}\n",loops);
 }
 
 int main() {generate();};
