@@ -125,21 +125,22 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 	
 	if (buffer[INDEX_CH1]!= checksum_1 || buffer[INDEX_CH2] != checksum_2)
 	{
-		/*printf("message raw check: ");
+		int i= 0;
+		printf("message raw check: ");
 		for(i=0;i<message_length;i++){
 				printf("%d ",buffer[i]);
 		}
-		printf("\n");*/
+		printf("\n");
 		serial_port_flush_input();
 		return UART_ERR_READ_CHECKSUM; 
 		
 	}
-	
-	/*printf("message raw: ");
+	int i=0;
+	printf("message raw: ");
 	for(i=0;i<message_length;i++){
 			printf("%d ",buffer[i]);
 	}
-	printf("\n");*/
+	printf("\n");
 	
 	return message_length;
 }

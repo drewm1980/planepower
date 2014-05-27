@@ -166,7 +166,7 @@ int main(int argc, char *argv[]){
 		err=receiveUDPServerData(&udp_server,(void *)&input_stream, data_len, &recv_len); //blocking !!!
 		if (recv_len != data_len) {
                 	printf("Wrong number of bytes in received UDP packet!\n");
-                        printf("Expected %lu bytes, Received %d bytes!\n",data_len,recv_len);
+                        printf("Expected %zu bytes, Received %d bytes!\n",data_len,recv_len);
                         err = UDP_ERR_RECV;
                 }
 
