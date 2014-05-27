@@ -30,7 +30,7 @@ static char FILENAME[] = "uart_communication.c";
 
 extern serial_port *serial_stream;
 
-speed_t speed = B921600;
+speed_t speed = B115200;
 //Variables for serial port
 const char device[]="/dev/ttyO4";
 const char device_enabled_check[] = "ttyO4_armhf.com"; //For Angstrom: enable-uart5
@@ -43,7 +43,7 @@ int wait_for_data(){
 		printf("Entering wait_for_data\n");
 	#endif
 	struct pollfd fds[1];
-	int timeout = 5; //timeout
+	int timeout = -1; //timeout
 	int result;
 	fds[0].fd=serial_stream->fd;
 	fds[0].events=POLLIN;
