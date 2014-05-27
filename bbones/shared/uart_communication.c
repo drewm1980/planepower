@@ -11,7 +11,7 @@
 #include "uart_communication.h"
 
 #ifndef DEBUG 
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 int serial_port_read(uint8_t buffer[],int length); 
@@ -39,7 +39,7 @@ const char device_path[] = "/sys/devices/bone_capemgr.9/slots"; //For Angstrom: 
 
 int wait_for_data(){
 	struct pollfd fds[1];
-	int timeout = -1; //infinite timeout
+	int timeout = 1; //timeout
 	int result;
 	fds[0].fd=serial_stream->fd;
 	fds[0].events=POLLIN;
@@ -135,12 +135,14 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 		return UART_ERR_READ_CHECKSUM; 
 		
 	}
+#if DEBUG > 0
 	int i=0;
 	printf("message raw: ");
 	for(i=0;i<message_length;i++){
 			printf("%d ",buffer[i]);
 	}
 	printf("\n");
+#endif
 	
 	return message_length;
 }
