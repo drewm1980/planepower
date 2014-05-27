@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
 	/*Barometer barometer;
 	Lisa_message lisa_message;*/
 	
-	uint32_t test;
+	/*uint32_t test;*/
 	uint32_t receive[8];
 	openUDPServerSocket(&udp_server,port_number);
 
