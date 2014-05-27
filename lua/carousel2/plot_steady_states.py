@@ -50,7 +50,7 @@ speed_resampled = numpy.interp(t, ts_trigger_siemens, speed)
 figure()
 plot(speed_resampled, elevation_resampled/numpy.pi*180,'b.-') 
 title('(Hopefully) Steady-State plot')
-ylabel('Line Angle Elevation [Rad]')
+ylabel('Line Angle Elevation [Deg]')
 xlabel('Arm speed on MOTOR side of belt [Rad/s]')
 
 show()
