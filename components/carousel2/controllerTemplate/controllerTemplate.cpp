@@ -51,6 +51,8 @@ void  ControllerTemplate::updateHook()
 	ControllerGains& g = gains;
 	
 	// Controller Implementation goes here!
+	//  gain matrix meaning:
+	//  [winchSpeedSetpoint carouselSpeedSetpoint]' = [k11 k12; k21 k22] * [azimuth elevation]'
 	driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
 	driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
 

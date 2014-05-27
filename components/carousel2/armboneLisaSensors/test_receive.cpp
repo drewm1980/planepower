@@ -7,23 +7,25 @@
 #include <time.h>
 #include <math.h>
 
-#include "armbone_communication.hpp"
+#include "armbone_lisa_communication.hpp"
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
 	ArmboneReceiver s;
-	LineAngles ds;
+	ImuGyro ig;
+	ImuMag im;
+	ImuAccel ia;
 
 	cout << "Waiting for at least one packet..." << endl;
-	s.read(&ds);
+	s.read(&ig, &im, &ia);
 
 	cout << "Measuring how fast we are receiving packets from the Armbone..." << endl;
 	timespec t1, t2;
-	const float trials = 1000.0;
+	const float trials = 100.0;
 	clock_gettime(CLOCK_REALTIME, &t1); 
-	for(int i=0; i<trials; i++) { s.read(&ds); }
+	for(int i=0; i<trials; i++) { s.read(&ig, &im, &ia); }
 	clock_gettime(CLOCK_REALTIME, &t2); 
 	time_t dsec = t2.tv_sec-t1.tv_sec;
 	long dnsec = t2.tv_nsec-t1.tv_nsec;
@@ -37,7 +39,7 @@ int main(int argc, char *argv[])
         double average_jitter = 0.0;
         for(int i=0; i<trials; i++) {
                 clock_gettime(CLOCK_REALTIME, &t1);
-                s.read(&ds);
+                s.read(&ig, &im, &ia);
                 clock_gettime(CLOCK_REALTIME, &t2);
                 dsec = (int64_t)t2.tv_sec - (int64_t)t1.tv_sec;
                 dnsec = (int64_t)t2.tv_nsec- (int64_t)t1.tv_nsec;
@@ -55,9 +57,16 @@ int main(int argc, char *argv[])
 	{
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
-		s.read(&ds);
-		printf("Azimuth: %f rad\n",ds.azimuth);
-		printf("Elevation: %f rad\n",ds.elevation);
+		s.read(&ig, &im, &ia);
+		printf("ImuGyro  gp: %i units\n",ig.gp_raw);
+		printf("ImuGyro  gq: %i units\n",ig.gq_raw);
+		printf("ImuGyro  gr: %i units\n",ig.gr_raw);
+		printf("ImuMag   mx: %i units\n",im.mx_raw);
+		printf("ImuMag   my: %i units\n",im.my_raw);
+		printf("ImuMag   mz: %i units\n",im.mz_raw);
+		printf("ImuAccel ax: %i units\n",ia.ax_raw);
+		printf("ImuAccel ay: %i units\n",ia.ay_raw);
+		printf("ImuAccel az: %i units\n",ia.az_raw);
 	}
 }
 
