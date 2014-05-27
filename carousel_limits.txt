@@ -1,50 +1,43 @@
 ---------------- Mechanical Constraints ----------------
 
-tensile strength of the belts: 
-6500 N
+float tensile_strength_of_the_belts = 6500; // N
 
-tensile stength of the tether:
-3000 Newtons
+float tensile_stength_of_the_tether = 3000; // Newtons
 
-Carousel drive gearbox ratio:
-14.86
+float carousel_drive_gearbox_ratio = 14.86; // Unitless
 
-Carousel drive pulley ratio: 
-2/3
+float carousel_drive_pulley_ratio = 2.0/3.0; // Unitless
 
-Carousel drive pulley diameter
-0.12545 meters
+float carousel_drive_pulley_diameter = 0.12545; // Meters
 
-Carousel motor's intrinsic torque limit = 26.53 N-m
+float carousel_motor_intrinsic_torque_limit = 26.53; // N-m
+
 Computed carousel motor torque limit based on belt breaking = (6500 N * 0.12545 m  / 14.86 * 2/3) = 36.58 N-m
 Computed carousel motor torque limit based on tether breaking = Not meaningful; if tether is anchored to ground, and aligned with arm, torque limit would have to be zero.
 
-Winch drive gearbox ratio:
-1/3
+float winch_drive_gearbox_ratio = 1.0/3.0; // Output rotations per shaft rotation
 
-Winch gearbox max input speed: 1500 rpm
+float winch_gearbox_max_input_speed = 4800; // rpm
 
-Winch drive pulley diameter on motor side:
-0.10186 meters
+float winch_drive_pulley_diameter_on_motor_side = 0.10186; // meters
 
-Winch drive pulley diameters on drum side:
-0.10186 meters
+float winch_drive_pulley_diameters_on_drum_side = 0.10186; // meters
 
-Drum diameter:
-0.2 meters
+float drum_diameter = 0.2; // meters
 
 (computed winch torque limit based on winch belt breaking) 82 N-m
 (computed winch torque limit based on tether breaking) 75 N-m
 
 ----------------- Electrical Constraints ---------------
 
-max current from wall: 32A
-voltage on wall: 230 V
-computed max power from wall: 7360 W
+float max_current_from_wall = 32; //A
+float voltage_on_wall = 230; // V
+float computed_max_power_from_wall = 7360; // W
 
 ----------------- Decisions! --------------
 
-Carousel motor torque limit is chosen to be 19 N-m.
+Carousel motor torque limit is chosen to be: 
+float chosen_carousel_motor_torque_limit = 19.0; // N-m
 Rationale: This should prevent the belt from breaking.
 
 Chosen carousel speed limit is 1 rps = 60 rpm
@@ -54,6 +47,7 @@ Rationale:
 * With a plane flying at a significant tether length, the airspeed would be absurd,
 	so this constraint isn't expected to be active anyway.
 Carousel motor shaft speed at this limit is (1 rps) * (14.86) * (3/2) = 22.29 rps = 1337.4 rpm
+float chosen_carousel_motor_shaft_speed_limit = 1337.4; // rpm
 
 Chosen carousel motor current limit of 10A is an INACTIVE constraint (it becomes active at around 6.4A)
 Carousel power at (max torque x max speed) = 19 N-m
@@ -63,6 +57,8 @@ Computed mechanical carousel power consumption of carousel drive at max torque, 
 power left over for the winch drive to operate at the same time: (7360 - 2661) = 4699 W
 
 Chosen winch motor torque limit is 70 N-m.  
+float chosen_winch_motor_torque_limit = 70.0; // N-m
+
 Rationale: 
 * This torque should prevent the belt from breaking
 * In steady state, this is enough torque to break the tether BUT
@@ -71,6 +67,9 @@ Rationale:
 		so this "extra" torque can be applied while the drum is accelerating
 		without breaking the tether, in principle.
 Chosen winch current limit is 85A (same as the max power unit output current), is an INACTIVE constriant.
-Chosen winch power limit is 7.3 kW
+Chosen winch power limit is 7.3 kW (same as max. power from wall)
 
-Chosen winch motor shaft speed limit is 1500 rpm (limited by the gearbox input speed)
+Chosen winch motor shaft speed limit is 1500 rpm.  This number was chosen arbitrarily; the winch motor can operate at higher speeds, but then the tether will be traveling extremely fast.
+float chosen_winch_motor_shaft_speed_limit = 1500; // rpm
+
+

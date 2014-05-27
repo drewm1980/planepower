@@ -6,8 +6,8 @@
 
 #include "types/LisaBboneClientDataType.hpp"
 
-#include "comm/udp_communication.h"
-#include "comm/data_decoding.h"
+#include "udp_communication.h"
+#include "data_decoding.h"
 
 #define MAX_INPUT_STREAM_SIZE  255
 #define MAX_OUTPUT_STREAM_SIZE 20

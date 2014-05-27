@@ -1,0 +1,6 @@
+include_rules
+
+CPPFLAGS_OROCOS+=-I../siemensDrives/
+
+#: foreach *.cpp |> !cxx_orocos |>
+#: *.o |> !ld_orocos |> 

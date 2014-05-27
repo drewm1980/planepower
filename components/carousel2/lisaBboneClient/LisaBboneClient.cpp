@@ -1,4 +1,5 @@
-#include "LisaBboneClient.hpp"
+#include <cmath>
+#include <cstring>
 
 #include <rtt/Component.hpp>
 #include <rtt/Logger.hpp>
@@ -6,8 +7,7 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
-#include <cmath>
-#include <cstring>
+#include "LisaBboneClient.hpp"
 
 /// Maximum number of transmission errors before we stop the component
 #define MAX_ERRORS_ALLOWED 5
@@ -74,7 +74,8 @@ bool LisaBboneClient::startHook()
 	Logger::In in( getName() );
 
 	// Open downstream link
-	udpStatus = openUDPServerSocket(&udpDownstream, hostPortDownstream);
+	unsigned int timeout = 1000000; // us
+	udpStatus = openUDPServerSocket(&udpDownstream, hostPortDownstream, timeout);
 	if (udpStatus != UDP_ERR_NONE)
 	{
 		printStatus();
@@ -84,7 +85,7 @@ bool LisaBboneClient::startHook()
 	// Initialize message decoding
 	init_decoding();
 
-	udpStatus = openUDPClientSocket(&udpUpstream, hostName.c_str(), hostPortUpstream);
+	udpStatus = openUDPClientSocket(&udpUpstream, hostName.c_str(), hostPortUpstream, timeout);
 	if (udpStatus != UDP_ERR_NONE)
 	{
 		printStatus();

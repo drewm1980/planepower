@@ -1,0 +1,2 @@
+include_rules
+: $(PLANEPOWER_ROOT)/carousel_limits.txt |> grep float %f > %o |> carousel_limits.h
