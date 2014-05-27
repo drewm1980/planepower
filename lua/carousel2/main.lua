@@ -85,28 +85,44 @@ softlimit = PI -- Rad/s
 -- ALWAYS check the return value of this!
 function ramp_with(targetSpeed,acceleration)
 	dt = .5 -- s
-	threshold = .05 -- Rad/s
+	threshold = acceleration -- Rad/s
+	retrys = 10
 	if (math.abs(targetSpeed) > softlimit) then
 		print "Requested speed is outside the soft limit!"
 		return 0
 	end
 	while true do
+		currentSetpoint = get_carousel_setpoint()
 		currentSpeed = get_carousel_speed()
-		if math.abs(currentSpeed - targetSpeed) < threshold then
+		-- check if targetspeed is reached
+		if math.abs(currentSetpoint - targetSpeed) < threshold then
 			set_carousel_speed(targetSpeed)
 			print "Ramp goal achieved!"
 			return 1
 		end
-		if currentSpeed > targetSpeed then
-			print "Ramping down..."
-			nextspeed = math.max(targetSpeed, currentSpeed - dt*acceleration)
-		else
-			print "Ramping up..."
-			nextspeed = math.min(targetSpeed, currentSpeed + dt*acceleration)
+		-- check if setpoint is reached
+		if math.abs(currentSetpoint - currentSpeed) < threshold then
+			if currentSetpoint > targetSpeed then
+				print "Ramping down..."
+				nextspeed = math.max(targetSpeed, currentSetpoint - dt*acceleration)
+			else
+				print "Ramping up..."
+				nextspeed = math.min(targetSpeed, currentSetpoint + dt*acceleration)
+			end
+			retrys = 10
+		else 
+			print ("currentSetpoint not reached! Retrying("..tostring(retrys)..")")
+			retrys = retrys - 1
 		end
-		print ("Target Speed: "..tostring(targetSpeed).." Current Speed: "..tostring(currentSpeed).." Next Speed: "..tostring(nextspeed))
-		set_carousel_speed(nextspeed)
-		sleep(dt)
+		-- check if ramp got stuck
+		if retrys <= 0 then
+			print ("Aborting ramp! Current Setpoint = "..tostring(currentSetpoint))
+			return 0 
+		else 
+			print ("Target Speed: "..tostring(targetSpeed).." Current Speed: "..tostring(currentSetpoint).." Next Speed: "..tostring(nextspeed))
+			set_carousel_speed(nextspeed)
+			sleep(dt)
+		end	
 	end
 end
 
