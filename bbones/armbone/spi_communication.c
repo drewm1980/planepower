@@ -140,6 +140,8 @@ SPI_errCode spi_read(uint8_t data_sensors[])
 
 
 	//PUT AZIMUTH AND ELEVATION DATA IN ONE ARRAY******(AZIMUTH.ELEVATION)
+	//printf("AZ: %i\n", rsp_azimuth);
+	//printf("EL: %i\n", rsp_elevation);
 	rsp = rsp + rsp_azimuth;
 	rsp = rsp << 16;
 	rsp = rsp + rsp_elevation;

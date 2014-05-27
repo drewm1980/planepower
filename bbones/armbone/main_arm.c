@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	printf("Entering real-time while loop.  Will not do any printing in the loop. \n");
 	while(1)
 	{	// spi_read is very slow!
-		// err = spi_read(input_buffer);
+		//err = spi_read(input_buffer);
 		err = spi_read_fast(input_buffer);
 		if(err==SPI_ERR_NONE){
 
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 			data_encode(input_buffer,LINE_ANGLE_BUFFER_SIZE,encoded_data,BONE_ARM,LINE_ANGLE_ID);
 
 
-			//printf("%.2X  %.2X  %.2X  %.2X  \n",encoded_data[7],encoded_data[6],encoded_data[5],encoded_data[4]); //////////checking
+			// printf("%.2X  %.2X  %.2X  %.2X  \n",encoded_data[7],encoded_data[6],encoded_data[5],encoded_data[4]); //////////checking
 
 #if 0
 			printf("output before sending\n");

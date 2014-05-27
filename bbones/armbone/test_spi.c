@@ -18,7 +18,7 @@ int main()
 	while(1)
 	{
 		read_angle_sensors(&azimuth_radians, &elevation_radians);
-#if 0
+#if 1
 		// Print the values in radians
 		printf("AZIMUTH: %f ELEVATION: %f\n",azimuth_radians, elevation_radians);
 #endif
