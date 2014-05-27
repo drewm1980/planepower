@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "udp_communication.h"
 #include "log.h"
@@ -38,6 +39,7 @@ typedef struct{
 }Connection;
 
 static Connection connection;
+static UDP udp_client;
 
 //function pointer to write errors to log
 void (*write_uart_error_ptr)(char *,char *,int);
@@ -48,8 +50,22 @@ void (*write_decode_error_ptr)(char *,char *,int);
  * MAIN
  * *********************************/
 
+void clean_exit(int signum)
+{	
+	printf("Exiting program...\n");
+ 	printf("%i\n", signum);
+	closeUDPClientSocket(&udp_client);
+	serial_port_close();
+	usleep(5000);
+	printf("done!\n");
+	exit(0);
+}
+
+
 int main(int argc, char *argv[])
-{
+{	
+	signal(SIGINT, clean_exit);
+	
 	write_uart_error_ptr = &write_uart_error; //initialize the function pointer to write error
 	write_udp_error_ptr = &write_udp_error;
 
@@ -64,8 +80,6 @@ int main(int argc, char *argv[])
 	}
 
 	/*-------------------------LINE-ANGLE SENSOR TO SERVER------------------------*/
-	static UDP udp_client;
-	//int message_length;
 	int err;
 	int message_length;
 	uint8_t input_buffer[INPUT_BUFFER_SIZE];				
@@ -117,15 +131,17 @@ int main(int argc, char *argv[])
 					UDP_err_handler(sendUDPClientData(&udp_client,encoded_data,encoded_data[LENGTH_INDEX]),write_udp_error_ptr);
 				}else{
 					UART_err_handler(err,write_uart_error_ptr);
+					printf("Error in message_id: %i\n", message_id);
 					//return 1;
 				}
 			}	
 		} else {
 			UART_err_handler(message_length, write_uart_error_ptr);
-			printf("Error: %i\n", message_length);
+			printf("Error in message_length: %i\n", message_length);
+            		printf("Error in decoding: %i\n", data_decode(input_buffer));
 			//return 1;
 		}
-		usleep(3000);
+		usleep(1000);
 	}
 	UDP_err_handler(closeUDPClientSocket(&udp_client),0);
 	usleep(5000);
