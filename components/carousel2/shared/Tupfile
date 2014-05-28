@@ -1,2 +1,4 @@
 include_rules
+
+# WARNING!!! carousel_limits.txt  duplicates some of the values in siemens_communication.hpp!  This generated file is a part of an attempt to remove this duplication, but is not currently used as of Milesone1!
 : $(PLANEPOWER_ROOT)/carousel_limits.txt |> grep float %f > %o |> carousel_limits.h

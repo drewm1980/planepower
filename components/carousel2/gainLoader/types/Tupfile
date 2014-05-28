@@ -1,0 +1,13 @@
+ifdef CAROUSEL2
+ifdef PC
+
+include_rules
+
+CODEGEN_SOURCE_DIRECTORY=..
+CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/ControllerGains.h
+CODEGEN_SOURCE_STRUCT=ControllerGains
+
+include ../../codegen_glue.tup
+
+endif
+endif

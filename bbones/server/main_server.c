@@ -162,9 +162,21 @@ int main(int argc, char *argv[]){
 
 	#endif
 
-	while(1){
+
+
+	while (1){
+		int recv_len;
+		size_t data_len = sizeof(input_stream);
+		// err = receiveUDPServerData(&udp_server,(void *)&input_stream, sizeof(input_stream)); //blocking !!!
 		//1. retreive UDP data form planebone from ethernet port.
-		err = receiveUDPServerData(&udp_server,(void *)&input_stream,sizeof(input_stream)); //blocking !!!
+		err = receiveUDPServerData(&udp_server,(void *)&input_stream, data_len, &recv_len); //blocking !!!
+
+		if (recv_len != 30) {
+			printf("Wrong number of bytes in received UDP packet!\n");
+                	printf("Expected %lu bytes, Received %d bytes!\n",data_len,recv_len);
+                	err = UDP_ERR_RECV;
+		}
+
 		UDP_err_handler(err,write_error_ptr); 
 	
 		if(err == UDP_ERR_NONE){
@@ -185,7 +197,7 @@ int main(int argc, char *argv[]){
 				printf("message id: %d\n", input_stream[3]);
 				printf("checksum1: %d\n", input_stream[input_stream[1]-2]);
 				printf("checksum2: %d\n", input_stream[input_stream[1]-1]);
-				printf("%d", input_stream[3]);
+				// printf("%d", input_stream[3]);
 				printf("\n");
 			
 			#endif
@@ -519,7 +531,16 @@ int main(int argc, char *argv[]){
 				}
 				
 				if(input_stream[3]==LINE_ANGLE_ID){
+					// Send a character (to gpio of arduino)
+					// to stop the arduino-timer
+					/*
+					FILE *myFile;
+					myFile = fopen("/dev/ttyUSB0", "w");
+					fputs ("a", myFile);
+					fclose (myFile);
+					*/
 					
+
 					printf("LINE_ANGLE_ID content:");
 					print_mem((void *)&data->bone_arm.line_angle,sizeof(LINE_ANGLE));
 					

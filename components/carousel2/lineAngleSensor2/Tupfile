@@ -1,20 +1,11 @@
-ifdef CAROUSEL2
-
 include_rules
 
-#LDFLAGS_OROCOS += -lprotobuf -lzmq
+ifdef CAROUSEL2
+ifdef PC
 
-: LineAngleSensor2Telemetry.proto |> !protoc |>
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos |> 
 
-# Generate the protobuf file
-#: LineAngleSensorTelemetry.proto |> protoc --cpp_out=. LineAngleSensorTelemetry.proto |> LineAngleSensorTelemetry.pb.cc LineAngleSensorTelemetry.pb.h
-
-#: LineAngleSensor2Telemetry.proto |> protoc --python_out=. LineAngleSensor2Telemetry.proto |> LineAngleSensorTelemetry_pb2.py
-
-# Compile the code
-#: LineAngleSensorTelemetry.pb.cc | LineAngleSensorTelemetry.pb.h  |> !cxx_orocos |>
-#: foreach *.cpp | LineAngleSensorTelemetry.pb.h |> !cxx_orocos |>
-#: *.o |> !ld_orocos |> 
-
+endif
 endif
 

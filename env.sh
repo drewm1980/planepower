@@ -21,6 +21,11 @@ if [ -d /opt/ros/hydro ]; then
 	. /opt/ros/hydro/setup.bash
 fi
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/plugins/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/types/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib
+
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rFSM/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
@@ -28,6 +33,11 @@ alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
 
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel1
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/lineAngleSensor2
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensSensors
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensActuators
+
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/gainLoader/resampler
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/main
 
 DEFAULT_RAWESOME_ROOT=$PLANEPOWER_ROOT/extern/rawesome

@@ -1,4 +1,3 @@
-ifdef CAROUSEL1
 ifdef PC
 
 SO_NAME = HighwindServices
@@ -6,5 +5,5 @@ SO_NAME = HighwindServices
 include_rules
 : foreach *.cpp |> !cxx_orocos |>
 : *.o |> !ld_orocos_custom |> 
-endif
+
 endif

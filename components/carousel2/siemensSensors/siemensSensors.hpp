@@ -1,18 +1,23 @@
 #ifndef __SIEMENSSENSORS__
 #define __SIEMENSSENSORS__
 
+#include <stdint.h>
+
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/Port.hpp>
 
-#include <stdint.h>
+#include "siemens_communication.hpp"
+
+/// Define the time-stamp type
+typedef uint64_t TIME_TYPE;
 
 class SiemensSensors : public RTT::TaskContext
 {
 public:
 	SiemensSensors(std::string name);
-	virtual ~SiemensSensors(){};
+	~SiemensSensors();
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -21,9 +26,14 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+protected:
+
+	RTT::OutputPort< SiemensDriveState > portData;
+
 private:
 	SiemensReceiver receiver;
 	SiemensDriveState state;
+	bool keepRunning;
 };
 
 #endif

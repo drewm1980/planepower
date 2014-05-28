@@ -1,5 +1,5 @@
-#ifndef __SIEMENSDRIVES__
-#define __SIEMENSDRIVES__
+#ifndef __LINEANGLESENSOR2__
+#define __LINEANGLESENSOR2__
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
@@ -8,11 +8,13 @@
 
 #include <stdint.h>
 
-class SiemensDrives : public RTT::TaskContext
+#include "LineAngles.h"
+
+class LineAngleSensor2 : public RTT::TaskContext
 {
 public:
-	SiemensDrives(std::string name);
-	virtual ~SiemensDrives(){};
+	LineAngleSensor2(std::string name);
+	virtual ~LineAngleSensor2(){};
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -21,6 +23,11 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+protected:
+	RTT::OutputPort< LineAngles > portData;
+private:
+	LineAngles lineAngles;
+	bool keepRunning;
 };
 
 #endif

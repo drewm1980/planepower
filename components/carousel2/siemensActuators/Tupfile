@@ -4,7 +4,13 @@ ifdef CAROUSEL2
 ifdef PC
 
 : foreach *.cpp |> !cxx_orocos |>
-: *.o |> !ld_orocos |> 
+
+# Note: Both this component and also the siemensSensors component
+# will have the udp_comunication symbols defined.
+# This should still work as long as we make sure that the symbols
+# are not actually exported in the orocos component (which is usual
+# case for building orocos components.)
+: siemensActuators.o $(SIEMENS_OBJECTS) |> !ld_orocos |> 
 
 endif
 endif

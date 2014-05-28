@@ -1,10 +1,29 @@
 #!/usr/bin/env deployer
 
-#Import libraries
+# Import libraries
 import("siemensSensors")
- 
-#Create components
+
+# Create components
 loadComponent("siemensSensors","SiemensSensors")
- 
+
+# Set activities.  This component re-triggers itself, so it is non-periodic
+setActivity("siemensSensors", 0, HighestPriority, ORO_SCHED_RT)
+
+# Start component
 siemensSensors.configure()
 siemensSensors.start()
+
+loadComponent("reporter","OCL::NetcdfReporting")
+setActivity("reporter", 0.0, LowestPriority, ORO_SCHED_RT)
+
+var ConnPolicy rp
+rp.type = 2
+rp.size = 4096
+
+connectPeers("reporter", "siemensSensors")
+reporter.reportComponent("siemensSensors")
+reporter.ReportPolicy = rp
+reporter.ReportFile = "SiemensSemsors.nc"
+ 
+reporter.configure()
+reporter.start()

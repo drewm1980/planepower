@@ -3,6 +3,7 @@ include_rules
 
 CFLAGS += -ggdb -pthread -DDEBUG=1 -D _BSD_SOURCE 
 CFLAGS += -std=gnu99
+CFLAGS += -fPIC
 
 # C functions for enabling realtime permissions and clock (by shelling out)
 : realtime.c |> !cc |>

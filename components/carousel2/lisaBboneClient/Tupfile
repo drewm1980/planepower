@@ -1,7 +1,7 @@
+include_rules
+
 ifdef CAROUSEL2
 ifdef PC
-
-include_rules
 
 CPPFLAGS_OROCOS+=-I$(PLANEPOWER_ROOT)/bbones/shared
 

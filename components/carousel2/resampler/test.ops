@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("resampler")
+ 
+#Create components
+loadComponent("resampler","Resampler")
+ 
+resampler.configure()
+resampler.start()

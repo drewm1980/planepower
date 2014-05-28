@@ -1,6 +1,12 @@
 include_rules
 
-CPPFLAGS_OROCOS+=-I../siemensDrives/
+ifdef CAROUSEL2
+ifdef PC
 
-#: foreach *.cpp |> !cxx_orocos |>
-#: *.o |> !ld_orocos |> 
+CPPFLAGS_OROCOS+=-I../siemensDrives
+
+: foreach *.cpp |> !cxx_orocos |>
+: *.o $(SIEMENS_OBJECTS) |> !ld_orocos |> 
+
+endif
+endif

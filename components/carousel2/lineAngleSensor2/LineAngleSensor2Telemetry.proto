@@ -1,8 +1,0 @@
-package LineAngleSensor2Proto;
-
-message LineAngleSensor2Msg
-{
-	// Measured angles [rad]
-	required float angle_ver = 1;
-	required float angle_hor = 2;
-}

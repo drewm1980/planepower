@@ -1,0 +1,14 @@
+
+# By default, hide all symbols in shared libraries.
+CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
+
+# These object dependencies are shared by a few targets...
+SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/components/carousel2/siemensDrives/siemens_communication.o 
+SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/shared/udp_communication.o
+
+# Locations of headers for the signal types
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/siemensDrives
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lineAngleSensor2
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/gainLoader
+
