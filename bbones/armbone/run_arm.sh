@@ -7,9 +7,10 @@
 ### END INIT INFO
 
 
+
 case "$1" in
     start)
-	/root/planepower/bbones/armbone/main_arm 192.168.1.4 8888
+	/root/planepower/bbones/armbone/main_arm 192.168.1.4 8888 &disown
     ;;
 
     stop)
