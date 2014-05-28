@@ -6,6 +6,8 @@ CXX = g++
 CXXFLAGS += -ggdb
 LDFLAGS += -ggdb -lrt
 
+CPPFLAGS += -I../shared
+
 : siemens_communication.cpp |> !cxx |>
 
 # minimal tool to send commands
