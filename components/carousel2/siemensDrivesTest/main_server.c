@@ -16,7 +16,8 @@ int main(int argc, char *argv[]){
 	
 	/*uint32_t test;*/
 	uint32_t receive[8];
-	openUDPServerSocket(&udp_server,port_number);
+	unsigned int timeout = 1000000;
+	openUDPServerSocket(&udp_server,port_number,timeout);
 
 	while(1){
 	 	printf("\nWaiting for data...\n");

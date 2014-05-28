@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "udp_communication.h"
 #include <stdlib.h> //exit(0);
@@ -16,13 +17,13 @@ int getSpeedFromUser(){
 	char* speedInput = (char*)malloc(max);
 	if(speedInput==0) quit();
 	int i=0;
-	int len = 0;
+	//int len = 0;
 	printf("Please enter the speed as a percentage of the nominal speed\n");
 	while(1){
 		int c = getchar();
 		if(isspace(c) || c == EOF){
 			speedInput[i]=0;
-			len=i;
+			//len=i;
 			break;
 		}
 		speedInput[i]=c;
@@ -45,7 +46,8 @@ int main(int argc, char *argv[]){
 	int port_number = 2000;
 	char *ip_address = "192.168.0.1";
 	printf("Opening client\n");
-	openUDPClientSocket(&udp_client,ip_address,port_number);
+	unsigned int timeout = 1000000;
+	openUDPClientSocket(&udp_client,ip_address,port_number,timeout);
 	int i;
 	for(i=0; i<10;i++){
 		uint32_t n1 = (uint32_t) getSpeedFromUser();

@@ -1,7 +1,6 @@
 include_rules
 CC=gcc
 : foreach *.c |> !cc |>
-#: *.o |> !ld_orocos |> 
 
 : log.o $(PLANEPOWER_ROOT)/shared/udp_communication.o main_client.o |> !ld |> main_client_send
 : log.o $(PLANEPOWER_ROOT)/shared/udp_communication.o main_server.o |> !ld |> main_server_recieve
