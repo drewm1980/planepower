@@ -2,7 +2,7 @@
 #define SIEMENS_COMMUNICATION_HPP
 
 #include "stdint.h"
-#include "udp_communication.hpp"
+#include "udp_communication.h"
 
 #define CHECKSUM 0
 

@@ -51,8 +51,9 @@ SiemensCommunicator::SiemensCommunicator()
 	strncpy(ip_address,"192.168.000.001",sizeof(ip_address)-1);
 	ip_address[15] = '\0';
 	port_number = 2000;
-	openUDPClientSocket(&udp_client,ip_address,port_number);
-	openUDPServerSocket(&udp_server,port_number);
+	unsigned int timeout = 1000000; // us
+	openUDPClientSocket(&udp_client,ip_address,port_number,timeout);
+	openUDPServerSocket(&udp_server,port_number,timeout);
 	currentWinchCommand = 0;
 	currentCarouselCommand = 0;
 }
