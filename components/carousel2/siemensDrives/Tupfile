@@ -2,13 +2,10 @@ ifdef CAROUSEL2
 ifdef PC
 
 include_rules
-CXX = g++
-CXXFLAGS += -ggdb
-LDFLAGS += -ggdb -lrt
 
 CPPFLAGS += -I../shared
 
-: siemens_communication.cpp |> !cxx |>
+: siemens_communication.cpp |> !cxx_orocos |>
 
 # minimal tool to send commands
 : test_send.cpp |> !cxx |>

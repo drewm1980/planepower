@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("siemensActuators")
+ 
+#Create components
+loadComponent("siemensActuators","SiemensActuators")
+ 
+siemensActuators.configure()
+siemensActuators.start()

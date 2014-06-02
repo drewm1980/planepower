@@ -4,6 +4,7 @@
 #include <time.h>
 #include <string.h>
 #include <iostream>
+#include <time.h>
 
 #include "siemens_communication.hpp"
 

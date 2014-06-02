@@ -1,9 +1,11 @@
 # Generic rules
 CC = clang
 CXX = clang++
-CXXFLAGS += -Wall -O3 -march=native -mtune=native
+CXXFLAGS += -Wall -O3
+#CXXFLAGS += -march=native -mtune=native
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
+LDFLAGS += -lrt
 
 CFLAGS = -Wall -O3
 
