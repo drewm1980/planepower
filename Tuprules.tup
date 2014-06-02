@@ -2,7 +2,9 @@
 CC = clang
 CXX = clang++
 CXXFLAGS += -Wall -O3
-#CXXFLAGS += -march=native -mtune=native
+ifndef CAROUSEL2
+CXXFLAGS += -march=native 
+endif
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
 LDFLAGS += -lrt
