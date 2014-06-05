@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
+#include "SimpleGPIO.h"
+#include "pins.h"
 #include "udp_communication.h"
 #include "log.h"
 #include "circular_buffer.h"
@@ -13,6 +17,12 @@
 #define MAX_STREAM_SIZE 255
 #define LINE_ANGLE_BUFFER_SIZE 8		
 #define UDP_SOCKET_TIMEOUT 1000000000
+#define ARDUINO_PIN 56
+#define ARDUINO_PIN_STRING "56"
+
+#define PREFIX "/sys/class/gpio/gpio"
+#define ARDUINO_PIN_VALUE_FILE PREFIX ARDUINO_PIN_STRING "/value"
+
 
 /************************************
  * PROTOTYPES
@@ -67,6 +77,23 @@ int main(int argc, char *argv[])
 	static UDP udp_client;
 	//int message_length;
 	int err;
+	int fd_ARDUINO;
+	// init the gpio
+	err = gpio_export(ARDUINO_PIN);
+	if(err!=0) printf("Trouble Exporting ARDUINO_GPIO!\n");
+	err = gpio_set_dir(ARDUINO_PIN, INPUT_PIN);
+        if(err!=0) printf("Trouble Setting a pin direction!\n");
+        fd_ARDUINO  = open(ARDUINO_PIN_VALUE_FILE, O_RDONLY);
+        printf(CS0_VALUE_FILE "\n");
+        if (fd_CS0 == -1){ 
+		printf("Couldn't open ARDUINO_PIN device file!!!\n"); 
+		exit(EXIT_FAILURE);
+	}
+
+
+
+	char ARDUINO_PIN_STATE;
+	ARDUINO_PIN_STATE = 0;
 	uint8_t input_buffer[LINE_ANGLE_BUFFER_SIZE];				
 	uint8_t encoded_data[MAX_STREAM_SIZE];
 
@@ -75,6 +102,14 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
+	// Trap sequence until a measurement is requested on ARDUINO_PIN
+	while (ARDUINO_PIN_STATE == '0') {
+		pread(fd_ARDUINO, &ARDUINO_PIN_STATE, 1, 0);
+	}
+	// Trap until the measurment request fades then perform the measurment.
+	while (ARDUINO_PIN_STATE == '1') {
+		pread(fd_ARDUINO, &ARDUINO_PIN_STATE, 1, 0);
+	}
 		err = spi_read(input_buffer);
 		if(err==SPI_ERR_NONE){
 
@@ -135,8 +170,14 @@ static void write_spi_error(char *file_name,char *message,int err_code)
 
 static void write_udp_error(char *file_name,char *message,int err_code)
 {
+<<<<<<< HEAD
+        // Use Errorcode because tup complains
         err_code = 0;
+
+=======
+>>>>>>> 2d76e7c75aa0bcac6fc016088c444f60e043207a
 	error_write(file_name,message);
+	//udp errors cannot be send
 }
 
 

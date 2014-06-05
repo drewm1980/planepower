@@ -96,8 +96,9 @@ int setup_socket_and_packet(unsigned char dstMac[6])
     addr.sll_family   = AF_PACKET;
     addr.sll_protocol = 0;
     addr.sll_ifindex  = ifr.ifr_ifindex;
-	addr.sll_halen = 6;
-	memcpy(addr.sll_addr,highwind_raw_packet.header.srcMac,6);
+    addr.sll_halen = 6;
+    memcpy(addr.sll_addr,highwind_raw_packet.header.srcMac,6);
+
     if ( bind( highwind_raw_socket_fd, (const struct sockaddr*)&addr, sizeof( addr ) ) < 0 )
     {
         perror( "init: bind fails" );
@@ -105,6 +106,7 @@ int setup_socket_and_packet(unsigned char dstMac[6])
         return -1;
     }
 	printf("socket fd is %i\n",highwind_raw_socket_fd);
+
 #endif
 
 }

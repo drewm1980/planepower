@@ -12,7 +12,7 @@ CPPFLAGS += -I../shared
 CFLAGS += -ggdb -pthread -DDEBUG=1 -D _BSD_SOURCE 
 CFLAGS += -std=gnu99
 
-: BB-Bitbanging-00A0.dts |> !dtc |> 
+#: BB-Bitbanging-00A0.dts |> !dtc |> 
 
 : test_spi.c |> !cc |>
 : bitbang_spi.c |> !cc |>
@@ -21,8 +21,8 @@ CFLAGS += -std=gnu99
 : test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
 
 # Test code that generates a fast software clock
-: bitbang_clock.c |> !cc |>
-: bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock
+#: bitbang_clock.c |> !cc |>
+#: bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock
 
 # For loading into python, also make a bitbang so
 : bitbang_spi.c SimpleGPIO.c |> $(CC) -shared -Wl,-soname,%O -o %o -fPIC %f |> bitbang_spi.so

@@ -22,3 +22,9 @@ BB-SPI1-01-00A0.dts
 Install using install_device_tree_overlay.sh
 
 http://learn.adafruit.com/introduction-to-the-beaglebone-black-device-tree/exporting-and-unexporting-an-overlay
+
+To install the device tree on boot:
+
+sudo cp install_device* /etc/init.d/
+sudo chmod +x /etc/init.d/install_device*
+sudo update-rc.d install_device* defaults 

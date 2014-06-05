@@ -1,6 +1,7 @@
 include_rules
 
-#ifdef BBONE
+ifdef CAROUSEL2
+ifdef PC
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror
@@ -16,7 +17,5 @@ LDFLAGS += -lpthread
 
 :main_server.o ../shared/log.o ../../shared/udp_communication.o ../shared/uart_communication.o ../shared/data_decoding.o analyze.o |> !ld |> main_server 
 
-## Also circular_buffer.o?
-#:main_windsensor.o udp_communication.o uart_communication.o log.o data_decoding.o |> !ld |> main_wind
-
-#endif
+endif
+endif
