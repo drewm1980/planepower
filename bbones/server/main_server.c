@@ -523,11 +523,12 @@ int main(int argc, char *argv[]){
 					printf("LINE_ANGLE_ID content:");
 					print_mem((void *)&data->bone_arm.line_angle,sizeof(LINE_ANGLE));
 					
-					printf("Azimuth %lf\n",data->bone_arm.line_angle.temperature);
-					printf("unit %c\n",data->bone_wind.nmea_wixdr.unit);
-					char temp[64];
-					timestamp_to_timeString16(data->bone_wind.nmea_wixdr.tv,temp);
-					printf("send time: %s\n",temp);
+					printf("Azimuth %i\n",data->bone_arm.line_angle.azimuth_raw);
+					printf("Elevation %i\n",data->bone_arm.line_angle.elevation_raw);
+					// printf("unit %c\n",data->bone_wind.nmea_wixdr.unit);
+					//char temp[64];
+					//timestamp_to_timeString16(data->bone_arm.line_angle.tv,temp);
+					//printf("send time: %s\n",temp);
 					printf("\n");
 				}
 									
