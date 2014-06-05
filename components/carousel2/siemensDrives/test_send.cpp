@@ -22,7 +22,7 @@ float getSpeedFromUser()
 
 int main(int argc, char *argv[])
 {
-	SiemensCommunicator siemens;
+	SiemensSender siemens;
 	bool cont=1;
 	while(cont){
 		printf("For the winch, ");

@@ -1,9 +1,13 @@
 # Generic rules
 CC = clang
 CXX = clang++
-CXXFLAGS += -Wall -O3 -march=native -mtune=native
+CXXFLAGS += -Wall -O3
+ifndef CAROUSEL2
+CXXFLAGS += -march=native 
+endif
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
+LDFLAGS += -lrt
 
 CFLAGS = -Wall -O3
 
