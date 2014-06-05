@@ -1,6 +1,6 @@
 include_rules
 
-ifdef BBONE
+#ifdef BBONE
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror
@@ -12,11 +12,11 @@ LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>
 
-:read_log.o ../shared/udp_communication.o ../shared/data_decoding.o |> !ld |> read_log
+:read_log.o ../../shared/udp_communication.o ../shared/data_decoding.o |> !ld |> read_log
 
-:main_server.o ../shared/log.o ../shared/udp_communication.o ../shared/uart_communication.o ../shared/data_decoding.o analyze.o |> !ld |> main_server 
+:main_server.o ../shared/log.o ../../shared/udp_communication.o ../shared/uart_communication.o ../shared/data_decoding.o analyze.o |> !ld |> main_server 
 
 ## Also circular_buffer.o?
 #:main_windsensor.o udp_communication.o uart_communication.o log.o data_decoding.o |> !ld |> main_wind
 
-endif
+#endif

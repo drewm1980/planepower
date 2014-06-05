@@ -3,8 +3,7 @@
 
 #include <sys/time.h>
 #include <time.h>
-
-#include "time_highwind.h"
+#include <time_highwind.h>
 #include "data_decoding.h"
 
 typedef struct{

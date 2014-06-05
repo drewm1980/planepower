@@ -185,6 +185,7 @@ int main(int argc, char *argv[]){
 				printf("message id: %d\n", input_stream[3]);
 				printf("checksum1: %d\n", input_stream[input_stream[1]-2]);
 				printf("checksum2: %d\n", input_stream[input_stream[1]-1]);
+				printf("%d", input_stream[3]);
 				printf("\n");
 			
 			#endif
