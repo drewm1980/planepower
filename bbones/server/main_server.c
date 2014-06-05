@@ -516,6 +516,19 @@ int main(int argc, char *argv[]){
 					printf("send time: %s\n",temp);
 					printf("\n");
 				}
+				
+				if(input_stream[3]==LINE_ANGLE_ID){
+					
+					printf("LINE_ANGLE_ID content:");
+					print_mem((void *)&data->bone_arm.line_angle,sizeof(LINE_ANGLE));
+					
+					printf("Azimuth %lf\n",data->bone_arm.line_angle.temperature);
+					printf("unit %c\n",data->bone_wind.nmea_wixdr.unit);
+					char temp[64];
+					timestamp_to_timeString16(data->bone_wind.nmea_wixdr.tv,temp);
+					printf("send time: %s\n",temp);
+					printf("\n");
+				}
 									
 			}else{
 					printf("UNKNOW PACKAGE with id %d\n",input_stream[3]);
