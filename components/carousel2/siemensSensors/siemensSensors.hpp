@@ -21,6 +21,9 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+private:
+	SiemensReceiver receiver;
+	SiemensDriveState state;
 };
 
 #endif

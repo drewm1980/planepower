@@ -1,8 +1,9 @@
-#include "siemensSensors.hpp"
-
 #include <rtt/Logger.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
+
+#include "siemensDrives.hpp"
+#include "siemensSensors.hpp"
 
 using namespace std;
 using namespace RTT;
@@ -25,10 +26,12 @@ bool  SiemensSensors::startHook()
 
 void  SiemensSensors::updateHook()
 {
+        receiver.read(&state);
 }
 
 void  SiemensSensors::stopHook()
-{}
+{
+}
 
 void  SiemensSensors::cleanupHook()
 {}
