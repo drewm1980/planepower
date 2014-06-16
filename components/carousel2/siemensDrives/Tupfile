@@ -5,7 +5,7 @@ include_rules
 
 CPPFLAGS += -I../shared
 
-: siemens_communication.cpp |> !cxx_orocos |>
+: siemens_communication.cpp |> !cxx |>
 
 # minimal tool to send commands
 : test_send.cpp |> !cxx |>
@@ -14,11 +14,6 @@ CPPFLAGS += -I../shared
 # mimimal tool to recieve commands
 : test_receive.cpp |> !cxx |>
 : test_receive.o $(PLANEPOWER_ROOT)/shared/udp_communication.o siemens_communication.o |> !ld |> test_receive
-
-# The orocos component
-#: siemensDrives.cpp |> !cxx_orocos |>
-#: siemensDrives.o $(PLANEPOWER_ROOT)/udp_communication.o siemens_communication.o |> !ld_orocos |> 
-
 
 endif
 endif

@@ -23,10 +23,13 @@ reporterPrio = 50
 libraryNames={"siemensActuators",
 				"siemensDrives",
 				"lineAngleSensor2"}
-
--- Load up the rest of the Carousel 2 hardware that interfaces with sensors and hardware
+--classNames = libraryNames:gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+classNames={"SiemensActuators",
+				"SiemensDrives",
+				"LineAngleSensor2"}
 instanceNames=libraryNames
 
+-- Load up the Carousel 2 hardware that interfaces with sensors and hardware
 for i=1,#libraryNames do
 	load_component(libraryNames[i],classNames[i],instanceNames[i])
 end
@@ -54,4 +57,5 @@ for i=1,#instanceNames do
 	_G[instanceNames[i]]:configure()
 	_G[instanceNames[i]]:start()
 end
+
 

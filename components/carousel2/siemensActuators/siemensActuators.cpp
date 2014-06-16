@@ -10,7 +10,11 @@ using namespace RTT::os;
 
 SiemensActuators::SiemensActuators(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of SiemensActuators" << endlog();
+	sender = new SiemensSender;
+}
+SiemensActuators::~SiemensActuators()
+{
+	delete sender;
 }
 
 bool SiemensActuators::configureHook()

@@ -1,6 +1,18 @@
 include_rules
 
+ifdef CAROUSEL2
+ifdef PC
+
 CPPFLAGS_OROCOS+=-I../siemensDrives/
 
-#: foreach *.cpp |> !cxx_orocos |>
-#: *.o |> !ld_orocos |> 
+: foreach *.cpp |> !cxx_orocos |>
+
+# Note: Both this component and also the siemensActuators component
+# will have the udp_comunication symbols defined.
+# This should still work as long as we make sure that the symbols
+# are not actually exported in the orocos component (which is usual
+# case for building orocos components.)
+: siemensSensors.o $(SIEMENS_OBJECTS) |> !ld_orocos |> 
+
+endif
+endif

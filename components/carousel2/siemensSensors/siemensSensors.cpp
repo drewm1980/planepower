@@ -2,7 +2,6 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
-#include "siemensDrives.hpp"
 #include "siemensSensors.hpp"
 
 using namespace std;
@@ -12,6 +11,14 @@ using namespace RTT::os;
 SiemensSensors::SiemensSensors(std::string name):TaskContext(name,PreOperational) 
 {
 	//log(Error) << "Error in constructor of SiemensSensors" << endlog();
+	receiver = new SiemensReceiver;
+	state = new SiemensDriveState;
+	
+}
+SiemensSensors::~SiemensSensors()
+{
+	delete receiver;
+	delete state;
 }
 
 bool SiemensSensors::configureHook()
@@ -26,7 +33,7 @@ bool  SiemensSensors::startHook()
 
 void  SiemensSensors::updateHook()
 {
-        receiver.read(&state);
+        receiver->read(state);
 }
 
 void  SiemensSensors::stopHook()

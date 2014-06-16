@@ -1,18 +1,20 @@
 #ifndef __SIEMENSSENSORS__
 #define __SIEMENSSENSORS__
 
+#include <stdint.h>
+
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/Property.hpp>
 #include <rtt/Port.hpp>
 
-#include <stdint.h>
+#include "siemens_communication.hpp"
 
 class SiemensSensors : public RTT::TaskContext
 {
 public:
 	SiemensSensors(std::string name);
-	virtual ~SiemensSensors(){};
+	~SiemensSensors();
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -22,8 +24,8 @@ public:
 	virtual void errorHook();
 
 private:
-	SiemensReceiver receiver;
-	SiemensDriveState state;
+	SiemensReceiver *receiver;
+	SiemensDriveState *state;
 };
 
 #endif

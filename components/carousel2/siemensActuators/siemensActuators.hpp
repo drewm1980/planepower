@@ -7,12 +7,13 @@
 #include <rtt/Port.hpp>
 
 #include <stdint.h>
+#include "siemens_communication.hpp"
 
 class SiemensActuators : public RTT::TaskContext
 {
 public:
 	SiemensActuators(std::string name);
-	virtual ~SiemensActuators(){};
+	virtual ~SiemensActuators();
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -21,6 +22,8 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+private:
+	SiemensSender *sender;
 };
 
 #endif
