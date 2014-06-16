@@ -32,11 +32,11 @@ int highwind_raw_socket_fd = -1;
 
 int setup_socket_and_packet(unsigned char dstMac[6])
 {
+	// Create the socket
     highwind_raw_socket_fd = socket( AF_PACKET, SOCK_RAW, htons( ETH_P_ALL ) );
 	printf("socket fd is %i\n",highwind_raw_socket_fd);
 	if(highwind_raw_socket_fd == -1)
 	{ perror( "init: socket" ); close( highwind_raw_socket_fd ); return -1; }
-
 	perror("Status after creating socket");
 
 	// configure to connect to specific interface ?
@@ -51,7 +51,6 @@ int setup_socket_and_packet(unsigned char dstMac[6])
 		close(highwind_raw_socket_fd);
 		exit(-1);
 	}
-
 	perror("Status after calling setsockopt");
 
 	// get local mac address, and Store the mac address in the packet
@@ -81,15 +80,14 @@ int setup_socket_and_packet(unsigned char dstMac[6])
 	printf("%x",highwind_raw_packet.header.dstMac[3]);
 	printf("%x",highwind_raw_packet.header.dstMac[4]);
 	printf("%x\n",highwind_raw_packet.header.dstMac[5]); // Worked
-	return 0;
 	
 	// get interface index
     if ( ioctl( highwind_raw_socket_fd, SIOCGIFINDEX, &ifr ) < 0 )
 	{ perror( "init: ioctl" ); close( highwind_raw_socket_fd ); return -1; }
+
 	printf("Device index is %i\n",ifr.ifr_ifindex);
 	perror("Status after ioctl to get device index");
 
-#if 1
 	// Bind the socket
 	struct sockaddr_ll addr;
     memset( &addr, 0, sizeof( addr ) );
@@ -104,34 +102,17 @@ int setup_socket_and_packet(unsigned char dstMac[6])
         close( highwind_raw_socket_fd );
         return -1;
     }
-	printf("socket fd is %i\n",highwind_raw_socket_fd);
-#endif
-
+	return 0;
 }
 
 void send_packet()
 {
 	perror("Entering send_packet"); 
-	printf("socket fd is %i\n",highwind_raw_socket_fd);
-#if 1
 	int bytes = write( highwind_raw_socket_fd, 
 			&highwind_raw_packet, 
 			sizeof(highwind_raw_packet));
 	printf("bytes written: %i\n",bytes);
 	perror("Status after write");
-#endif
-#if 0
-	int bytes = send(highwind_raw_socket_fd, &highwind_raw_packet, sizeof(highwind_raw_packet),0);
-	if(bytes != sizeof(highwind_raw_packet))
-	{perror("Caling send failed!"); printf("%i\n",bytes); exit(-1);}
-#endif
-#if 0
-	struct sockaddr addr;
-    memset( &addr, 0, sizeof( addr ) );
-	int bytes = sendto(highwind_raw_socket_fd, &highwind_raw_packet, sizeof(highwind_raw_packet),0,&addr,6);
-	if (bytes ==-1) perror("sendto failed!"); 
-
-#endif
 }
 
 int main()
