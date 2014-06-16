@@ -11,7 +11,7 @@
 // Prompt for and return a speed from the user
 float getSpeedFromUser()
 {
-	printf("please enter the speed as a percentage of the nominal speed:\n");
+	printf("please enter the speed as a percentage:\n");
 	float speedpercent=0.0f;
 	int numassigned = scanf("%f",&speedpercent);
 	if (numassigned!=1) printf("Error reading string!\n");
@@ -26,30 +26,11 @@ int main(int argc, char *argv[])
 	bool cont=1;
 	while(cont){
 		printf("For the winch, ");
-		double winchSpeed = getSpeedFromUser()/100.0*nominalWinchSpeed; // m/s
+		double winchSpeed = getSpeedFromUser()/100.0*winchSpeedAt100; // m/s
 		printf("For the carousel, ");
-		double carouselSpeed = getSpeedFromUser()/100.0*nominalCarouselSpeed; // rad/s
+		double carouselSpeed = getSpeedFromUser()/100.0*carouselSpeedAt100; // rad/s
 		printf("Sending the reference speeds to the PLC!\n");
-		siemens.send_reference_speeds(winchSpeed,carouselSpeed);
-
-		printf("Continue?\n");
-
-		char c=EOF;
-		while(c==EOF) c=getchar();
-		switch (getchar())
-		{
-			case 'y':
-			case 'Y':
-			case ' ':
-			case '\n':
-				cont=1;
-				break;
-			case 'n':
-			case 'q':
-			case 'N':
-				cont=0;
-				break;
-		}
+		siemens.send_calibrated_speeds(winchSpeed,carouselSpeed);
 	}
 	
 	return 0;	

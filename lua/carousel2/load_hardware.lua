@@ -21,11 +21,11 @@ reporterPrio = 50
 --base_hz = get_property("masterTimer","imu_target_hz")
 
 libraryNames={"siemensActuators",
-				"siemensDrives",
+				"siemensSensors",
 				"lineAngleSensor2"}
 --classNames = libraryNames:gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
 classNames={"SiemensActuators",
-				"SiemensDrives",
+				"SiemensSensors",
 				"LineAngleSensor2"}
 instanceNames=libraryNames
 

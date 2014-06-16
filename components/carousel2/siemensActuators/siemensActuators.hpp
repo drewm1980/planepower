@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include "siemens_communication.hpp"
 
+#define NONREALTIME_DEBUGGING
+
 class SiemensActuators : public RTT::TaskContext
 {
 public:
@@ -21,6 +23,8 @@ public:
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
+
+// (Not visible here: some convenient operations exported as operations)
 
 private:
 	SiemensSender *sender;

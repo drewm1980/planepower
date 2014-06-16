@@ -25,57 +25,85 @@ void bswap_packet(Packet *c)
 
 SiemensSender::SiemensSender()
 { 
-	strncpy(ip_address,"192.168.000.001",sizeof(ip_address)-1);
+	strncpy(ip_address,SIEMENS_DRIVES_SEND_IP_ADDRESS,sizeof(ip_address)-1);
 	ip_address[15] = '\0';
 	port_number = 2000;
 	unsigned int timeout = 1000000; // us
 	openUDPClientSocket(&udp_client,ip_address,port_number,timeout);
 	currentWinchCommand = 0;
 	currentCarouselCommand = 0;
+
+	// Note, we do NOT want to send a zero command at startup,
+	// since then we could not use this to manually gradually stop a drive that was left running
+	// by something else (i.e. another program that crashed.
 }
 SiemensSender::~SiemensSender()
 {
-	send_reference_speeds(0,0);
+	stop_drives();
 	closeUDPClientSocket(&udp_client);
+}
+
+void SiemensSender::stop_drives()
+{
+	send_reference_speeds(0,0);
 }
 
 int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed)
 {
 	UDPSendPacket udpsc;
 	memset(&udpsc,0,sizeof(udpsc));
-	
-	// Clamp the values to the maxima, to prevent wraparound.
-	if(winchSpeed>maxWinchSpeed) winchSpeed = maxWinchSpeed;
-	if(winchSpeed<-maxWinchSpeed) winchSpeed = -maxWinchSpeed;
-	if(carouselSpeed>maxCarouselSpeed) carouselSpeed = maxCarouselSpeed;
-	if(carouselSpeed<-maxCarouselSpeed) carouselSpeed = -maxCarouselSpeed;
 
-	int32_t n1 = winchSpeed/nominalWinchSpeed*nominalCommand;
-	int32_t n2 = carouselSpeed/nominalCarouselSpeed*nominalCommand;
-	n2 = 0; // TEMPORARY SAFETY HACK
+	// Convert nominal output
+	
+	// Clamp the values to nominal ShaftSpeeds , to make fucking sure there is no datatype wraparound.
+	if(winchSpeed>100) winchSpeed = 100;
+	if(winchSpeed<-100) winchSpeed = -100;
+	if(carouselSpeed>100) carouselSpeed = 100;
+	if(carouselSpeed<-100) carouselSpeed = -100;
+
+	// Convert percentages to command values
+	int32_t n1 = winchSpeed/100.0/nominalWinchSpeed*nominalCommand;
+	int32_t n2 = carouselSpeed/100.0/nominalCarouselSpeed*nominalCommand;
+
+	// Send the udp packet
 	udpsc.winchSpeedReference = n1;
 	udpsc.carouselSpeedReference = n2;
 	bswap_packet(&udpsc);
-
 	if(sendUDPClientData(&udp_client, &udpsc, sizeof(udpsc)))
 	{
 		cout << "Sending of data failed!" << endl;
 		return -1;
 	} else {
-		currentWinchCommand = winchSpeed;
-		currentCarouselCommand = carouselSpeed;
+		currentWinchCommand = winchSpeed; // (signed) percentage of nominal
+		currentCarouselCommand = carouselSpeed; // (signed) percentage of nominal
 		return 0;
 	}
 }
-
 int SiemensSender::send_winch_reference_speed(double winch_speed)
 {
 	return send_reference_speeds(winch_speed, currentCarouselCommand);
 }
-
 int SiemensSender::send_carousel_reference_speed(double carousel_speed)
 {
 	return send_reference_speeds(currentWinchCommand, carousel_speed);
+}
+
+// Note:  THINK VERY HARD before modifying these.
+// This implementation delibrately:
+//		* avoids errors when UDP message fails to even get sent
+//		* avoids unchanged values drifting when you call these repeatedly
+int SiemensSender::send_calibrated_speeds(double winch_speed, double carousel_speed)
+{
+	return send_reference_speeds(winch_speed*100.0/nominalWinchSpeed,
+							carousel_speed*100.0/nominalCarouselSpeed);
+}
+int SiemensSender::send_winch_calibrated_speed(double winch_speed)
+{
+	return send_reference_speeds(winch_speed*100.0/nominalWinchSpeed, currentCarouselCommand);
+}
+int SiemensSender::send_carousel_calibrated_speed(double carousel_speed)
+{
+	return send_reference_speeds(currentWinchCommand, carousel_speed*100.0/nominalCarouselSpeed);
 }
 
 SiemensReceiver::SiemensReceiver()
