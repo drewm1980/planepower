@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	double dt = (dsec + dnsec*1.0e-9)/trials; // seconds per sample
 	cout << "Received " << trials << " packets at dt= " << dt/trials << " s per sample" << endl;
 
-	while(1)
+	while(0)
 	{
 		printf("\nWaiting for data...\n");
 		fflush(stdout);

@@ -10,19 +10,15 @@ using namespace RTT::os;
 
 SiemensSensors::SiemensSensors(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of SiemensSensors" << endlog();
-	receiver = new SiemensReceiver;
-	state = new SiemensDriveState;
-	
 }
 SiemensSensors::~SiemensSensors()
 {
-	delete receiver;
-	delete state;
 }
 
 bool SiemensSensors::configureHook()
 {
+	receiver = new SiemensReceiver;
+	state = new SiemensDriveState;
 	return true;
 }
 
@@ -41,7 +37,10 @@ void  SiemensSensors::stopHook()
 }
 
 void  SiemensSensors::cleanupHook()
-{}
+{
+	delete receiver;
+	delete state;
+}
 
 void  SiemensSensors::errorHook()
 {}

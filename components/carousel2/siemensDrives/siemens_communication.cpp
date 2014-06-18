@@ -111,6 +111,7 @@ SiemensReceiver::SiemensReceiver()
 	port_number = 2000;
 	unsigned int timeout = 1000000; // us
 	openUDPServerSocket(&udp_server,port_number,timeout);
+	cout << "Opened server socket on ground station for reading from the PLC..." << endl;
 }
 SiemensReceiver::~SiemensReceiver()
 {
@@ -124,7 +125,18 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 	memset(ds,0,sizeof(SiemensDriveState));
 	receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
 	bswap_packet(&c);
+
+	// NOTE: UNITS OF THESE ARE TO BE DETERMINED FROM STARTER!
 	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed)/(nominalCommand);
+	ds->winchEncoderPosition = ((double) c.winchEncoderPosition)/(nominalCommand);
+	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed)/(nominalCommand);
+	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition)/(nominalCommand);
+	ds->winchTorque = ((double) c.winchTorque)/(nominalCommand);
+	ds->winchPower = ((double) c.winchPower)/(nominalCommand);
+	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint)/(nominalCommand);
+	ds->carouselTorque = ((double) c.carouselTorque)/(nominalCommand);
+	ds->carouselPower = ((double) c.carouselPower)/(nominalCommand);
+	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint)/(nominalCommand);
 }
 
 void SiemensReceiver::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
