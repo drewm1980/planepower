@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -8,9 +9,11 @@
 #include <linux/types.h>
 #include <unistd.h>
 
+
+#include "SimpleGPIO.h"
 #include "spi_communication.h"
 
-#include "bitbang_spi.c"
+#include "bitbang_spi.h"
 
 const unsigned int CS0 = 113;
 const unsigned int CS1 = 114;
@@ -57,8 +60,8 @@ SPI_errCode spi_read(uint8_t data_sensors[])
 	gpio_set_value(CS0, LOW);	
 	usleep(10);
 
-	int c = 0;
-	for (c; c < 16 ; c++){
+	// int c = 0;
+	for (int c = 0; c < 16 ; c++){
 		//CLK GOES HIGH
 		gpio_set_value(CLK, HIGH);
 		for(int c0=0;c0<1000;c0++); // Busy sleep
@@ -90,19 +93,19 @@ SPI_errCode spi_read(uint8_t data_sensors[])
 	gpio_set_value(CS1, LOW);	
 	usleep(10);
 
-	int a = 0;	
-	for (a; a < 16 ; a++){
+	// int a = 0;	
+	for (int a = 0; a < 16 ; a++){
 		//CLK GOES HIGH		
 		gpio_set_value(CLK, HIGH);
-		int a0=0;
-		for(a0;a0<1000;a0++);
+		// int a0=0;
+		for(int a0 = 0;a0<1000;a0++);
 
 		gpio_get_value(D0, &elevation_bit);	//GET 1 BIT
 
 		//CLK GOES LOW 
 		gpio_set_value(CLK, LOW);	
-		int a1=0;
-		for(a1;a1<1000;a1++);
+		// int a1=0;
+		for(int a1 = 0;a1<1000;a1++);
 
 		//PUSH 1 BIT INTO AN ARRAY
 		rsp_elevation = rsp_elevation<<1;		
@@ -175,13 +178,17 @@ void SPI_err_handler(SPI_errCode err,void (*write_error_ptr)(char *,char *,int))
 	//write error to local log
 	switch( err ) {
 		case SPI_ERR_NONE:
+                        // Write something in err_pointer because tup complains
+                        write_error_ptr("","", -1);
 			break;
-			/*case  SPI_ERR_UNDEFINED:
-			  write_error_ptr(SOURCEFILE,"undefined spi error",err);
-			  break;
-			  case  SPI_ERR_OPEN_DEV:
-			  write_error_ptr(SOURCEFILE,"failed to open spi port",err);
-			  break;*/
+                        /*
+	        case  SPI_ERR_UNDEFINED:
+		        write_error_ptr(SOURCEFILE,"undefined spi error",err);
+			break;
+                case  SPI_ERR_OPEN_DEV:
+	                write_error_ptr(SOURCEFILE,"failed to open spi port",err);
+			break;
+                        */
 		default: break;
 	}
 }

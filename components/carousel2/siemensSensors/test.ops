@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("siemensSensors")
+ 
+#Create components
+loadComponent("siemensSensors","SiemensSensors")
+ 
+siemensSensors.configure()
+siemensSensors.start()

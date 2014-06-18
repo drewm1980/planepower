@@ -9,9 +9,6 @@ typedef enum spi_errCode SPI_errCode;
 //const char spidev[] = "/dev/spidev1.0";
 //const char spidev1[] = "/dev/spidev1.1";
 
- * PROTOTYPES PUBLIC
-/********************************
- * ******************************/
 extern SPI_errCode spi_open();
 extern SPI_errCode spi_read(uint8_t data_sensors[]);
 extern SPI_errCode spi_close();

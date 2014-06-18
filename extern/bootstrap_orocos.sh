@@ -5,8 +5,20 @@ echo -e "1) Setup your sources.list:\n\t sudo sh -c 'echo \"""deb http://package
 echo -e "2) Set up your keys:\n\t wget http://packages.ros.org/ros.key -O - | sudo apt-key add -"
 
 sudo sh -c "echo 'deb http://packages.ros.org/ros/ubuntu precise main' > /etc/apt/sources.list.d/ros-latest.list"
+
 sudo apt-get update
-sudo apt-get install ros-hydro-orocos-toolchain ros-hydro-ocl ros-hydro-rtt ros-hydro-rtt-typelib
+sudo apt-get install ros-hydro-desktop
+sudo apt-get install ros-hydro-orocos-toolchain 
+sudo apt-get install ros-hydro-ocl 
+sudo apt-get install ros-hydro-rtt 
+sudo apt-get install ros-hydro-rtt-typelib
+sudo apt-get install ros-hydro-rospack
+sudo apt-get install ros-hydro-rtt-rospack
+sudo apt-get install python-rosinstall
+
+sudo rosdep init
+sudo resdep update
+
 source /opt/ros/hydro/setup.bash
 
 echo "Giving special rights to OROCOS deployer..."

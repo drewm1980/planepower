@@ -1,6 +1,8 @@
 include_rules
 
+ifdef CAROUSEL2
 ifdef BBONE
+ifdef PLANEBONE
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror
@@ -12,10 +14,12 @@ LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>
 
-:main_plane.o ../shared/uart_communication.o ../shared/data_decoding.o ../shared/udp_communication.o ../shared/log.o ../shared/circular_buffer.o|> !ld |> main_plane
+:main_plane.o ../shared/uart_communication.o ../shared/data_decoding.o $(PLANEPOWER_ROOT)/shared/udp_communication.o ../shared/log.o ../shared/circular_buffer.o|> !ld |> main_plane
 
 
 :main_lisa_communication.o ../shared/uart_communication.o ../shared/data_decoding.o ../shared/log.o ../shared/circular_buffer.o|> !ld |> main_lisa_communication
 
 
+endif
+endif
 endif

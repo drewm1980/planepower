@@ -1,0 +1,11 @@
+Winch calibration computation...
+
+100% speed command = 5000 rpm motor spindle speed?
+
+gearbox ratio is 3:1
+pully ratio is 1:1
+
+10% speed command should be: 
+500/3/60 hz = 2.77 hz
+
+10/2.77 = 3.6% command should be 1 Hz

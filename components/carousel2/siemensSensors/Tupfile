@@ -1,0 +1,12 @@
+include_rules
+
+ifdef CAROUSEL2
+ifdef PC
+
+CPPFLAGS_OROCOS+=-I../siemensDrives
+
+: foreach *.cpp |> !cxx_orocos |>
+: *.o $(SIEMENS_OBJECTS) |> !ld_orocos |> 
+
+endif
+endif

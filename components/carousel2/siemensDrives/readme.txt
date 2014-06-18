@@ -1,2 +1,2 @@
-This component handles all communication to and from
-the siemens motor drives via the PLC.
+This is a library and also minimal C++ programs for sending and receiving UDP commands from the
+Siemens Drives.

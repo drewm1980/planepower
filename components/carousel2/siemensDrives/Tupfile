@@ -2,22 +2,18 @@ ifdef CAROUSEL2
 ifdef PC
 
 include_rules
-#CXX = g++
-CXXFLAGS += -ggdb
-LDFLAGS += -ggdb -lrt
 
-: udp_communication.cpp |> !cxx_orocos |>
-: siemens_communication.cpp |> !cxx_orocos |>
+CPPFLAGS += -I../shared
 
-: test_send.cpp |> !cxx_orocos |>
-: test_send.o udp_communication.o siemens_communication.o |> !ld |> test_send
+: siemens_communication.cpp |> !cxx |>
 
-: test_receive.cpp |> !cxx_orocos |>
-: test_receive.o udp_communication.o siemens_communication.o |> !ld |> test_receive
+# minimal tool to send commands
+: test_send.cpp |> !cxx |>
+: test_send.o $(PLANEPOWER_ROOT)/shared/udp_communication.o siemens_communication.o |> !ld |> test_send
 
-: siemensDrives.cpp |> !cxx_orocos |>
-: siemensDrives.o udp_communication.o siemens_communication.o |> !ld_orocos |> 
-
+# mimimal tool to recieve commands
+: test_receive.cpp |> !cxx |>
+: test_receive.o $(PLANEPOWER_ROOT)/shared/udp_communication.o siemens_communication.o |> !ld |> test_receive
 
 endif
 endif

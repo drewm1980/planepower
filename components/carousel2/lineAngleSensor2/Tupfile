@@ -1,8 +1,10 @@
+include_rules
 ifdef CAROUSEL2
 
-include_rules
-
 #LDFLAGS_OROCOS += -lprotobuf -lzmq
+
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos |> 
 
 : LineAngleSensor2Telemetry.proto |> !protoc |>
 

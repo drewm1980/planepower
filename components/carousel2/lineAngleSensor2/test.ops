@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("lineAngleSensor2")
+ 
+#Create components
+loadComponent("lineAngleSensor2","LineAngleSensor2")
+ 
+lineAngleSensor2.configure()
+lineAngleSensor2.start()
