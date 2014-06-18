@@ -29,12 +29,13 @@ int main(int argc, char *argv[])
 	double dt = (dsec + dnsec*1.0e-9)/trials; // seconds per sample
 	cout << "Received " << trials << " packets at dt= " << dt/trials << " s per sample" << endl;
 
-	while(0)
+	while(1)
 	{
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
 		s.read(&ds);
-		printf("winchSpeedSmoothed: %f\n",ds.winchSpeedSmoothed);
+		printf("winchSpeedSmoothed: %f ",ds.winchSpeedSmoothed);
+		printf("carouselSpeedSmoothed: %f\n",ds.carouselSpeedSmoothed);
 		//printf("winchPosition: %f\n",ds.winchEncoderPosition);
 		//printf("winchSpeedSetpoint: %f\n",ds.winchSpeedSetpoint);
 	}

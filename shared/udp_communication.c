@@ -126,11 +126,16 @@ UDP_errCode receiveUDPServerData(UDP *udp_server,void *data,size_t data_len){
 	#endif
 	int recv_len;
 	//blocking !!!
-	if ((recv_len = recvfrom(udp_server->fd, data,data_len, 0, (struct sockaddr *) &(udp_server->si_other), (socklen_t *)&(udp_server->fd_len))) == -1)
+	if ((recv_len = recvfrom(udp_server->fd, data, data_len, 0, (struct sockaddr *) &(udp_server->si_other), (socklen_t *)&(udp_server->fd_len))) == -1)
 	{
+		printf("Problem receiving UDP packet!\n");
 		return UDP_ERR_RECV;
-	}else{
-		//eventually send something back to sender using si_other
+	}
+	if (recv_len != data_len)
+	{
+		printf("Wrong number of bytes in received UDP packet!\n");
+		printf("Expected %i bytes, Received %i bytes!\n",data_len,recv_len);
+		return UDP_ERR_RECV;
 	}
 	return UDP_ERR_NONE;
 }

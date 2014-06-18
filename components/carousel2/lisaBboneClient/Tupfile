@@ -5,7 +5,7 @@ ifdef PC
 
 CPPFLAGS_OROCOS+=-I$(PLANEPOWER_ROOT)/bbones/shared
 
-: foreach *.cpp |> !cxx_orocos |>
+#: foreach *.cpp |> !cxx_orocos |>
 #: *.o |> !ld_orocos |> 
 
 endif

@@ -31,8 +31,8 @@ protected:
 	RTT::OutputPort< SiemensDriveState > portData;
 
 private:
-	SiemensReceiver *receiver;
-	SiemensDriveState *state;
+	SiemensReceiver receiver;
+	SiemensDriveState state;
 };
 
 #endif
