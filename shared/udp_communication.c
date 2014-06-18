@@ -134,7 +134,7 @@ UDP_errCode receiveUDPServerData(UDP *udp_server,void *data,size_t data_len){
 	if (recv_len != data_len)
 	{
 		printf("Wrong number of bytes in received UDP packet!\n");
-		printf("Expected %i bytes, Received %i bytes!\n",data_len,recv_len);
+		printf("Expected %lu bytes, Received %li bytes!\n",data_len,recv_len);
 		return UDP_ERR_RECV;
 	}
 	return UDP_ERR_NONE;

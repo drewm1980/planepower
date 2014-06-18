@@ -122,11 +122,11 @@ if __name__ == '__main__':
     headerFilename = sys.argv[1]
 
     structName, memberNames, memberTypes = parse_header_file(headerFilename)
-    print "Successfully parsed struct " + structName + " from file " + headerFilename
-    print "Found members: \n" + '\n'.join(memberNames)
+    #print "Successfully parsed struct " + structName + " from file " + headerFilename
+    #print "Found members: \n" + '\n'.join(memberNames)
 
-    print "Generating typkit..."
+    #print "Generating typkit..."
     codegen_typekit(structName, memberNames, headerFilename)
-    print "Done"
+    #print "Done"
 
 
