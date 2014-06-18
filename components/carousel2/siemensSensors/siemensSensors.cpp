@@ -10,6 +10,10 @@ using namespace RTT::os;
 
 SiemensSensors::SiemensSensors(std::string name):TaskContext(name,PreOperational) 
 {
+	addPort("data", portData).doc("The output data port");
+	memset(&data, 0, sizeof( data ));
+	portData.setDataSample( data );
+	portData.write( data );
 }
 SiemensSensors::~SiemensSensors()
 {

@@ -10,6 +10,9 @@
 
 #include "siemens_communication.hpp"
 
+/// Define the time-stamp type
+typedef uint64_t TIME_TYPE;
+
 class SiemensSensors : public RTT::TaskContext
 {
 public:
@@ -22,6 +25,10 @@ public:
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
+
+protected:
+
+	RTT::OutputPort< SiemensDriveState > portData;
 
 private:
 	SiemensReceiver *receiver;

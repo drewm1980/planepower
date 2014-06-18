@@ -20,12 +20,8 @@ class LisaBboneClient
 	: public RTT::TaskContext
 {
 public:
-	/// Ctor
 	LisaBboneClient(std::string name);
-	
-	/// Dtor
-	virtual ~LisaBboneClient()
-	{}
+	virtual ~LisaBboneClient() {};
 	
 	/// Configuration hook.
 	virtual bool configureHook( );
