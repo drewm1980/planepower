@@ -59,20 +59,6 @@ struct UDPReceivePacket{
 	int32_t carouselSpeedSetpoint;
 };
 
-// This is a unit converted version of UDPReceivePacket
-struct SiemensDriveState{
-	double winchSpeedSmoothed;
-	double winchEncoderPosition;
-	double carouselSpeedSmoothed;
-	double carouselEncoderPosition;
-	double winchTorque;
-	double winchPower;
-	double winchSpeedSetpoint;
-	double carouselTorque;
-	double carouselPower;
-	double carouselSpeedSetpoint;
-};
-
 struct EncoderState
 {
 	int64_t bigCounts;

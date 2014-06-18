@@ -1,0 +1,14 @@
+ifdef CAROUSEL2
+ifdef PC
+
+include_rules
+
+CPPFLAGS_OROCOS +=-I../../siemensDrives
+
+: ../../siemensDrives/SiemensDriveState.h |> !codegen_orocos_typekit |>
+: foreach *.cpp |> !build_orocos_typekit |>
+
+.gitignore
+
+endif
+endif
