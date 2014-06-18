@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #include "udp_communication.h"
+#include "SiemensDriveState.h"
 
 // This is a high-level API for interfacing with the siemens drives.
 // This API is NOT threadsafe, i.e. it should only ever be used from ONE thread!!

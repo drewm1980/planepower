@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+
+from string import Template
+
+def parse_header_file(fileName):
+    import pycparser
+    from pycparser import parse_file
+    from pycparser.c_ast import NodeVisitor
+
+    ast = parse_file(fileName, use_cpp=True)
+
+    class StructVisitor(NodeVisitor):
+        def __init__(self):
+            self.values = []
+        def visit_Struct(self,node):
+            self.values.append(node)
+
+    v = StructVisitor()
+    v.visit(ast)
+    v.values
+
+    assert len(v.values)==1 # There should only be one structure in the file
+
+    s = v.values[0]
+    structName = s.name
+
+    memberNames = []
+    memberTypes = []
+    for c in s.children():
+        decl = c[1]
+        #print decl.name
+        #print decl.children()
+        chilrens = decl.children()
+        assert len(chilrens)==1
+        assert chilrens[0][0] == 'type'
+        t = chilrens[0][1]
+        typeString = t.children()[0][1].names[0] # i.e. 'double'
+        memberNames.append(decl.name)
+        memberTypes.append(typeString)
+        
+    return structName, memberNames, memberTypes
+
+typekitTemplate = 
+"""
+#include "$(headerFileName)"
+
+#include <rtt/types/StructTypeInfo.hpp>
+#include <rtt/types/TypekitPlugin.hpp>
+
+namespace boost
+{
+	namespace serialization
+	{
+		template< class Archive >
+		void serialize(Archive& a, $(structName)& mht, unsigned int)
+		{
+			using boost::serialization::make_nvp;
+
+			$(memberSerializationSnippet)
+			
+		}
+	}
+}
+
+struct $(structName)TypeInfo
+	: public RTT::types::StructTypeInfo< $(structName) >
+{
+	$(structName)TypeInfo()
+		: RTT::types::StructTypeInfo< $(structName) >( "$(structName)" )
+	{}
+};
+
+class $(structName)Typekit
+	: public RTT::types::TypekitPlugin
+{
+public:
+	virtual std::string getName();
+	virtual bool loadTypes();
+	virtual bool loadConstructors();
+	virtual bool loadOperators();
+};
+
+std::string $(structName)Typekit::getName() { return "$(structName)Typekit"; }
+
+bool $(structName)Typekit::loadTypes()
+{
+	RTT::types::Types()->addType(new $(structName)TypeInfo());
+	return true;
+}
+
+bool $(structName)Typekit::loadConstructors() { return true; }
+bool $(structName)Typekit::loadOperators() { return true; }
+
+ORO_TYPEKIT_PLUGIN( $(structName)Typekit )
+"""
+
+def codegen_typekit(structName, memberNames, memberTypes):
+
+    # Generate lines of code like
+    #      a & make_nvp("gyro_x", mht.gyro_x);
+    t = "\t\ta & make_nvp("${memberName}", mht.${memberName});"
+    snippets = [Template(t).substitute(memberName=memberName) for memberName in memberNames]
+    memberSerializationSnippet = '\n'.join(snippets)
+    
+    generatedFile = Template(typekitTemplate).substitute(structName=structName,
+                                       memberSerializationSnippet=memberSerializationSnippet)
+
+    generatedFileName = structName + 'Typekit.cpp'
+    fd = open(generatedFileName,'w')
+    fd.write(generatedFile)
+    fd.close()
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv != 2)
+        print "Usage: codegen_typekit ../../some_header_filename.hpp"
+        return 0
+
+    headerFileName = argv[1]
+
+    structName, memberNames, memberTypes = parse_header_file(headerFileName)
+    print "Successfully parsed struct " + structName + " from file " + headerFileName
+    print "Found members: \n" + '\n'.join(memberNames)
+
+
