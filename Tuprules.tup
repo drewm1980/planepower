@@ -69,7 +69,8 @@ CXXFLAGS_OROCOS += -DRTT_COMPONENT
 !ld_orocos_custom = |> $(CXX) -shared -o %o %f $(LDFLAGS_OROCOS) |> $(SO_NAME).so
 
 !codegen_orocos_typekit = |> $(PLANEPOWER_ROOT)/tools/codegen_glue --typekit %f; rm -f lextab.py yacctab.py; |> %BTypekit.cpp
-!build_orocos_typekit = |> $(CXX) -shared $(CXXFLAGS_OROCOS) $(CPPFLAGS_OROCOS) $(LDFLAGS_OROCOS) %f -o %o |> %B.so
+!codegen_proto = |> $(PLANEPOWER_ROOT)/tools/codegen_glue --proto %f; rm -f lextab.py yacctab.py; |> %BTelemetry.proto
+!codegen_protobuf_bridge = |> $(PLANEPOWER_ROOT)/tools/codegen_glue --bridge %f; rm -f lextab.py yacctab.py; |> %BTelemetry.cpp
 
 # Acado specific flags and rules
 CPPFLAGS_ACADO = $(CPPFLAGS)
