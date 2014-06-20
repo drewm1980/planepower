@@ -106,6 +106,12 @@ int SiemensSender::send_carousel_calibrated_speed(double carousel_speed)
 	return send_reference_speeds(currentWinchCommand, carousel_speed*100.0/nominalCarouselSpeed);
 }
 
+int SiemensSender::write(SiemensDriveCommand command)
+{
+	return send_calibrated_speeds(command.winchSpeedReference, 
+						   command.carouselSpeedReference);
+}
+
 SiemensReceiver::SiemensReceiver()
 { 
 	port_number = 2000;

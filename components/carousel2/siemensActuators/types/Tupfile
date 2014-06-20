@@ -4,8 +4,8 @@ ifdef PC
 include_rules
 
 CODEGEN_SOURCE_DIRECTORY=../../siemensDrives
-CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/SiemensDriveState.h
-CODEGEN_SOURCE_STRUCT=SiemensDriveState
+CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/SiemensDriveCommand.h
+CODEGEN_SOURCE_STRUCT=SiemensDriveCommand
 
 include ../../codegen_glue.tup
 

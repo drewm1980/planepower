@@ -1,0 +1,19 @@
+CPPFLAGS_OROCOS += -I$(CODEGEN_SOURCE_DIRECTORY)
+
+: $(CODEGEN_SOURCE_HEADER) |> !codegen_orocos_typekit |>
+: $(CODEGEN_SOURCE_STRUCT)Typekit.cpp |> !cxx_orocos |>
+
+: $(CODEGEN_SOURCE_HEADER) |> !codegen_proto |>
+: $(CODEGEN_SOURCE_STRUCT)Telemetry.proto |> !protoc |>
+: $(CODEGEN_SOURCE_STRUCT)Telemetry.pb.cc | $(CODEGEN_SOURCE_STRUCT)Telemetry.pb.h |> !cxx_orocos |>
+
+: $(CODEGEN_SOURCE_HEADER) |> !codegen_protobuf_bridge |>
+
+CXXFLAGS_OROCOS+=-Wno-unused-function
+: $(CODEGEN_SOURCE_STRUCT)Telemetry.cpp | $(CODEGEN_SOURCE_STRUCT)Telemetry.pb.h |> !cxx_orocos |>
+CXXFLAGS_OROCOS+=-Wunused-function
+
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+: *.o |> !ld_orocos |>
+
+.gitignore

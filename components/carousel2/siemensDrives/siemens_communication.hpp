@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "udp_communication.h"
 #include "SiemensDriveState.h"
+#include "SiemensDriveCommand.h"
 
 // This is a high-level API for interfacing with the siemens drives.
 // This API is NOT threadsafe, i.e. it should only ever be used from ONE thread!!
@@ -70,10 +71,14 @@ class SiemensSender
 	public:
 		SiemensSender();
 		~SiemensSender();
+		
 		int send_calibrated_speeds(double winch_speed, // in m/s, positive for reelout
 				double carousel_speed); // in rad/s, positive for clockwise rotation when viewed from above
 		int send_winch_calibrated_speed(double winch_speed); // in m/s
 		int send_carousel_calibrated_speed(double carousel_speed); // in rad/s
+
+		int write(SiemensDriveCommand command);
+
 		void stop_drives();
 
 	private:
@@ -102,7 +107,7 @@ class SiemensReceiver
 		//// Note:  While the motors are turning, this function should be
 		////		  called at least once every 3 hours to avoid missing a 32 bit
 		////		  rollover event.
-		void read(SiemensDriveState* ds);
+		void read(SiemensDriveState* ds); // Reads data into ds
 
 	private:
 		void handle_32bit_rollover(EncoderState *e, uint32_t smallCounts);
