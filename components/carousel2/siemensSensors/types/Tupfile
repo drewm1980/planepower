@@ -21,7 +21,8 @@ CXXFLAGS_OROCOS+=-Wno-unused-function
 : $(CLASS)Telemetry.cpp | $(CLASS)Telemetry.pb.h |> !cxx_orocos |>
 CXXFLAGS_OROCOS+=-Wunused-function
 
-#: *.o |> !ld_orocos |>
+LDFLAGS_OROCOS += -lprotobuf -lzmq
+: *.o |> !ld_orocos |>
 
 .gitignore
 

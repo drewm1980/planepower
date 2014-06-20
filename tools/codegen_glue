@@ -177,18 +177,18 @@ class ${structName}Telemetry
 	public:
 
 		${structName}Telemetry(std::string name);
-		~${structName}Telemetry();
+		~${structName}Telemetry(){};
 
 		/// Configuration hook.
-		bool configureHook( );
+		virtual bool configureHook( );
 		/// Start hook.
-		bool startHook( );
+		virtual bool startHook( );
 		/// Update hook.
-		void updateHook( );
+		virtual void updateHook( );
 		/// Stop hook.
-		void stopHook( );
+		virtual void stopHook( );
 		/// Cleanup hook.
-		void cleanupHook( );
+		virtual void cleanupHook( );
 
 	protected:
 
