@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include "SiemensDriveCommand.h"
+
 class SiemensActuatorsSimulator : public RTT::TaskContext
 {
 public:
@@ -20,6 +22,10 @@ public:
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
+
+protected:
+	RTT::InputPort< SiemensDriveCommand > portControls;
+	SiemensDriveCommand driveCommand;
 
 };
 

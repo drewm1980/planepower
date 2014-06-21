@@ -10,7 +10,8 @@ using namespace RTT::os;
 
 SiemensActuatorsSimulator::SiemensActuatorsSimulator(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of SiemensActuatorsSimulator" << endlog();
+	addEventPort("controls", portControls)
+		.doc("Command to be sent to the Siemens Drives");
 }
 
 bool SiemensActuatorsSimulator::configureHook()
@@ -25,6 +26,8 @@ bool  SiemensActuatorsSimulator::startHook()
 
 void  SiemensActuatorsSimulator::updateHook()
 {
+	portControls.read(driveCommand);
+	// Simulate nothing; just read the controls from the port and sit on them.
 }
 
 void  SiemensActuatorsSimulator::stopHook()
