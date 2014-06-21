@@ -6,4 +6,8 @@ CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
 SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/components/carousel2/siemensDrives/siemens_communication.o 
 SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/shared/udp_communication.o
 
+# Locations of headers for the signal types
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/siemensDrives
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lineAngleSensor2
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
 
