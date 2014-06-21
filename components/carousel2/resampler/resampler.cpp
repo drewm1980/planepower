@@ -10,7 +10,13 @@ using namespace RTT::os;
 
 Resampler::Resampler(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of Resampler" << endlog();
+	addPort("driveState",portDriveState).doc("Siemens Drives Measurements");
+	addPort("lineAngles",portLineAngles).doc("Line Angle Sensor Measurements");
+	addPort("data",portData).doc("Resampled measurements from all sensors");
+
+	memset(&driveState, 0, sizeof( driveState ));
+	memset(&lineAngles, 0, sizeof( driveState ));
+	memset(&resampledMeasurements, 0, sizeof( resampledMeasurements ));
 }
 
 bool Resampler::configureHook()
@@ -25,6 +31,10 @@ bool  Resampler::startHook()
 
 void  Resampler::updateHook()
 {
+	portDriveState.read(driveState);
+	portLineAngles.read(lineAngles);
+
+	portData.write(resampledMeasurements);
 }
 
 void  Resampler::stopHook()
