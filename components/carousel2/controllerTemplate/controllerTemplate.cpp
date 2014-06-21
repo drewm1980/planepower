@@ -57,6 +57,10 @@ void  ControllerTemplate::updateHook()
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDriveCommand.write(driveCommand);
 
+	// Load in new gains if they are available
+	ControllerGains tempGains;
+	FlowStatus gainsStatus = portControllerGains.read(tempGains);
+	if(gainsStatus == NewData) { gains = tempGains; }
 }
 
 
