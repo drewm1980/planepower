@@ -8,6 +8,11 @@
 
 #include <stdint.h>
 
+#include "SiemensDriveState.h"
+
+/// Define the time-stamp type
+typedef uint64_t TIME_TYPE;
+
 class SiemensSensorsSimulator : public RTT::TaskContext
 {
 public:
@@ -21,6 +26,11 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+protected:
+	RTT::OutputPort< SiemensDriveState > portData;
+
+private:
+	SiemensDriveState state;
 };
 
 #endif
