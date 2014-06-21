@@ -12,15 +12,16 @@ typedef uint64_t TIME_TYPE;
 
 GainLoader::GainLoader(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of GainLoader" << endlog();
+	addPort("gains",portGains).doc("Controller Gains");
 
-//	addPort("driveState",portDriveState).doc("Siemens Drives Measurements");
-//	addPort("lineAngles",portLineAngles).doc("Line Angle Sensor Measurements");
-//	addPort("data",portData).doc("Resampled measurements from all sensors");
+	// The property loader/marshaller should load the values directly into our
+	// gains structure.
+	addProperty("k11", gains.k11).doc("An entry in the controller gain matrix");
+	addProperty("k12", gains.k12).doc("An entry in the controller gain matrix");
+	addProperty("k21", gains.k21).doc("An entry in the controller gain matrix");
+	addProperty("k22", gains.k22).doc("An entry in the controller gain matrix");
 
-//	memset(&driveState, 0, sizeof( driveState ));
-//	memset(&lineAngles, 0, sizeof( driveState ));
-//	memset(&resampledMeasurements, 0, sizeof( resampledMeasurements ));
+	memset(&gains, 0, sizeof( gains ));
 }
 
 bool GainLoader::configureHook()
@@ -36,11 +37,11 @@ bool  GainLoader::startHook()
 void  GainLoader::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
-	//portDriveState.read(driveState);
 
-	//resampledMeasurements.ts_trigger = trigger;
-	//resampledMeasurements.ts_elapsed = TimeService::Instance()->secondsSince( trigger 
-	//portData.write(resampledMeasurements);
+	gains.ts_trigger = trigger;
+	gains.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+
+	portGains.write(gains);
 
 }
 

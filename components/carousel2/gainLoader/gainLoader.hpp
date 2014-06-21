@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include "ControllerGains.h"
+
 class GainLoader : public RTT::TaskContext
 {
 public:
@@ -20,15 +22,12 @@ public:
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
-protected:
-//	RTT::InputPort< SiemensDriveState > portDriveState;
-//	RTT::InputPort< LineAngles > portLineAngles;
-//	RTT::OutputPort< ResampledMeasurements > portData;
-private:
-//	SiemensDriveState driveState;
-//	LineAngles lineAngles;
-//	ResampledMeasurements resampledMeasurements;
 
+protected:
+	RTT::OutputPort< ControllerGains > portGains;
+private:
+
+	ControllerGains gains;
 };
 
 #endif

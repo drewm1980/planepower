@@ -10,4 +10,5 @@ SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/shared/udp_communication.o
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/siemensDrives
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lineAngleSensor2
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/gainLoader
 

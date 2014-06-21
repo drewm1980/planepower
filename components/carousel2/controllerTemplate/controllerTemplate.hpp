@@ -8,6 +8,11 @@
 
 #include <stdint.h>
 
+#include "ResampledMeasurements.h"
+#include "SiemensDriveCommand.h"
+
+#include "ControllerGains.h"
+
 class ControllerTemplate : public RTT::TaskContext
 {
 public:
@@ -21,6 +26,14 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+protected:
+	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
+	RTT::InputPort< ControllerGains > portControllerGains;
+	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
+private:
+	ResampledMeasurements resampledMeasurements;
+	SiemensDriveCommand driveCommand;
+	ControllerGains gains;
 };
 
 #endif
