@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("siemensActuatorsSimulator")
+ 
+#Create components
+loadComponent("siemensActuatorsSimulator","SiemensActuatorsSimulator")
+ 
+siemensActuatorsSimulator.configure()
+siemensActuatorsSimulator.start()

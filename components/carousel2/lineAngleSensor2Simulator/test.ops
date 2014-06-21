@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("lineAngleSensor2Simulator")
+ 
+#Create components
+loadComponent("lineAngleSensor2Simulator","LineAngleSensor2Simulator")
+ 
+lineAngleSensor2Simulator.configure()
+lineAngleSensor2Simulator.start()

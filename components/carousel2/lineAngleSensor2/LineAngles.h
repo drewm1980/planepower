@@ -4,7 +4,7 @@
 struct LineAngles
 {
 	double azimuth;
-	double inclination;
+	double elevation;
 
 	double ts_trigger;
 	double ts_elapsed;

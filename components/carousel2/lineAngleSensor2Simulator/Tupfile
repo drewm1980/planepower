@@ -1,0 +1,6 @@
+include_rules
+
+CPPFLAGS_OROCOS+=-I../lineAngleSensor2
+
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos |> 
