@@ -33,6 +33,7 @@ protected:
 private:
 	SiemensReceiver receiver;
 	SiemensDriveState state;
+	bool keepRunning;
 };
 
 #endif

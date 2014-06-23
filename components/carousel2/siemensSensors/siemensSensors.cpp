@@ -26,6 +26,7 @@ bool SiemensSensors::configureHook()
 bool  SiemensSensors::startHook()
 {
 	receiver.read(&state); // Stay in stopped state until data actually arrives
+	keepRunning = true;
 	return true;
 }
 
@@ -34,11 +35,12 @@ void  SiemensSensors::updateHook()
 	receiver.read(&state); // Blocking
 	//cout << "winchSpeedSmoothed: " << state.winchSpeedSmoothed << endl;
 	portData.write(state);
-	this->getActivity()->trigger(); // This makes the component re-trigger automatically
+	if(keepRunning) this->getActivity()->trigger(); // This makes the component re-trigger automatically
 }
 
 void  SiemensSensors::stopHook()
 {
+	keepRunning = false;
 }
 
 void  SiemensSensors::cleanupHook()

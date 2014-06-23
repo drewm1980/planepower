@@ -21,6 +21,8 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+private:
+	bool keepRunning;
 };
 
 #endif
