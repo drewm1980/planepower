@@ -26,6 +26,11 @@ public:
 
 // (Not visible here: some convenient operations exported as operations)
 
+protected:
+	RTT::InputPort< SiemensDriveCommand > portControls;
+	SiemensDriveCommand driveCommand;
+
+
 private:
 	SiemensSender *sender;
 };

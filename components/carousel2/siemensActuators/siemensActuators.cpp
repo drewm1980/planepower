@@ -11,6 +11,10 @@ using namespace RTT::os;
 SiemensActuators::SiemensActuators(std::string name):TaskContext(name,PreOperational) 
 {
 	sender = new SiemensSender;
+
+	addEventPort("controls", portControls)
+		.doc("Command to be sent to the Siemens Drives");
+
 #ifdef NONREALTIME_DEBUGGING
 	addOperation("setCarouselSpeed", &SiemensSender::send_carousel_calibrated_speed, this->sender, OwnThread)
 		.doc("Set the speed reference for the carousel drive. NOTE: This will only have an affect when the carousel drives are fully enabled!")
@@ -47,6 +51,9 @@ bool  SiemensActuators::startHook()
 
 void  SiemensActuators::updateHook()
 {
+	portControls.read(driveCommand);
+
+	// TODO Add Elias's commands to send line angles here
 }
 
 void  SiemensActuators::stopHook()

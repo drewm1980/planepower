@@ -41,6 +41,8 @@ else
 end
 
 dofile("load_hardware.lua")
+
+controlFrequency = 50.0 -- Hz
 dofile("load_controller.lua")
 
 --dofile("setup_reporters.lua")
