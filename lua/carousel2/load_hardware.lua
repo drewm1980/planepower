@@ -46,9 +46,9 @@ end
 ----------------- Set Priorities and activities
 
 -- All of these components trigger themselves once started the first time.
-deployer:setActivityOnCPU("siemensSensors", 0.0, sensorPrio, ORO_SCHED_RT,6)
-deployer:setActivityOnCPU("lineAngleSensor2", 0.0, sensorPrio, ORO_SCHED_RT,6)
-deployer:setActivityOnCPU("siemensActuators", 0.0, sensorPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("siemensSensors", 0.0, sensorPrio, scheduler,quietCore)
+deployer:setActivityOnCPU("lineAngleSensor2", 0.0, sensorPrio, scheduler,quietCore)
+deployer:setActivityOnCPU("siemensActuators", 0.0, sensorPrio, scheduler,quietCore)
 
 --------------- Configure and start the components
 

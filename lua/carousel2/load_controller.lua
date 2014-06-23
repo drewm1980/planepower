@@ -12,14 +12,6 @@ end
 
 PLANEPOWER="../../"
 
-controllerPrio = 98
-sensorPrio = 97
-reporterPrio = 50
-
---load_component("masterTimer","MasterTimer","masterTimer")
---load_properties("masterTimer",PROPERTIES.."masterTimer.cpf")
---base_hz = get_property("masterTimer","imu_target_hz")
-
 libraryNames={"resampler",
 				"gainLoader",
 				"controllerTemplate"}
@@ -43,9 +35,9 @@ end
 
 ----------------- Set Priorities and activities
 
-deployer:setActivityOnCPU("resampler", 0.0, controllerPrio, ORO_SCHED_RT,6)
-deployer:setActivityOnCPU("gainLoader", 0.0, humanPrio, ORO_SCHED_RT,6)
-deployer:setActivityOnCPU("controllerTemplate", 0.0, controllerPrio, ORO_SCHED_RT,6)
+deployer:setActivityOnCPU("resampler", 0.0, controllerPrio, scheduler,quietCore)
+deployer:setActivityOnCPU("gainLoader", 0.0, humanPrio, scheduler,someNoisyCore)
+deployer:setActivityOnCPU("controllerTemplate", 0.0, controllerPrio, scheduler,quietCore)
 
 ---------------- Connect Components
 
@@ -54,13 +46,16 @@ cp = rtt.Variable("ConnPolicy")
 deployer:connect("siemensSensors.data","resampler.driveState", cp)
 deployer:connect("lineAngleSensor2.data","resampler.lineAngles", cp)
 deployer:connect("resampler.data","controllerTemplate.resampledMeasurements", cp)
-deployer:connect("gainLoader.cpp", "controllerTemplate.gains", cp)
+deployer:connect("gainLoader.gains", "controllerTemplate.gains", cp)
 
 -- We need to load in at least one set of controller gains before the controller can transition to the runing state.
 
 GAINSDIR = PLANEPOWER.."components/carousel2/gainLoader/"
 --store_properties("gainLoader",GAINSDIR.."gains.cpf")
 load_properties("gainLoader",GAINSDIR.."gains.cpf")
+gainLoader:configure()
+gainLoader:start()
+gainLoader:trigger()
 
 --------------- Configure and start the components
 

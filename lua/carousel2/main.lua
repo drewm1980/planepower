@@ -18,7 +18,12 @@ rtt.logl("Info", "Loading PLANEPOWER components...")
 useSimulators = true 
 -- Set whether we will use the real hardware, or the *Simulator components
 if useSimulators then
-	normalPrio = 20 -- not sure if these go into prio or rtprio...
+	-- This mode is good for just checking if you got (most of)
+	-- your components hooked up right
+	quietCore = 0 -- So that we can test software on singlecore devices
+	someNoisyCore = 0
+	normalPrio = 0 -- not sure if these go into prio or rtprio...
+	scheduler = ORO_SCHED_OTHER
 	controllerPrio = normalPrio
 	sensorPrio = normalPrio
 	reporterPrio = normalPrio
@@ -26,8 +31,11 @@ if useSimulators then
 else
 	-- You need to be superuser for this, or you will be flodded
 	-- with warnings, and the priorities will not be realtime!
-	controllerPrio = 98
-	sensorPrio = 97
+	quietCore = 6 -- For the carousel
+	someNoisyCore = 1
+	scheduler = ORO_SCHED_RT
+	controllerPrio = 97
+	sensorPrio = 96
 	reporterPrio = 50
 	humanPrio = 60
 end
