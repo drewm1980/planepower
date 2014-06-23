@@ -7,16 +7,12 @@ for i,symbol in ipairs({"set_up_reporters"}) do
 	_G[symbol] = deployment_helpers[symbol]
 end
 
---Make sure the typekits are all loaded
---typekitNames = {"SiemensDriveStateTypekit.so",
-				--"LineAnglesTypekit",
-				--"ResampledMeasurementsTypekit",
-				--"SiemensDriveCommandTypekit",
-				--"ControllerGainsTypekit"}
---for i,name in ipairs(typekitNames) do
-	----deployer:loadLibrary(name);
-	--deployer:import(name);
---end
+-- NOTE!!!  MAKE SURE THE DIRECTORIES THAT CONTAIN THE "types" DIRECTORIES
+-- ARE ON YOUR RTT_COMPONENT_PATH environment variable, otherwise only one
+-- typekit will be loaded at random (?), and you will be confused as fuck.
+
+-- The typekits will still work in the components for some reason, but
+-- the reporters will not start!
 
 -- Load and set up a reporter for each sensor type
 reportedComponentNames={"siemensSensors",
