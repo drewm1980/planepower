@@ -30,6 +30,8 @@ protected:
 	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
 	RTT::InputPort< ControllerGains > portControllerGains;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
+	RTT::OutputPort< ControllerGains > portGainsOut;
+
 private:
 	ResampledMeasurements resampledMeasurements;
 	SiemensDriveCommand driveCommand;

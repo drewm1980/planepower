@@ -12,13 +12,6 @@ function P.load_component(libraryName,className,instanceName)
 	_G[instanceName]=deployer:getPeer(instanceName)
 end
 
-function P.load_reporter(reporterName)
-	deployer:loadComponent(reporterName, "OCL::NetcdfReporting")
-	reporter=deployer:getPeer(reporterName)
-	_G[reporterName]=reporter
-	return 
-end
-
 function P.load_properties(instanceName,propertiesFilename)
 	return _G[instanceName]:provides("marshalling"):getOperation("loadProperties")(propertiesFilename)
 end
@@ -32,6 +25,29 @@ function P.set_property(instanceName, propertyName, propertyValue)
 end
 function P.get_property(instanceName, propertyName, propertyValue)
 	return _G[instanceName]:getProperty(propertyName):get(propertyValue)
+end
+
+function get_output_ports(componentName)
+	c = _G[componentName]
+	--print(componentName)
+	pns = _G[componentName]:getPortNames()
+	outputPortNames = {}
+	for k,pn in ipairs(pns) do
+		p = c:getPort(pn)
+		pstring = tostring(p)
+		if string.find(pstring,"out",1) then
+			--print("Detected output port ".. pn)
+			table.insert(outputPortNames,pn)
+		end
+	end
+	return outputPortNames
+end
+
+function P.load_reporter(reporterName)
+	deployer:loadComponent(reporterName, "OCL::NetcdfReporting")
+	reporter=deployer:getPeer(reporterName)
+	_G[reporterName]=reporter
+	return 
 end
 
 function P.set_up_reporters(reporterBaseNames,reportedComponentNames)

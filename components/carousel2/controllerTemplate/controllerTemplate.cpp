@@ -14,6 +14,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 {
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
 	addPort("gains",portControllerGains).doc("Controller Gains");
+	addPort("gainsOut",portGainsOut).doc("Controller Gains");
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
 
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
@@ -56,6 +57,12 @@ void  ControllerTemplate::updateHook()
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDriveCommand.write(driveCommand);
+
+	// Write out the gains, for reporting.
+	// Reporting the output of gainLoader would also be an option
+	// if bandwidth gets constrained, but this is probably more
+	// convenient for plotting, and more reliable.
+	portGainsOut.write(gains);
 
 	// Load in new gains if they are available
 	ControllerGains tempGains;

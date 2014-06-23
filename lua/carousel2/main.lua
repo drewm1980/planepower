@@ -45,9 +45,9 @@ dofile("load_hardware.lua")
 controlFrequency = 50.0 -- Hz
 dofile("load_controller.lua")
 
---dofile("setup_reporters.lua")
---dofile("setup_telemetry.lua")
+dofile("load_reporters.lua")
+--dofile("load_telemetry.lua")
 
---masterTimer:start()
+-- controller:start()
 
 dofile("../shared/postamble.lua")

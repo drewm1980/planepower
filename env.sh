@@ -28,6 +28,11 @@ alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
 
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel1
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/lineAngleSensor2
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensSensors
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensActuators
+
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/gainLoader/resampler
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/main
 
 DEFAULT_RAWESOME_ROOT=$PLANEPOWER_ROOT/extern/rawesome

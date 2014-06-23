@@ -14,6 +14,8 @@ CXXFLAGS_OROCOS+=-Wno-unused-function
 CXXFLAGS_OROCOS+=-Wunused-function
 
 LDFLAGS_OROCOS += -lprotobuf -lzmq
-: *.o |> !ld_orocos |>
+
+SO_NAME=$(CODEGEN_SOURCE_STRUCT)
+: *.o |> !ld_orocos_custom |> 
 
 .gitignore
