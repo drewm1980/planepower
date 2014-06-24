@@ -34,6 +34,9 @@
 #define nominalCarouselSpeed (nominalCarouselShaftSpeed/carouselGearRatio*2.0*PI/60.0) // rad/s Arm rotation speed when nominalCommand is sent
 
 #define PI 3.14159265359
+
+#define rpm2radps (2.0*PI/(carouselGearRatio*60))
+#define rpm2mps (winchDrumRadius*2.0*PI/(winchGearRatio*60.0))
 #define nominalWinchSpeed (nominalWinchShaftSpeed/winchGearRatio*2.0*PI/60.0*winchDrumRadius) // m/s The speed of the surface of the drum when nominalCommand binary value is sent.
 #define maxWinchSpeed (maxWinchShaftSpeed/winchGearRatio*2.0*PI/60.0*winchDrumRadius) // m/s The speed of the surface of the drum
 
