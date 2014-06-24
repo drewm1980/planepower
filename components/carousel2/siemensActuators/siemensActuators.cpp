@@ -52,8 +52,7 @@ bool  SiemensActuators::startHook()
 void  SiemensActuators::updateHook()
 {
 	portControls.read(driveCommand);
-
-	// TODO Add Elias's commands to send line angles here
+	sender->write(driveCommand);
 }
 
 void  SiemensActuators::stopHook()

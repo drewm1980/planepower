@@ -130,7 +130,7 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 	UDPReceivePacket c;
 	memset(ds,0,sizeof(SiemensDriveState));
 	receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
-	cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
+	//cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
 	bswap_packet(&c);
 	//cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
 
