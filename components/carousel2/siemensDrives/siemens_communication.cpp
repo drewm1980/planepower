@@ -135,16 +135,16 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 	//cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
 
 	// NOTE: UNITS OF THESE ARE TO BE DETERMINED FROM STARTER!
+	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint)/(nominalCommand);
 	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed)/(nominalCommand);
 	ds->winchEncoderPosition = ((double) c.winchEncoderPosition)/(nominalCommand);
+	ds->winchTorque = ((double) c.winchTorque)/(nominalCommand);
+	//ds->winchPower = ((double) c.winchPower)/(nominalCommand);
+	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint)/(nominalCommand);
 	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed)/(nominalCommand);
 	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition)/(nominalCommand);
-	ds->winchTorque = ((double) c.winchTorque)/(nominalCommand);
-	ds->winchPower = ((double) c.winchPower)/(nominalCommand);
-	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint)/(nominalCommand);
 	ds->carouselTorque = ((double) c.carouselTorque)/(nominalCommand);
-	ds->carouselPower = ((double) c.carouselPower)/(nominalCommand);
-	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint)/(nominalCommand);
+	//ds->carouselPower = ((double) c.carouselPower)/(nominalCommand);
 }
 
 void SiemensReceiver::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
