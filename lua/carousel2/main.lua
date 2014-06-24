@@ -54,6 +54,8 @@ rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
 telemetryFrequency = 50.0 --Hz
 dofile("load_telemetry.lua")
 
+print(resampler:stat())
+
 -- controller:start()
 
 dofile("../shared/postamble.lua")
