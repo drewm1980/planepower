@@ -103,10 +103,18 @@ signal.signal(signal.SIGINT, signal_handler)
 host = "localhost"
 #host = "192.168.1.110"
 
-telemetryInstanceNames=["siemensSensorsTelemetry",      "lineAngleSensor2Telemetry", "resampledMeasurementsTelemetry", "controllerTelemetry"]
+# This MUST match the order in load_telemetry.lua,
+# otherwise the ports will not be enumerated correctly!
+telemetryInstanceNames=["siemensSensorsTelemetry",      
+                        "lineAngleSensor2Telemetry", 
+                        "resampledMeasurementsTelemetry", 
+                        "controllerTelemetry"]
 ports = dict() 
+startPort = 5562
 for i in range(len(telemetryInstanceNames)):
-    ports[telemetryInstanceNames[i]] = str(i)
+    portnumber = startPort+i
+    print "Port for "+telemetryInstanceNames[i]+" is "+str(portnumber)
+    ports[telemetryInstanceNames[i]] = str(portnumber)
     
 #McuHandlerPort = "5563"
 #EncoderPort    = "5564"

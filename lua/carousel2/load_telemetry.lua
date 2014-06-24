@@ -19,8 +19,9 @@ for i=1,#telemetryInstanceNames do
 	telemetryInstances[i] = _G[telemetryInstanceNames[i]]
 end
 
+startPort = 5562
 for i=1,#telemetryInstances do
-	portNumber = 5562+i
+	portNumber = startPort+i-1 -- because lua is one indexed
 	portString = "tcp://*:"..portNumber
 	print ("Starting "..telemetryInstanceNames[i].." on port "..portString.."..")
 	telemetryInstances[i]:getProperty("port"):set(portString)
