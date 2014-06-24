@@ -8,12 +8,12 @@ struct SiemensDriveState{
 	double winchSpeedSmoothed;
 	double winchEncoderPosition;
 	double winchTorque;
-	//double winchPower;
+	double winchCurrent;
 	double carouselSpeedSetpoint;
 	double carouselSpeedSmoothed;
 	double carouselEncoderPosition;
 	double carouselTorque;
-	//double carouselPower;
+	double carouselCurrent;
 
 	double ts_trigger;
 	double ts_elapsed;
