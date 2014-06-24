@@ -13,8 +13,6 @@ for i,symbol in ipairs({"load_component",
 	_G[symbol] = deployment_helpers[symbol]
 end
 
-rtt.logl("Info", "Loading PLANEPOWER components...")
-
 useSimulators = true 
 -- Set whether we will use the real hardware, or the *Simulator components
 if useSimulators then
@@ -28,6 +26,7 @@ if useSimulators then
 	sensorPrio = normalPrio
 	reporterPrio = normalPrio
 	humanPrio = normalPrio
+	telemetryPrio = normalPrio
 else
 	-- You need to be superuser for this, or you will be flodded
 	-- with warnings, and the priorities will not be realtime!
@@ -38,15 +37,22 @@ else
 	sensorPrio = 96
 	reporterPrio = 50
 	humanPrio = 60
+	telemetryPrio = 30
 end
 
+rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
+rtt.logl("Info", "Loading HIGHWIND controller related components...")
 controlFrequency = 50.0 -- Hz
 dofile("load_controller.lua")
 
+rtt.logl("Info", "Loading HIGHWIND logging related components...")
 dofile("load_reporters.lua")
---dofile("load_telemetry.lua")
+
+rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
+telemetryFrequency = 50.0 --Hz
+dofile("load_telemetry.lua")
 
 -- controller:start()
 
