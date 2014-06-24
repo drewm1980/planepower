@@ -21,6 +21,11 @@ if [ -d /opt/ros/hydro ]; then
 	. /opt/ros/hydro/setup.bash
 fi
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/plugins/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib/orocos/gnulinux/ocl/types/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/hydro/lib
+
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rFSM/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
