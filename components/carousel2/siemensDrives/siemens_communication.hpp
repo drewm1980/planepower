@@ -52,12 +52,12 @@ struct UDPReceivePacket{
 	int32_t winchSpeedSmoothed;
 	uint32_t winchEncoderPosition;
 	int32_t winchTorque;
-	//int32_t winchPower;
+	int32_t winchCurrent;
 	int32_t carouselSpeedSetpoint;
 	int32_t carouselSpeedSmoothed;
 	uint32_t carouselEncoderPosition;
 	int32_t carouselTorque;
-	//int32_t carouselPower;
+	int32_t carouselCurrent;
 };
 
 struct EncoderState

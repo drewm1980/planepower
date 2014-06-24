@@ -34,10 +34,16 @@ int main(int argc, char *argv[])
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
 		s.read(&ds);
-		printf("winchSpeedSmoothed: %f ",ds.winchSpeedSmoothed);
+		printf("winchSpeedSetpoint: %f\n",ds.winchSpeedSetpoint);
+		printf("winchSpeedSmoothed: %f\n ",ds.winchSpeedSmoothed);
+		printf("winchPosition: %f\n",ds.winchEncoderPosition);
+		printf("winchTorque: %f\n",ds.winchTorque);
+		printf("winchCurrent: %f\n",ds.winchCurrent);
+		printf("carouselSpeedSetpoint: %f\n",ds.carouselSpeedSetpoint);
 		printf("carouselSpeedSmoothed: %f\n",ds.carouselSpeedSmoothed);
-		//printf("winchPosition: %f\n",ds.winchEncoderPosition);
-		//printf("winchSpeedSetpoint: %f\n",ds.winchSpeedSetpoint);
+		printf("carouselPosition: %f\n",ds.carouselEncoderPosition);
+		printf("carouselTorque: %f\n",ds.carouselTorque);
+		printf("carouselCurrent: %f\n",ds.carouselCurrent);
 	}
 }
 

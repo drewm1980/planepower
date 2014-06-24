@@ -130,21 +130,27 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 	UDPReceivePacket c;
 	memset(ds,0,sizeof(SiemensDriveState));
 	receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
-	//cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
+	//cout << "before bswap CSSP " << c.carouselSpeedSetpoint << " CSS "  << c.carouselSpeedSmoothed << endl;
+	//cout << "before bswap WSSP " << c.winchSpeedSetpoint << " WSS " << c.winchSpeedSmoothed << endl;
+	//cout << "before bswap CEP " << c.carouselEncoderPosition << " CT " << c.carouselTorque << endl;
+	//cout << "before bswap WEP " << c.winchEncoderPosition << " WT " << c.winchTorque << endl;
+	//cout << "CSS " << hex << uppercase << c.carouselSpeedSmoothed << endl;	
+	//cout << "CEP " << hex << c.carouselEncoderPosition << endl;	
 	bswap_packet(&c);
-	//cout << c.winchSpeedSmoothed << ' ' << c.carouselSpeedSmoothed << endl;
+	//cout << "after bswap " << c.carouselSpeedSetpoint << ' ' << c.carouselSpeedSmoothed << endl;
+	cout << "after bswap CEP " << c.carouselEncoderPosition << " CT " << c.carouselTorque << endl;
 
 	// NOTE: UNITS OF THESE ARE TO BE DETERMINED FROM STARTER!
 	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint)/(nominalCommand);
 	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed)/(nominalCommand);
 	ds->winchEncoderPosition = ((double) c.winchEncoderPosition)/(nominalCommand);
 	ds->winchTorque = ((double) c.winchTorque)/(nominalCommand);
-	//ds->winchPower = ((double) c.winchPower)/(nominalCommand);
-	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint)/(nominalCommand);
-	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed)/(nominalCommand);
-	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition)/(nominalCommand);
+	ds->winchCurrent = ((double) c.winchCurrent)/(nominalCommand);
+	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint)/(carouselGearRatio);
+	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed)/(carouselGearRatio);
+	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition) * 20 * PI / (626074111 - 164054527);//(Pseudo-)arm Position in rad. Conversion from poor experimental data
 	ds->carouselTorque = ((double) c.carouselTorque)/(nominalCommand);
-	//ds->carouselPower = ((double) c.carouselPower)/(nominalCommand);
+	ds->carouselCurrent = ((double) c.carouselCurrent)/(nominalCommand);
 }
 
 void SiemensReceiver::handle_32bit_rollover(EncoderState *e, uint32_t smallCounts)
