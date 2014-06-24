@@ -8,6 +8,8 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+typedef uint64_t TIME_TYPE;
+
 SiemensActuators::SiemensActuators(std::string name):TaskContext(name,PreOperational) 
 {
 	sender = new SiemensSender;
@@ -51,7 +53,10 @@ bool  SiemensActuators::startHook()
 
 void  SiemensActuators::updateHook()
 {
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	portControls.read(driveCommand);
+	driveCommand.ts_trigger = trigger;
+	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	sender->write(driveCommand);
 }
 

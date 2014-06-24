@@ -66,5 +66,6 @@ for i=1,#instanceNames do
 	_G[instanceNames[i]]:configure()
 	_G[instanceNames[i]]:start()
 end
+sleep(.001)
 controller:configure()
 
