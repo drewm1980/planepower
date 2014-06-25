@@ -163,10 +163,10 @@ int main(int argc, char *argv[]){
 	#endif
 
 
+	int recv_len;
+	size_t data_len = sizeof(input_stream);
 
 	while (1){
-		int recv_len;
-		size_t data_len = sizeof(input_stream);
 		// err = receiveUDPServerData(&udp_server,(void *)&input_stream, sizeof(input_stream)); //blocking !!!
 		//1. retreive UDP data form planebone from ethernet port.
 		err = receiveUDPServerData(&udp_server,(void *)&input_stream, data_len, &recv_len); //blocking !!!

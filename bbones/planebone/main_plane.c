@@ -156,10 +156,20 @@ int main(int argc, char *argv[]){
 
 	UDP_err_handler(openUDPServerSocket(&udp_server,connection.port_number_pc_to_lisa,UDP_SOCKET_TIMEOUT),write_udp_error_ptr);
 
+
+	int recv_len;
+	size_t data_len = sizeof(input_stream);
+
 	while(1){
 
 		//1. retreive UDP data form PC from ethernet port.
-		err=receiveUDPServerData(&udp_server,(void *)&input_stream,sizeof(input_stream)); //blocking !!!
+		err=receiveUDPServerData(&udp_server,(void *)&input_stream, data_len, &recv_len); //blocking !!!
+		if (recv_len != data_len) {
+                	printf("Wrong number of bytes in received UDP packet!\n");
+                        printf("Expected %lu bytes, Received %d bytes!\n",data_len,recv_len);
+                        err = UDP_ERR_RECV;
+                }
+
 		UDP_err_handler(err,write_udp_error_ptr);
 
 		if(err==UDP_ERR_NONE){
