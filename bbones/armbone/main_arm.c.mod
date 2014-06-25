@@ -9,7 +9,7 @@
 #include "circular_buffer.h"
 #include "data_decoding.h"
 #include "spi_communication.h"
-#include "bitbang_spi.h"
+#include "SimpleGPIO.h"
 
 #define MAX_STREAM_SIZE 255
 #define LINE_ANGLE_BUFFER_SIZE 8		
@@ -73,13 +73,22 @@ int main(int argc, char *argv[])
 
 	SPI_err_handler(spi_open(),write_spi_error_ptr);
 	UDP_err_handler(openUDPClientSocket(&udp_client,connection.server_ip,connection.port_number_send,UDP_SOCKET_TIMEOUT),write_udp_error_ptr);
-	// initialize the fast spi reader
-	bitbang_init();
+	// Exporting GPIO-interface for "start"-flag
+	unsigned int x = 20;
+	unsigned int gpio_val = 0;
+	gpio_export(x);
+	gpio_set_dir(x, INPUT_PIN);
+
 	printf("Entering real-time while loop.  Will not do any printing in the loop. \n");
 	while(1)
-	{	// spi_read is very slow!
-		// err = spi_read(input_buffer);
-		err = spi_read_fast(input_buffer);
+	{
+		// Trap until the gpio is set by arduino
+		while(gpio_val == 0){
+			gpio_get_value(x, &gpio_val);
+		}
+		
+		
+		err = spi_read(input_buffer);
 		if(err==SPI_ERR_NONE){
 
 			//printf("%.2X  %.2X  %.2X  %.2X  \n",input_buffer[3],input_buffer[2],input_buffer[1],input_buffer[0]); //////////checking
