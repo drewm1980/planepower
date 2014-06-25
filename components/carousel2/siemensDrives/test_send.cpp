@@ -9,7 +9,7 @@
 #include "siemens_communication.hpp"
 
 // Prompt for and return a speed from the user
-float getSpeedFromUser()
+float getRefSpeedFromUser()
 {
 	printf("please enter the speed as a percentage:\n");
 	float speedpercent=0.0f;
@@ -20,16 +20,30 @@ float getSpeedFromUser()
 	return speedpercent;
 }
 
+float getCalSpeedFromUser()
+{
+	printf("please enter the speed:\n");
+	float speed=0.0f;
+	int numassigned = scanf("%f",&speed);
+	if (numassigned!=1) printf("Error reading string!\n");
+	return speed;
+}
 int main(int argc, char *argv[])
 {
 	SiemensSender siemens;
 	bool cont=1;
 	while(cont){
-		printf("For the winch, ");
-		double winchSpeed = getSpeedFromUser()/100.0*winchSpeedAt100; // m/s
+		/*printf("For the winch, ");
+		double winchSpeed = getRefSpeedFromUser(); // in % 
 		printf("For the carousel, ");
-		double carouselSpeed = getSpeedFromUser()/100.0*carouselSpeedAt100; // rad/s
+		double carouselSpeed = getRefSpeedFromUser(); // in %
 		printf("Sending the reference speeds to the PLC!\n");
+		siemens.send_carousel_reference_speed(carouselSpeed);
+		*/printf("For the winch in m/s, ");
+		double winchSpeed = getCalSpeedFromUser(); // m/s
+		printf("For the carousel in rad/s, ");
+		double carouselSpeed = getCalSpeedFromUser(); // rad/s
+		printf("Sending the calibrated speeds to the PLC!\n");
 		siemens.send_calibrated_speeds(winchSpeed,carouselSpeed);
 	}
 	
