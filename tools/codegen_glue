@@ -147,7 +147,8 @@ def codegen_protobuf_bridge(structName, memberNames, headerFileName):
         return '\tmsg.set_' + lower(name) + '( data.' + name + ' );\n'
     membersSnippet = '' 
     for i in xrange(len(memberNames)):
-        membersSnippet += member_snippet(memberTypes[i], 
+        if (memberNames[i] != "ts_trigger") and (memberNames[i] != "ts_elapsed"):
+            membersSnippet += member_snippet(memberTypes[i], 
                                         memberNames[i], 
                                         i+1) 
 
