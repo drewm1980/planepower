@@ -56,6 +56,8 @@ dofile("load_telemetry.lua")
 
 print(resampler:stat())
 
--- controller:start()
+if useSimulators then
+	controller:start()
+end
 
 dofile("../shared/postamble.lua")

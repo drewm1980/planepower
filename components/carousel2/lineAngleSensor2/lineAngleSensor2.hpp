@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include "LineAngles.h"
+
 class LineAngleSensor2 : public RTT::TaskContext
 {
 public:
@@ -21,7 +23,10 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 
+protected:
+	RTT::OutputPort< LineAngles > portData;
 private:
+	LineAngles lineAngles;
 	bool keepRunning;
 };
 

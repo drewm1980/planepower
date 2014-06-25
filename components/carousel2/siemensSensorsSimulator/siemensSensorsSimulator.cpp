@@ -41,6 +41,7 @@ void  SiemensSensorsSimulator::updateHook()
 
 	state.ts_trigger = trigger;
 	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+
 	portData.write(state);
 
 	this->getActivity()->trigger(); // This makes the component re-trigger automatically
