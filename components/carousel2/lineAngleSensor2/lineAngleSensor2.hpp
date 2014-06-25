@@ -32,16 +32,11 @@ public:
 
 protected:
 	RTT::OutputPort< LineAngles > portData;
-	/// Port to listen on: upstream and downstream
-        unsigned hostPortDownstream;
 
 private:
-	void printStatus();
+	ArmboneReveiver receiver;
 	LineAngles lineAngles;
-	UDP_errCode err;
-	UDP udp_server;
 	bool keepRunning;
-	uint8_t input_stream[30];
 };
 
 #endif

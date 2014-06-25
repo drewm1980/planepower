@@ -5,6 +5,7 @@
 #include <string.h>
 #include <iostream>
 #include <time.h>
+#include <math.h>
 
 #include "armbone_communication.hpp"
 
@@ -26,8 +27,29 @@ int main(int argc, char *argv[])
 	clock_gettime(CLOCK_REALTIME, &t2); 
 	time_t dsec = t2.tv_sec-t1.tv_sec;
 	long dnsec = t2.tv_nsec-t1.tv_nsec;
-	double dt = (dsec + dnsec*1.0e-9)/1000; // milliseconds 
-	cout << "Received " << trials << " packets at dt= " << dt/trials << " ms per sample" << endl;
+	double dt = (dsec + dnsec*1.0e-9)*1000.0; // milliseconds
+	dt/=trials;
+	cout << "Received " << trials << " packets at dt= " << dt << " ms per sample" << endl;
+
+        double dt_average = dt;
+        cout << "Measuring jitter in data from Armbone..." << endl;
+        double worst_case = 0.0;
+        double average_jitter = 0.0;
+        for(int i=0; i<trials; i++) {
+                clock_gettime(CLOCK_REALTIME, &t1);
+                s.read(&ds);
+                clock_gettime(CLOCK_REALTIME, &t2);
+                dsec = (int64_t)t2.tv_sec - (int64_t)t1.tv_sec;
+                dnsec = (int64_t)t2.tv_nsec- (int64_t)t1.tv_nsec;
+                dt = (dsec + dnsec*1.0e-9)*1000.0; // milliseconds 
+                double err = fabs(dt - dt_average);
+                if( err > worst_case) worst_case = err;
+                average_jitter+=err;
+        }
+        average_jitter/=trials;
+
+        cout << "After " << trials << " packets, worst case jitter was " << worst_case << " ms " << endl;
+        cout << "Average jitter was " << average_jitter << " ms" << endl;
 
 	while(1)
 	{
