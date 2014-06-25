@@ -173,7 +173,7 @@ int main(int argc, char *argv[]){
 
 		if (recv_len != 30) {
 			printf("Wrong number of bytes in received UDP packet!\n");
-                	printf("Expected %lu bytes, Received %d bytes!\n",data_len,recv_len);
+                	printf("Expected 30 bytes, Received %d bytes!\n", recv_len);
                 	err = UDP_ERR_RECV;
 		}
 
