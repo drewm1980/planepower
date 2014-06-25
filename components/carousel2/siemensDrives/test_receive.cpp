@@ -25,10 +25,11 @@ int main(int argc, char *argv[])
 	clock_gettime(CLOCK_REALTIME, &t1); 
 	for(int i=0; i<trials; i++) { s.read(&ds); }
 	clock_gettime(CLOCK_REALTIME, &t2); 
-	time_t dsec = t2.tv_sec-t1.tv_sec;
-	long dnsec = t2.tv_nsec-t1.tv_nsec;
-	double dt = (dsec + dnsec*1.0e-9)/1000; // milliseconds 
-	cout << "Received " << trials << " packets at dt= " << dt/trials << " ms per sample" << endl;
+	double dsec = (int64_t)t2.tv_sec - (int64_t)t1.tv_sec;
+	double dnsec = (int64_t)t2.tv_nsec- (int64_t)t1.tv_nsec;
+	double dt = (dsec + dnsec*1.0e-9)*1000.0; // milliseconds 
+	dt/=trials;
+	cout << "Received " << trials << " packets at dt= " << dt << " ms per sample" << endl;
 
 	double dt_average = dt;
 	cout << "Measuring jitter in data from PLC..." << endl;
@@ -38,9 +39,9 @@ int main(int argc, char *argv[])
 		clock_gettime(CLOCK_REALTIME, &t1); 
 		s.read(&ds); 
 		clock_gettime(CLOCK_REALTIME, &t2); 
-		dsec = t2.tv_sec-t1.tv_sec;
-		dnsec = t2.tv_nsec-t1.tv_nsec;
-		dt = (dsec + dnsec*1.0e-9)/1000.0; // milliseconds 
+		dsec = (int64_t)t2.tv_sec - (int64_t)t1.tv_sec;
+		dnsec = (int64_t)t2.tv_nsec- (int64_t)t1.tv_nsec;
+		dt = (dsec + dnsec*1.0e-9)*1000.0; // milliseconds 
 		double err = fabs(dt - dt_average);
 		if( err > worst_case) worst_case = err;
 		average_jitter+=err;
