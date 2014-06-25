@@ -129,7 +129,11 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 {
 	UDPReceivePacket c;
 	memset(ds,0,sizeof(SiemensDriveState));
-	receiveUDPServerData(&udp_server,(void *)&c,sizeof(c)); //blocking !!!
+	int recv_len;
+	size_t data_len = sizeof(c);
+	receiveUDPServerData(&udp_server,(void *)&c, data_len, &recv_len); //blocking !!!
+
+
 	/*cout << "CSSP " << hex << uppercase << c.carouselSpeedSetpoint << endl;
 	cout << "CSS "  << c.carouselSpeedSmoothed << endl;
 	cout << "CEP " << c.carouselEncoderPosition << endl;
