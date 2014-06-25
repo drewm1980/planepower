@@ -150,18 +150,18 @@ void SiemensReceiver::read(SiemensDriveState* ds)
  	cout << "WT " << c.winchTorque << endl;*/
 
 	// NOTE: UNITS OF THESE ARE TO BE DETERMINED FROM STARTER! Evrerything beside the Positions has to be proofen
-	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint)/nominalCommand * rpm2mps;//in m/s
-	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed)/nominalCommand * rpm2mps;//in m/s
+	ds->winchSpeedSetpoint = ((double) c.winchSpeedSetpoint) * nominalWinchSpeed / nominalCommand;//in m/s
+	ds->winchSpeedSmoothed = ((double) c.winchSpeedSmoothed) * nominalWinchSpeed / nominalCommand;//in m/s
 	ds->winchEncoderPosition = ((double) c.winchEncoderPosition) * 20 * PI / (246610 - 875);//in rad (experimatal data)
-	ds->winchTorque = ((double) c.winchTorque)/nominalCommand / winchGearRatio;//Torque on winch drum in Nm
-	ds->winchCurrent = ((double) c.winchCurrent)/nominalCommand;//in Ampere
+	ds->winchTorque = ((double) c.winchTorque) * nominalWinchTorque / nominalCommand;//Torque on winch drum in Nm
+	ds->winchCurrent = ((double) c.winchCurrent) * nominalWinchCurrent / nominalCommand;//in Ampere
 
 
-	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint) /nominalCommand* rpm2radps;//in rad/s
-	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed)/nominalCommand/(carouselGearRatio);//(Pseudo-)arm speed in ad/s
+	ds->carouselSpeedSetpoint = ((double) c.carouselSpeedSetpoint) * nominalCarouselSpeed / nominalCommand;//arm speed setpoint in rad/s
+	ds->carouselSpeedSmoothed = ((double) c.carouselSpeedSmoothed) * nominalCarouselSpeed / nominalCommand;//(Pseudo-)arm speed in rad/s
 	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition) * 20 * PI / (626074111 - 164054527);//(Pseudo-)arm Position in rad (experimental data)
-	ds->carouselTorque = ((double) c.carouselTorque)/nominalCommand/carouselGearRatio;//Torque on arm shaft in Nm
-	ds->carouselCurrent = ((double) c.carouselCurrent)/nominalCommand;//in Ampere
+	ds->carouselTorque = ((double) c.carouselTorque) * nominalCarouselTorque / nominalCommand;//Torque on arm shaft in Nm
+	ds->carouselCurrent = ((double) c.carouselCurrent) * nominalCarouselCurrent / nominalCommand;//in Ampere
 
 }
 
