@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+dest=~/experiments
+timestamp=`date +%Y%m%d_%H%m%S`
+
+mkdir $dest/$timestamp
+cp *.nc *.log *.lua *.py $dest/$timestamp
+
+(
+cd $dest
+git pull origin master
+git add $timestamp
+git commit
+git push origin master
+)
