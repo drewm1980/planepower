@@ -10,6 +10,13 @@
 
 #include "LineAngles.h"
 
+#include "udp_communication.h"
+#include "data_decoding.h"
+
+#define MAX_INPUT_STREAM_SIZE 255
+#define UDP_SOCKET_TIMEOUT 1000000000
+
+
 class LineAngleSensor2 : public RTT::TaskContext
 {
 public:
@@ -25,9 +32,16 @@ public:
 
 protected:
 	RTT::OutputPort< LineAngles > portData;
+	/// Port to listen on: upstream and downstream
+        unsigned hostPortDownstream;
+
 private:
+	void printStatus();
 	LineAngles lineAngles;
+	UDP_errCode err;
+	UDP udp_server;
 	bool keepRunning;
+	uint8_t input_stream[30];
 };
 
 #endif
