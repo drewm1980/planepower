@@ -10,12 +10,14 @@ print('loading timing data to plot jitter...')
 
 fileRoots = ['controller', 'resampler', 'lineAngleSensor2', 'siemensSensors']
 
+samplesToSkip = 3
+
 figure('Jitter, based on diff of timestamps')
 for i in range(len(fileRoots)):
     if i==0:
         title('Component startHooks jitter')
     f = netcdf.netcdf_file(fileRoots[i]+'Data.nc', 'r')
-    ts_trigger = f.variables[fileRoots[i]+'.data.ts_trigger'].data[1:]*1.0e-9
+    ts_trigger = f.variables[fileRoots[i]+'.data.ts_trigger'].data[samplesToSkip+1:]*1.0e-9
     pylab.subplot(len(fileRoots),1,i+1)
     if len(ts_trigger > 0): # controller may not have run
         jitter = diff(ts_trigger) * 1e3 # ms
