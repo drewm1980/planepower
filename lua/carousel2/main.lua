@@ -13,7 +13,7 @@ for i,symbol in ipairs({"load_component",
 	_G[symbol] = deployment_helpers[symbol]
 end
 
-useSimulators = true 
+useSimulators = false 
 -- Set whether we will use the real hardware, or the *Simulator components
 if useSimulators then
 	-- This mode is good for just checking if you got (most of)
@@ -36,7 +36,7 @@ else
 	controllerPrio = 97
 	sensorPrio = 96
 	reporterPrio = 50
-	humanPrio = 60
+	humanPrio = 60 -- For human interaction, i.e. gain loading
 	telemetryPrio = 30
 end
 
@@ -52,7 +52,7 @@ dofile("load_reporters.lua")
 
 rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
 telemetryFrequency = 50.0 --Hz
-dofile("load_telemetry.lua")
+--dofile("load_telemetry.lua")
 
 print(resampler:stat())
 

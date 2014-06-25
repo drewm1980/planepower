@@ -34,10 +34,9 @@ bool  SiemensSensors::startHook()
 
 void  SiemensSensors::updateHook()
 {
-	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	receiver.read(&state); // Blocking
-	//cout << "winchSpeedSmoothed: " << state.winchSpeedSmoothed << endl;
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	state.ts_trigger = trigger;
 	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

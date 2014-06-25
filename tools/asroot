@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Execute a command with root permissions but the current user's environment
+
+echo "THIS SHIT DONT WORK YET!!!"
+
+#echo "Taking on root permissions!"
+##export COMMAND_TO_RUN=$@
+#sudo /bin/bash -c $@
+##$COMMAND_TO_RUN
+##$@ # Bash variable that expands to all arguments
+#echo "Relinquishing root permissions!"
+#exit
