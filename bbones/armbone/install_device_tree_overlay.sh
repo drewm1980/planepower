@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 #echo "Edit /boot/uboot/uEnv.txt:"
 #echo "capemgr.enable_partno=BB-SPI1-01"

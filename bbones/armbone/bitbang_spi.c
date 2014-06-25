@@ -13,6 +13,7 @@
 #include "SimpleGPIO.h"
 #include "pins.h"
 #include "encoder_calibration.h"
+#include "spi_communication.h"
 #include "bitbang_spi.h"
 
 int fd_CS0, fd_CS1, fd_MISO, fd_CLK, fd_AZ_STATUS, fd_EL_STATUS;
@@ -216,6 +217,29 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 
 	encoders_to_angles(azimuth_raw, elevation_raw,
 			azimuth_radians, elevation_radians);
+}
+
+void read_angle_raw(uint16_t *rsp_azimuth, uint16_t *rsp_elevation)
+{
+	//uint16_t azimuth_raw=0.0, elevation_raw=0.0; 
+
+	//printf("Reading azimuth...\n");
+	bitbang_read(CS0_PIN, rsp_azimuth);
+	//printf("Reading elevation...\n");
+	bitbang_read(CS1_PIN, rsp_elevation);
+	
+}
+
+SPI_errCode spi_read_fast(uint8_t data_sensors[])
+{
+	uint32_t rsp = 0;
+	uint16_t rsp_azimuth, rsp_elevation;
+	read_angle_raw(&rsp_azimuth, &rsp_elevation);
+	rsp = rsp + rsp_azimuth;
+	rsp = rsp << 16;
+	rsp = rsp + rsp_elevation;
+	memcpy(data_sensors, &rsp , sizeof(uint32_t));
+	return SPI_ERR_NONE;
 }
 
 #define PLOT_H 32

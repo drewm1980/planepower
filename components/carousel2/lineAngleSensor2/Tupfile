@@ -3,8 +3,25 @@ include_rules
 ifdef CAROUSEL2
 ifdef PC
 
-: foreach *.cpp |> !cxx_orocos |>
-: *.o |> !ld_orocos |> 
+CPPFLAGS_OROCOS+=-I$(PLANEPOWER_ROOT)/bbones/shared/
+
+
+: armbone_communication.cpp |> !cxx_orocos |>
+
+# Hack! Compiling c-code with cpp-compiler
+: $(PLANEPOWER_ROOT)/bbones/shared/data_decoding.c |> !cxx_orocos |>
+
+
+CPPFLAGS+=-I$(PLANEPOWER_ROOT)/bbones/shared/
+
+: test_receive.cpp |> !cxx |>
+: test_receive.o $(PLANEPOWER_ROOT)/shared/udp_communication.o data_decoding.o armbone_communication.o |> !ld |> test_receive
+
+
+#: foreach *.cpp |> !cxx_orocos |>
+#: *.o |> !ld_orocos |> 
+
+
 
 endif
 endif
