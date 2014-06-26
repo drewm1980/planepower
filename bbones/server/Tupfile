@@ -17,5 +17,7 @@ LDFLAGS += -lpthread
 
 :main_server.o ../shared/log.o ../../shared/udp_communication.o ../shared/uart_communication.o ../shared/data_decoding.o analyze.o |> !ld |> main_server 
 
+:main_line_angle.o ../shared/log.o ../../shared/udp_communication.o ../shared/uart_communication.o ../shared/data_decoding.o analyze.o |> !ld |> main_line_angle
+
 endif
 endif

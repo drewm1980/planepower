@@ -15,6 +15,9 @@
 									// In starter this called "Reference Speed" or "Rated Motor Speed", p311[0]
 									// This can be seen in "Drives -> Servo -> Configuration"
 									// This should never be changed!!!
+#define nominalWinchShaftTorque 168.95 // in Starter p2003
+#define nominalWinchCurrent 109.00 // p2002
+ 
 #define nominalCarouselShaftSpeed 1440.0 // RPM Nominal drive shaft rotation speed when nominalCommand is sent.
 									// In starter this called "Reference Speed" or "Rated Motor Speed", p311[0]
 									// This can be seen in "Drives -> Induction -> Configuration"
@@ -22,6 +25,9 @@
 					
 // ONLY for convenience of typing numbers as percentages manually!
 // The limits that matter are implemented in ONE place, in STARTER!
+#define nominalCarouselShaftTorque 53.05 // in Starter p2003
+#define nominalCarouselCurrent 16.40 // p2002 
+
 #define winchShaftSpeedAt100 1500.0 // RPM
 #define winchSpeedAt100 (winchShaftSpeedAt100*2.0*PI/carouselGearRatio) // m/s
 #define carouselSpeedAt100 (2*PI) // rad/s
@@ -32,13 +38,12 @@
 #define winchDrumRadius 0.20 // m
 
 #define nominalCarouselSpeed (nominalCarouselShaftSpeed/carouselGearRatio*2.0*PI/60.0) // rad/s Arm rotation speed when nominalCommand is sent
-
+#define nominalCarouselTorque (nominalCarouselShaftTorque*carouselGearRatio)
 #define PI 3.14159265359
 
-#define rpm2radps (2.0*PI/(carouselGearRatio*60))
-#define rpm2mps (winchDrumRadius*2.0*PI/(winchGearRatio*60.0))
 #define nominalWinchSpeed (nominalWinchShaftSpeed/winchGearRatio*2.0*PI/60.0*winchDrumRadius) // m/s The speed of the surface of the drum when nominalCommand binary value is sent.
 #define maxWinchSpeed (maxWinchShaftSpeed/winchGearRatio*2.0*PI/60.0*winchDrumRadius) // m/s The speed of the surface of the drum
+#define nominalWinchTorque (nominalWinchShaftTorque*winchGearRatio)
 
 #define SIEMENS_DRIVES_SEND_IP_ADDRESS "192.168.000.001"
 //The PLC needs to know ~our IP address for this direction of communication

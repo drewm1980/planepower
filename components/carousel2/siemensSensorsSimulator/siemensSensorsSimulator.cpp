@@ -32,7 +32,7 @@ void  SiemensSensorsSimulator::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
-	usleep(5000); // Simulate waiting for the udp packet
+	usleep(7000); // Simulate waiting for the udp packet
 	state.winchSpeedSmoothed = -0.5 + 1.2 * sin(.2*3.1415 * trigger + 1.8);
 	state.winchEncoderPosition = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
 	state.carouselSpeedSmoothed = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
@@ -41,6 +41,7 @@ void  SiemensSensorsSimulator::updateHook()
 
 	state.ts_trigger = trigger;
 	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+
 	portData.write(state);
 
 	this->getActivity()->trigger(); // This makes the component re-trigger automatically

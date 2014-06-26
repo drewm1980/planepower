@@ -110,7 +110,17 @@ void LisaBboneClient::updateHook()
 	//
 	// Read the new data and do some processing afterwards
 	//
-	udpStatus = receiveUDPServerData(&udpDownstream, (void *)&inputStream, sizeof( inputStream ));
+	int recv_len;
+	size_t data_len = sizeof(input_stream);
+	udpStatus = receiveUDPServerData(&udpDownstream, (void *)&inputStream, data_len, &recv_len);
+	
+	if (recv_len != data_len)
+        {
+                printf("Wrong number of bytes in received UDP packet!\n");
+                printf("Expected %lu bytes, Received %d bytes!\n",data_len,recv_len);
+                udpStatus = UDP_ERR_RECV;
+        }
+
 	if (udpStatus != UDP_ERR_NONE)
 		exception();
 

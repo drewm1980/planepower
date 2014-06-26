@@ -8,6 +8,8 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
+typedef uint64_t TIME_TYPE;
+
 SiemensSensors::SiemensSensors(std::string name):TaskContext(name,PreOperational) 
 {
 	addPort("data", portData).doc("The output data port");
@@ -32,8 +34,13 @@ bool  SiemensSensors::startHook()
 
 void  SiemensSensors::updateHook()
 {
+
 	receiver.read(&state); // Blocking
-	//cout << "winchSpeedSmoothed: " << state.winchSpeedSmoothed << endl;
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+
+	state.ts_trigger = trigger;
+	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+
 	portData.write(state);
 	if(keepRunning) this->getActivity()->trigger(); // This makes the component re-trigger automatically
 }
