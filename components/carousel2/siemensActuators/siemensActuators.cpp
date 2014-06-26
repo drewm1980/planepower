@@ -13,11 +13,12 @@ typedef uint64_t TIME_TYPE;
 SiemensActuators::SiemensActuators(std::string name):TaskContext(name,PreOperational) 
 {
 	sender = new SiemensSender;
+	memset(&driveCommand, 0, sizeof(SiemensDriveCommand));
 
 	addEventPort("controls", portControls)
 		.doc("Command to be sent to the Siemens Drives");
 
-#ifdef NONREALTIME_DEBUGGING
+#ifdef NONREALTIME_HELPERS
 	addOperation("setCarouselSpeed", &SiemensSender::send_carousel_calibrated_speed, this->sender, OwnThread)
 		.doc("Set the speed reference for the carousel drive. NOTE: This will only have an affect when the carousel drives are fully enabled!")
 		.arg("carousel_speed", "Carousel arm rotation speed in Radians/s.");
@@ -54,10 +55,13 @@ bool  SiemensActuators::startHook()
 void  SiemensActuators::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
-	portControls.read(driveCommand);
-	driveCommand.ts_trigger = trigger;
-	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
-	sender->write(driveCommand);
+	FlowStatus status = portControls.read(driveCommand);
+	if (status == NewData)
+	{
+		driveCommand.ts_trigger = trigger;
+		driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+		sender->write(driveCommand);
+	}
 }
 
 void  SiemensActuators::stopHook()

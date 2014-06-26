@@ -15,7 +15,8 @@ FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOpera
 	memset(&driveCommand, 0, sizeof(driveCommand));
 
 	// Add properties for what kind of function should be generated
-	addProperty("type", type).doc("The type of the generated function.");
+	addProperty("type", type).doc("The type of the generated function. sin wave is 0 square wave is 1");
+	addProperty("whichDrive", whichDrive).doc("Which drive to command, winch is 0, carousel is 1");
 	addProperty("amplitude", amplitude).doc("The amplitude of the generated function.");
 	addProperty("offset", offset).doc("The offset of the generated function.");
 	addProperty("phase", phase).doc("The phase of the generated function.");
@@ -80,7 +81,15 @@ void  FunctionGenerator::updateHook()
 
 
 void  FunctionGenerator::stopHook()
-{}
+{
+	// Make it so stopping the component stops the drives
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+	driveCommand.winchSpeedSetpoint = 0.0;
+	driveCommand.carouselSpeedSetpoint = 0.0;
+	driveCommand.ts_trigger = trigger;
+	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	portDriveCommand.write(driveCommand);
+}
 
 void  FunctionGenerator::cleanupHook()
 {}
