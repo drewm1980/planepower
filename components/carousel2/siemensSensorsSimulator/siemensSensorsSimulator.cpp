@@ -33,11 +33,23 @@ void  SiemensSensorsSimulator::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	usleep(7000); // Simulate waiting for the udp packet
-	state.winchSpeedSmoothed = -0.5 + 1.2 * sin(.2*3.1415 * trigger + 1.8);
-	state.winchEncoderPosition = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
-	state.carouselSpeedSmoothed = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
-	state.carouselEncoderPosition = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
-	state.winchTorque = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
+	state.winchSpeedSetpoint = 1;
+	state.winchSpeedSmoothed = 2;
+	state.winchEncoderPosition = 3;
+	state.winchTorque = 4;
+	state.winchCurrent = 5;
+	state.carouselSpeedSetpoint = 6;
+	state.carouselSpeedSmoothed = 7;
+	state.carouselEncoderPosition = 8;
+	state.carouselTorque = 9;
+	state.carouselCurrent = 10;
+
+	//state.winchSpeedSmoothed = 3.0 + .001* sin(.2*3.1415 * trigger * 1e-9 + 1.8);
+	//state.winchEncoderPosition = 4.0 + .001 * sin(.1*3.1415 * trigger * 1e-9 + 1.8);
+	//state.carouselSpeedSmoothed = 5.0 + .001 * sin(.1*3.1415 * trigger * 1e-9 + 1.8);
+	//state.carouselEncoderPosition = 6.0 + .001 * sin(.1*3.1415 * trigger * 1e-9 + 1.8);
+	//state.winchTorque = 7.0 + .001 * sin(.1*3.1415 * trigger * 1e-9 + 1.8);
+	//state.carouselTorque = 8.0 + .001 * sin(.1*3.1415 * trigger * 1e-9 + 1.8);
 
 	state.ts_trigger = trigger;
 	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

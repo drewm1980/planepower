@@ -35,8 +35,8 @@ void  LineAngleSensor2Simulator::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	usleep(20000); // Simulate waiting for the udp packet
-	lineAngles.azimuth = -0.5 + 1.2 * sin(.2*3.1415 * trigger + 1.8);
-	lineAngles.elevation = -0.4 + 0.7 * sin(.1*3.1415 * trigger + 1.8);
+	lineAngles.azimuth = 1 * sin(.2*3.1415 * trigger * 1e-9 );
+	lineAngles.elevation = 2 * sin(.1*3.1415 * trigger * 1e-9 );
 
 	lineAngles.ts_trigger = trigger;
 	lineAngles.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
