@@ -3,8 +3,8 @@
 ---- Niceties for when we run in interactive mode
 require "complete"
 require "readline"
-function i()
+function stat()
 	rttlib.info()
 	rttlib.stat()
 end
-i()
+stat()
