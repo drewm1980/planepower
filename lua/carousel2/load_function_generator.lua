@@ -22,8 +22,8 @@ cp = rtt.Variable("ConnPolicy")
 deployer:connect("functionGenerator.data","siemensActuators.controls",cp)
 
 -- Set the parameterf of our function generator for a step response
-stepheight = 1.0 -- Rad/s
-lowtime = 3.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
+stepheight = 4.0 -- Rad/s
+lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 type = 1 -- for square wave
 whichDrive = 1 -- for carousel

@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include "siemens_communication.hpp"
 
-#define NONREALTIME_DEBUGGING
+#define NONREALTIME_HELPERS
 
 class SiemensActuators : public RTT::TaskContext
 {
@@ -29,7 +29,6 @@ public:
 protected:
 	RTT::InputPort< SiemensDriveCommand > portControls;
 	SiemensDriveCommand driveCommand;
-
 
 private:
 	SiemensSender *sender;

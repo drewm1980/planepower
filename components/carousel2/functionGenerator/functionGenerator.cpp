@@ -81,7 +81,15 @@ void  FunctionGenerator::updateHook()
 
 
 void  FunctionGenerator::stopHook()
-{}
+{
+	// Make it so stopping the component stops the drives
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+	driveCommand.winchSpeedSetpoint = 0.0;
+	driveCommand.carouselSpeedSetpoint = 0.0;
+	driveCommand.ts_trigger = trigger;
+	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	portDriveCommand.write(driveCommand);
+}
 
 void  FunctionGenerator::cleanupHook()
 {}

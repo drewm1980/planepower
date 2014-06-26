@@ -64,4 +64,44 @@ if useSimulators then
 	controller:start()
 end
 
+function set_carousel_speed(speed)
+	siemensActuators:stop()
+	siemensActuators:getOperation('setCarouselSpeed')(speed)
+end
+function get_carousel_speed()
+	return siemensSensors:provides("data"):last()['carouselSpeedSmoothed']
+end
+
+require "math"
+function ramp_to(targetSpeed)
+	acceleration = .1
+	dt = .5 -- s
+	threshold = .2 -- Rad/s
+	while true do
+		currentSpeed = get_carousel_speed()
+		if math.abs(currentSpeed - targetSpeed) < threshold then
+			print "Ramp goal achieved!"
+			return
+		end
+		if currentSpeed > targetSpeed then
+			print "Ramping down..."
+			nextspeed = math.max(targetSpeed, currentSpeed - dt*acceleration)
+		else
+			print "Ramping up..."
+			nextspeed = math.min(targetSpeed, currentSpeed + dt*acceleration)
+		end
+		print ("Target Speed: "..tostring(targetSpeed).." Current Speed: "..tostring(currentSpeed).." Next Speed: "..tostring(nextspeed))
+		set_carousel_speed(nextspeed)
+		sleep(dt)
+	end
+end
+
+----------------- THE EXPERIMENT!!!!!!! -------------
+function run()
+	speedOffset = 2
+	ramp_to(speedOffset)
+	sleep(10)
+	ramp_to(0.0)
+end
+
 dofile("../shared/postamble.lua")
