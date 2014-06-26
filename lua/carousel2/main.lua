@@ -73,15 +73,24 @@ function get_carousel_speed()
 end
 
 require "math"
+
+softlimit = 3.1415 -- Rad/s
+
+-- ALWAYS check the return value of this!
 function ramp_to(targetSpeed)
 	acceleration = .1
-	dt = .5 -- s
-	threshold = .2 -- Rad/s
+	dt = .2 -- s
+	threshold = .004 -- Rad/s
+	if (math.abs(targetSpeed) > softlimit) then
+		print "Requested speed is outside the soft limit!"
+		return 0
+	end
+
 	while true do
 		currentSpeed = get_carousel_speed()
 		if math.abs(currentSpeed - targetSpeed) < threshold then
 			print "Ramp goal achieved!"
-			return
+			return 1
 		end
 		if currentSpeed > targetSpeed then
 			print "Ramping down..."
@@ -98,10 +107,14 @@ end
 
 ----------------- THE EXPERIMENT!!!!!!! -------------
 function run()
-	speedOffset = 2
-	ramp_to(speedOffset)
+	speedOffset = softlimit/2.0
+	if (ramp_to(speedOffset)) then
+		ramp_to(0.0)
+		return 0
+	end
 	sleep(10)
 	ramp_to(0.0)
+	return 1
 end
 
 dofile("../shared/postamble.lua")
