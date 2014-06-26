@@ -8,16 +8,15 @@
 
 #include <stdint.h>
 
-#include "ResampledMeasurements.h"
 #include "SiemensDriveCommand.h"
 
-#include "ControllerGains.h"
+typedef uint64_t TIME_TYPE;
 
-class ControllerTemplate : public RTT::TaskContext
+class FunctionGenerator : public RTT::TaskContext
 {
 public:
-	ControllerTemplate(std::string name);
-	virtual ~ControllerTemplate(){};
+	FunctionGenerator(std::string name);
+	virtual ~FunctionGenerator(){};
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -27,15 +26,17 @@ public:
 	virtual void errorHook();
 
 protected:
-	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
-	RTT::InputPort< ControllerGains > portControllerGains;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
-	RTT::OutputPort< ControllerGains > portGainsOut;
 
 private:
-	ResampledMeasurements resampledMeasurements;
 	SiemensDriveCommand driveCommand;
-	ControllerGains gains;
+	int type; // 0 -> Sin  1 -> Square
+	int whichDrive; // 0 -> winch 1 -> carousel
+	double amplitude; // Rad/s (inherrited from SiemensDriveCommand)
+	double offset;  // Rad/s   (inherrited from SiemensDriveCommand)
+	double phase; // Radians
+	double frequency; // Hz
+	TIME_TYPE startTime; // nsec.  Time is relative to this.
 };
 
 #endif

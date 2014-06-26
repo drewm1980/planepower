@@ -1,10 +1,10 @@
 #!/usr/bin/env deployer
 
 #Import libraries
-import("controllerTemplate")
+import("functionGenerator")
  
 #Create components
-loadComponent("controllerTemplate","ControllerTemplate")
+loadComponent("functionGenerator","FunctionGenerator")
  
-controllerTemplate.configure()
-controllerTemplate.start()
+functionGenerator.configure()
+functionGenerator.start()
