@@ -48,7 +48,7 @@ void SiemensSender::stop_drives()
 	send_reference_speeds(0,0);
 }
 
-int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed)
+int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed)//in percent (-100 to 100)
 {
 	UDPSendPacket udpsc;
 	memset(&udpsc,0,sizeof(udpsc));
@@ -77,8 +77,8 @@ int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed
 	if(carouselSpeed<-carouselSoftSpeedLimit) carouselSpeed = -carouselSoftSpeedLimit;
 
 	// Convert percentages to command values
-	int32_t n1 = winchSpeed/100.0/nominalWinchSpeed*nominalCommand;
-	int32_t n2 = carouselSpeed/100.0/nominalCarouselSpeed*nominalCommand;
+	int32_t n1 = winchSpeed/100.0*winchSpeedAt100/nominalWinchSpeed*nominalCommand;
+	int32_t n2 = carouselSpeed/100.0*carouselSpeedAt100/nominalCarouselSpeed*nominalCommand;
 
 	// Send the udp packet
 	udpsc.winchSpeedSetpoint = n1;
@@ -107,18 +107,18 @@ int SiemensSender::send_carousel_reference_speed(double carousel_speed)
 // This implementation delibrately:
 //		* avoids errors when UDP message fails to even get sent
 //		* avoids unchanged values drifting when you call these repeatedly
-int SiemensSender::send_calibrated_speeds(double winch_speed, double carousel_speed)
+int SiemensSender::send_calibrated_speeds(double winch_speed, double carousel_speed)// in m/s and rad/s
 {
-	return send_reference_speeds(winch_speed*100.0/nominalWinchSpeed,
-							carousel_speed*100.0/nominalCarouselSpeed);
+	return send_reference_speeds(winch_speed*100.0/winchSpeedAt100,
+							carousel_speed*100.0/carouselSpeedAt100);
 }
 int SiemensSender::send_winch_calibrated_speed(double winch_speed)
 {
-	return send_reference_speeds(winch_speed*100.0/nominalWinchSpeed, currentCarouselCommand);
+	return send_reference_speeds(winch_speed*100.0/winchSpeedAt100, currentCarouselCommand);
 }
 int SiemensSender::send_carousel_calibrated_speed(double carousel_speed)
 {
-	return send_reference_speeds(currentWinchCommand, carousel_speed*100.0/nominalCarouselSpeed);
+	return send_reference_speeds(currentWinchCommand, carousel_speed*100.0/carouselSpeedAt100);
 }
 
 int SiemensSender::write(SiemensDriveCommand command)
