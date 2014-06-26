@@ -34,7 +34,7 @@ telemetryInstanceNames=["siemensSensorsTelemetry",
 #host = "localhost" # DOES NOT WORK FOR SOME REASON!!!
 host = "10.42.0.21" # This should be the IP address of the groundstation
 ports = dict() 
-startPort = 6562
+startPort = 5562
 for i in range(len(telemetryInstanceNames)):
     portnumber = startPort+i
     print "Port for "+telemetryInstanceNames[i]+" is "+str(portnumber)

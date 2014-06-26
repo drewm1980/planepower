@@ -1,3 +1,15 @@
+# We are already CAROUSEL2
+
+# The VISUALIZER shouldn't need to have orocos installed;
+# it just needs the python protobufs.
+ifdef VISUALIZER
+: $(CODEGEN_SOURCE_HEADER) |> !codegen_proto |>
+: $(CODEGEN_SOURCE_STRUCT)Telemetry.proto |> !protoc |>
+endif
+
+# The PC of course will need the typekit,
+# and to compile the protobufs...
+ifdef PC
 CPPFLAGS_OROCOS += -I$(CODEGEN_SOURCE_DIRECTORY)
 
 : $(CODEGEN_SOURCE_HEADER) |> !codegen_orocos_typekit |>
@@ -17,5 +29,8 @@ LDFLAGS_OROCOS += -lprotobuf -lzmq
 
 SO_NAME=$(CODEGEN_SOURCE_STRUCT)
 : *.o |> !ld_orocos_custom |> 
+
+endif
+
 
 .gitignore
