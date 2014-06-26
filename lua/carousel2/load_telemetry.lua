@@ -46,8 +46,12 @@ end
 cp = rtt.Variable("ConnPolicy")
 deployer:connect("siemensSensors.data","siemensSensorsTelemetry.msgData", cp)
 deployer:connect("lineAngleSensor2.data","lineAngleSensor2Telemetry.msgData", cp)
-deployer:connect("resampler.data","resampledMeasurementsTelemetry.msgData", cp)
-deployer:connect("controller.data","controllerTelemetry.msgData", cp)
+if measuringStepResponses then
+	deployer:connect("functionGenerator.data","controllerTelemetry.msgData", cp)
+else
+	deployer:connect("resampler.data","resampledMeasurementsTelemetry.msgData", cp)
+	deployer:connect("controller.data","controllerTelemetry.msgData", cp)
+end
 
 for i=1,#telemetryInstanceNames do
 	telemetryInstances[i]:configure()

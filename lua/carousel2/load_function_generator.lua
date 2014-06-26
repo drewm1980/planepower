@@ -12,25 +12,10 @@ end
 
 PLANEPOWER="../../"
 
-libraryNames={"functionGenerator"}
-classNames={"FunctionGenerator"}
-function deepcopy(liist)
-	newlist = {}
-	for i,symbol in ipairs(liist) do
-		newlist[i] = symbol
-	end
-	return newlist
-end
-instanceNames=deepcopy(libraryNames)
-
--- Load in all of our signal processing
--- and controller code.
-for i=1,#libraryNames do
-	load_component(libraryNames[i],classNames[i],instanceNames[i])
-end
+load_component("functionGenerator","FunctionGenerator","functionGenerator")
 
 ----------------- Set Priorities and activities
-updateFreqency = 40
+updateFrequency = 40
 deployer:setActivityOnCPU("functionGenerator", 1.0/updateFrequency, controllerPrio, scheduler,quietCore)
 
 cp = rtt.Variable("ConnPolicy")
@@ -40,6 +25,7 @@ deployer:connect("functionGenerator.data","siemensActuators.controls",cp)
 stepheight = 1.0 -- Rad/s
 lowtime = 3.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
+type = 1 -- for square wave
 amplitude = stepheight/2.0
 phase = 2.0*3.1415
 offset = amplitude
@@ -50,10 +36,11 @@ frequency = 1.0/period
 functionGenerator:configure()
 
 --------------- Set the parameters of our fuction generator
-set_property(functionGenerator,"amplitude",amplitude)
-set_property(functionGenerator,"phase",phase)
-set_property(functionGenerator,"offset",offset)
-set_property(functionGenerator,"frequency",frequency)
+--set_property(functionGenerator,"type",type)
+--set_property(functionGenerator,"amplitude",amplitude)
+--set_property(functionGenerator,"phase",phase)
+--set_property(functionGenerator,"offset",offset)
+--set_property(functionGenerator,"frequency",frequency)
 
 -- You can manually run this when you are ready!!
 --functionGenerator:start()
