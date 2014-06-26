@@ -70,7 +70,7 @@ int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed
 	// Implement "Soft Limits" that can be changed later as needed.
 	// Note, at this point in the code these are percentages.
 	int winchSoftSpeedLimit = 0; // We are not even using the winch for ball control yet
-	int carouselSoftSpeedLimit = 46;
+	int carouselSoftSpeedLimit = 50;
 	if(winchSpeed>winchSoftSpeedLimit) winchSpeed = winchSoftSpeedLimit;
 	if(winchSpeed<-winchSoftSpeedLimit) winchSpeed = -winchSoftSpeedLimit;
 	if(carouselSpeed>carouselSoftSpeedLimit) carouselSpeed = carouselSoftSpeedLimit;
