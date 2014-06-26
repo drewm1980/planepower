@@ -1,5 +1,6 @@
 #!/usr/bin/env rttlua-i
 
+----- Note: for now, you must manually keep this order consistent with the same variable in carousel2.py
 telemetryInstanceNames={"siemensSensorsTelemetry",	  "lineAngleSensor2Telemetry", "resampledMeasurementsTelemetry", "controllerTelemetry"}
 telemetryClassNames={   "SiemensDriveStateTelemetry", "LineAnglesTelemetry"      , "ResampledMeasurementsTelemetry", "SiemensDriveCommandTelemetry"}
 telemetryInstances={}
