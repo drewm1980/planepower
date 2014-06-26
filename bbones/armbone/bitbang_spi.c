@@ -198,8 +198,8 @@ static inline void encoders_to_angles(uint16_t azimuth_raw, uint16_t elevation_r
 			float *azimuth_radians, float *elevation_radians)
 {
 	// Correct for the offsets and add the angles
-	azimuth_raw = azimuth_raw - AZIMUTH_ZERO_POINT;
-	elevation_raw = (elevation_raw - ELEVATION_ZERO_POINT) + azimuth_raw;
+	//azimuth_raw = azimuth_raw - AZIMUTH_ZERO_POINT;
+	//elevation_raw = (elevation_raw - ELEVATION_ZERO_POINT) + azimuth_raw;
 
 	// Convert to angles in radians
 	*azimuth_radians = raw_to_radians(azimuth_raw);
@@ -214,7 +214,12 @@ void read_angle_sensors(float* azimuth_radians, float* elevation_radians)
 	bitbang_read(CS0_PIN, &azimuth_raw);
 	//printf("Reading elevation...\n");
 	bitbang_read(CS1_PIN, &elevation_raw);
-
+	
+	// Define the Zero for azimuth and elevation
+	azimuth_raw = azimuth_raw - (0x21c2);
+	elevation_raw = elevation_raw - (0xb9a1) + azimuth_raw;
+	//printf("AZ: %i\n", azimuth_raw);
+	//printf("EL: %i\n", elevation_raw);
 	encoders_to_angles(azimuth_raw, elevation_raw,
 			azimuth_radians, elevation_radians);
 }
@@ -235,6 +240,11 @@ SPI_errCode spi_read_fast(uint8_t data_sensors[])
 	uint32_t rsp = 0;
 	uint16_t rsp_azimuth, rsp_elevation;
 	read_angle_raw(&rsp_azimuth, &rsp_elevation);
+	// Define Zero for Azimuth and Elevation
+	rsp_azimuth = rsp_azimuth - (0x21c2);
+	rsp_elevation = rsp_elevation - (0xb9a1) + rsp_azimuth;
+	//printf("AZ: %i\n", rsp_azimuth);
+	//printf("EL: %i\n", rsp_elevation);
 	rsp = rsp + rsp_azimuth;
 	rsp = rsp << 16;
 	rsp = rsp + rsp_elevation;
