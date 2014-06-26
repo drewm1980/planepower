@@ -50,8 +50,8 @@
 
 // This is a wire format we defined to hold the references for both motors
 struct UDPSendPacket {
-	uint32_t winchSpeedReference;
-	uint32_t carouselSpeedReference;
+	uint32_t winchSpeedSetpoint;
+	uint32_t carouselSpeedSetpoint;
 };
 
 // This is a wire format defined in the PLC and starter software

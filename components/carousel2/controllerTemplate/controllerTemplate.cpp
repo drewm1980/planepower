@@ -51,8 +51,8 @@ void  ControllerTemplate::updateHook()
 	ControllerGains& g = gains;
 	
 	// Controller Implementation goes here!
-	driveCommand.winchSpeedReference =     g.k11*az + g.k12*el;
-	driveCommand.carouselSpeedReference =  g.k21*az + g.k22*el;
+	driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
+	driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
 
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

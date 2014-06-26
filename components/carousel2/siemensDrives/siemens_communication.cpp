@@ -66,8 +66,8 @@ int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed
 	int32_t n2 = carouselSpeed/100.0/nominalCarouselSpeed*nominalCommand;
 
 	// Send the udp packet
-	udpsc.winchSpeedReference = n1;
-	udpsc.carouselSpeedReference = n2;
+	udpsc.winchSpeedSetpoint = n1;
+	udpsc.carouselSpeedSetpoint = n2;
 	bswap_packet(&udpsc);
 	if(sendUDPClientData(&udp_client, &udpsc, sizeof(udpsc)))
 	{
@@ -108,8 +108,8 @@ int SiemensSender::send_carousel_calibrated_speed(double carousel_speed)
 
 int SiemensSender::write(SiemensDriveCommand command)
 {
-	return send_calibrated_speeds(command.winchSpeedReference, 
-						   command.carouselSpeedReference);
+	return send_calibrated_speeds(command.winchSpeedSetpoint, 
+						   command.carouselSpeedSetpoint);
 }
 
 SiemensReceiver::SiemensReceiver()

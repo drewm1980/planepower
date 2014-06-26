@@ -4,8 +4,8 @@
 // This is a unit converted version of UDPSendPacket,
 // plus a couple fields for timestamps
 struct SiemensDriveCommand{
-	double winchSpeedReference;
-	double carouselSpeedReference;
+	double winchSpeedSetpoint;
+	double carouselSpeedSetpoint;
 
 	double ts_trigger;
 	double ts_elapsed;
