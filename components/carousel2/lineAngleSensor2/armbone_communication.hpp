@@ -29,9 +29,9 @@ class ArmboneReceiver
 	protected:
 
 	private:
+		float raw_to_radians(uint16_t raw); 
 		UDP udp_server;
 		int port_number;
-
 		uint8_t input_stream[30];
 };
 
