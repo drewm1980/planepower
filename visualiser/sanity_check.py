@@ -18,21 +18,31 @@ for p in protobufs:
 import zmq
 context = zmq.Context().instance()
 socket = context.socket(zmq.SUB)
-socket.connect('tcp://10.42.0.21:6562') # 2,3,4,5
+socket.connect('tcp://10.42.0.21:5562') # 2,3,4,5
 socket.setsockopt(zmq.SUBSCRIBE, '')
 
 
 print "Starting event loop..."
 #for i in xrange(100):
 print "Polling with 100ms timeout"
-if socket.poll(timeout=1000) != 0:
-    print "Receiving a packet!!!!"
-    raw = socket.recv()
-    msg = SiemensDriveStateMsg()
-    msg.Clear()
-    msg.ParseFromString(raw)
-    print msg.carouselSpeedSmoothed
-    print msg.winchSpeedSmoothed
+while True:
+    if socket.poll(timeout=1000) != 0:
+        #print "Receiving a packet!!!!"
+        raw = socket.recv()
+        msg = SiemensDriveStateMsg()
+        msg.Clear()
+        msg.ParseFromString(raw)
+        print msg.winchSpeedSetpoint
+        print msg.winchSpeedSmoothed
+        print msg.winchEncoderPosition
+        print msg.winchTorque
+        print msg.winchCurrent
+        print msg.carouselSpeedSetpoint
+        print msg.carouselSpeedSmoothed
+        print msg.carouselEncoderPosition
+        print msg.carouselTorque
+        print msg.carouselCurrent
+
 
 # Protocol buffers are not safe.  NO type checking whatsoever at parse time.
 
