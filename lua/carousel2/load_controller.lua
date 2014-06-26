@@ -57,9 +57,16 @@ deployer:connect("controller.data","siemensActuators.controls",cp)
 -- We need to load in at least one set of controller gains before the controller can transition to the runing state.
 
 GAINSDIR = PLANEPOWER.."components/carousel2/gainLoader/"
+-- Example of how to get a template cpf file from the component:
 --store_properties("gainLoader",GAINSDIR.."gains.cpf")
-load_properties("gainLoader",GAINSDIR.."gains.cpf")
-gainLoader:trigger()
+
+-- Convenience function for reloading the gains
+function reload_gains()
+	load_properties("gainLoader",GAINSDIR.."gains.cpf")
+	gainLoader:trigger()
+	gainLoader:stat()
+end
+reload_gains()
 
 --------------- Configure and start the components
 for i=1,#instanceNames do

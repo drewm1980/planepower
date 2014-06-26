@@ -1,5 +1,4 @@
 ifdef CAROUSEL2
-ifdef PC
 
 SO_NAME = LisaBboneClientTypekit
 
@@ -7,5 +6,4 @@ include_rules
 : foreach *.cpp |> !cxx_orocos |>
 : *.o |> !ld_orocos_custom |> 
 
-endif
 endif

@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("functionGenerator")
+ 
+#Create components
+loadComponent("functionGenerator","FunctionGenerator")
+ 
+functionGenerator.configure()
+functionGenerator.start()

@@ -18,8 +18,8 @@ CPPFLAGS+=-I$(PLANEPOWER_ROOT)/bbones/shared/
 : test_receive.o $(PLANEPOWER_ROOT)/shared/udp_communication.o data_decoding.o armbone_communication.o |> !ld |> test_receive
 
 
-#: foreach *.cpp |> !cxx_orocos |>
-#: *.o |> !ld_orocos |> 
+: lineAngleSensor2.cpp |> !cxx_orocos |>
+: lineAngleSensor2.o armbone_communication.o data_decoding.o $(PLANEPOWER_ROOT)/shared/udp_communication.o |> !ld_orocos |> 
 
 
 

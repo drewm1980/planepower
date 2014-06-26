@@ -8,10 +8,8 @@
 
 #include <stdint.h>
 
-#include "LineAngles.h"
-
-#include "udp_communication.h"
-#include "data_decoding.h"
+//#include "LineAngles.h"
+#include "armbone_communication.hpp"
 
 #define MAX_INPUT_STREAM_SIZE 255
 #define UDP_SOCKET_TIMEOUT 1000000000
@@ -34,7 +32,7 @@ protected:
 	RTT::OutputPort< LineAngles > portData;
 
 private:
-	ArmboneReveiver receiver;
+	ArmboneReceiver receiver;
 	LineAngles lineAngles;
 	bool keepRunning;
 };

@@ -43,18 +43,22 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-rtt.logl("Info", "Loading HIGHWIND controller related components...")
-controlFrequency = 50.0 -- Hz
-dofile("load_controller.lua")
+measuringStepResponses=true
+if measuringStepResponses then
+	rtt.logl("Info", "Loading function generator component...")
+	dofile("load_function_generator.lua")
+else
+	controlFrequency = 50.0 -- Hz
+	rtt.logl("Info", "Loading HIGHWIND controller related components...")
+	dofile("load_controller.lua")
+end
 
 rtt.logl("Info", "Loading HIGHWIND logging related components...")
 dofile("load_reporters.lua")
 
 rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
 telemetryFrequency = 50.0 --Hz
---dofile("load_telemetry.lua")
-
-print(resampler:stat())
+dofile("load_telemetry.lua")
 
 if useSimulators then
 	controller:start()

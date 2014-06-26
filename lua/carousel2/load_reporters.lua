@@ -14,12 +14,12 @@ end
 -- The typekits will still work in the components for some reason, but
 -- the reporters will not start!
 
--- Load and set up a reporter for each sensor type
 reportedComponentNames={"siemensSensors",
 						"lineAngleSensor2",
 						"resampler",
 						--"gainLoader", -- sent more frequently from controller
-						"controller"}
+						"controller",
+						"functionGenerator"}
 
 reporterBaseNames=reportedComponentNames -- shallow copy
 set_up_reporters(reporterBaseNames,reportedComponentNames)

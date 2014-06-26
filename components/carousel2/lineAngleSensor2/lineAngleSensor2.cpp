@@ -17,9 +17,6 @@ LineAngleSensor2::LineAngleSensor2(std::string name):TaskContext(name,PreOperati
 	addPort("data", portData).doc("The output data port");
 }
 
-LineAngleSensor2::~LineAngleSensor2()
-{
-}
 
 bool LineAngleSensor2::configureHook()
 {
@@ -39,7 +36,7 @@ bool  LineAngleSensor2::startHook()
 
 void  LineAngleSensor2::updateHook()
 {
-	receiver.read(&state);
+	receiver.read(&lineAngles);
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	// Do blocking wait for new line angle measurements here

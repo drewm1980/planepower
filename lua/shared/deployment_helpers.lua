@@ -50,6 +50,11 @@ function P.load_reporter(reporterName)
 	return 
 end
 
+function component_instance_exists(instanceName)
+	exists = deployer:getPeers()[instanceName] ~= nil	
+	return exists
+end
+
 function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
 	reporterNames={}
 	reporterFileNames={}
@@ -61,21 +66,23 @@ function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
 	rp.type = 2
 	rp.size = 4096
 	for i,reporterName in pairs(reporterNames) do
-		load_reporter(reporterName)
-		set_property(reporterName,"ReportFile",reporterFileNames[i])
-		set_property(reporterName,"ReportPolicy",rp)
-		set_property(reporterName,"ReportOnlyNewData",false)
-		componentName = reportedComponentNames[i]
-		deployer:connectPeers(reporterName,componentName)
-		r = _G[reporterName]
-		outputPortNames = get_output_ports(componentName)
-		for k,portName in ipairs(outputPortNames) do
-			r:reportPort(componentName, portName)
-			--print(reporterName.." is reporting component "..componentName.." port "..portName)
+		if component_instance_exists(reportedComponentNames[i]) then
+			load_reporter(reporterName)
+			set_property(reporterName,"ReportFile",reporterFileNames[i])
+			set_property(reporterName,"ReportPolicy",rp)
+			set_property(reporterName,"ReportOnlyNewData",false)
+			componentName = reportedComponentNames[i]
+			deployer:connectPeers(reporterName,componentName)
+			r = _G[reporterName]
+			outputPortNames = get_output_ports(componentName)
+			for k,portName in ipairs(outputPortNames) do
+				r:reportPort(componentName, portName)
+				--print(reporterName.." is reporting component "..componentName.." port "..portName)
+			end
+			deployer:setActivityOnCPU(reporterName,0.0,reporterPrio,scheduler,0)
+			r:configure()
+			r:start()
 		end
-		deployer:setActivityOnCPU(reporterName,0.0,reporterPrio,scheduler,0)
-		r:configure()
-		r:start()
 	end
 end
 

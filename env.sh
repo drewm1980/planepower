@@ -31,14 +31,18 @@ export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rFSM/?.lua"
 export LUA_CPATH="$LUA_CPATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.so"
 alias rttlua='rlwrap -a -r -H ~/.rttlua-history rttlua-gnulinux -lreadline'
 
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel1
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/lineAngleSensor2
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensSensors
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensActuators
+export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/main
+# Here is another place we need to switch between carousel 1 and carousel 2 manually...
+if false; then
+	export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel1
+else
+	export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2
+	export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/lineAngleSensor2
+	export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensSensors
+	export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/siemensActuators
+fi
 
 export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/carousel2/gainLoader/resampler
-export RTT_COMPONENT_PATH=$RTT_COMPONENT_PATH:$PLANEPOWER_ROOT/components/main
 
 DEFAULT_RAWESOME_ROOT=$PLANEPOWER_ROOT/extern/rawesome
 if [ -d $DEFAULT_RAWESOME_ROOT ]; then

@@ -61,13 +61,28 @@ int SiemensSender::send_reference_speeds(double winchSpeed, double carouselSpeed
 	if(carouselSpeed>100) carouselSpeed = 100;
 	if(carouselSpeed<-100) carouselSpeed = -100;
 
+	// Note, there are "Hard Limits" that are implemented on the carousel
+	// to limit the values to something sane, but not necesssarily safe.
+	// i.e. it will not be a million rpm or something.
+	//		These are set in registers p1082[0] of each drive in starter, aka "n_max"
+	//		in the Setpoint Channel -> Speed Limit for each drive.
+
+	// Implement "Soft Limits" that can be changed later as needed.
+	// Note, at this point in the code these are percentages.
+	int winchSoftSpeedLimit = 0; // We are not even using the winch for ball control yet
+	int carouselSoftSpeedLimit = 46;
+	if(winchSpeed>winchSoftSpeedLimit) winchSpeed = winchSoftSpeedLimit;
+	if(winchSpeed<-winchSoftSpeedLimit) winchSpeed = -winchSoftSpeedLimit;
+	if(carouselSpeed>carouselSoftSpeedLimit) carouselSpeed = carouselSoftSpeedLimit;
+	if(carouselSpeed<-carouselSoftSpeedLimit) carouselSpeed = -carouselSoftSpeedLimit;
+
 	// Convert percentages to command values
 	int32_t n1 = winchSpeed/100.0*winchSpeedAt100/nominalWinchSpeed*nominalCommand;
 	int32_t n2 = carouselSpeed/100.0*carouselSpeedAt100/nominalCarouselSpeed*nominalCommand;
 
 	// Send the udp packet
-	udpsc.winchSpeedReference = n1;
-	udpsc.carouselSpeedReference = n2;
+	udpsc.winchSpeedSetpoint = n1;
+	udpsc.carouselSpeedSetpoint = n2;
 	bswap_packet(&udpsc);
 	if(sendUDPClientData(&udp_client, &udpsc, sizeof(udpsc)))
 	{
@@ -108,8 +123,8 @@ int SiemensSender::send_carousel_calibrated_speed(double carousel_speed)
 
 int SiemensSender::write(SiemensDriveCommand command)
 {
-	return send_calibrated_speeds(command.winchSpeedReference, 
-						   command.carouselSpeedReference);
+	return send_calibrated_speeds(command.winchSpeedSetpoint, 
+						   command.carouselSpeedSetpoint);
 }
 
 SiemensReceiver::SiemensReceiver()
