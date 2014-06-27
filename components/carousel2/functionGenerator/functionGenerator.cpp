@@ -53,7 +53,7 @@ void  FunctionGenerator::updateHook()
 			break;
 		case 1:
 			sinvalue = sin(t * frequency*(2.0*3.1415) + phase);
-			value = offset + amplitude * ((sinvalue > 0.0)-1.0);
+			value = offset + amplitude * (2*(sinvalue > 0.0)-1.0);
 			break;
 		default:
 			log(Error) << "Unrecognized signal type!" << endl;
