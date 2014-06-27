@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from scipy.io import netcdf
+import numpy
 from numpy import array, diff, mean
 import pylab
 import os
@@ -33,5 +34,18 @@ for i in range(len(fileRoots)):
     ylabel(fileRoots[i]+' jitter [ms]')
     if i==len(fileRoots)-1:
         xlabel('Time [s]')
+
+# Do an extra plot of the siemensSensors raw timestamps
+figure('Siemens PLC receive timestamp')
+title('Siemens PLC receive timestamp')
+f = netcdf.netcdf_file('siemensSensorsData.nc', 'r')
+ts_trigger = f.variables['siemensSensors.data.ts_trigger'].data[samplesToSkip+1:]*1.0e-9
+if len(ts_trigger > 0): # controller may not have run
+    times = ts_trigger-ts_trigger[0]
+    times = times[0:-1]
+    xs = numpy.linspace(times[0],times[-1],len(times))
+    plot(xs, times / xs,'b.') 
+    ylabel('Arrival Time / Time []')
+    xlabel('Time [s]')
 
 show()
