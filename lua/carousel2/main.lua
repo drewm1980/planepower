@@ -98,19 +98,17 @@ end
 
 function step()
 	--Set the parameterf of our function generator for a step response
-	stepheight = 1.0 -- Rad/s
+	stepheight = .50 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 	type = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
-	phase = 2.0*3.1415
+	phase =3.2 -- a bit more than PI to make sure we start at 0
 	offset = amplitude
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	ramp_to(offset)
-	sleep(1)
 	set_property("functionGenerator","type",type)
 	set_property("functionGenerator","amplitude",amplitude)
 	set_property("functionGenerator","phase",phase)
