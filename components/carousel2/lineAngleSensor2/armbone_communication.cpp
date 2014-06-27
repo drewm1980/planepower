@@ -76,5 +76,9 @@ float ArmboneReceiver::raw_to_radians(uint16_t raw)
 {
 	const unsigned int counts = 0x1 << 16;
 	const float rescale = 2.0*3.1415 / counts;
-	return ((float)raw) * rescale;
+	if (raw <= 0x7fff ) {
+		return ((float)raw) * rescale;
+	} else  {
+		return (((float)raw) * rescale) - 6.2831;
+	}
 }
