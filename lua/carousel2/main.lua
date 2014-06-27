@@ -76,10 +76,11 @@ require "math"
 function ramp_to(targetSpeed)
 	acceleration = .1
 	dt = .5 -- s
-	threshold = .2 -- Rad/s
+	threshold = .05 -- Rad/s
 	while true do
 		currentSpeed = get_carousel_speed()
 		if math.abs(currentSpeed - targetSpeed) < threshold then
+			set_carousel_speed(targetSpeed)
 			print "Ramp goal achieved!"
 			return
 		end
@@ -98,7 +99,7 @@ end
 
 function step()
 	--Set the parameterf of our function generator for a step response
-	stepheight = .50 -- Rad/s
+	stepheight = 3.141/20 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 	type = 1 -- for square wave
