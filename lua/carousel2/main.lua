@@ -79,18 +79,12 @@ softlimit = 3.1415 -- Rad/s
 -- ALWAYS check the return value of this!
 function ramp_to(targetSpeed)
 	acceleration = .1
-<<<<<<< HEAD
 	dt = .5 -- s
 	threshold = .05 -- Rad/s
-=======
-	dt = .2 -- s
-	threshold = .004 -- Rad/s
 	if (math.abs(targetSpeed) > softlimit) then
 		print "Requested speed is outside the soft limit!"
 		return 0
 	end
-
->>>>>>> 0ef1f319ab659b809d153b974c74866e35748778
 	while true do
 		currentSpeed = get_carousel_speed()
 		if math.abs(currentSpeed - targetSpeed) < threshold then
@@ -133,6 +127,27 @@ function step()
 	functionGenerator:start()
 end
 
+function step_around_current_speed()
+	--Set the parameterf of our function generator for a step response
+	stepheight = 3.141/20 -- Rad/s
+	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
+
+	type = 1 -- for square wave
+	whichDrive = 1 -- for carousel
+	amplitude = stepheight/2.0
+	phase =3.2 -- a bit more than PI to make sure we start at 0
+	offset = get_carousel_speed()
+	period = 2.0*lowtime
+	frequency = 1.0/period
+
+	set_property("functionGenerator","type",type)
+	set_property("functionGenerator","amplitude",amplitude)
+	set_property("functionGenerator","phase",phase)
+	set_property("functionGenerator","offset",offset)
+	set_property("functionGenerator","frequency",frequency)
+	set_property("functionGenerator","whichDrive",whichDrive)
+	functionGenerator:start()
+end
 function stopFunctionGenerator()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
