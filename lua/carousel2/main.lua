@@ -71,6 +71,9 @@ end
 function get_carousel_speed()
 	return siemensSensors:provides("data"):last()['carouselSpeedSmoothed']
 end
+function get_carousel_setpoint()
+	return siemensSensors:provides("data"):last()['carouselSpeedSetpoint']
+end
 
 require "math"
 
@@ -104,6 +107,8 @@ function ramp_to(targetSpeed)
 		sleep(dt)
 	end
 end
+
+-- functionGenerator related functions
 
 function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 	
@@ -146,20 +151,26 @@ function step_around_current_speed()
 	frequency = 1.0/period
 
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
-	siemensActuators:start()
-	functionGenerator:start()
+	siemensActuators:start() -- make sure actuator are running
+	functionGenerator:start() -- start!!
 end
 
-function sin_around_current_speed(amplitude,frequency)
+function sin_around_current_setpoint(amplitude,frequency)
 	--Set the parameterf of our function generator for a step response
 	functionType = 0 -- for sin wave
 	whichDrive = 1 -- for carousel
-	phase = 0 -- a bit more than PI to make sure we start at 0
-	offset = get_carousel_speed()
+	phase = 0 
+	offset = get_carousel_setpoint()
 
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 	siemensActuators:start()
+	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
 	functionGenerator:start()
+end
+
+function sin_around_offset(offset,amplitude,frequency)
+	ramp_to(offset) -- avoid jumps
+	sin_around_current_setpoint(amplitude,frequency)
 end
 
 function stop_FunctionGenerator_and_ramp_to_0()
