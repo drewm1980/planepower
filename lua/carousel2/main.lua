@@ -96,6 +96,34 @@ function ramp_to(targetSpeed)
 	end
 end
 
+function step()
+	--Set the parameterf of our function generator for a step response
+	stepheight = 1.0 -- Rad/s
+	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
+
+	type = 1 -- for square wave
+	whichDrive = 1 -- for carousel
+	amplitude = stepheight/2.0
+	phase = 2.0*3.1415
+	offset = amplitude
+	period = 2.0*lowtime
+	frequency = 1.0/period
+
+	ramp_to(offset)
+	sleep(1)
+	set_property("functionGenerator","type",type)
+	set_property("functionGenerator","amplitude",amplitude)
+	set_property("functionGenerator","phase",phase)
+	set_property("functionGenerator","offset",offset)
+	set_property("functionGenerator","frequency",frequency)
+	set_property("functionGenerator","whichDrive",whichDrive)
+	functionGenerator:start()
+end
+
+function stopFunctionGenerator()
+	functionGenerator:stop()
+	ramp_to(0)
+end
 ----------------- THE EXPERIMENT!!!!!!! -------------
 function run()
 	speedOffset = 2

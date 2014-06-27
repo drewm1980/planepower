@@ -82,13 +82,14 @@ void  FunctionGenerator::updateHook()
 
 void  FunctionGenerator::stopHook()
 {
+	/*This is not safe!! That will be a hard stop if the offset is high. For stoping the function generator use stopFunctionGenerator() in main.lua
 	// Make it so stopping the component stops the drives
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	driveCommand.winchSpeedSetpoint = 0.0;
 	driveCommand.carouselSpeedSetpoint = 0.0;
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
-	portDriveCommand.write(driveCommand);
+	portDriveCommand.write(driveCommand);*/
 }
 
 void  FunctionGenerator::cleanupHook()
