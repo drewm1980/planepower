@@ -64,7 +64,7 @@ void ArmboneReceiver::read(LineAngles * lineangles)
 
 			
 			lineangles->azimuth = (double) raw_to_radians(data->bone_arm.line_angle.azimuth_raw);
-			lineangles->elevation = (double) raw_to_radians(data->bone_arm.line_angle.elevation_raw);
+			lineangles->elevation = -((double) raw_to_radians(data->bone_arm.line_angle.elevation_raw));
 		} else {
  			printf("UNKNOW PACKAGE with id %d\n",input_stream[3]);
                        }
