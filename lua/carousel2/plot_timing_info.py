@@ -2,6 +2,7 @@
 from scipy.io import netcdf
 from numpy import array, diff, mean
 import pylab
+import os
 from pylab import figure,plot,xlabel,ylabel,show,legend,title
 
 print('loading data...')
@@ -9,6 +10,11 @@ print('loading data...')
 print('loading timing data to plot jitter...')
 
 fileRoots = ['controller', 'resampler', 'lineAngleSensor2', 'siemensSensors']
+fileRoots = [root for root in fileRoots if os.path.isfile(root+'Data.nc')]
+
+if fileRoots==[]:
+    print 'Error, none of the .nc files are there!'
+    exit(-1)
 
 samplesToSkip = 3
 
