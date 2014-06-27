@@ -64,7 +64,7 @@ void ArmboneReceiver::read(LineAngles * lineangles)
 
 			
 			lineangles->azimuth = (double) raw_to_radians(data->bone_arm.line_angle.azimuth_raw);
-			lineangles->elevation = (double) raw_to_radians(data->bone_arm.line_angle.elevation_raw);
+			lineangles->elevation = -((double) raw_to_radians(data->bone_arm.line_angle.elevation_raw));
 		} else {
  			printf("UNKNOW PACKAGE with id %d\n",input_stream[3]);
                        }
@@ -76,5 +76,9 @@ float ArmboneReceiver::raw_to_radians(uint16_t raw)
 {
 	const unsigned int counts = 0x1 << 16;
 	const float rescale = 2.0*3.1415 / counts;
-	return ((float)raw) * rescale;
+	if (raw <= 0x7fff ) {
+		return ((float)raw) * rescale;
+	} else  {
+		return (((float)raw) * rescale) - 6.2831;
+	}
 }

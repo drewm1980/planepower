@@ -137,7 +137,7 @@ function step()
 	functionGenerator:start()
 end
 
-function step_around_current_speed()
+function step_around_current_setpoint()
 	--Set the parameterf of our function generator for a step response
 	stepheight = 3.141/20 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
@@ -146,7 +146,7 @@ function step_around_current_speed()
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
 	phase =3.2 -- a bit more than PI to make sure we start at 0
-	offset = get_carousel_speed()
+	offset = get_carousel_setpoint()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
