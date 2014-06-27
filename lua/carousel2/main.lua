@@ -121,8 +121,15 @@ function step()
 end
 
 function stopFunctionGenerator()
+	--safe stop of the functionGenerator
 	functionGenerator:stop()
 	ramp_to(0)
+	set_property("functionGenerator","type",0)
+	set_property("functionGenerator","amplitude",0.0)
+	set_property("functionGenerator","phase",0.0)
+	set_property("functionGenerator","offset",0.0)
+	set_property("functionGenerator","frequency",0.0)
+	set_property("functionGenerator","whichDrive",0)
 end
 ----------------- THE EXPERIMENT!!!!!!! -------------
 function run()
