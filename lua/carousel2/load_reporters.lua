@@ -23,7 +23,7 @@ reportedComponentNames={"siemensSensors",
 						"functionGenerator"}
 
 -- Blow away the existing *.nc files to avoid confusion
-os.execute("rm *.nc")
+os.execute("rm -f *.nc")
 
 reporterBaseNames=reportedComponentNames -- shallow copy
 set_up_reporters(reporterBaseNames,reportedComponentNames)

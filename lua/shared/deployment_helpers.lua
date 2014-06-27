@@ -50,9 +50,23 @@ function P.load_reporter(reporterName)
 	return 
 end
 
+function is_element(targetvalue, l)
+	for i,value in ipairs(l) do
+		if targetvalue == l[i] then
+			return true
+		end
+	end
+	return false
+end
+
 function component_instance_exists(instanceName)
-	exists = deployer:getPeers()[instanceName] ~= nil	
-	return exists
+	if is_element(instanceName,deployer:getPeers()) then
+		rtt.logl("Info", "Detected that component "..instanceName.." exists!")
+		return true
+	else
+		rtt.logl("Info", "Detected that component "..instanceName.." does not exist!")
+		return false
+	end
 end
 
 function P.set_up_reporters(reporterBaseNames,reportedComponentNames)
