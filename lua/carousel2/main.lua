@@ -105,12 +105,21 @@ function ramp_to(targetSpeed)
 	end
 end
 
+function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	
+	set_property("functionGenerator","type",functionType)
+	set_property("functionGenerator","amplitude",amplitude)
+	set_property("functionGenerator","phase",phase)
+	set_property("functionGenerator","offset",offset)
+	set_property("functionGenerator","frequency",frequency)
+	set_property("functionGenerator","whichDrive",whichDrive)
+end
+
 function step()
 	--Set the parameterf of our function generator for a step response
 	stepheight = 3.141/20 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
-
-	type = 1 -- for square wave
+	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
 	phase =3.2 -- a bit more than PI to make sure we start at 0
@@ -118,12 +127,8 @@ function step()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_property("functionGenerator","type",type)
-	set_property("functionGenerator","amplitude",amplitude)
-	set_property("functionGenerator","phase",phase)
-	set_property("functionGenerator","offset",offset)
-	set_property("functionGenerator","frequency",frequency)
-	set_property("functionGenerator","whichDrive",whichDrive)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	siemensActuators:start()
 	functionGenerator:start()
 end
 
@@ -132,7 +137,7 @@ function step_around_current_speed()
 	stepheight = 3.141/20 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
-	type = 1 -- for square wave
+	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
 	phase =3.2 -- a bit more than PI to make sure we start at 0
@@ -140,24 +145,28 @@ function step_around_current_speed()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_property("functionGenerator","type",type)
-	set_property("functionGenerator","amplitude",amplitude)
-	set_property("functionGenerator","phase",phase)
-	set_property("functionGenerator","offset",offset)
-	set_property("functionGenerator","frequency",frequency)
-	set_property("functionGenerator","whichDrive",whichDrive)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	siemensActuators:start()
 	functionGenerator:start()
 end
-function stopFunctionGenerator()
+
+function sin_around_current_speed(amplitude,frequency)
+	--Set the parameterf of our function generator for a step response
+	functionType = 0 -- for sin wave
+	whichDrive = 1 -- for carousel
+	phase = 0 -- a bit more than PI to make sure we start at 0
+	offset = get_carousel_speed()
+
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	siemensActuators:start()
+	functionGenerator:start()
+end
+
+function stop_FunctionGenerator_and_ramp_to_0()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
 	ramp_to(0)
-	set_property("functionGenerator","type",0)
-	set_property("functionGenerator","amplitude",0.0)
-	set_property("functionGenerator","phase",0.0)
-	set_property("functionGenerator","offset",0.0)
-	set_property("functionGenerator","frequency",0.0)
-	set_property("functionGenerator","whichDrive",0)
+	set_functionGenerator_properties(0,0,0,0,0,0)
 end
 ----------------- THE EXPERIMENT!!!!!!! -------------
 function run()
