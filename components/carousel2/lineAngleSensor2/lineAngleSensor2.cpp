@@ -40,7 +40,7 @@ void  LineAngleSensor2::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	// Do blocking wait for new line angle measurements here
-	usleep(50000); // make sure we don't burn spin the cpu in a high priority thread during testing.
+	// usleep(50000); // make sure we don't burn spin the cpu in a high priority thread during testing.
 
 
 	//lineAngles.azimuth = -0.5 + 1.2 * sin(.2*3.1415 * trigger + 1.8);
