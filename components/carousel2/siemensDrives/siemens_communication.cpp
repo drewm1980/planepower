@@ -181,6 +181,8 @@ void SiemensReceiver::read(SiemensDriveState* ds)
 	ds->carouselEncoderPosition = ((double) c.carouselEncoderPosition) * 20 * PI / (626074111 - 164054527);//(Pseudo-)arm Position in rad (experimental data)
 	ds->carouselTorque = ((double) c.carouselTorque) * nominalCarouselTorque / nominalCommand;//Torque on arm shaft in Nm
 	ds->carouselCurrent = ((double) c.carouselCurrent) * nominalCarouselCurrent / nominalCommand;//in Ampere
+	ds->plcWinchSpeedSetpoint = ((double) c.plcWinchSpeedSetpoint) * nominalWinchSpeed / nominalCommand;//in m/s
+	ds->plcCarouselSpeedSetpoint = ((double) c.plcCarouselSpeedSetpoint) * nominalCarouselSpeed / nominalCommand;//arm speed setpoint in rad/s
 
 }
 

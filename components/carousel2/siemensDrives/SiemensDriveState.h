@@ -15,6 +15,9 @@ struct SiemensDriveState{
 	double carouselTorque;
 	double carouselCurrent;
 
+	double plcWinchSpeedSetpoint;
+	double plcCarouselSpeedSetpoint;
+
 	double ts_trigger;
 	double ts_elapsed;
 };

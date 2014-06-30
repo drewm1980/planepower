@@ -65,6 +65,8 @@ struct UDPReceivePacket{
 	uint32_t carouselEncoderPosition;
 	int32_t carouselTorque;
 	int32_t carouselCurrent;
+	int32_t plcWinchSpeedSetpoint;
+	int32_t plcCarouselSpeedSetpoint;
 };
 
 struct EncoderState
