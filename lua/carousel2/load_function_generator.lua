@@ -14,7 +14,7 @@ PLANEPOWER="../../"
 
 load_component("functionGenerator","FunctionGenerator","functionGenerator")
 
-freeRunningFunctionGenerator = false
+freeRunningFunctionGenerator = true
 
 ----------------- Set Priorities and activities
 if freeRunningFunctionGenerator then

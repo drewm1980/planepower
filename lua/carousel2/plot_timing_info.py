@@ -34,6 +34,9 @@ for i in range(len(fileRoots)):
     ylabel(fileRoots[i]+' jitter [ms]')
     if i==len(fileRoots)-1:
         xlabel('Time [s]')
+    print "Max jitter for "+fileRoots[i]+" is "+str(numpy.max(jitter))
+    print "Mean jitter for "+fileRoots[i]+" is "+str(numpy.mean(jitter))
+    print "Median jitter for "+fileRoots[i]+" is "+str(numpy.median(jitter))
 
 # Do an extra plot of the siemensSensors raw timestamps
 figure('Siemens PLC receive timestamp')

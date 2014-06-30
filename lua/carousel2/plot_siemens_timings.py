@@ -52,6 +52,11 @@ print "Median plc round-trip latency was: " + str(numpy.median(plcRoundTripLaten
 print "Max drive round-trip latency was: " + str(numpy.max(driveRoundTripLatencies)*1e3) + " ms"
 print "Median drive round-trip latency was: " + str(numpy.median(driveRoundTripLatencies)*1e3) + " ms"
 
+max_jitter = max(abs(diff(receivedTimes)-mean(diff(receivedTimes))))
+print "Max jitter of received packets is "+str(max_jitter)
+mean_jitter = mean(diff(receivedTimes)-mean(diff(receivedTimes)))
+print "Median jitter of received Packets is "+str(mean_jitter)
+
 #plot(xs, times / xs,'b.') 
 #ylabel('Arrival Time / Time []')
 #xlabel('Time [s]')
