@@ -57,11 +57,13 @@ int main(int argc, char *argv[])
 		fflush(stdout);
 		s.read(&ds);
 		printf("Winch:\nwinchSpeedSetpoint: %f m/s\n",ds.winchSpeedSetpoint);
+		printf("plcWinchSpeedSetpoint: %f m/s\n",ds.plcWinchSpeedSetpoint);
 		printf("winchSpeedSmoothed: %f m/s\n",ds.winchSpeedSmoothed);
 		printf("winchPosition: %f rad\n",ds.winchEncoderPosition);
 		printf("winchTorque: %f Nm\n",ds.winchTorque);
 		printf("winchCurrent: %f A\n",ds.winchCurrent);
 		printf("Carousel:\ncarouselSpeedSetpoint: %f rad/s\n",ds.carouselSpeedSetpoint);
+		printf("plcCarouselSpeedSetpoint: %f rad/s\n",ds.plcCarouselSpeedSetpoint);
 		printf("carouselSpeedSmoothed: %f rad/s\n",ds.carouselSpeedSmoothed);
 		printf("carouselPosition: %f rad\n",ds.carouselEncoderPosition);
 		printf("carouselTorque: %f Nm\n",ds.carouselTorque);
