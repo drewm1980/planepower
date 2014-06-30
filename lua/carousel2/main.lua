@@ -120,10 +120,11 @@ function set_functionGenerator_properties(functionType,whichDrive,amplitude,offs
 	set_property("functionGenerator","whichDrive",whichDrive)
 end
 
-function step()
+-- Stepping from zero to some value
+function start_stepping()
 	--Set the parameterf of our function generator for a step response
-	stepheight = 3.141/20 -- Rad/s
-	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
+	stepheight = 3.141/2000 -- Rad/s
+	lowtime = .5 -- seconds.  This is also the hightime.  Make longer than your settling time.
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
@@ -135,6 +136,9 @@ function step()
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 	siemensActuators:start()
 	functionGenerator:start()
+end
+function stop_stepping()
+	functionGenerator:stop()
 end
 
 function step_around_current_setpoint()
