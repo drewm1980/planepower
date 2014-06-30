@@ -11,6 +11,7 @@ using namespace RTT::os;
 FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOperational) 
 {
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
+	addEventPort("triggerIn",portTriggerIn).doc("Event port for driggering the functionGenerator timing off of another component.  IF YOU TRIGGER THIS WAY, REMEMBER TO MAKE THE COMPONENT NON_PERIODIC");
 
 	memset(&driveCommand, 0, sizeof(driveCommand));
 

@@ -29,6 +29,7 @@ public:
 protected:
 
 	RTT::OutputPort< SiemensDriveState > portData;
+	RTT::OutputPort< double > portTriggerOut;
 
 private:
 	SiemensReceiver receiver;

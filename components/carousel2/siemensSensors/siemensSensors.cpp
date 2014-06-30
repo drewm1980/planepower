@@ -13,6 +13,7 @@ typedef uint64_t TIME_TYPE;
 SiemensSensors::SiemensSensors(std::string name):TaskContext(name,PreOperational) 
 {
 	addPort("data", portData).doc("The output data port");
+	addPort("triggerOut", portTriggerOut).doc("A port that can be used for triggering downstream components.");
 }
 SiemensSensors::~SiemensSensors()
 {
@@ -42,6 +43,7 @@ void  SiemensSensors::updateHook()
 	state.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 
 	portData.write(state);
+	portTriggerOut.write(0.0);
 	if(keepRunning) this->getActivity()->trigger(); // This makes the component re-trigger automatically
 }
 

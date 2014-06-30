@@ -27,6 +27,7 @@ public:
 
 protected:
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
+	RTT::InputPort< double > portTriggerIn;
 
 private:
 	SiemensDriveCommand driveCommand;
