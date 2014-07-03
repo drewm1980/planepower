@@ -142,15 +142,15 @@ function stop_stepping()
 	functionGenerator:stop()
 end
 
-function step_around_current_setpoint()
+function step_around_current_setpoint(stepheight,lowtime)
 	--Set the parameterf of our function generator for a step response
-	stepheight = 3.141/20 -- Rad/s
-	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
+	--stepheight = 3.141/20 -- Rad/s
+	--lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
-	phase =3.2 -- a bit more than PI to make sure we start at 0
+	phase =3.1416 -- a bit more than PI to make sure we start at 0
 	offset = get_carousel_setpoint()
 	period = 2.0*lowtime
 	frequency = 1.0/period
@@ -176,6 +176,11 @@ end
 function sin_around_offset(offset,amplitude,frequency)
 	ramp_to(offset) -- avoid jumps
 	sin_around_current_setpoint(amplitude,frequency)
+end
+
+function step_around_offset(offset,stepheight,lowtime)
+	ramp_to(offset) -- avoid jumps
+	step_around_current_setpoint(stepheight,lowtime)
 end
 
 function stop_FunctionGenerator_and_ramp_to_0()
@@ -210,15 +215,28 @@ function run_offset_sin_experiment()
 	print "Running experimint NAOOOO!"
 	sleep(.5)
 	sin_around_offset(2, -- offset
-					.05, -- amplitude
-					.5) -- frequency
+					.07, -- amplitude
+					.3) -- frequency
 	sleep(21)
 	stop_FunctionGenerator_and_ramp_to_0()
 	os.exit()
 	print "Exiting"
 end
 
+function run_offset_step_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	step_around_offset(2, -- offset
+					.14, -- stepheight
+					12) -- lowtime
+	sleep(49)
+	stop_FunctionGenerator_and_ramp_to_0()
+	os.exit()
+	print "Exiting"
+end
+
 --run_step_experiment()
-run_offset_sin_experiment()
+--run_offset_sin_experiment()
+run_offset_step_experiment()
 
 dofile("../shared/postamble.lua")
