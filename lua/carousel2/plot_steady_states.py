@@ -5,6 +5,8 @@ import numpy
 import pylab
 from pylab import figure,plot,xlabel,ylabel,show,legend,title
 
+print('WARNING!!!! This will only be something like the steady states if your LAST experiment ONLY changed the speed reference VERY slowly!')
+
 print('loading data...')
 rootName = 'lineAngleSensor2'
 f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
