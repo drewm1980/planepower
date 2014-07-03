@@ -205,7 +205,6 @@ function run()
 	end
 	sleep(10)
 	ramp_to(0.0)
-	return 1
 	print "Exiting"
 	os.exit()
 end
