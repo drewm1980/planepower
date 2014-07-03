@@ -2,14 +2,15 @@ include_rules
 
 ifdef CAROUSEL2
 ifdef BBONE
-ifdef PLANEBONE
+#ifdef PLANEBONE
+ifdef ARMBONE
 
 CC=clang
 CPPFLAGS += -Iinclude -Wall -Werror
 CPPFLAGS += -I..
 CPPFLAGS += -I../shared
 CFLAGS += -ggdb -pthread -D _BSD_SOURCE 
-CFLAGS += -DDEBUG=1 -DANALYZE=0 -Wall -Werror
+CFLAGS += -DDEBUG=2 -DANALYZE=0 -Wall -Werror
 LDFLAGS += -lpthread
 
 : foreach *.c |> !cc |>

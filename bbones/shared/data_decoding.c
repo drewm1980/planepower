@@ -99,6 +99,7 @@ static DEC_errCode data_to_struct(unsigned char sender,unsigned char stream[], i
         default: return DEC_ERR_UNKNOWN_BONE_PACKAGE; break;
         }
         break;
+	
     case LISA: //sender_id of lisa
 #if DEBUG  > 1
         printf("Received data packet from LISA of type");
