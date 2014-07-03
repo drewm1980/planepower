@@ -9,9 +9,14 @@ cp *.nc *.log *.lua *.py $dest/$timestamp
 cd $dest
 git pull origin master
 git add $timestamp
+
 rm newest
 ln -sf $timestamp newest
 git add newest
+
+echo `git rev-parse HEAD` > planepower_git_version
+git add planepower_git_version
+
 git commit
 git push origin master
 )
