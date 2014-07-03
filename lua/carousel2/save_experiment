@@ -9,6 +9,7 @@ cp *.nc *.log *.lua *.py $dest/$timestamp
 cd $dest
 git pull origin master
 git add $timestamp
+rm newest
 ln -sf $timestamp newest
 git add newest
 git commit
