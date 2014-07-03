@@ -247,14 +247,28 @@ end
 function run_slow_ramp_to_max_and_back_to_0_experiment()
 	print "Running experimint NAOOOO!"
 	sleep(.5)
+	acceleration = .01 -- in rad/s^2
 	ramp_with(	PI, -- targetSpeed
-			.01) -- acceleration
+			acceleration) -- acceleration
 	sleep(10)
 	ramp_with(	0, -- targetSpeed
-			.01) -- acceleration
+			acceleration) -- acceleration
 	stop_FunctionGenerator_and_ramp_to_0()
 	print "Exiting"
 	os.exit()
 end
 
+function run_very_slow_ramp_to_max_and_back_to_0_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	acceleration = .001 -- in rad/s^2
+	ramp_with(	PI, -- targetSpeed
+			acceleration) -- acceleration
+	sleep(10)
+	ramp_with(	0, -- targetSpeed
+			acceleration) -- acceleration
+	stop_FunctionGenerator_and_ramp_to_0()
+	print "Exiting"
+	os.exit()
+end
 dofile("../shared/postamble.lua")
