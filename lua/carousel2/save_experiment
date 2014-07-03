@@ -5,12 +5,20 @@ timestamp=`date +%Y%m%d_%H%m%S`
 mkdir $dest/$timestamp
 cp *.nc *.log *.lua *.py $dest/$timestamp
 
+version=`git rev-parse HEAD`
+
 (
 cd $dest
 git pull origin master
 git add $timestamp
+
+rm newest
 ln -sf $timestamp newest
 git add newest
+
+echo $version > planepower_git_version
+git add planepower_git_version
+
 git commit
 git push origin master
 )
