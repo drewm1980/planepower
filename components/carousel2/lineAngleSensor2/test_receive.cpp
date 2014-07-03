@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
 		s.read(&ds);
-		printf("Azimuth: %f units\n",ds.azimuth);
-		printf("Elevation: %f units\n",ds.elevation);
+		printf("Azimuth: %f rad\n",ds.azimuth);
+		printf("Elevation: %f rad\n",ds.elevation);
 	}
 }
 
