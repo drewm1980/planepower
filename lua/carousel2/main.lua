@@ -5,6 +5,9 @@ package.path = package.path .. ';../shared/?.lua'
 dofile("../shared/preamble.lua")
 
 require "deployment_helpers"
+
+PI = 3.1415 
+
 for i,symbol in ipairs({"load_component",
 						"load_properties",
 						"get_property",
@@ -77,11 +80,10 @@ end
 
 require "math"
 
-softlimit = 3.1415 -- Rad/s
+softlimit = PI -- Rad/s
 
 -- ALWAYS check the return value of this!
-function ramp_to(targetSpeed)
-	acceleration = .1
+function ramp_with(targetSpeed,acceleration)
 	dt = .5 -- s
 	threshold = .05 -- Rad/s
 	if (math.abs(targetSpeed) > softlimit) then
@@ -108,6 +110,11 @@ function ramp_to(targetSpeed)
 	end
 end
 
+function ramp_to(targetSpeed)
+	acceleration = .1
+	ramp_with(targetSpeed,acceleration)
+end
+
 -- functionGenerator related functions
 
 function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
@@ -123,8 +130,9 @@ end
 -- Stepping from zero to some value
 function start_stepping()
 	--Set the parameterf of our function generator for a step response
-	stepheight = 3.141/2000 -- Rad/s
-	lowtime = .5 -- seconds.  This is also the hightime.  Make longer than your settling time.
+	--stepheight = 3.141/2000 -- Rad/s
+	stepheight = PI/10 -- Rad/s
+	lowtime = 1 -- seconds.  This is also the hightime.  Make longer than your settling time.
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
@@ -143,7 +151,7 @@ end
 
 function step_around_current_setpoint()
 	--Set the parameterf of our function generator for a step response
-	stepheight = 3.141/20 -- Rad/s
+	stepheight = PI/20 -- Rad/s
 	lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 	functionType = 1 -- for square wave
@@ -193,6 +201,39 @@ function run()
 	sleep(10)
 	ramp_to(0.0)
 	return 1
+end
+
+function run_step_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	start_stepping()
+	sleep(21)
+	stop_stepping()
+	os.exit()
+	print "Exiting"
+end
+
+function run_offset_sin_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	sin_around_offset(	2, -- offset
+				.05, -- amplitude
+				.5) -- frequency
+	sleep(21)
+	stop_FunctionGenerator_and_ramp_to_0()
+	os.exit()
+	print "Exiting"
+end
+
+function run_slow_ramp_to_max_and_back_to_0_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	ramp_with(	PI, -- targetSpeed
+			.01) -- acceleration
+	sleep(21)
+	stop_FunctionGenerator_and_ramp_to_0()
+	os.exit()
+	print "Exiting"
 end
 
 dofile("../shared/postamble.lua")
