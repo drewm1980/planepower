@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("armboneLisaSensors")
+ 
+#Create components
+loadComponent("armboneLisaSensors","ArmboneLisaSensors")
+ 
+armboneLisaSensors.configure()
+armboneLisaSensors.start()
