@@ -32,5 +32,10 @@ CFLAGS += -std=gnu99
 : main_arm.c |> !cc |>
 : main_arm.o SimpleGPIO.o $(PLANEPOWER_ROOT)/shared/udp_communication.o spi_communication.o bitbang_spi.o ../shared/log.o ../shared/data_decoding.o ../shared/circular_buffer.o |> !ld |> main_arm
 
+
+#: spi_communication.c |> !cc |>
+: main_arm_lisa.c |> !cc |>
+: main_arm_lisa.o $(PLANEPOWER_ROOT)/shared/udp_communication.o $(PLANEPOWER_ROOT)/bbones/shared/uart_communication.o ../shared/log.o ../shared/data_decoding.o ../shared/circular_buffer.o |> !ld |> main_arm_lisa
+
 endif
 endif
