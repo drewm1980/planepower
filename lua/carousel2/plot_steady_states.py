@@ -7,20 +7,22 @@ from pylab import figure,plot,xlabel,ylabel,show,legend,title
 
 print('WARNING!!!! This will only be something like the steady states if your LAST experiment ONLY changed the speed reference VERY slowly!')
 
+samplesToSkip = 3
+
 print('loading data...')
 rootName = 'lineAngleSensor2'
 f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 memberName = 'azimuth'
-azimuth = f.variables[rootName+'.data.'+memberName].data[1:]
+azimuth = f.variables[rootName+'.data.'+memberName].data[samplesToSkip:]
 memberName = 'elevation'
-elevation = f.variables[rootName+'.data.'+memberName].data[1:]
-ts_trigger_las = f.variables[rootName+'.data.ts_trigger'].data[1:]*1.0e-9
+elevation = f.variables[rootName+'.data.'+memberName].data[samplesToSkip:]
+ts_trigger_las = f.variables[rootName+'.data.ts_trigger'].data[samplesToSkip:]*1.0e-9
 
 rootName = 'siemensSensors'
 f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
-setpoint = f.variables[rootName+'.data.'+'carouselSpeedSetpoint'].data[1:]
-speed = f.variables[rootName+'.data.'+'carouselSpeedSmoothed'].data[1:]
-ts_trigger_siemens = f.variables[rootName+'.data.ts_trigger'].data[1:]*1.0e-9
+setpoint = f.variables[rootName+'.data.'+'carouselSpeedSetpoint'].data[samplesToSkip:]
+speed = f.variables[rootName+'.data.'+'carouselSpeedSmoothed'].data[samplesToSkip:]
+ts_trigger_siemens = f.variables[rootName+'.data.ts_trigger'].data[samplesToSkip:]*1.0e-9
 
 # Chose intersection of the two time ranges
 startTime = max(ts_trigger_las[0],ts_trigger_siemens[0])  
@@ -46,7 +48,7 @@ speed_resampled = numpy.interp(t, ts_trigger_siemens, speed)
 #plot(ts_trigger_siemens, speed, 'b.-', t, speed_resampled, 'r.')
 
 figure()
-plot(speed_resampled, elevation_resampled,'b.-') 
+plot(speed_resampled, elevation_resampled/numpy.pi*180,'b.-') 
 title('(Hopefully) Steady-State plot')
 ylabel('Line Angle Elevation [Rad]')
 xlabel('Arm speed on MOTOR side of belt [Rad/s]')
