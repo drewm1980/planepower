@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include "armbone_lisa_communication.hpp"
+
 class ArmboneLisaSensors : public RTT::TaskContext
 {
 public:
@@ -23,12 +25,19 @@ public:
 protected:
 //	RTT::InputPort< SiemensDriveState > portDriveState;
 //	RTT::InputPort< LineAngles > portLineAngles;
-//	RTT::OutputPort< ResampledMeasurements > portData;
+	RTT::OutputPort< ImuGyro > portGyroState;
+	RTT::OutputPort< ImuMag > portMagState;
+	RTT::OutputPort< ImuAccel > portAccelState;
 private:
 //	SiemensDriveState driveState;
 //	LineAngles lineAngles;
 //	ResampledMeasurements resampledMeasurements;
-
+	ArmboneLisaReceiver receiver;
+	ImuGyro imuGyro;
+	ImuMag imuMag;
+	ImuAccel imuAccel;
+	bool keepRunning;
+	
 };
 
 #endif

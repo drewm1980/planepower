@@ -13,11 +13,11 @@
 #define MAX_INPUT_STREAM_SIZE 255
 #define UDP_SOCKET_TIMEOUT 1000000000
 
-class ArmboneReceiver
+class ArmboneLisaReceiver
 {
 	public:
-		ArmboneReceiver();	
-		~ArmboneReceiver();
+		ArmboneLisaReceiver();	
+		~ArmboneLisaReceiver();
 	
 		void read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel);	
 
