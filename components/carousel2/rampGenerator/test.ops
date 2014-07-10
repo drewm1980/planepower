@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("rampGenerator")
+ 
+#Create components
+loadComponent("rampGenerator","RampGenerator")
+ 
+rampGenerator.configure()
+rampGenerator.start()
