@@ -3,9 +3,9 @@
 
 struct ImuMag
 {
-	int mx_raw;
-	int my_raw;
-	int mz_raw;
+	double mx_raw;
+	double my_raw;
+	double mz_raw;
 
 	double ts_trigger;
 	double ts_elapsed;

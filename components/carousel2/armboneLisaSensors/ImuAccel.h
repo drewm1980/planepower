@@ -3,9 +3,9 @@
 
 struct ImuAccel
 {
-	int ax_raw;
-	int ay_raw;
-	int az_raw;
+	double ax_raw;
+	double ay_raw;
+	double az_raw;
 
 	double ts_trigger;
 	double ts_elapsed;

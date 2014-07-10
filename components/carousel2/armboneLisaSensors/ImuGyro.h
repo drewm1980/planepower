@@ -3,9 +3,9 @@
 
 struct ImuGyro
 {
-	int gp_raw;
-	int gq_raw;
-	int gr_raw;
+	double gp_raw;
+	double gq_raw;
+	double gr_raw;
 
 	double ts_trigger;
 	double ts_elapsed;

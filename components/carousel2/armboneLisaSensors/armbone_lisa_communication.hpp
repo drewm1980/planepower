@@ -19,7 +19,12 @@ class ArmboneLisaReceiver
 		ArmboneLisaReceiver();	
 		~ArmboneLisaReceiver();
 	
-		void read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel);	
+		// returns either:
+		// -1 (error)
+		// 1 (if new gyro value exists)
+		// 2 (if new mag value exists)
+		// 3 (if new accel value exists)
+		int read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel);	
 
 
 	protected:
