@@ -9,10 +9,10 @@ local fqn_out, events_in
  
 function configureHook()
    -- load state machine
-   fsm = rfsm.init(rfsm.load("fsm.lua"))
+   fsm = rfsm.init(rfsm.load("supervisor_fsm.lua"))
  
    -- enable state entry and exit dbg output
-   fsm.dbg=rfsmpp.gen_dbgcolor("rfsm-rtt-example", 
+   fsm.dbg=rfsmpp.gen_dbgcolor("supervisor state", 
                    { STATE_ENTER=true, STATE_EXIT=true}, 
                    false)
  
