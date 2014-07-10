@@ -54,9 +54,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		{	
 
 			
-			imu_gyro->gp_raw = data->lisa_plane.imu_gyro_raw.gp;
-			imu_gyro->gq_raw = data->lisa_plane.imu_gyro_raw.gq;
-			imu_gyro->gr_raw = data->lisa_plane.imu_gyro_raw.gr;
+			imu_gyro->gp_raw = (double) data->lisa_plane.imu_gyro_raw.gp;
+			imu_gyro->gq_raw = (double) data->lisa_plane.imu_gyro_raw.gq;
+			imu_gyro->gr_raw = (double) data->lisa_plane.imu_gyro_raw.gr;
 			message_type = 1;
 #if DEBUG > 0	
 			printf("IMU_GYRO_RAW gp: %i\n",data->lisa_plane.imu_gyro_raw.gp);
@@ -67,9 +67,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		} 
 		else if (input_stream[3] == IMU_MAG_RAW)
 		{
-			imu_mag->mx_raw = data->lisa_plane.imu_mag_raw.mx;
-			imu_mag->my_raw = data->lisa_plane.imu_mag_raw.my;
-			imu_mag->mz_raw = data->lisa_plane.imu_mag_raw.mz;
+			imu_mag->mx_raw = (double) data->lisa_plane.imu_mag_raw.mx;
+			imu_mag->my_raw = (double) data->lisa_plane.imu_mag_raw.my;
+			imu_mag->mz_raw = (double) data->lisa_plane.imu_mag_raw.mz;
 			message_type = 2;
 #if DEBUG > 0	
 			printf("IMU_MAG_RAW mx: %i\n",data->lisa_plane.imu_mag_raw.mx);
@@ -79,9 +79,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		}
 		else if (input_stream[3] == IMU_ACCEL_RAW)
 		{
-			imu_accel->ax_raw = data->lisa_plane.imu_accel_raw.ax;
-			imu_accel->ay_raw = data->lisa_plane.imu_accel_raw.ay;
-			imu_accel->az_raw = data->lisa_plane.imu_accel_raw.az;
+			imu_accel->ax_raw = (double) data->lisa_plane.imu_accel_raw.ax;
+			imu_accel->ay_raw = (double) data->lisa_plane.imu_accel_raw.ay;
+			imu_accel->az_raw = (double) data->lisa_plane.imu_accel_raw.az;
 			message_type = 3;
 #if DEBUG > 0	
 			printf("IMU_ACCEL_RAW ax: %i\n",data->lisa_plane.imu_accel_raw.ax);
