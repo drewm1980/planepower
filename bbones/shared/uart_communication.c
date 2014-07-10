@@ -38,8 +38,12 @@ const char device_path[] = "/sys/devices/bone_capemgr.9/slots"; //For Angstrom: 
 
 
 int wait_for_data(){
+
+	#if DEBUG  > 1
+		printf("Entering wait_for_data\n");
+	#endif
 	struct pollfd fds[1];
-	int timeout = 1; //timeout
+	int timeout = 5; //timeout
 	int result;
 	fds[0].fd=serial_stream->fd;
 	fds[0].events=POLLIN;
@@ -60,18 +64,29 @@ int serial_port_read(uint8_t buffer[],int length)
 	int bytes_in_buffer=0;
 
 	do{
-		wait_for_data();
+		if (wait_for_data() == -1) return UART_ERR_READ;
 		ioctl(serial_stream->fd, FIONREAD, &bytes_in_buffer); //set to number of bytes in buffer
-		//printf("bytes in buff %d\n",bytes_in_buffer);
+#if DEBUG > 1
+		printf("bytes in buff %d\n",bytes_in_buffer);
+#endif
 	
 	}while(bytes_in_buffer < length );
 	 
+#if DEBUG > 1
+		printf("setting n with read function\n");
+#endif
 	int n = read(serial_stream->fd, buffer, length);
 	 
 	if(n==-1){
+#if DEBUG > 1
+		printf("returning uart-error\n");
+#endif
 		return UART_ERR_READ;
 	}  
 	    
+#if DEBUG > 1
+		printf("returning %i\n",n);
+#endif
 	return n;  //return number of read bytes
 }
 
@@ -126,7 +141,7 @@ int serial_input_get_lisa_data(uint8_t buffer[]){
 	if (buffer[INDEX_CH1]!= checksum_1 || buffer[INDEX_CH2] != checksum_2)
 	{
 		int i= 0;
-		printf("message raw check: ");
+		printf("Checksum Error! ->  message raw check: ");
 		for(i=0;i<message_length;i++){
 				printf("%d ",buffer[i]);
 		}

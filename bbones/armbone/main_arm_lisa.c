@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "udp_communication.h"
 #include "log.h"
@@ -38,6 +39,7 @@ typedef struct{
 }Connection;
 
 static Connection connection;
+static UDP udp_client;
 
 //function pointer to write errors to log
 void (*write_uart_error_ptr)(char *,char *,int);
@@ -48,8 +50,22 @@ void (*write_decode_error_ptr)(char *,char *,int);
  * MAIN
  * *********************************/
 
+void clean_exit(int signum)
+{	
+	printf("Exiting program...\n");
+ 	printf("%i\n", signum);
+	closeUDPClientSocket(&udp_client);
+	serial_port_close();
+	usleep(5000);
+	printf("done!\n");
+	exit(0);
+}
+
+
 int main(int argc, char *argv[])
-{
+{	
+	signal(SIGINT, clean_exit);
+	
 	write_uart_error_ptr = &write_uart_error; //initialize the function pointer to write error
 	write_udp_error_ptr = &write_udp_error;
 
@@ -64,8 +80,6 @@ int main(int argc, char *argv[])
 	}
 
 	/*-------------------------LINE-ANGLE SENSOR TO SERVER------------------------*/
-	static UDP udp_client;
-	//int message_length;
 	int err;
 	int message_length;
 	uint8_t input_buffer[INPUT_BUFFER_SIZE];				
@@ -83,22 +97,23 @@ int main(int argc, char *argv[])
 	printf("Entering real-time while loop.  Will not do any printing in the loop. \n");
 	while(1)
 	{	
-		message_length = serial_input_get_lisa_data(input_buffer);
-		if(message_length > 0){
+		message_length = serial_input_get_lisa_data(input_buffer); 
+		if(message_length == 18){
             		// printf("Received serial input with message id: %c\n", input_buffer[3]);
 	    		//Decode messages to see what we receive
 			int message_id = input_buffer[3];
-            		int err_decode = data_decode(input_buffer);
-            		if (err_decode != DEC_ERR_NONE)
-            		{
-                		printf("Error while decoding data messages.");
-            		}
+			if ((message_id >= 203) && (message_id <= 205)) {
+            			int err_decode = data_decode(input_buffer);
+            			if (err_decode != DEC_ERR_NONE)
+            			{
+                			printf("Error while decoding data messages.");
+            			}
 
 
 
 			//printf("%.2X  %.2X  %.2X  %.2X  \n",input_buffer[3],input_buffer[2],input_buffer[1],input_buffer[0]); //////////checking
 
-			data_encode(input_buffer,INPUT_BUFFER_SIZE,encoded_data,LISA,message_id);
+				data_encode(input_buffer,INPUT_BUFFER_SIZE,encoded_data,LISA,message_id);
 	
 
 			// printf("%.2X  %.2X  %.2X  %.2X  \n",encoded_data[7],encoded_data[6],encoded_data[5],encoded_data[4]); //////////checking
@@ -111,18 +126,25 @@ int main(int argc, char *argv[])
 #endif
 
 			//send data to eth port using UDP
-			if (message_id == IMU_GYRO_RAW || message_id == IMU_MAG_RAW || message_id == IMU_ACCEL_RAW) 
-			{
-				UDP_err_handler(sendUDPClientData(&udp_client,encoded_data,encoded_data[LENGTH_INDEX]),write_udp_error_ptr);
-			}
-		}else{
-			UART_err_handler(err,write_uart_error_ptr);
+				if (message_id == IMU_GYRO_RAW || message_id == IMU_MAG_RAW || message_id == IMU_ACCEL_RAW) 
+				{
+					UDP_err_handler(sendUDPClientData(&udp_client,encoded_data,encoded_data[LENGTH_INDEX]),write_udp_error_ptr);
+				}else{
+					UART_err_handler(err,write_uart_error_ptr);
+					printf("Error in message_id: %i\n", message_id);
+					//return 1;
+				}
+			}	
+		} else {
+			UART_err_handler(message_length, write_uart_error_ptr);
+			printf("Error in message_length: %i\n", message_length);
+            		printf("Error in decoding: %i\n", data_decode(input_buffer));
+			//return 1;
 		}
-
+		usleep(1000);
 	}
 	UDP_err_handler(closeUDPClientSocket(&udp_client),0);
 	usleep(5000);
-
 	return 0;
 }
 

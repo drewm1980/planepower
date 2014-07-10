@@ -18,8 +18,8 @@ CPPFLAGS+=-I$(PLANEPOWER_ROOT)/bbones/shared/
 : test_receive.o $(PLANEPOWER_ROOT)/shared/udp_communication.o data_decoding.o armbone_lisa_communication.o |> !ld |> test_receive
 
 
-#: armboneLisaSensors.cpp |> !cxx_orocos |>
-#: armboneLisaSensors.o armbone_lisa_communication.o data_decoding.o $(PLANEPOWER_ROOT)/shared/udp_communication.o |> !ld_orocos |> 
+: armboneLisaSensors.cpp |> !cxx_orocos |>
+: armboneLisaSensors.o armbone_lisa_communication.o data_decoding.o $(PLANEPOWER_ROOT)/shared/udp_communication.o |> !ld_orocos |> 
 
 
 

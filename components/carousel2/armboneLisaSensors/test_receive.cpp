@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	ArmboneReceiver s;
+	ArmboneLisaReceiver s;
 	ImuGyro ig;
 	ImuMag im;
 	ImuAccel ia;

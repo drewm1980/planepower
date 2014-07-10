@@ -11,7 +11,7 @@
 
 using namespace std;
 
-ArmboneReceiver::ArmboneReceiver()
+ArmboneLisaReceiver::ArmboneLisaReceiver()
 {
 	port_number = 7777;
 	openUDPServerSocket(&udp_server, port_number, UDP_SOCKET_TIMEOUT);
@@ -20,12 +20,12 @@ ArmboneReceiver::ArmboneReceiver()
 
 }
 
-ArmboneReceiver::~ArmboneReceiver()
+ArmboneLisaReceiver::~ArmboneLisaReceiver()
 {
 	closeUDPServerSocket(&udp_server);
 }
 
-void ArmboneReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel)	
+void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel)	
 {
 	int err = UDP_ERR_NONE;
 	int recv_len;

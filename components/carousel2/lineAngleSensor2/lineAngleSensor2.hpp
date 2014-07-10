@@ -11,8 +11,8 @@
 //#include "LineAngles.h"
 #include "armbone_communication.hpp"
 
-#define MAX_INPUT_STREAM_SIZE 255
-#define UDP_SOCKET_TIMEOUT 1000000000
+//#define MAX_INPUT_STREAM_SIZE 255
+//#define UDP_SOCKET_TIMEOUT 1000000000
 
 
 class LineAngleSensor2 : public RTT::TaskContext
