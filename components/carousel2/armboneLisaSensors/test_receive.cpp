@@ -58,15 +58,15 @@ int main(int argc, char *argv[])
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
 		s.read(&ig, &im, &ia);
-		printf("ImuGyro  gp: %i units\n",ig.gp_raw);
-		printf("ImuGyro  gq: %i units\n",ig.gq_raw);
-		printf("ImuGyro  gr: %i units\n",ig.gr_raw);
-		printf("ImuMag   mx: %i units\n",im.mx_raw);
-		printf("ImuMag   my: %i units\n",im.my_raw);
-		printf("ImuMag   mz: %i units\n",im.mz_raw);
-		printf("ImuAccel ax: %i units\n",ia.ax_raw);
-		printf("ImuAccel ay: %i units\n",ia.ay_raw);
-		printf("ImuAccel az: %i units\n",ia.az_raw);
+		printf("ImuGyro  gp: %f units\n",ig.gp_raw);
+		printf("ImuGyro  gq: %f units\n",ig.gq_raw);
+		printf("ImuGyro  gr: %f units\n",ig.gr_raw);
+		printf("ImuMag   mx: %f units\n",im.mx_raw);
+		printf("ImuMag   my: %f units\n",im.my_raw);
+		printf("ImuMag   mz: %f units\n",im.mz_raw);
+		printf("ImuAccel ax: %f units\n",ia.ax_raw);
+		printf("ImuAccel ay: %f units\n",ia.ay_raw);
+		printf("ImuAccel az: %f units\n",ia.az_raw);
 	}
 }
 
