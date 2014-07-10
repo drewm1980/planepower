@@ -25,8 +25,9 @@ ArmboneLisaReceiver::~ArmboneLisaReceiver()
 	closeUDPServerSocket(&udp_server);
 }
 
-void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel)	
+int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel)	
 {
+	int message_type = -1;
 	int err = UDP_ERR_NONE;
 	int recv_len;
 	size_t data_len = sizeof(input_stream);
@@ -42,8 +43,6 @@ void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu
         {
                 exception();
         }
-
-
 	//2. decode data                
         err  = data_decode(input_stream);
         Data* data = get_read_pointer();
@@ -58,6 +57,7 @@ void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu
 			imu_gyro->gp_raw = data->lisa_plane.imu_gyro_raw.gp;
 			imu_gyro->gq_raw = data->lisa_plane.imu_gyro_raw.gq;
 			imu_gyro->gr_raw = data->lisa_plane.imu_gyro_raw.gr;
+			message_type = 1;
 #if DEBUG > 0	
 			printf("IMU_GYRO_RAW gp: %i\n",data->lisa_plane.imu_gyro_raw.gp);
 			printf("IMU_GYRO_RAW gq: %i\n",data->lisa_plane.imu_gyro_raw.gq);
@@ -70,6 +70,7 @@ void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu
 			imu_mag->mx_raw = data->lisa_plane.imu_mag_raw.mx;
 			imu_mag->my_raw = data->lisa_plane.imu_mag_raw.my;
 			imu_mag->mz_raw = data->lisa_plane.imu_mag_raw.mz;
+			message_type = 2;
 #if DEBUG > 0	
 			printf("IMU_MAG_RAW mx: %i\n",data->lisa_plane.imu_mag_raw.mx);
 			printf("IMU_MAG_RAW my: %i\n",data->lisa_plane.imu_mag_raw.my);
@@ -81,6 +82,7 @@ void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu
 			imu_accel->ax_raw = data->lisa_plane.imu_accel_raw.ax;
 			imu_accel->ay_raw = data->lisa_plane.imu_accel_raw.ay;
 			imu_accel->az_raw = data->lisa_plane.imu_accel_raw.az;
+			message_type = 3;
 #if DEBUG > 0	
 			printf("IMU_ACCEL_RAW ax: %i\n",data->lisa_plane.imu_accel_raw.ax);
 			printf("IMU_ACCEL_RAW ay: %i\n",data->lisa_plane.imu_accel_raw.ay);
@@ -94,6 +96,8 @@ void ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu
 	} else {
 		printf("Decoding Error (Code %i)\n", err);
 	}
+
+	return message_type;
 
 }
 

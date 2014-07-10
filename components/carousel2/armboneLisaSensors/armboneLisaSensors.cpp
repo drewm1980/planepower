@@ -46,24 +46,29 @@ bool  ArmboneLisaSensors::startHook()
 
 void  ArmboneLisaSensors::updateHook()
 {	
-	receiver.read(&imuGyro, &imuMag, &imuAccel);
+	int value_type = receiver.read(&imuGyro, &imuMag, &imuAccel);
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	//portDriveState.read(driveState);
 
 	//resampledMeasurements.ts_trigger = trigger;
 	//resampledMeasurements.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	//portData.write(resampledMeasurements);
-
-	imuGyro.ts_trigger = trigger;
-	imuMag.ts_trigger = trigger;
-	imuAccel.ts_trigger = trigger;
-	imuGyro.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
-	imuMag.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
-	imuAccel.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
-	portGyroState.write(imuGyro);
-	portMagState.write(imuMag);
-	portAccelState.write(imuAccel);
-
+	switch(value_type)
+	{
+		case 1:	imuGyro.ts_trigger = trigger;
+			imuGyro.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
+			portGyroState.write(imuGyro);
+			break;
+		case 2: imuMag.ts_trigger = trigger;
+			imuMag.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
+			portMagState.write(imuMag);
+			break;
+		case 3: imuAccel.ts_trigger = trigger;
+			imuAccel.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
+			portAccelState.write(imuAccel);
+			break;
+	}
+	
 	if(keepRunning) this->getActivity()->trigger();
 }
 
