@@ -66,5 +66,11 @@ dofile("load_telemetry.lua")
 if useSimulators then
 	controller:start()
 end
+
+
+rtt.logl("Info", "Loading ramp generator components...")
+dofile("load_ramp_generator.lua")
+
 dofile("experiment_helpers.lua")
+
 dofile("../shared/postamble.lua")

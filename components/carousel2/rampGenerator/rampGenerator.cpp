@@ -17,7 +17,8 @@ RampGenerator::RampGenerator(std::string name):TaskContext(name,PreOperational)
 	addPort("driveState",portDriveState).doc("Siemens Drives Measurements");
 //	addPort("lineAngles",portLineAngles).doc("Line Angle Sensor Measurements");
 	addPort("driveCommand",portDriveCommand).doc("Resampled measurements from all sensors");
-
+	addPort("info",portInfo).doc("Information about the ramping");
+	
 	memset(&driveState, 0, sizeof( driveState ));
 	memset(&driveCommand, 0, sizeof( driveCommand ));
 //	memset(&lineAngles, 0, sizeof( driveState ));
@@ -31,6 +32,13 @@ bool RampGenerator::configureHook()
 {
 	acceleration = 0;
 	targetSpeed = 0;
+	softlimit = 3.1415;
+	currentSetpoint = 0;
+	nextSetpoint = 0;
+        dt = getPeriod(); // s
+        threshold = acceleration; // Rad/s
+        retrys = 10;
+	info = "";
 	return true;
 }
 
@@ -49,18 +57,11 @@ void  RampGenerator::updateHook()
 	//resampledMeasurements.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	//portData.write(resampledMeasurements);
 
-	double softlimit = 3.1415;
-	double currentSetpoint;
-	double currentSpeed;
-	double nextSetpoint;
-        double dt = .5; // s
-        double threshold = acceleration; // Rad/s
-        int retrys = 10;
 
         if (abs(targetSpeed) > softlimit) {
-                log(Error) << "Requested speed is outside the soft limit!" << endl;
+                info = "Requested speed is outside the soft limit!";
         }
-	while (true) {
+	else {
 		portDriveState.read(driveState);
 		currentSetpoint = driveState.carouselSpeedSetpoint;
 		currentSpeed = driveState.carouselSpeedSmoothed;
@@ -68,35 +69,34 @@ void  RampGenerator::updateHook()
 		//check if targetspeed is reached
         	if (abs(currentSetpoint - targetSpeed) < threshold) {
                 	nextSetpoint = targetSpeed;
-        	        log(Info) << "Ramp goal achieved!" << endl;
-     	 		return;
+        	        info = "Ramp goal achieved!";
         	}
-   	     	// check if setpoint is reached
-       	 	if (abs(currentSetpoint - currentSpeed) < threshold) {
-	        	if (currentSetpoint > targetSpeed) {
-                  		// "Ramping down..."
-                        	nextSetpoint = max(targetSpeed, currentSetpoint - dt*acceleration);
-                	}
-			else {
-                        	//print "Ramping up..."
-                        	nextSetpoint = min(targetSpeed, currentSetpoint + dt*acceleration);
-                	}
-	        	retrys = 10;
+		else {
+   	     		// check if setpoint is reached
+       	 		if (abs(currentSetpoint - currentSpeed) < threshold) {
+	        		if (currentSetpoint > targetSpeed) {
+                  			info = "Ramping down...";
+                        		nextSetpoint = max(targetSpeed, currentSetpoint - dt*acceleration);
+                		}
+				else {
+                        		info = "Ramping up...";
+                        		nextSetpoint = min(targetSpeed, currentSetpoint + dt*acceleration);
+                		}
+	        		retrys = 10;
+			}
+        		else {
+                		info = "Current setpoint not reached! Retrying(";
+				//info += std::to_string( retrys );
+				info += ")" ;
+                		retrys--;
+        		}
+        		// check if ramp got stuck
+        		if (retrys <= 0) {
+                		//info = "Aborting ramp! Current setpoint = " + std::to_string(currentSetpoint);
+			}
+        		else {}	
 		}
-        	else {
-                	log(Warning) << "Current setpoint not reached! Retrying(" << retrys << ")" << endl;
-                	retrys--;
-        	}
-        	// check if ramp got stuck
-        	if (retrys <= 0) {
-                	log(Error) << "Aborting ramp! Current setpoint = " << currentSetpoint << endl;
-                       	return;
-		}
-        	else {
-                	//print "Target Speed:  Current Speed: Next Speed: 
-                 	sleep(dt);
-        	}	
-
+		portInfo.write(info);
 		driveCommand.carouselSpeedSetpoint = nextSetpoint;
 		driveCommand.ts_trigger = trigger;
 		driveCommand.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
