@@ -6,7 +6,8 @@ dofile("../shared/preamble.lua")
 
 require "deployment_helpers"
 
-PI = 3.1415 
+require "math"
+PI = math.pi
 
 for i,symbol in ipairs({"load_component",
 						"load_properties",

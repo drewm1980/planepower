@@ -1,4 +1,12 @@
+
+takeoffSpeed = 1 -- Rad/s, a bit before takeoff.
+turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
+
 function set_carousel_speed(speed)
+	if speed==nil then
+		print "Speed cannot be nil!!!"
+		return
+	end
 	siemensActuators:stop()
 	siemensActuators:getOperation('setCarouselSpeed')(speed)
 end
@@ -194,30 +202,17 @@ function run_offset_step_experiment()
 	print "Exiting"
 end
 
-function run_slow_ramp_to_max_and_back_to_0_experiment()
-	print "Running experimint NAOOOO!"
+function run_steady_state_experiment()
+	print "Running steady state experiment"
+	ramp_to(takeoffSpeed)
 	sleep(.5)
 	acceleration = .01 -- in rad/s^2
-	ramp_with(	PI, -- targetSpeed
+	ramp_with(	turbulentSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	sleep(10)
 	ramp_with(	0, -- targetSpeed
 			acceleration) -- acceleration
-	stop_FunctionGenerator_and_ramp_to_0()
-	print "Exiting"
-	os.exit()
-end
-
-function run_very_slow_ramp_to_max_and_back_to_0_experiment()
-	print "Running experimint NAOOOO!"
-	sleep(.5)
-	acceleration = .001 -- in rad/s^2
-	ramp_with(	PI, -- targetSpeed
-			acceleration) -- acceleration
-	sleep(10)
-	ramp_with(	0, -- targetSpeed
-			acceleration) -- acceleration
-	stop_FunctionGenerator_and_ramp_to_0()
+	--stop_FunctionGenerator_and_ramp_to_0()
 	print "Exiting"
 	os.exit()
 end
