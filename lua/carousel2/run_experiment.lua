@@ -1,7 +1,7 @@
 #!/usr/bin/env rttlua-i
 dofile("main.lua") 
 
-which_experiment = 0
+which_experiment = 7
 
 if which_experiment == 0 then
 	print "No experiment selected!"
@@ -24,4 +24,4 @@ else
 	print "No experiment selected!"
 	print "Exiting"
 	os.exit()
-
+end

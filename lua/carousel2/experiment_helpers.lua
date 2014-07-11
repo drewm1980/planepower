@@ -226,7 +226,18 @@ function run_rampGenerator_test()
 	
 	print "Running experimint NAOOOO!"
 	sleep(.5)
-	sleep(10)
+	set_property("rampGenerator","acceleration",0.1)
+	set_property("rampGenerator","targetSpeed",0.5)
+	rampGenerator:start()
+	for i=1,100 do
+		rampGenerator:stat()
+		sleep(.5)
+	end
+	set_property("rampGenerator","targetSpeed",0.0)
+	for i=1,100 do
+		rampGenerator:stat()
+		sleep(.5)
+	end
 	print "Exiting"
 	os.exit()
 end
