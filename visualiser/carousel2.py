@@ -10,14 +10,14 @@ from vis_helpers import *
 from zmq_protobuf_helpers import *
 
 ############### Import types #####################
-paths=['siemensSensors','siemensActuators','resampler','lineAngleSensor2']
+paths=['siemensSensors','armboneLisaSensors','siemensActuators','resampler','lineAngleSensor2']
 for p in paths:
     paath = '../components/carousel2/' + p + '/types'
     print "Adding path " + paath + " to the python search path..."
     sys.path.append(paath)
 
 print "Importing protobufs..."
-protobufs = ["LineAngles", "ResampledMeasurements", "SiemensDriveState", "SiemensDriveCommand",]
+protobufs = ["LineAngles", "ResampledMeasurements", "SiemensDriveState", "SiemensDriveCommand","ImuGyro","ImuAccel","ImuMag"]
 for p in protobufs:
     exec "from %sTelemetry_pb2 import %sMsg" % (p, p)
 
@@ -28,9 +28,9 @@ app = QtGui.QApplication([])
 # otherwise the ports will not be enumerated correctly!
 telemetryInstanceNames=["siemensSensorsTelemetry",      
                         "lineAngleSensor2Telemetry", 
-						"armboneGyroTelemetry",
-						"armboneAccelTelemetry",
-						"armboneMagTelemetry",
+                        "armboneGyroTelemetry",
+                        "armboneAccelTelemetry",
+                        "armboneMagTelemetry",
                         "resampledMeasurementsTelemetry", 
                         "controllerTelemetry"]
 
@@ -51,7 +51,7 @@ view.show()
 view.setWindowTitle( "HIGHWIND Carousel2 Telemetry" )
 view.resize(1024, 768)
 
-plotNames = ["las", "carousel", "controller"]
+plotNames = ["las", "carousel", "controller","armboneGyro","armboneAccel","armboneMag"]
 
 # Generic fields, that all protobufs _must_ have
 genNames = ["ts_trigger", "ts_elapsed"]
@@ -76,6 +76,25 @@ controllerNames = ["carouselSpeedReference"] # These are members in the struct, 
 controllerNamesExt = controllerNames + genNames
 controllerPlots = addPlotsToLayout(layout.addLayout(), controllerTitle, controllerNames)
 
+
+# lisa gyro sensor measurements
+armboneGyroTitle = "Armbone Lisa Gyro Sensor Data [Radians/s]?!"
+armboneGyroNames = ["gyrox","gyroy","gyroz"] # These are members in the struct, apparently
+armboneGyroNamesExt = armboneGyroNames + genNames
+armboneGyroPlots = addPlotsToLayout(layout.addLayout(), armboneGyroTitle, armboneGyroNames)
+
+# lisa acceleration sensor measurements
+armboneAccelTitle = "Armbone Acceleration Sensor Data [Meters/s^2]"
+armboneAccelNames = ["accelx", "accely","accelz"] # These are members in the struct, apparently
+armboneAccelNamesExt = armboneAccelNames + genNames
+armboneAccelPlots = addPlotsToLayout(layout.addLayout(), armboneAccelTitle, armboneAccelNames)
+
+# lisa mag sensor measurements
+armboneMagTitle = "Armbone Magnetic Sensor Data [Gauss? Tesla?]"
+armboneMagNames = ["mag"] # These are members in the struct, apparently
+armboneMagNamesExt = armboneMagNames + genNames
+armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
+
 # Setup update of the plotter
 
 # Queue for data exchange between the worker and the main thread
@@ -83,17 +102,24 @@ import Queue
 q1 = Queue.Queue(maxsize = 10)
 q2 = Queue.Queue(maxsize = 10)
 q3 = Queue.Queue(maxsize = 10)
-#q4 = Queue.Queue(maxsize = 10)
-#q5 = Queue.Queue(maxsize = 10)
+q4 = Queue.Queue(maxsize = 10)
+q5 = Queue.Queue(maxsize = 10)
+q6 = Queue.Queue(maxsize = 10)
 
 def updatePlots():
     global q1
     global q2
     global q3
+    global q4
+    global q5
+    global q6
 
     global lasPlots, lasNames \
             , carouselPlots, carouselNames \
-            , controllerPlots, controllerNames
+            , controllerPlots, controllerNames \
+            , armboneGyroPlots, armboneGyroNames \
+            , armboneAccelPlots, armboneAccelNames\
+            , armboneMagPlots, armboneMagNames
 
     def updateGroup(q, plots, names):
         try:
@@ -108,6 +134,9 @@ def updatePlots():
     updateGroup(q1, lasPlots, lasNames)
     updateGroup(q2, carouselPlots, carouselNames)
     updateGroup(q3, controllerPlots, controllerNames)
+    updateGroup(q4, armboneGyroPlots, armboneGyroNames)
+    updateGroup(q5, armboneAccelPlots, armboneAccelNames)
+    updateGroup(q6, armboneMagPlots, armboneMagNames)
 
 # Set up a timer to update the plots
 timer = QtCore.QTimer()
@@ -130,6 +159,9 @@ workers = []
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['lineAngleSensor2Telemetry'], LineAnglesMsg, lasNamesExt, q1, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['siemensSensorsTelemetry'], SiemensDriveStateMsg, carouselNamesExt, q2, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['controllerTelemetry'], SiemensDriveCommandMsg, controllerNamesExt, q3, bufferSize = 20 * 100))
+workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneGyroTelemetry'], ImuGyroMsg, armboneGyroNamesExt, q4, bufferSize = 20 * 100))
+workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneAccelTelemetry'], ImuAccelMsg, armboneAccelNamesExt, q5, bufferSize = 20 * 100))
+workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneMagTelemetry'], ImuMagMsg, armboneMagNamesExt, q6, bufferSize = 20 * 100))
 
 # Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
