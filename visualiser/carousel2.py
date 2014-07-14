@@ -28,6 +28,9 @@ app = QtGui.QApplication([])
 # otherwise the ports will not be enumerated correctly!
 telemetryInstanceNames=["siemensSensorsTelemetry",      
                         "lineAngleSensor2Telemetry", 
+						"armboneGyroTelemetry",
+						"armboneAccelTelemetry",
+						"armboneMagTelemetry",
                         "resampledMeasurementsTelemetry", 
                         "controllerTelemetry"]
 

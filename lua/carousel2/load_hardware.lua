@@ -50,6 +50,7 @@ end
 -- All of these components trigger themselves once started the first time.
 deployer:setActivityOnCPU("siemensSensors", 0.0, sensorPrio, scheduler,quietCore)
 deployer:setActivityOnCPU("lineAngleSensor2", 0.0, sensorPrio, scheduler,quietCore)
+deployer:setActivityOnCPU("armboneLisaSensors", 0.0, sensorPrio, scheduler,quietCore)
 deployer:setActivityOnCPU("siemensActuators", 0.0, sensorPrio, scheduler,quietCore)
 
 --------------- Configure and start the components
