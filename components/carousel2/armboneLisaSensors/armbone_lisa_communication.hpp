@@ -32,7 +32,7 @@ class ArmboneLisaReceiver
 	private:
 		UDP udp_server;
 		int port_number;
-		uint8_t input_stream[21];
+		uint8_t input_stream[18];
 };
 
 #endif
