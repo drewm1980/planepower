@@ -171,8 +171,6 @@ function run()
 	end
 	sleep(10)
 	ramp_to(0.0)
-	print "Exiting"
-	os.exit()
 end
 
 function run_step_experiment()
@@ -181,8 +179,6 @@ function run_step_experiment()
 	start_stepping()
 	sleep(21)
 	stop_stepping()
-	print "Exiting"
-	os.exit()
 end
 
 function run_offset_sin_experiment()
@@ -193,8 +189,6 @@ function run_offset_sin_experiment()
 					.3) -- frequency
 	sleep(21)
 	stop_FunctionGenerator_and_ramp_to_0()
-	print "Exiting"
-	os.exit()
 end
 
 function run_offset_step_experiment()
@@ -205,8 +199,6 @@ function run_offset_step_experiment()
 					12) -- lowtime
 	sleep(49)
 	stop_FunctionGenerator_and_ramp_to_0()
-	os.exit()
-	print "Exiting"
 end
 
 function run_steady_state_experiment()
@@ -221,8 +213,6 @@ function run_steady_state_experiment()
 			acceleration) -- acceleration
 	ramp_to(0)
 	--stop_FunctionGenerator_and_ramp_to_0()
-	print "Exiting"
-	os.exit()
 end
 
 function run_rampGenerator_test()
@@ -241,8 +231,6 @@ function run_rampGenerator_test()
 		rampGenerator:stat()
 		sleep(.5)
 	end
-	print "Exiting"
-	os.exit()
 end
 
 function run_ramp_around_jump_experiment()
@@ -262,6 +250,4 @@ function run_ramp_around_jump_experiment()
 	ramp_to_with_rampGenerator(targetSpeed,acceleration)
 	targetSpeed = 0
 	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	print "Exiting"
-	os.exit()
 end	
