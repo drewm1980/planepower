@@ -14,18 +14,10 @@ typedef uint64_t TIME_TYPE;
 
 ArmboneLisaSensors::ArmboneLisaSensors(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of ArmboneLisaSensors" << endlog();
-
 	addPort("GyroState",portGyroState).doc("Gyro Measurements");
 	addPort("MagState",portMagState).doc("Mag Measurements");
 	addPort("AccelState",portAccelState).doc("Accel Measurements");
-//	addPort("driveState",portDriveState).doc("Siemens Drives Measurements");
-//	addPort("lineAngles",portLineAngles).doc("Line Angle Sensor Measurements");
-//	addPort("data",portData).doc("Resampled measurements from all sensors");
 
-//	memset(&driveState, 0, sizeof( driveState ));
-//	memset(&lineAngles, 0, sizeof( driveState ));
-//	memset(&resampledMeasurements, 0, sizeof( resampledMeasurements ));
 }
 
 bool ArmboneLisaSensors::configureHook()
@@ -48,11 +40,7 @@ void  ArmboneLisaSensors::updateHook()
 {	
 	int value_type = receiver.read(&imuGyro, &imuMag, &imuAccel);
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
-	//portDriveState.read(driveState);
 
-	//resampledMeasurements.ts_trigger = trigger;
-	//resampledMeasurements.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
-	//portData.write(resampledMeasurements);
 	switch(value_type)
 	{
 		case 1:	imuGyro.ts_trigger = trigger;

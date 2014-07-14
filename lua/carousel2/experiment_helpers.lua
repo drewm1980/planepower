@@ -210,8 +210,9 @@ function run_steady_state_experiment()
 	ramp_with(	turbulentSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	sleep(10)
-	ramp_with(	0, -- targetSpeed
+	ramp_with(	takeoffSpeed, -- targetSpeed
 			acceleration) -- acceleration
+	ramp_to(0)
 	--stop_FunctionGenerator_and_ramp_to_0()
 	print "Exiting"
 	os.exit()

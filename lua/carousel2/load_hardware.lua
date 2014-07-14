@@ -14,10 +14,12 @@ PROPERTIES=PLANEPOWER.."properties/"
 
 libraryNames={"siemensActuators",
 				"siemensSensors",
-				"lineAngleSensor2"}
+				"lineAngleSensor2",
+				"armboneLisaSensors"}
 classNames={"SiemensActuators",
 				"SiemensSensors",
-				"LineAngleSensor2"}
+				"LineAngleSensor2",
+				"ArmboneLisaSensors"}
 function deepcopy(liist)
 	newlist = {}
 	for i,symbol in ipairs(liist) do
