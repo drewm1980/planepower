@@ -49,7 +49,7 @@ view = pg.GraphicsView()
 view.setCentralItem( layout )
 view.show()
 view.setWindowTitle( "HIGHWIND Carousel2 Telemetry" )
-view.resize(1024, 768)
+view.resize(5 * 1024, 756)
 
 plotNames = ["las", "carousel", "controller","armboneGyro","armboneAccel","armboneMag"]
 
@@ -79,19 +79,19 @@ controllerPlots = addPlotsToLayout(layout.addLayout(), controllerTitle, controll
 
 # lisa gyro sensor measurements
 armboneGyroTitle = "Armbone Lisa Gyro Sensor Data [Radians/s]?!"
-armboneGyroNames = ["gyrox","gyroy","gyroz"] # These are members in the struct, apparently
+armboneGyroNames = ["gp_raw","gq_raw","gr_raw"] # These are members in the struct, apparently
 armboneGyroNamesExt = armboneGyroNames + genNames
 armboneGyroPlots = addPlotsToLayout(layout.addLayout(), armboneGyroTitle, armboneGyroNames)
 
 # lisa acceleration sensor measurements
 armboneAccelTitle = "Armbone Acceleration Sensor Data [Meters/s^2]"
-armboneAccelNames = ["accelx", "accely","accelz"] # These are members in the struct, apparently
+armboneAccelNames = ["ax_raw", "ay_raw","az_raw"] # These are members in the struct, apparently
 armboneAccelNamesExt = armboneAccelNames + genNames
 armboneAccelPlots = addPlotsToLayout(layout.addLayout(), armboneAccelTitle, armboneAccelNames)
 
 # lisa mag sensor measurements
 armboneMagTitle = "Armbone Magnetic Sensor Data [Gauss? Tesla?]"
-armboneMagNames = ["mag"] # These are members in the struct, apparently
+armboneMagNames = ["mx_raw","my_raw","mz_raw"] # These are members in the struct, apparently
 armboneMagNamesExt = armboneMagNames + genNames
 armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
 
