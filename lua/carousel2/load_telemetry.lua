@@ -1,8 +1,21 @@
 #!/usr/bin/env rttlua-i
 
------ Note: for now, you must manually keep this order consistent with the same variable in carousel2.py
-telemetryInstanceNames={"siemensSensorsTelemetry",	  "lineAngleSensor2Telemetry", "resampledMeasurementsTelemetry", "controllerTelemetry"}
-telemetryClassNames={   "SiemensDriveStateTelemetry", "LineAnglesTelemetry"      , "ResampledMeasurementsTelemetry", "SiemensDriveCommandTelemetry"}
+----- Note: for now, you must manually keep this order consistent with the same variable in visualizer/carousel2.py
+telemetryInstanceNames={"siemensSensorsTelemetry",	  
+						"lineAngleSensor2Telemetry", 
+						 -- Note, the armbone is unique in having multiple messages per component
+						"armboneGyroTelemetry",
+						"armboneAccelTelemetry",
+						"armboneMagTelemetry",
+						"resampledMeasurementsTelemetry", 
+						"controllerTelemetry"}
+telemetryClassNames={   "SiemensDriveStateTelemetry", 
+						"LineAnglesTelemetry", 
+						"ImuGyroTelemetry",
+						"ImuAccelTelemetry",
+						"ImuMagTelemetry",
+						"ResampledMeasurementsTelemetry", 
+						"SiemensDriveCommandTelemetry"}
 telemetryInstances={}
 
 -- Our telemetry components are not in a path that orocos' ComponentLoader base class (which deployer is presumably a child of) can find, apparently, so we need to load the libraries explicitly.
@@ -12,6 +25,9 @@ deployer:import("../../components/carousel2/gainLoader/types/ControllerGains.so"
 deployer:import("../../components/carousel2/lineAngleSensor2/types/LineAngles.so")
 deployer:import("../../components/carousel2/resampler/types/ResampledMeasurements.so")
 deployer:import("../../components/carousel2/siemensActuators/types/SiemensDriveCommand.so")
+deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuGyro.so")
+deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuAccel.so")
+deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuMag.so")
 
 for i=1,#telemetryInstanceNames do
 	--deployer:import(telemetryClassNames[i])
@@ -46,6 +62,9 @@ end
 cp = rtt.Variable("ConnPolicy")
 deployer:connect("siemensSensors.data","siemensSensorsTelemetry.msgData", cp)
 deployer:connect("lineAngleSensor2.data","lineAngleSensor2Telemetry.msgData", cp)
+deployer:connect("armboneLisaSensors.GyroState","armboneGyroTelemetry.msgData", cp)
+deployer:connect("armboneLisaSensors.AccelState","armboneAccelTelemetry.msgData", cp)
+deployer:connect("armboneLisaSensors.MagState","armboneMagTelemetry.msgData", cp)
 if measuringStepResponses then
 	deployer:connect("functionGenerator.data","controllerTelemetry.msgData", cp)
 else

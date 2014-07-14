@@ -1,5 +1,5 @@
-#ifndef __ARMBONELISASENSORS__
-#define __ARMBONELISASENSORS__
+#ifndef __ARMBONELISASENSORSSIMULATOR__
+#define __ARMBONELISASENSORSSIMULATOR__
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
@@ -10,11 +10,11 @@
 
 #include "armbone_lisa_communication.hpp"
 
-class ArmboneLisaSensors : public RTT::TaskContext
+class ArmboneLisaSensorsSimulator : public RTT::TaskContext
 {
 public:
-	ArmboneLisaSensors(std::string name);
-	virtual ~ArmboneLisaSensors(){};
+	ArmboneLisaSensorsSimulator(std::string name);
+	virtual ~ArmboneLisaSensorsSimulator(){};
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -23,16 +23,16 @@ public:
 	virtual void cleanupHook();
 	virtual void errorHook();
 protected:
+//	RTT::InputPort< SiemensDriveState > portDriveState;
 	RTT::OutputPort< ImuGyro > portGyroState;
 	RTT::OutputPort< ImuMag > portMagState;
 	RTT::OutputPort< ImuAccel > portAccelState;
 private:
-	ArmboneLisaReceiver receiver;
+//	SiemensDriveState driveState;
 	ImuGyro imuGyro;
 	ImuMag imuMag;
 	ImuAccel imuAccel;
-	bool keepRunning;
-	
+
 };
 
 #endif

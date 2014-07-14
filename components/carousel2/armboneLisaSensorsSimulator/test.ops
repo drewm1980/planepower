@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("armboneLisaSensorsSimulator")
+ 
+#Create components
+loadComponent("armboneLisaSensorsSimulator","ArmboneLisaSensorsSimulator")
+ 
+armboneLisaSensorsSimulator.configure()
+armboneLisaSensorsSimulator.start()

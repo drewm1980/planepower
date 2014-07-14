@@ -1,0 +1,7 @@
+include_rules
+ifdef CAROUSEL2
+ifdef PC
+: foreach *.cpp |> !cxx_orocos |>
+: *.o |> !ld_orocos |> 
+endif
+endif

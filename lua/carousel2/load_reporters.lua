@@ -17,6 +17,7 @@ end
 
 reportedComponentNames={"siemensSensors",
 						"lineAngleSensor2",
+						"armboneLisaSensors",
 						"resampler",
 						--"gainLoader", -- sent more frequently from controller
 						"controller",
