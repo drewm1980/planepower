@@ -1,7 +1,7 @@
 #!/usr/bin/env rttlua-i
 dofile("main.lua") 
 
-which_experiment = 7
+which_experiment = 8
 
 if which_experiment == 0 then
 	print "No experiment selected!"
@@ -20,6 +20,8 @@ elseif which_experiment == 6 then
 	run_very_slow_ramp_to_max_and_back_to_0_experiment()
 elseif which_experiment == 7 then
 	run_rampGenerator_test()
+elseif which_experiment == 8 then
+	run_ramp_around_jump_experiment()
 else 
 	print "No experiment selected!"
 	print "Exiting"

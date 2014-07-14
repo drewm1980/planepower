@@ -1,7 +1,7 @@
 
 takeoffSpeed = 1 -- Rad/s, a bit before takeoff.
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
-
+elevationJumpingSpeed = 1.84 -- Rad/s, speed at which (+-0.1) the elevation angle jumps ca 4 deg
 function set_carousel_speed(speed)
 	if speed==nil then
 		print "Speed cannot be nil!!!"
@@ -155,6 +155,13 @@ function stop_FunctionGenerator_and_ramp_to_0()
 	set_functionGenerator_properties(0,0,0,0,0,0)
 end
 
+function ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	set_property("rampGenerator","acceleration",acceleration)
+	set_property("rampGenerator","targetSpeed",targetSpeed)
+	rampGenerator:start()
+	t = 1.1 * (targetSpeed / acceleration);
+	sleep(t)
+end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
 	speedOffset = softlimit/2.0
@@ -236,3 +243,24 @@ function run_rampGenerator_test()
 	print "Exiting"
 	os.exit()
 end
+
+function run_ramp_around_jump_experiment()
+	print "Running experimint NAOOOO!"
+	sleep(.5)
+	dspeed = 0.2
+	acceleration = 0.1
+	targetSpeed = elevationJumpingSpeed + dspeed
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	targetSpeed = elevationJumpingSpeed - dspeed
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	targetSpeed = elevationJumpingSpeed + dspeed
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	targetSpeed = elevationJumpingSpeed - dspeed
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	targetSpeed = elevationJumpingSpeed + dspeed
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	targetSpeed = 0
+	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	print "Exiting"
+	os.exit()
+end	
