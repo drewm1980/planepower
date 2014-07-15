@@ -67,7 +67,7 @@ void  RampGenerator::updateHook()
 
 	}
 
-        threshold = acceleration * dt; // stepheight in  Rad/s
+        threshold = 0.1; // Rad/s
 
         if (abs(targetSpeed) > softlimit) {
                 info = "Requested speed is outside the soft limit!";
