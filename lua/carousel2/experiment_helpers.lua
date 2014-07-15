@@ -19,6 +19,19 @@ function get_carousel_setpoint()
 	return siemensSensors:provides("data"):last()['carouselSpeedSetpoint']
 end
 
+function get_rampGenerator_rampstatus()
+	return rampGenerator:provides("info"):last()
+end
+
+function wait_till_ramp_is_done()
+	str = get_rampGenerator_rampstatus()
+	while not str == "Ramp goal achieved! Stoping rampGenerator..." do
+		sleep(0.1)
+	end
+	print( str )
+	rampGenerator:stop()
+end
+
 require "math"
 
 softlimit = PI -- Rad/s
@@ -28,8 +41,7 @@ function ramp_with(targetSpeed,acceleration)
 	set_property("rampGenerator","acceleration",acceleration)
 	set_property("rampGenerator","targetSpeed",targetSpeed)
 	rampGenerator:start()
-	t = 1.1 * (targetSpeed / acceleration);
-	sleep(t)
+	wait_till_ramp_is_done()
 end
 
 function ramp_to(targetSpeed)

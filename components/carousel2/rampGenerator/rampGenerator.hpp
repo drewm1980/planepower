@@ -42,6 +42,8 @@ private:
 	double currentSpeed;
 	double nextSetpoint;
 	double threshold;
+	double stepheigth;
+	int state;
 	int retrys;
 	std::string info;
 };
