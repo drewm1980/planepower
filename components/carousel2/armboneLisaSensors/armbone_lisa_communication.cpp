@@ -4,10 +4,12 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <iostream>
+#include <math.h>
 
 #include "armbone_lisa_communication.hpp"
 
 #define DEBUG 0
+
 
 using namespace std;
 
@@ -54,9 +56,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		{	
 
 			
-			imu_gyro->gp_raw = (double) data->lisa_plane.imu_gyro_raw.gp;
-			imu_gyro->gq_raw = (double) data->lisa_plane.imu_gyro_raw.gq;
-			imu_gyro->gr_raw = (double) data->lisa_plane.imu_gyro_raw.gr;
+			imu_gyro->gp = convertRawGyro(data->lisa_plane.imu_gyro_raw.gp);
+			imu_gyro->gq = convertRawGyro(data->lisa_plane.imu_gyro_raw.gq);
+			imu_gyro->gr = convertRawGyro(data->lisa_plane.imu_gyro_raw.gr);
 			message_type = 1;
 #if DEBUG > 0	
 			printf("IMU_GYRO_RAW gp: %i\n",data->lisa_plane.imu_gyro_raw.gp);
@@ -101,3 +103,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 
 }
 
+
+double ArmboneLisaReceiver::convertRawGyro(int raw_data) 
+{
+	double data = -1.0 * (double) raw_data / pow(2,15) * 2000.0 * PI/180.0 - 0.0202; //	Rad/s
+	return data;
+}
