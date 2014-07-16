@@ -7,7 +7,6 @@ from pylab import figure,plot,xlabel,ylabel,show,legend
 
 print('loading data...')
 rootName = 'armboneLisaSensors'
-
 fiile = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 
 sensors = ['Gyro','Accel','Mag']
