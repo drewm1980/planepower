@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
 	cout << "Measuring how fast we are receiving packets from the Armbone..." << endl;
 	timespec t1, t2;
-	const float trials = 100.0;
+	const float trials = 1000.0;
 	clock_gettime(CLOCK_REALTIME, &t1); 
 	for(int i=0; i<trials; i++) { s.read(&ig, &im, &ia); }
 	clock_gettime(CLOCK_REALTIME, &t2); 
@@ -52,15 +52,16 @@ int main(int argc, char *argv[])
 
         cout << "After " << trials << " packets, worst case jitter was " << worst_case << " ms " << endl;
         cout << "Average jitter was " << average_jitter << " ms" << endl;
+	usleep(1000);
 
 	while(1)
 	{
 		printf("\nWaiting for data...\n");
 		fflush(stdout);
 		s.read(&ig, &im, &ia);
-		printf("ImuGyro  gp: %f units\n",ig.gp_raw);
-		printf("ImuGyro  gq: %f units\n",ig.gq_raw);
-		printf("ImuGyro  gr: %f units\n",ig.gr_raw);
+		printf("ImuGyro  gp: %f units\n",ig.gp);
+		printf("ImuGyro  gq: %f units\n",ig.gq);
+		printf("ImuGyro  gr: %f units\n",ig.gr);
 		printf("ImuMag   mx: %f units\n",im.mx_raw);
 		printf("ImuMag   my: %f units\n",im.my_raw);
 		printf("ImuMag   mz: %f units\n",im.mz_raw);

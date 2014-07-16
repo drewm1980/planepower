@@ -22,52 +22,34 @@ function get_carousel_setpoint()
 	return siemensSensors:provides("data"):last()['carouselSpeedSetpoint']
 end
 
+function get_rampGenerator_rampstatus()
+	return rampGenerator:provides("info"):last()
+end
+
+function wait_till_ramp_is_done()
+	str = get_rampGenerator_rampstatus()
+	while true do
+		sleep(0.1)
+		str = get_rampGenerator_rampstatus()
+		print( str )
+		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
+			return
+		end 
+	end
+	print( str )
+	--rampGenerator:stop()
+end
+
 require "math"
 
 softlimit = PI -- Rad/s
 
--- ALWAYS check the return value of this!
+
 function ramp_with(targetSpeed,acceleration)
-	dt = .5 -- s
-	threshold = acceleration -- Rad/s
-	retrys = 10
-	if (math.abs(targetSpeed) > softlimit) then
-		print "Requested speed is outside the soft limit!"
-		return 0
-	end
-	while true do
-		currentSetpoint = get_carousel_setpoint()
-		currentSpeed = get_carousel_speed()
-		-- check if targetspeed is reached
-		if math.abs(currentSetpoint - targetSpeed) < threshold then
-			set_carousel_speed(targetSpeed)
-			print "Ramp goal achieved!"
-			return 1
-		end
-		-- check if setpoint is reached
-		if math.abs(currentSetpoint - currentSpeed) < threshold then
-			if currentSetpoint > targetSpeed then
-				print "Ramping down..."
-				nextspeed = math.max(targetSpeed, currentSetpoint - dt*acceleration)
-			else
-				print "Ramping up..."
-				nextspeed = math.min(targetSpeed, currentSetpoint + dt*acceleration)
-			end
-			retrys = 10
-		else 
-			print ("currentSetpoint not reached! Retrying("..tostring(retrys)..")")
-			retrys = retrys - 1
-		end
-		-- check if ramp got stuck
-		if retrys <= 0 then
-			print ("Aborting ramp! Current Setpoint = "..tostring(currentSetpoint))
-			return 0 
-		else 
-			print ("Target Speed: "..tostring(targetSpeed).." Current Speed: "..tostring(currentSetpoint).." Next Speed: "..tostring(nextspeed))
-			set_carousel_speed(nextspeed)
-			sleep(dt)
-		end	
-	end
+	set_property("rampGenerator","acceleration",acceleration)
+	set_property("rampGenerator","targetSpeed",targetSpeed)
+	rampGenerator:start()
+	wait_till_ramp_is_done()
 end
 
 function ramp_to(targetSpeed)
@@ -161,12 +143,14 @@ function stop_FunctionGenerator_and_ramp_to_0()
 	set_functionGenerator_properties(0,0,0,0,0,0)
 end
 
-function ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	set_property("rampGenerator","acceleration",acceleration)
-	set_property("rampGenerator","targetSpeed",targetSpeed)
-	rampGenerator:start()
-	t = 1.1 * (targetSpeed / acceleration);
-	sleep(t)
+function slow_ramp(targetSpeed)
+	acceleration = 0.01
+	ramp_with(targetSpeed,acceleration)
+end
+
+function fast_ramp(targetSpeed)
+	acceleration = 0.1
+	ramp_with(targetSpeed,acceleration)
 end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
@@ -244,19 +228,11 @@ end
 
 function run_ramp_around_jump_experiment()
 	print "Running experimint NAOOOO!"
-	sleep(.5)
 	dspeed = 0.2
-	acceleration = 0.1
-	targetSpeed = elevationJumpingSpeed + dspeed
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	targetSpeed = elevationJumpingSpeed - dspeed
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	targetSpeed = elevationJumpingSpeed + dspeed
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	targetSpeed = elevationJumpingSpeed - dspeed
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	targetSpeed = elevationJumpingSpeed + dspeed
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
-	targetSpeed = 0
-	ramp_to_with_rampGenerator(targetSpeed,acceleration)
+	fast_ramp(elevationJumpingSpeed + dspeed)
+	slow_ramp(elevationJumpingSpeed - dspeed)
+	slow_ramp(elevationJumpingSpeed + dspeed)
+	slow_ramp(elevationJumpingSpeed - dspeed)
+	slow_ramp(elevationJumpingSpeed + dspeed)
+	fast_ramp(0)
 end	

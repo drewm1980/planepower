@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
         average_jitter/=trials;
 
         cout << "After " << trials << " packets, worst case jitter was " << worst_case << " ms " << endl;
-        cout << "Average jitter was " << average_jitter << " ms" << endl;
-
+        cout << "Average jitter was " << average_jitter << " ms" << endl;	
+	usleep(1000);
 	while(1)
 	{
 		printf("\nWaiting for data...\n");
