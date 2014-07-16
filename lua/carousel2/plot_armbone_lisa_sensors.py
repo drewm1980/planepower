@@ -10,7 +10,7 @@ rootName = 'armboneLisaSensors'
 fiile = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 
 sensors = ['Gyro','Accel','Mag']
-Gyro_fields = ['gp_raw','gq_raw','gr_raw']
+Gyro_fields = ['gp','gq','gr']
 Accel_fields = ['ax_raw','ay_raw','az_raw']
 Mag_fields = ['mx_raw','my_raw','mz_raw']
 s_fields = {'Gyro':Gyro_fields,
