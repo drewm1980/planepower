@@ -23,7 +23,7 @@ deployer:connect("siemensSensors.data","rampGenerator.driveState",cp)
 deployer:connect("rampGenerator.driveCommand","siemensActuators.controls",cp)
 
 
-deployer:connect("siemensSensors.triggerOut","rampGenerator.triggerIn",cp)
+-- deployer:connect("siemensSensors.triggerOut","rampGenerator.triggerIn",cp)
 
 --------------- Configure and start the components
 rampGenerator:configure()
