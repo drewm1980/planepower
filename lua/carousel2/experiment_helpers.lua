@@ -28,10 +28,14 @@ end
 
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
+	oldstr = ""
 	while true do
 		sleep(0.1)
 		str = get_rampGenerator_rampstatus()
-		print( str )
+		-- stop spamming 
+		if not oldstr == str then
+			print( str )
+		end
 		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
 			return
 		end 
@@ -181,10 +185,11 @@ function run_offset_sin_experiment()
 end
 
 function run_offset_step_experiment()
-	fast_ramp(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
 	lowtime = 16
+	stepheight = .1
+	fast_ramp(normalFlyingSpeed - 0.5*stepheight) 
 	step_around_offset(normalFlyingSpeed, -- offset
-					.1, -- stepheight
+					stepheight, -- stepheight
 					lowtime) -- lowtime
 	periods = 4
 	sleep(periods*lowtime*2)
