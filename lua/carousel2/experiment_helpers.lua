@@ -28,10 +28,14 @@ end
 
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
+	oldstr = ""
 	while true do
 		sleep(0.1)
 		str = get_rampGenerator_rampstatus()
-		print( str )
+		-- stop spamming 
+		if not oldstr == str then
+			print( str )
+		end
 		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
 			return
 		end 
@@ -52,10 +56,6 @@ function ramp_with(targetSpeed,acceleration)
 	wait_till_ramp_is_done()
 end
 
-function ramp_to(targetSpeed)
-	acceleration = .1
-	ramp_with(targetSpeed,acceleration)
-end
 
 -- functionGenerator related functions
 
@@ -127,19 +127,19 @@ function sin_around_current_setpoint(amplitude,frequency)
 end
 
 function sin_around_offset(offset,amplitude,frequency)
-	ramp_to(offset) -- avoid jumps
+	fast_ramp(offset) -- avoid jumps
 	sin_around_current_setpoint(amplitude,frequency)
 end
 
 function step_around_offset(offset,stepheight,lowtime)
-	ramp_to(offset) -- avoid jumps
+	fast_ramp(offset) -- avoid jumps
 	step_around_current_setpoint(stepheight,lowtime)
 end
 
 function stop_FunctionGenerator_and_ramp_to_0()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
-	ramp_to(0)
+	fast_ramp(0)
 	set_functionGenerator_properties(0,0,0,0,0,0)
 end
 
@@ -155,12 +155,12 @@ end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
 	speedOffset = softlimit/2.0
-	if (ramp_to(speedOffset)) then
-		ramp_to(0.0)
+	if (fast_ramp(speedOffset)) then
+		fast_ramp(0.0)
 		return 0
 	end
 	sleep(10)
-	ramp_to(0.0)
+	fast_ramp(0.0)
 end
 
 function run_step_experiment()
@@ -172,7 +172,7 @@ function run_step_experiment()
 end
 
 function run_offset_sin_experiment()
-	ramp_to(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
+	fast_ramp(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
 	frequency = 0.3 -- Hz
 	sin_around_offset(normalFlyingSpeed, -- offset
 					.07, -- amplitude
@@ -185,18 +185,19 @@ function run_offset_sin_experiment()
 end
 
 function run_offset_step_experiment()
-	ramp_to(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
-	lowtime = 10
+	lowtime = 16
+	stepheight = .1
+	fast_ramp(normalFlyingSpeed - 0.5*stepheight) 
 	step_around_offset(normalFlyingSpeed, -- offset
-					.07, -- stepheight
+					stepheight, -- stepheight
 					lowtime) -- lowtime
-	periods = 8
-	sleep(periods*lowtime)
+	periods = 4
+	sleep(periods*lowtime*2)
 	stop_FunctionGenerator_and_ramp_to_0()
 end
 
 function run_steady_state_experiment()
-	ramp_to(takeoffSpeed)
+	fast_ramp(takeoffSpeed)
 	sleep(.5)
 	acceleration = .01 -- in rad/s^2
 	ramp_with(	turbulentSpeed, -- targetSpeed
@@ -204,7 +205,7 @@ function run_steady_state_experiment()
 	sleep(10)
 	ramp_with(	takeoffSpeed, -- targetSpeed
 			acceleration) -- acceleration
-	ramp_to(0)
+	fast_ramp(0)
 	--stop_FunctionGenerator_and_ramp_to_0()
 end
 
