@@ -106,6 +106,6 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 
 double ArmboneLisaReceiver::convertRawGyro(int raw_data) 
 {
-	double data = (double) raw_data / pow(2,15) * 2000.0 * PI/180.0 - 0.0202; //	Rad/s
+	double data = ((double) raw_data/pow(2,15)) * 2000.0 * (PI/180.0) - 0.0202; //	Rad/s
 	return data;
 }
