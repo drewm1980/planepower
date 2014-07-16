@@ -2,35 +2,39 @@
 from scipy.io import netcdf
 from numpy import array, diff
 import pylab
-from pylab import figure,plot,xlabel,ylabel,show,legend
+from pylab import figure,plot,xlabel,ylabel,show,legend,subplot
 
-print('loading data...')
-rootName = 'lineAngleSensor2'
+def plot_line_angles(axis,startTime=-1):
+    rootName = 'lineAngleSensor2'
 
-f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
+    f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 
-memberName = 'azimuth'
-azimuth = f.variables[rootName+'.data.'+memberName].data[1:]
-memberName = 'elevation'
-elevation = f.variables[rootName+'.data.'+memberName].data[1:]
+    memberName = 'azimuth'
+    azimuth = f.variables[rootName+'.data.'+memberName].data[1:]
+    memberName = 'elevation'
+    elevation = f.variables[rootName+'.data.'+memberName].data[1:]
 
-ts_trigger = f.variables[rootName+'.data.ts_trigger'].data[1:]*1.0e-9
+    ts_trigger = f.variables[rootName+'.data.ts_trigger'].data[1:]*1.0e-9
 
-figure()
-plot(ts_trigger-ts_trigger[0], azimuth,'b.-') 
-xlabel('Time [s]')
-ylabel('Azimuth [Rad]')
+    if startTime == -1:
+        startTime = ts_trigger[0]
 
-figure()
-plot(ts_trigger-ts_trigger[0], elevation,'b.-') 
-ylabel('Elevation [Rad]')
-xlabel('Time [s]')
+    plot(ts_trigger-startTime, azimuth,'r.-',
+         ts_trigger-startTime, elevation,'b.-') 
+    xlabel('Time [s]')
+    ylabel('Angle [Rad]')
+    legend(['Azimuth', 'Elevation'])
 
-figure()
-plot(azimuth,elevation,'b.-') 
-xlabel('Azimuth [Rad]')
-ylabel('Elevation [Rad]')
-pylab.axis('equal')
+    return startTime
 
-show()
-print('...done')
+#figure()
+#plot(azimuth,elevation,'b.-') 
+#xlabel('Azimuth [Rad]')
+#ylabel('Elevation [Rad]')
+#pylab.axis('equal')
+
+if __name__=='__main__':
+    figure()
+    axis = subplot(1,1,1)
+    plot_line_angles(axis,startTime=0)
+    show()
