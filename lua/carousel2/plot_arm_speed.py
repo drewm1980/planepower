@@ -4,7 +4,7 @@ from numpy import array, diff, pi
 import pylab
 from pylab import figure,plot,xlabel,ylabel,show,legend,title,subplot
 
-def plot_arm_speeds(axis):
+def plot_arm_speed(axis, startTime=-1):
     startSample = 3
     rootName = 'siemensSensors'
     f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
@@ -27,9 +27,12 @@ def plot_arm_speeds(axis):
     #data4 = -1.0 * rawdata4 / (2**15) * fullscale * pi/180 - 0.0202 # Rad/s
     data4 = rawdata4
 
-    times = ts_trigger-ts_trigger[0]
-    times2 = ts_trigger3-ts_trigger[0]
-    times4 = ts_trigger4-ts_trigger[0]
+    if startTime == -1:
+        startTime = ts_trigger[0]
+
+    times = ts_trigger-startTime
+    times2 = ts_trigger3-startTime
+    times4 = ts_trigger4-startTime
     plot(times, data1, 'r.-',
          times2,data3, 'g.-',
          times, data2,'b.-',
@@ -38,9 +41,11 @@ def plot_arm_speeds(axis):
     xlabel('Time [s]')
     legend(['Setpoint (Echoed)', 'Setpoint (Sent)', 'On Motor Side of Belt', 'From Gyro on Arm'])
     title('Plot of Signals Related to Arm Speed')
+    return startTime
 
-fig = figure()
-axis = subplot(1,1,1)
-plot_arm_speeds(axis)
-show()
-print('...done')
+if __name__=='__main__':
+    fig = figure()
+    axis = subplot(1,1,1)
+    plot_arm_speeds(axis)
+    show()
+    print('...done')
