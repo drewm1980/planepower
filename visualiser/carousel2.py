@@ -66,7 +66,7 @@ lasPlots = addPlotsToLayout(layout.addLayout(), lasTitle, lasNames)
 
 # Carousel drive status
 carouselTitle = "Carousel Drive Speed [(Arm)Radians/s] vs Timestamp [s]"
-carouselNames = ["carouselSpeedSmoothed"] # These are members in the struct, apparently
+carouselNames = ["carouselSpeedSmoothed","carouselTorque"] # These are members in the struct, apparently
 carouselNamesExt = carouselNames + genNames
 carouselPlots = addPlotsToLayout(layout.addLayout(), carouselTitle, carouselNames)
 
