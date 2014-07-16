@@ -25,11 +25,16 @@ end
 
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
-	while not str == "Ramp goal achieved! Stoping rampGenerator..." do
+	while true do
 		sleep(0.1)
+		str = get_rampGenerator_rampstatus()
+		print( str )
+		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
+			return
+		end 
 	end
 	print( str )
-	rampGenerator:stop()
+	--rampGenerator:stop()
 end
 
 require "math"

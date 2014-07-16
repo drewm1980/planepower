@@ -109,7 +109,7 @@ void  RampGenerator::updateHook()
                		retrys--;
         	}
         	// check if ramp got stuck
-        	if (retrys <= 0) {
+        	if (retrys < -1) {
                		ostringstream st;
 			st << "Aborting ramp! Current setpoint, speed = " << currentSetpoint << ", " << currentSpeed;
 		 	state = 6;
@@ -120,7 +120,7 @@ void  RampGenerator::updateHook()
 		}
         	else {}	
 		
-		if (oldstate != state) {
+		if (oldstate != state || state==5) {
 			info += debuginfo;
 			portInfo.write(info);
 		}
