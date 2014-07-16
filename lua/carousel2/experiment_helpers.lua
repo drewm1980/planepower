@@ -1,9 +1,12 @@
 
 takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
-normalFlyingSpeed = 2.0
+normalFlyingSpeed = 1.6 
 
+softlimit = PI -- Rad/s
 elevationJumpingSpeed = 1.84 -- Rad/s, speed at which (+-0.1) the elevation angle jumps ca 4 deg
+
+require "math"
 
 function set_carousel_speed(speed)
 	if speed==nil then
@@ -26,6 +29,8 @@ function get_rampGenerator_rampstatus()
 	return rampGenerator:provides("info"):last()
 end
 
+
+-- rampGenerator related functions
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
 	oldstr = ""
@@ -44,11 +49,6 @@ function wait_till_ramp_is_done()
 	--rampGenerator:stop()
 end
 
-require "math"
-
-softlimit = PI -- Rad/s
-
-
 function ramp_with(targetSpeed,acceleration)
 	set_property("rampGenerator","acceleration",acceleration)
 	set_property("rampGenerator","targetSpeed",targetSpeed)
@@ -56,6 +56,15 @@ function ramp_with(targetSpeed,acceleration)
 	wait_till_ramp_is_done()
 end
 
+function slow_ramp(targetSpeed)
+	acceleration = 0.01
+	ramp_with(targetSpeed,acceleration)
+end
+
+function fast_ramp(targetSpeed)
+	acceleration = 0.1
+	ramp_with(targetSpeed,acceleration)
+end
 
 -- functionGenerator related functions
 
@@ -142,16 +151,6 @@ function stop_FunctionGenerator_and_ramp_to_0()
 	fast_ramp(0)
 	set_functionGenerator_properties(0,0,0,0,0,0)
 end
-
-function slow_ramp(targetSpeed)
-	acceleration = 0.01
-	ramp_with(targetSpeed,acceleration)
-end
-
-function fast_ramp(targetSpeed)
-	acceleration = 0.1
-	ramp_with(targetSpeed,acceleration)
-end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
 	speedOffset = softlimit/2.0
@@ -186,8 +185,7 @@ end
 
 function run_offset_step_experiment()
 	lowtime = 16
-	stepheight = .1
-	fast_ramp(normalFlyingSpeed - 0.5*stepheight) 
+	stepheight = .12
 	step_around_offset(normalFlyingSpeed, -- offset
 					stepheight, -- stepheight
 					lowtime) -- lowtime
