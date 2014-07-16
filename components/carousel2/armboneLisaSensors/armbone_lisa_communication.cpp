@@ -57,8 +57,8 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 
 			
 			imu_gyro->gp = convertRawGyro(data->lisa_plane.imu_gyro_raw.gp);
-			imu_gyro->gq = convertRawGyro(data->lisa_plane.imu_gyro_raw.gq);
-			imu_gyro->gr = convertRawGyro(data->lisa_plane.imu_gyro_raw.gr);
+			imu_gyro->gq = -1.0 * convertRawGyro(data->lisa_plane.imu_gyro_raw.gq);
+			imu_gyro->gr = -1.0 * convertRawGyro(data->lisa_plane.imu_gyro_raw.gr);
 			message_type = 1;
 #if DEBUG > 0	
 			printf("IMU_GYRO_RAW gp: %i\n",data->lisa_plane.imu_gyro_raw.gp);
@@ -106,6 +106,6 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 
 double ArmboneLisaReceiver::convertRawGyro(int raw_data) 
 {
-	double data = -1.0 * (double) raw_data / pow(2,15) * 2000.0 * PI/180.0 - 0.0202; //	Rad/s
+	double data = (double) raw_data / pow(2,15) * 2000.0 * PI/180.0 - 0.0202; //	Rad/s
 	return data;
 }
