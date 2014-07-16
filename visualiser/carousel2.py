@@ -79,7 +79,7 @@ controllerPlots = addPlotsToLayout(layout.addLayout(), controllerTitle, controll
 
 # lisa gyro sensor measurements
 armboneGyroTitle = "Armbone Lisa Gyro Sensor Data [Radians/s]?!"
-armboneGyroNames = ["gp_raw","gq_raw","gr_raw"] # These are members in the struct, apparently
+armboneGyroNames = ["gp","gq","gr"] # These are members in the struct, apparently
 armboneGyroNamesExt = armboneGyroNames + genNames
 armboneGyroPlots = addPlotsToLayout(layout.addLayout(), armboneGyroTitle, armboneGyroNames)
 
