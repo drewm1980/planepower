@@ -37,7 +37,9 @@ bool RampGenerator::configureHook()
 	nextSetpoint = 0;
         dt = getPeriod(); // s
         retrys = 10;
+        threshold = 0.05; // Rad/s
 	info = "";
+	state = 0;
 	return true;
 }
 
@@ -55,8 +57,8 @@ void  RampGenerator::updateHook()
 	//resampledMeasurements.ts_trigger = trigger;
 	//resampledMeasurements.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	//portData.write(resampledMeasurements);
-	
-	bool debug = true;
+	int oldstate = state;
+	bool debug = false;
 	std::string debuginfo;
 	if (debug) {
 		ostringstream d;
@@ -67,10 +69,10 @@ void  RampGenerator::updateHook()
 
 	}
 
-        threshold = 0.1; // Rad/s
-
+	stepheigth = dt*acceleration;
         if (abs(targetSpeed) > softlimit) {
                 info = "Requested speed is outside the soft limit!";
+		state = 1;
         }
 	else {
 		portDriveState.read(driveState);
@@ -80,19 +82,21 @@ void  RampGenerator::updateHook()
    	     	// check if setpoint is reached
        	 	if (abs(currentSetpoint - currentSpeed) < threshold) {
 			//check if targetspeed is reached
-        		if (abs(currentSetpoint - targetSpeed) < threshold) {
+        		if (abs(currentSetpoint - targetSpeed) < stepheigth) {
                 		nextSetpoint = targetSpeed;
-        	        	info = "Ramp goal achieved! Stoping rampGenerator...";
-		//		stop();
+        	        	info = "Ramp goal achieved! Stoping rampGenerator..."; // if you change this you also have to change it in experiment_helpers.lua
+				state = 2;	
         		}
 			else {
 	        		if (currentSetpoint > targetSpeed) {
                   			info = "Ramping down...";
-                        		nextSetpoint = max(targetSpeed, currentSetpoint - dt*acceleration);
+                        		state = 3;
+					nextSetpoint = max(targetSpeed, currentSetpoint - stepheigth );
                 		}
 				else {
                         		info = "Ramping up...";
-                        		nextSetpoint = min(targetSpeed, currentSetpoint + dt*acceleration);
+                        		state = 4;
+					nextSetpoint = min(targetSpeed, currentSetpoint + stepheigth);
                 		}
 			}
 	        	retrys = 10;
@@ -100,22 +104,26 @@ void  RampGenerator::updateHook()
         	else {
 			ostringstream s;
 			s << "Current setpoint not reached! Retrying(" << retrys << ")" ;
+			state = 5;
 			info = s.str();
                		retrys--;
         	}
         	// check if ramp got stuck
-        	if (retrys <= 0) {
+        	if (retrys < -1) {
                		ostringstream st;
 			st << "Aborting ramp! Current setpoint, speed = " << currentSetpoint << ", " << currentSpeed;
-		 	targetSpeed = 0;	
+		 	state = 6;
+			targetSpeed = 0;	
                        	acceleration = 0.1;
-			nextSetpoint = max(targetSpeed, currentSetpoint - dt*acceleration);
+			nextSetpoint = max(targetSpeed, currentSetpoint - stepheigth);
 			info = st.str();
 		}
         	else {}	
 		
-		info += debuginfo;
-		portInfo.write(info);
+		if (oldstate != state || state==5) {
+			info += debuginfo;
+			portInfo.write(info);
+		}
 		driveCommand.carouselSpeedSetpoint = nextSetpoint;
 		driveCommand.ts_trigger = trigger;
 		driveCommand.ts_elapsed = TimeService::Instance()->secondsSince(trigger);
