@@ -26,7 +26,8 @@ fiile = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 rawdata4 = fiile.variables['armboneLisaSensors.GyroState.gr_raw'].data[startSample:]
 ts_trigger4 = fiile.variables['armboneLisaSensors.GyroState.ts_trigger'].data[startSample:]*1.0e-9
 fullscale = 2000 # deg/sec
-data4 = -1.0 * rawdata4 / (2**15) * fullscale * pi/180 # Rad/s
+#data4 = -1.0 * rawdata4 / (2**15) * fullscale * pi/180 - 0.0202 # Rad/s
+data4 = rawdata4
 
 
 figure()

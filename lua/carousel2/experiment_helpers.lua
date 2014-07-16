@@ -1,7 +1,10 @@
 
-takeoffSpeed = 1 -- Rad/s, a bit before takeoff.
+takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
+normalFlyingSpeed = 2.0
+
 elevationJumpingSpeed = 1.84 -- Rad/s, speed at which (+-0.1) the elevation angle jumps ca 4 deg
+
 function set_carousel_speed(speed)
 	if speed==nil then
 		print "Speed cannot be nil!!!"
@@ -115,13 +118,15 @@ function step_around_current_setpoint(stepheight,lowtime)
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
 	amplitude = stepheight/2.0
-	phase =3.1416 -- a bit more than PI to make sure we start at 0
+	phase = 3.1416 -- a bit more than PI to make sure we start at 0
 	offset = get_carousel_setpoint()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 	siemensActuators:start() -- make sure actuator are running
+	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
+	print "Starting function generator"
 	functionGenerator:start() -- start!!
 end
 
@@ -135,6 +140,7 @@ function sin_around_current_setpoint(amplitude,frequency)
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 	siemensActuators:start()
 	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
+	print "Starting function generator"
 	functionGenerator:start()
 end
 
@@ -182,27 +188,30 @@ function run_step_experiment()
 end
 
 function run_offset_sin_experiment()
-	print "Running experimint NAOOOO!"
-	sleep(.5)
-	sin_around_offset(2, -- offset
+	ramp_to(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
+	frequency = 0.3 -- Hz
+	sin_around_offset(normalFlyingSpeed, -- offset
 					.07, -- amplitude
-					.3) -- frequency
-	sleep(21)
+					frequency) -- frequency
+	periods = 8
+	sleeptime = 8.0*1.0/frequency
+	print ("Going to sleep for "..tostring(sleeptime).." seconds while function generator runs...")
+	sleep(sleeptime)
 	stop_FunctionGenerator_and_ramp_to_0()
 end
 
 function run_offset_step_experiment()
-	print "Running experimint NAOOOO!"
-	sleep(.5)
-	step_around_offset(2, -- offset
-					.14, -- stepheight
-					12) -- lowtime
-	sleep(49)
+	ramp_to(normalFlyingSpeed) -- Just cause we don't want this included in the sleep time
+	lowtime = 10
+	step_around_offset(normalFlyingSpeed, -- offset
+					.07, -- stepheight
+					lowtime) -- lowtime
+	periods = 8
+	sleep(periods*lowtime)
 	stop_FunctionGenerator_and_ramp_to_0()
 end
 
 function run_steady_state_experiment()
-	print "Running steady state experiment"
 	ramp_to(takeoffSpeed)
 	sleep(.5)
 	acceleration = .01 -- in rad/s^2
