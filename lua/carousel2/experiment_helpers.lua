@@ -208,8 +208,7 @@ end
 
 function run_steady_state_experiment()
 	fast_ramp(takeoffSpeed)
-	sleep(.5)
-	acceleration = .01 -- in rad/s^2
+	acceleration = .005 -- in rad/s^2
 	ramp_with(	turbulentSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	sleep(10)
