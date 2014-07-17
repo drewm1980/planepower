@@ -42,7 +42,7 @@ private:
 	double currentSpeed;
 	double nextSetpoint;
 	double threshold;
-	double stepheigth;
+	double stepheight;
 	int state;
 	int retrys;
 	std::string info;
