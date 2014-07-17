@@ -65,9 +65,10 @@ int main(int argc, char *argv[])
 		printf("ImuMag   mx: %f units\n",im.mx_raw);
 		printf("ImuMag   my: %f units\n",im.my_raw);
 		printf("ImuMag   mz: %f units\n",im.mz_raw);
-		printf("ImuAccel ax: %f units\n",ia.ax_raw);
-		printf("ImuAccel ay: %f units\n",ia.ay_raw);
-		printf("ImuAccel az: %f units\n",ia.az_raw);
+		printf("ImuMag   angle: %f degree\n",im.angle);
+		printf("ImuAccel ax: %f units\n",ia.ax);
+		printf("ImuAccel ay: %f units\n",ia.ay);
+		printf("ImuAccel az: %f units\n",ia.az);
 	}
 }
 

@@ -6,6 +6,7 @@ struct ImuMag
 	double mx_raw;
 	double my_raw;
 	double mz_raw;
+	double angle;
 
 	double ts_trigger;
 	double ts_elapsed;

@@ -72,6 +72,7 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 			imu_mag->mx_raw = (double) data->lisa_plane.imu_mag_raw.mx;
 			imu_mag->my_raw = (double) data->lisa_plane.imu_mag_raw.my;
 			imu_mag->mz_raw = (double) data->lisa_plane.imu_mag_raw.mz;
+			imu_mag->angle = convertRawMagToAngle(data->lisa_plane.imu_mag_raw.mx, data->lisa_plane.imu_mag_raw.my);
 			message_type = 2;
 #if DEBUG > 0	
 			printf("IMU_MAG_RAW mx: %i\n",data->lisa_plane.imu_mag_raw.mx);
@@ -81,9 +82,9 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		}
 		else if (input_stream[3] == IMU_ACCEL_RAW)
 		{
-			imu_accel->ax_raw = (double) data->lisa_plane.imu_accel_raw.ax;
-			imu_accel->ay_raw = (double) data->lisa_plane.imu_accel_raw.ay;
-			imu_accel->az_raw = (double) data->lisa_plane.imu_accel_raw.az;
+			imu_accel->ax = convertRawAccel(data->lisa_plane.imu_accel_raw.ax);
+			imu_accel->ay = convertRawAccel(data->lisa_plane.imu_accel_raw.ay);
+			imu_accel->az = -1.0 * convertRawAccel(data->lisa_plane.imu_accel_raw.az);
 			message_type = 3;
 #if DEBUG > 0	
 			printf("IMU_ACCEL_RAW ax: %i\n",data->lisa_plane.imu_accel_raw.ax);
@@ -108,4 +109,26 @@ double ArmboneLisaReceiver::convertRawGyro(int raw_data)
 {
 	double data = ((double) raw_data/pow(2,15)) * 2000.0 * (PI/180.0) + 0.0202; //	Rad/s
 	return data;
+}
+
+double ArmboneLisaReceiver::convertRawAccel(int raw_data) 
+{
+	double data = (((double)raw_data+50.0)/1010.0) * -4.795; //	m/s²
+	return data;
+}
+
+double ArmboneLisaReceiver::convertRawMagToAngle(int raw_X, int raw_Y) 
+{
+	double mapped_X = ((double) raw_X + 182.5)/242.5;
+	double mapped_Y = ((double) raw_Y + 99.5)/210.5;
+	double angle;
+	if (mapped_Y >= 0) 
+	{
+		angle = -(mapped_X-1.0) * 90.0;
+	}
+	if (mapped_Y < 0) 
+	{
+		angle = ((mapped_X + 1.0) * 90.0) + 180;
+	}
+	return angle;
 }

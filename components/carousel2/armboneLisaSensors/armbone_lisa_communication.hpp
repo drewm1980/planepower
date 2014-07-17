@@ -27,6 +27,8 @@ class ArmboneLisaReceiver
 		// 3 (if new accel value exists)
 		int read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel);	
 		double convertRawGyro(int raw_data);
+		double convertRawAccel(int raw_data);
+		double convertRawMagToAngle(int raw_X, int raw_Y);
 
 	protected:
 
