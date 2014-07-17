@@ -34,19 +34,24 @@ end
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
 	oldstr = ""
-	while true do
+	running = true
+	while running do
 		sleep(0.1)
 		str = get_rampGenerator_rampstatus()
 		-- stop spamming 
-		if not oldstr == str then
+		if oldstr == str then
+		else
 			print( str )
+			oldstr = str
 		end
 		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
-			return
+			running = false
 		end 
 	end
-	print( str )
-	--rampGenerator:stop()
+	rampGenerator:stop()
+	set_property("rampGenerator","acceleration",0.1)
+	set_property("rampGenerator","targetSpeed",0)
+	print("done.")
 end
 
 function ramp_with(targetSpeed,acceleration)

@@ -111,7 +111,7 @@ void  RampGenerator::updateHook()
         	// check if ramp got stuck
         	if (retrys < -1) {
                		ostringstream st;
-			st << "Aborting ramp! Current setpoint, speed = " << currentSetpoint << ", " << currentSpeed;
+			st << "Aborting ramp! Current setpoint = " << currentSetpoint << ", current speed = " << currentSpeed;
 		 	state = 6;
 			targetSpeed = 0;	
                        	acceleration = 0.1;

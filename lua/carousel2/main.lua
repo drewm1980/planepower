@@ -74,4 +74,21 @@ dofile("load_ramp_generator.lua")
 
 dofile("experiment_helpers.lua")
 
+if get_carousel_setpoint() == 0 then
+else
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Speed Setpoint not zero!")
+	fast_ramp(0)
+end
+
 dofile("../shared/postamble.lua")
