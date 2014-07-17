@@ -55,6 +55,14 @@ function wait_till_ramp_is_done()
 end
 
 function ramp_with(targetSpeed,acceleration)
+	if runningOpenLoop then
+		print("Stoping function generator...")
+		stop_functionGenerator()
+	else
+		print("Stoping controller...")
+		controller:stop()
+	end	
+	print("Ramping to "..tostring(targetSpeed))
 	set_property("rampGenerator","acceleration",acceleration)
 	set_property("rampGenerator","targetSpeed",targetSpeed)
 	rampGenerator:start()
@@ -150,10 +158,9 @@ function step_around_offset(offset,stepheight,lowtime)
 	step_around_current_setpoint(stepheight,lowtime)
 end
 
-function stop_FunctionGenerator_and_ramp_to_0()
+function stop_functionGenerator()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
-	fast_ramp(0)
 	set_functionGenerator_properties(0,0,0,0,0,0)
 end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
@@ -185,7 +192,7 @@ function run_offset_sin_experiment()
 	sleeptime = 8.0*1.0/frequency
 	print ("Going to sleep for "..tostring(sleeptime).." seconds while function generator runs...")
 	sleep(sleeptime)
-	stop_FunctionGenerator_and_ramp_to_0()
+	fast_ramp(0)
 end
 
 function run_offset_step_experiment()
@@ -196,7 +203,7 @@ function run_offset_step_experiment()
 					lowtime) -- lowtime
 	periods = 4
 	sleep(periods*lowtime*2)
-	stop_FunctionGenerator_and_ramp_to_0()
+	fast_ramp(0)
 end
 
 function run_steady_state_experiment()
@@ -209,7 +216,6 @@ function run_steady_state_experiment()
 	ramp_with(	takeoffSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	fast_ramp(0)
-	--stop_FunctionGenerator_and_ramp_to_0()
 end
 
 function run_rampGenerator_test()
