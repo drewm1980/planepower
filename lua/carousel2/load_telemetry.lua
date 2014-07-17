@@ -65,7 +65,7 @@ deployer:connect("lineAngleSensor2.data","lineAngleSensor2Telemetry.msgData", cp
 deployer:connect("armboneLisaSensors.GyroState","armboneGyroTelemetry.msgData", cp)
 deployer:connect("armboneLisaSensors.AccelState","armboneAccelTelemetry.msgData", cp)
 deployer:connect("armboneLisaSensors.MagState","armboneMagTelemetry.msgData", cp)
-if measuringStepResponses then
+if runningOpenLoop then
 	deployer:connect("functionGenerator.data","controllerTelemetry.msgData", cp)
 else
 	deployer:connect("resampler.data","resampledMeasurementsTelemetry.msgData", cp)

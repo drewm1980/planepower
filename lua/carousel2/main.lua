@@ -47,8 +47,8 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-measuringStepResponses=true
-if measuringStepResponses then
+runningOpenLoop=true
+if runningOpenLoop then
 	rtt.logl("Info", "Loading function generator component...")
 	dofile("load_function_generator.lua")
 else
