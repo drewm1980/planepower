@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_GAINS_H
-#define CONTROLLER_GAINS_H
+#ifndef PID_CONTROLLER_GAINS_H
+#define PID_CONTROLLER_GAINS_H
 
 // The gains for the PID
 // of our controller,

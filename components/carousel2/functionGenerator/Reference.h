@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_GAINS_H
-#define CONTROLLER_GAINS_H
+#ifndef REFERENCE_H
+#define REFERENCE_H
 
 // The gain matrix (and/or other parameterization)
 // of our controller,

@@ -31,7 +31,9 @@ bool ControllerTemplate::configureHook()
 	if(gainsStatus == NewData) 
 	{
 		return true;
-	} 
+	}
+	lookup_steady_state_speed = getPeer("carouselSimulator")->provides()->getOperation("lookup_steady_state_speed");
+
 	log(Error) << "Cannot configure the controller; gains must be loaded first!" << endlog();
 	return false;
 }
@@ -40,7 +42,7 @@ bool  ControllerTemplate::startHook()
 {
 	portResampledMeasurements.read(resampledMeasurements);
 	portReference.read(reference);
-	double	el_ref = reference.elevation;
+	el_ref = reference.elevation;
 	error = el_ref - resampledMeasurements.elevation;
 	last_error = error;
 	ierror = 0;
@@ -54,7 +56,7 @@ void  ControllerTemplate::updateHook()
 	portResampledMeasurements.read(resampledMeasurements);
 
 	// C++ trick to make shorter names
-	double & az = resampledMeasurements.azimuth;
+	//double & az = resampledMeasurements.azimuth;
 	double & el = resampledMeasurements.elevation;
 	//ControllerGains& g = gains;
 	PIDControllerGains& g = gains;
@@ -72,7 +74,7 @@ void  ControllerTemplate::updateHook()
 	derror = ( error - last_error ) / getPeriod();
 	last_error = error;
 	
-	driveCommand.carouselSpeedSetpoint = andrewsCurveFit(el_ref) + g.Kp * error + g.Ki * ierror + g.Kd * derror
+	driveCommand.carouselSpeedSetpoint = lookup_steady_state_speed(el_ref) + g.Kp * error + g.Ki * ierror + g.Kd * derror;
 
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );

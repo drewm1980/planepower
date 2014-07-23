@@ -12,4 +12,6 @@ CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lineAngleSensor2
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/armboneLisaSensors
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/gainLoader
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/functionGenerator
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/pidGainLoader
 
