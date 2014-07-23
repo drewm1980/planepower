@@ -47,8 +47,8 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-measuringStepResponses=true
-if measuringStepResponses then
+runningOpenLoop=true
+if runningOpenLoop then
 	rtt.logl("Info", "Loading function generator component...")
 	dofile("load_function_generator.lua")
 else
@@ -73,5 +73,22 @@ rtt.logl("Info", "Loading ramp generator components...")
 dofile("load_ramp_generator.lua")
 
 dofile("experiment_helpers.lua")
+
+if get_carousel_setpoint() == 0 then
+else
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Speed Setpoint not zero!")
+	fast_ramp(0)
+end
 
 dofile("../shared/postamble.lua")

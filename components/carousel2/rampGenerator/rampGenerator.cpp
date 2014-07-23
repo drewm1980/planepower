@@ -69,39 +69,44 @@ void  RampGenerator::updateHook()
 
 	}
 
-	stepheigth = dt*acceleration;
-        if (abs(targetSpeed) > softlimit) {
+	stepheight = dt*acceleration;
+        if (fabs(targetSpeed) > softlimit) {
                 info = "Requested speed is outside the soft limit!";
 		state = 1;
         }
 	else {
-		portDriveState.read(driveState);
-		currentSetpoint = driveState.carouselSpeedSetpoint;
-		currentSpeed = driveState.carouselSpeedSmoothed;
+		FlowStatus stat = portDriveState.read(driveState);
+		if (stat == RTT::NewData) {
+			currentSetpoint = driveState.carouselSpeedSetpoint;
+			currentSpeed = driveState.carouselSpeedSmoothed;
+		}
 		nextSetpoint = currentSetpoint;
    	     	// check if setpoint is reached
-       	 	if (abs(currentSetpoint - currentSpeed) < threshold) {
+       	 	if (fabs(currentSetpoint - currentSpeed) < threshold) {
 			//check if targetspeed is reached
-        		if (abs(currentSetpoint - targetSpeed) < stepheigth) {
+        		if (fabs(currentSetpoint - targetSpeed) < stepheight) {
                 		nextSetpoint = targetSpeed;
         	        	info = "Ramp goal achieved! Stoping rampGenerator..."; // if you change this you also have to change it in experiment_helpers.lua
 				state = 2;	
         		}
-			else {
-	        		if (currentSetpoint > targetSpeed) {
-                  			info = "Ramping down...";
-                        		state = 3;
-					nextSetpoint = max(targetSpeed, currentSetpoint - stepheigth );
-                		}
-				else {
-                        		info = "Ramping up...";
-                        		state = 4;
-					nextSetpoint = min(targetSpeed, currentSetpoint + stepheigth);
-                		}
+			else if (currentSetpoint > targetSpeed) {
+				info = "Ramping down...";
+				state = 3;
+				nextSetpoint = max(targetSpeed, currentSetpoint - stepheight );
 			}
+			else {
+				info = "Ramping up...";
+				state = 4;
+				nextSetpoint = min(targetSpeed, currentSetpoint + stepheight);
+			}
+
 	        	retrys = 10;
 		}
-        	else {
+		// check if current speed is more than a stepheight closer to target speed than current setpoint is.
+        	else if ( fabs(currentSetpoint - targetSpeed) - fabs(currentSpeed - targetSpeed) > stepheight) {
+			nextSetpoint = currentSpeed;
+		}
+		else {
 			ostringstream s;
 			s << "Current setpoint not reached! Retrying(" << retrys << ")" ;
 			state = 5;
@@ -111,11 +116,11 @@ void  RampGenerator::updateHook()
         	// check if ramp got stuck
         	if (retrys < -1) {
                		ostringstream st;
-			st << "Aborting ramp! Current setpoint, speed = " << currentSetpoint << ", " << currentSpeed;
+			st << "Aborting ramp! Current setpoint = " << currentSetpoint << ", current speed = " << currentSpeed;
 		 	state = 6;
 			targetSpeed = 0;	
                        	acceleration = 0.1;
-			nextSetpoint = max(targetSpeed, currentSetpoint - stepheigth);
+			nextSetpoint = max(targetSpeed, currentSetpoint - stepheight);
 			info = st.str();
 		}
         	else {}	

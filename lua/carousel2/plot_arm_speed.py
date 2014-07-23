@@ -46,6 +46,6 @@ def plot_arm_speed(axis, startTime=-1):
 if __name__=='__main__':
     fig = figure()
     axis = subplot(1,1,1)
-    plot_arm_speeds(axis)
+    plot_arm_speed(axis)
     show()
     print('...done')

@@ -4,9 +4,12 @@
 takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
 takeoffAngle = -1.1344 -- Radians
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
-normalFlyingSpeed = 2.0
+normalFlyingSpeed = 1.6 
 
+softlimit = PI -- Rad/s
 elevationJumpingSpeed = 1.84 -- Rad/s, speed at which (+-0.1) the elevation angle jumps ca 4 deg
+
+require "math"
 
 function set_carousel_speed(speed)
 	if speed==nil then
@@ -29,36 +32,55 @@ function get_rampGenerator_rampstatus()
 	return rampGenerator:provides("info"):last()
 end
 
+
+-- rampGenerator related functions
 function wait_till_ramp_is_done()
 	str = get_rampGenerator_rampstatus()
 	oldstr = ""
-	while true do
+	running = true
+	while running do
 		sleep(0.1)
 		str = get_rampGenerator_rampstatus()
 		-- stop spamming 
-		if not oldstr == str then
+		if oldstr == str then
+		else
 			print( str )
+			oldstr = str
 		end
 		if  str == "Ramp goal achieved! Stoping rampGenerator..." then
-			return
+			running = false
 		end 
 	end
-	print( str )
-	--rampGenerator:stop()
+	rampGenerator:stop()
+	set_property("rampGenerator","acceleration",0.1)
+	set_property("rampGenerator","targetSpeed",0)
+	print("done.")
 end
 
-require "math"
-
-softlimit = PI -- Rad/s
-
-
 function ramp_with(targetSpeed,acceleration)
+	if runningOpenLoop then
+		print("Stoping function generator...")
+		stop_functionGenerator()
+	else
+		print("Stoping controller...")
+		controller:stop()
+	end	
+	print("Ramping to "..tostring(targetSpeed))
 	set_property("rampGenerator","acceleration",acceleration)
 	set_property("rampGenerator","targetSpeed",targetSpeed)
 	rampGenerator:start()
 	wait_till_ramp_is_done()
 end
 
+function slow_ramp(targetSpeed)
+	acceleration = 0.01
+	ramp_with(targetSpeed,acceleration)
+end
+
+function fast_ramp(targetSpeed)
+	acceleration = 0.1
+	ramp_with(targetSpeed,acceleration)
+end
 
 -- functionGenerator related functions
 
@@ -139,21 +161,10 @@ function step_around_offset(offset,stepheight,lowtime)
 	step_around_current_setpoint(stepheight,lowtime)
 end
 
-function stop_FunctionGenerator_and_ramp_to_0()
+function stop_functionGenerator()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
-	fast_ramp(0)
 	set_functionGenerator_properties(0,0,0,0,0,0)
-end
-
-function slow_ramp(targetSpeed)
-	acceleration = 0.01
-	ramp_with(targetSpeed,acceleration)
-end
-
-function fast_ramp(targetSpeed)
-	acceleration = 0.1
-	ramp_with(targetSpeed,acceleration)
 end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
@@ -184,32 +195,29 @@ function run_offset_sin_experiment()
 	sleeptime = 8.0*1.0/frequency
 	print ("Going to sleep for "..tostring(sleeptime).." seconds while function generator runs...")
 	sleep(sleeptime)
-	stop_FunctionGenerator_and_ramp_to_0()
+	fast_ramp(0)
 end
 
 function run_offset_step_experiment()
 	lowtime = 16
-	stepheight = .1
-	fast_ramp(normalFlyingSpeed - 0.5*stepheight) 
+	stepheight = .12
 	step_around_offset(normalFlyingSpeed, -- offset
 					stepheight, -- stepheight
 					lowtime) -- lowtime
 	periods = 4
 	sleep(periods*lowtime*2)
-	stop_FunctionGenerator_and_ramp_to_0()
+	fast_ramp(0)
 end
 
 function run_steady_state_experiment()
 	fast_ramp(takeoffSpeed)
-	sleep(.5)
-	acceleration = .01 -- in rad/s^2
+	acceleration = .005 -- in rad/s^2
 	ramp_with(	turbulentSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	sleep(10)
 	ramp_with(	takeoffSpeed, -- targetSpeed
 			acceleration) -- acceleration
 	fast_ramp(0)
-	--stop_FunctionGenerator_and_ramp_to_0()
 end
 
 function run_rampGenerator_test()
