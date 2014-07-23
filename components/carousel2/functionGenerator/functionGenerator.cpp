@@ -11,9 +11,11 @@ using namespace RTT::os;
 FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOperational) 
 {
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
+	addPort("refData",portReference).doc("Reference Elevation for the controller");
 	addEventPort("triggerIn",portTriggerIn).doc("Event port for driggering the functionGenerator timing off of another component.  IF YOU TRIGGER THIS WAY, REMEMBER TO MAKE THE COMPONENT NON_PERIODIC");
 
 	memset(&driveCommand, 0, sizeof(driveCommand));
+	memset(&reference, 0, sizeof(reference));
 
 	// Add properties for what kind of function should be generated
 	addProperty("type", type).doc("The type of the generated function. sin wave is 0 square wave is 1");
@@ -69,6 +71,7 @@ void  FunctionGenerator::updateHook()
 		case 1:
 			driveCommand.winchSpeedSetpoint = 0.0;
 			driveCommand.carouselSpeedSetpoint = value;
+			reference.elevation = value;	
 			break;
 		default:
 			log(Error) << "functionGenerator: whichDrive selection invalid!" << endl;
@@ -77,6 +80,10 @@ void  FunctionGenerator::updateHook()
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 	portDriveCommand.write(driveCommand);
+	
+	reference.ts_trigger = trigger;
+	reference.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	portReference.write(reference);
 
 }
 
