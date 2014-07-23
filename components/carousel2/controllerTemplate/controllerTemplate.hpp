@@ -39,9 +39,9 @@ private:
 	PIDControllerGains gains;
 	Reference reference;
 	double error;
-	double ierror;
-	double derror;
-	double last_error;
+	//double ierror;
+	//double derror;
+	//double last_error;
 	double el_ref;
 
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;

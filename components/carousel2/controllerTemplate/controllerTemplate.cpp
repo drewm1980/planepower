@@ -43,9 +43,9 @@ bool  ControllerTemplate::startHook()
 	portResampledMeasurements.read(resampledMeasurements);
 	portReference.read(reference);
 	el_ref = reference.elevation;
-	error = el_ref - resampledMeasurements.elevation;
-	last_error = error;
-	ierror = 0;
+	//error = el_ref - resampledMeasurements.elevation;
+	//last_error = error;
+	//ierror = 0;
 	return true;
 }
 
@@ -70,11 +70,14 @@ void  ControllerTemplate::updateHook()
 	el_ref = reference.elevation;
 	
 	error = el_ref - el;
-	ierror += error;
-	derror = ( error - last_error ) / getPeriod();
-	last_error = error;
+	//ierror += error;
+	//derror = ( error - last_error ) / getPeriod();
+	//last_error = error;
 	
-	driveCommand.carouselSpeedSetpoint = lookup_steady_state_speed(el_ref) + g.Kp * error + g.Ki * ierror + g.Kd * derror;
+	driveCommand.carouselSpeedSetpoint = lookup_steady_state_speed(el_ref) 
+										+ g.Kp * error ;
+										//+ g.Ki * ierror 
+										//+ g.Kd * derror
 
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
