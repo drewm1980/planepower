@@ -41,7 +41,12 @@ bool ControllerTemplate::configureHook()
 bool  ControllerTemplate::startHook()
 {
 	portResampledMeasurements.read(resampledMeasurements);
-	portReference.read(reference);
+	FlowStatus refStatus = portReference.read(reference);
+	if (refStatus != NewData) 
+	{
+		log(Error) << "Controller cannot start without reference elevation!" << endlog();
+		return false;
+	}	
 	el_ref = reference.elevation;
 	//error = el_ref - resampledMeasurements.elevation;
 	//last_error = error;
@@ -53,7 +58,12 @@ void  ControllerTemplate::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
-	portResampledMeasurements.read(resampledMeasurements);
+	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
+	if (measurementStatus != NewData) 
+	{
+		log(Warning) << "No new measurment data!! " << endlog();
+		return;
+	}	
 
 	// C++ trick to make shorter names
 	//double & az = resampledMeasurements.azimuth;
