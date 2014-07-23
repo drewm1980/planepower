@@ -1,5 +1,8 @@
-
+-- WARNING!! These values also get parsed out of this file by 
+-- plot_steady_states.py, so if you change the names of the variables,
+-- fix them there as well!
 takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
+takeoffAngle = -1.1344 -- Radians
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
 normalFlyingSpeed = 1.6 
 
