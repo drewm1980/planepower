@@ -7,7 +7,7 @@
 #include <rtt/Port.hpp>
 
 #include <stdint.h>
-
+#include "Reference.h"
 #include "SiemensDriveCommand.h"
 
 typedef uint64_t TIME_TYPE;
@@ -27,10 +27,12 @@ public:
 
 protected:
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
+	RTT::OutputPort< Reference > portReference;
 	RTT::InputPort< double > portTriggerIn;
 
 private:
 	SiemensDriveCommand driveCommand;
+	Reference reference;
 	int type; // 0 -> Sin  1 -> Square
 	int whichDrive; // 0 -> winch 1 -> carousel
 	double amplitude; // Rad/s (inherrited from SiemensDriveCommand)
