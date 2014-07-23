@@ -28,14 +28,28 @@ bool ControllerTemplate::configureHook()
 {
 	
 	FlowStatus gainsStatus = portPIDControllerGains.read(gains);
-	if(gainsStatus == NewData) 
+	if(gainsStatus != NewData) 
 	{
-		return true;
+		log(Error) << "controllerTemplate: Cannot configure; gains are needed!" << endlog();
+		return false;
+	}
+
+	if(! hasPeer("carouselSimulator"))
+	{
+		log(Error) << "controllerTemplate: Cannot configure; carouselSimulator needs to be a peer!" << endlog();
+		return false;
 	}
 	lookup_steady_state_speed = getPeer("carouselSimulator")->provides()->getOperation("lookup_steady_state_speed");
+	
+	// Try reading a measurement, since it seems we never get newData
+	// the first time updateHook is called...
+	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
+	if (measurementStatus != NewData) 
+	{
+		log(Info) << "controllerTemplate: First read to measurements port was indeed not newData!" << endlog();
+	}	
 
-	log(Error) << "Cannot configure the controller; gains must be loaded first!" << endlog();
-	return false;
+	return true;
 }
 
 bool  ControllerTemplate::startHook()
@@ -44,13 +58,14 @@ bool  ControllerTemplate::startHook()
 	FlowStatus refStatus = portReference.read(reference);
 	if (refStatus != NewData) 
 	{
-		log(Error) << "Controller cannot start without reference elevation!" << endlog();
+		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
 	el_ref = reference.elevation;
 	//error = el_ref - resampledMeasurements.elevation;
 	//last_error = error;
 	//ierror = 0;
+
 	return true;
 }
 
@@ -61,7 +76,7 @@ void  ControllerTemplate::updateHook()
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
 	{
-		log(Warning) << "No new measurment data!! " << endlog();
+		log(Warning) << "controllerTemplate: No new measurment data!! " << endlog();
 		return;
 	}	
 
@@ -84,7 +99,10 @@ void  ControllerTemplate::updateHook()
 	//derror = ( error - last_error ) / getPeriod();
 	//last_error = error;
 	
-	driveCommand.carouselSpeedSetpoint = lookup_steady_state_speed(el_ref) 
+	//cout << "Looking up " << el_ref << endl;
+	double referenceSpeed = lookup_steady_state_speed(el_ref);
+	//cout << "Looked up value is " << referenceSpeed << endl;
+	driveCommand.carouselSpeedSetpoint = referenceSpeed
 										+ g.Kp * error ;
 										//+ g.Ki * ierror 
 										//+ g.Kd * derror
