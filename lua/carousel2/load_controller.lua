@@ -13,9 +13,9 @@ end
 PLANEPOWER="../../"
 
 libraryNames={"resampler",
-				"gainLoader" }
+				"pidGainLoader" }
 classNames={"Resampler",
-				"GainLoader" }
+				"PidGainLoader" }
 function deepcopy(liist)
 	newlist = {}
 	for i,symbol in ipairs(liist) do
@@ -41,7 +41,7 @@ load_component("controllerTemplate","ControllerTemplate","controller")
 -- The resampler component clocks the whole control chain;
 -- The rest are successively triggered using event ports.
 deployer:setActivityOnCPU("resampler", 1.0/controlFrequency, controllerPrio, scheduler,quietCore)
-deployer:setActivityOnCPU("gainLoader", 0.0, humanPrio, scheduler,someNoisyCore)
+deployer:setActivityOnCPU("pidGainLoader", 0.0, humanPrio, scheduler,someNoisyCore)
 deployer:setActivityOnCPU("controller", 0.0, controllerPrio, scheduler,quietCore)
 
 ---------------- Connect Components
@@ -51,20 +51,23 @@ cp = rtt.Variable("ConnPolicy")
 deployer:connect("siemensSensors.data","resampler.driveState", cp)
 deployer:connect("lineAngleSensor2.data","resampler.lineAngles", cp)
 deployer:connect("resampler.data","controller.resampledMeasurements", cp)
-deployer:connect("gainLoader.gains", "controller.gains", cp)
+deployer:connect("pidGainLoader.gains", "controller.gains", cp)
 deployer:connect("controller.data","siemensActuators.controls",cp)
 
 -- We need to load in at least one set of controller gains before the controller can transition to the runing state.
 
-GAINSDIR = PLANEPOWER.."components/carousel2/gainLoader/"
+theGainLoader = "gainLoader" -- This is HACKY... maybe when we have more controllers, keep instance name stable.
+theGainLoader = "pidGainLoader"
+
+GAINSDIR = PLANEPOWER.."components/carousel2/".. theGainLoader .."/"
 -- Example of how to get a template cpf file from the component:
---store_properties("gainLoader",GAINSDIR.."gains.cpf")
+--store_properties(theGainLoader,GAINSDIR.."gains.cpf")
 
 -- Convenience function for reloading the gains
 function reload_gains()
-	load_properties("gainLoader",GAINSDIR.."gains.cpf")
-	gainLoader:trigger()
-	gainLoader:stat()
+	load_properties(theGainLoader,GAINSDIR.."gains.cpf")
+	_G[theGainLoader]:trigger()
+	_G[theGainLoader]:stat()
 end
 reload_gains()
 
