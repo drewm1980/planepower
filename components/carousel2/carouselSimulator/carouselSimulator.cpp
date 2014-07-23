@@ -33,6 +33,34 @@ CarouselSimulator::CarouselSimulator(std::string name):TaskContext(name,PreOpera
 
 bool CarouselSimulator::configureHook()
 {
+	// The static arrays in these functions might not get initialized
+	// until they are called the first time, so to be safe,
+	// go ahead and call them...
+	double speed = lookup_steady_state_speed(-0.964);
+	if(isnan(speed))
+	{
+		log(Error) << "Runtime sanity check of lookup functions failed; speed is nan!" << endlog();
+		return false;
+	}
+	if(abs(speed)>10)
+	{
+		log(Error) << "Runtime sanity check of lookup functions failed; speed is huge!" << endlog();
+		cout << "Returned speed value was " << speed << endl;
+		return false;
+	}
+	double elevation = lookup_steady_state_elevation(speed);
+	if(isnan(elevation))
+	{
+		log(Error) << "Runtime sanity check of lookup functions failed; elevation is nan!" << endlog();
+		cout << "Passed speed was " << speed << endl;
+		return false;
+	}
+	if ( abs(elevation-(-0.964)) > .1 )
+	{
+		log(Error) << "Runtime sanity check of lookup functions failed; bad round-trip lookup accuracy!" << endlog();
+		return false;
+	}
+
 	return true;
 }
 
