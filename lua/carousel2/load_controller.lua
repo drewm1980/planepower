@@ -50,6 +50,7 @@ cp = rtt.Variable("ConnPolicy")
 
 deployer:connect("siemensSensors.data","resampler.driveState", cp)
 deployer:connect("lineAngleSensor2.data","resampler.lineAngles", cp)
+deployer:connect("functionGenerator.data","controller.reference",cp)
 deployer:connect("resampler.data","controller.resampledMeasurements", cp)
 deployer:connect("pidGainLoader.gains", "controller.gains", cp)
 deployer:connect("controller.data","siemensActuators.controls",cp)
