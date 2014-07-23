@@ -4,6 +4,8 @@
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
 
+#include "steady_state_lookup_tables.h"
+
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
@@ -12,7 +14,13 @@ typedef uint64_t TIME_TYPE;
 
 CarouselSimulator::CarouselSimulator(std::string name):TaskContext(name,PreOperational) 
 {
-	//log(Error) << "Error in constructor of CarouselSimulator" << endlog();
+	addOperation("lookup_steady_state_speed", lookup_steady_state_speed, ClientThread)
+		.doc("Given a line angle sensor elevation, look up the corresponding steady-state carousel speed.")
+		.arg("elevation", "Line angle sensor elevation [Rad], usually a negative number.");
+
+	addOperation("lookup_steady_state_elevation", lookup_steady_state_elevation, ClientThread)
+		.doc("Given a carousel speed, look up the corresponding steady-state line angle sensor elevation.")
+		.arg("speed", "carousel speed [Rad/s]");
 
 //	addPort("driveState",portDriveState).doc("Siemens Drives Measurements");
 //	addPort("lineAngles",portLineAngles).doc("Line Angle Sensor Measurements");
@@ -35,7 +43,7 @@ bool  CarouselSimulator::startHook()
 
 void  CarouselSimulator::updateHook()
 {
-	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+	//TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	//portDriveState.read(driveState);
 
 	//resampledMeasurements.ts_trigger = trigger;
