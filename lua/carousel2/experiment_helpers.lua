@@ -98,12 +98,12 @@ end
 -- Stepping from zero to some value
 function start_stepping()
 	--Set the parameterf of our function generator for a step response
-	--stepheight = 3.141/2000 -- Rad/s
-	stepheight = PI/10 -- Rad/s
+	--stepHeight = 3.141/2000 -- Rad/s
+	stepHeight = PI/10 -- Rad/s
 	lowtime = 1 -- seconds.  This is also the hightime.  Make longer than your settling time.
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
-	amplitude = stepheight/2.0
+	amplitude = stepHeight/2.0
 	phase =3.2 -- a bit more than PI to make sure we start at 0
 	offset = amplitude
 	period = 2.0*lowtime
@@ -118,14 +118,14 @@ function stop_stepping()
 	functionGenerator:stop()
 end
 
-function step_around_current_setpoint(stepheight,lowtime)
+function step_around_current_setpoint(stepHeight,lowtime)
 	--Set the parameterf of our function generator for a step response
-	--stepheight = 3.141/20 -- Rad/s
+	--stepHeight = 3.141/20 -- Rad/s
 	--lowtime = 4.0 -- seconds.  This is also the hightime.  Make longer than your settling time.
 
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel
-	amplitude = stepheight/2.0
+	amplitude = stepHeight/2.0
 	phase = 3.1416 -- a bit more than PI to make sure we start at 0
 	offset = get_carousel_setpoint()
 	period = 2.0*lowtime
@@ -157,9 +157,9 @@ function sin_around_offset(offset,amplitude,frequency)
 	sin_around_current_setpoint(amplitude,frequency)
 end
 
-function step_around_offset(offset,stepheight,lowtime)
+function step_around_offset(offset,stepHeight,lowtime)
 	fast_ramp(offset) -- avoid jumps
-	step_around_current_setpoint(stepheight,lowtime)
+	step_around_current_setpoint(stepHeight,lowtime)
 end
 
 function stop_functionGenerator()
@@ -201,9 +201,9 @@ end
 
 function run_offset_step_experiment()
 	lowtime = 16
-	stepheight = normalStepHeight
+	stepHeight = normalStepHeight
 	step_around_offset(normalFlyingSpeed, -- offset
-					stepheight, -- stepheight
+					stepHeight, -- stepHeight
 					lowtime) -- lowtime
 	periods = 4
 	sleep(periods*lowtime*2)
@@ -252,29 +252,37 @@ end
 
 function run_pid_experiment()
 	print "Running PID experiment..."
-	--referenceSpeed = normalFlyingSpeed
-	referenceSpeed = 0.0
-	fast_ramp(referenceSpeed)
+
+	sanityCheck=true -- For this the MACHINE SHOULD BE TURNED OFF!!!
+	if not sanityCheck then
+		fast_ramp(normalFlyingSpeed)
+	end
 	h1 = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
 	h2 = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
 	stepHeight = h1-h2 -- Radians
 
+	-- Set up Function Generator
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel, but also currently needed for controller reference
-	amplitude = stepheight/2.0
+	amplitude = stepHeight/2.0
 	phase = 3.1416 -- a bit more than PI to make sure we start at 0
-	offset = lookup_steady_state_elevation(referenceSpeed) -- Radians
+	offset = lookup_steady_state_elevation(normalFlyingSpeed) -- Radians
+	lowtime = 16
 	period = 2.0*lowtime
 	frequency = 1.0/period
+	periods = 4 -- number of periods to run for
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 
-	siemensActuators:start() -- make sure actuator are running
-	functionGenerator:stop()
-	print "Starting function generator"
-	functionGenerator:start() -- start!!
+	-- Start the Experiment
+	siemensActuators:start()
 	controller:start()
+	functionGenerator:stop()
+	functionGenerator:start() 
 
-	fast_ramp(0)
+	if not sanityCheck then
+		sleep(periods*lowtime*2)
+		fast_ramp(0)
+	end
 end
 
 
