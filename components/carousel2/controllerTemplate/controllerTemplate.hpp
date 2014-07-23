@@ -10,8 +10,8 @@
 
 #include "ResampledMeasurements.h"
 #include "SiemensDriveCommand.h"
-
-#include "ControllerGains.h"
+#include "Reference.h"
+#include "PIDControllerGains.h"
 
 class ControllerTemplate : public RTT::TaskContext
 {
@@ -28,16 +28,16 @@ public:
 
 protected:
 	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
-	RTT::InputPort< ControllerGains > portControllerGains;
-	RTT::InputPort< referenceElevation > portReference;
+	RTT::InputPort< PIDControllerGains > portPIDControllerGains;
+//	RTT::InputPort< ReferenceElevation > portReference;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
-	RTT::OutputPort< ControllerGains > portGainsOut;
+	RTT::OutputPort< PIDControllerGains > portGainsOut;
 
 private:
 	ResampledMeasurements resampledMeasurements;
 	SiemensDriveCommand driveCommand;
-	ControllerGains gains;
-	referenceElevation reference;
+	PIDControllerGains gains;
+//	referenceElevation reference;
 	double error;
 	double ierror;
 	double derror;

@@ -13,7 +13,7 @@ typedef uint64_t TIME_TYPE;
 ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOperational) 
 {
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
-	addPort("gains",portControllerGains).doc("Controller Gains");
+	addPort("gains",portPIDControllerGains).doc("Controller Gains");
 	addPort("gainsOut",portGainsOut).doc("Controller Gains");
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
 	addPort("reference",portReference).doc("Reference elevation");
@@ -27,7 +27,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 bool ControllerTemplate::configureHook()
 {
 	
-	FlowStatus gainsStatus = portControllerGains.read(gains);
+	FlowStatus gainsStatus = portPIDControllerGains.read(gains);
 	if(gainsStatus == NewData) 
 	{
 		return true;
@@ -40,7 +40,7 @@ bool  ControllerTemplate::startHook()
 {
 	portResampledMeasurements.read(resampledMeasurements);
 	portReference.read(reference);
-	el_ref = reference.elevation;
+	double	el_ref = reference.elevation;
 	error = el_ref - resampledMeasurements.elevation;
 	last_error = error;
 	ierror = 0;
@@ -56,7 +56,8 @@ void  ControllerTemplate::updateHook()
 	// C++ trick to make shorter names
 	double & az = resampledMeasurements.azimuth;
 	double & el = resampledMeasurements.elevation;
-	ControllerGains& g = gains;
+	//ControllerGains& g = gains;
+	PIDControllerGains& g = gains;
 	
 	// Controller Implementation goes here!
 	//  gain matrix meaning:
@@ -84,8 +85,8 @@ void  ControllerTemplate::updateHook()
 	portGainsOut.write(gains);
 
 	// Load in new gains if they are available
-	ControllerGains tempGains;
-	FlowStatus gainsStatus = portControllerGains.read(tempGains);
+	PIDControllerGains tempGains;
+	FlowStatus gainsStatus = portPIDControllerGains.read(tempGains);
 	if(gainsStatus == NewData) { gains = tempGains; }
 }
 
