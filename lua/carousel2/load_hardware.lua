@@ -45,6 +45,17 @@ for i=1,#libraryNames do
 	load_component(libraryNames[i],classNames[i],instanceNames[i])
 end
 
+-- Load up a carouselSimulator component regardless of we are doing simulations,
+-- since we also use it for the steady state lookup tables.
+load_component("carouselSimulator","CarouselSimulator","carouselSimulator")
+--function lookup_steady_state_speed(elevation)
+	--carouselSimulator:lookup_steady_state_speed(elevation)
+--end
+--function lookup_steady_state_elevation(speed)
+	--carouselSimulator:lookup_steady_state_elevation(speed)
+--end
+lookup_steady_state_elevation = carouselSimulator:getOperation('lookup_steady_state_elevation')
+
 ----------------- Set Priorities and activities
 
 -- All of these components trigger themselves once started the first time.
