@@ -54,6 +54,7 @@ load_component("carouselSimulator","CarouselSimulator","carouselSimulator")
 --function lookup_steady_state_elevation(speed)
 	--carouselSimulator:lookup_steady_state_elevation(speed)
 --end
+carouselSimulator:configure()
 lookup_steady_state_elevation = carouselSimulator:getOperation('lookup_steady_state_elevation')
 
 ----------------- Set Priorities and activities

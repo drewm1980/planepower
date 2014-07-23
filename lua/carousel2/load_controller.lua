@@ -43,6 +43,7 @@ load_component("controllerTemplate","ControllerTemplate","controller")
 deployer:setActivityOnCPU("resampler", 1.0/controlFrequency, controllerPrio, scheduler,quietCore)
 deployer:setActivityOnCPU("pidGainLoader", 0.0, humanPrio, scheduler,someNoisyCore)
 deployer:setActivityOnCPU("controller", 0.0, controllerPrio, scheduler,quietCore)
+deployer:connectPeers("controller","carouselSimulator")
 
 ---------------- Connect Components
 

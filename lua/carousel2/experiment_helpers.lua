@@ -275,9 +275,10 @@ function run_pid_experiment()
 
 	-- Start the Experiment
 	siemensActuators:start()
-	controller:start()
 	functionGenerator:stop()
-	functionGenerator:start() 
+	functionGenerator:start() -- has to be before controller is started!
+	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
+	controller:start()
 
 	if not sanityCheck then
 		sleep(periods*lowtime*2)
