@@ -29,6 +29,7 @@ public:
 protected:
 	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
 	RTT::InputPort< ControllerGains > portControllerGains;
+	RTT::InputPort< referenceElevation > portReference;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
 	RTT::OutputPort< ControllerGains > portGainsOut;
 
@@ -36,6 +37,11 @@ private:
 	ResampledMeasurements resampledMeasurements;
 	SiemensDriveCommand driveCommand;
 	ControllerGains gains;
+	referenceElevation reference;
+	double error;
+	double ierror;
+	double derror;
+	double last_error;
 };
 
 #endif

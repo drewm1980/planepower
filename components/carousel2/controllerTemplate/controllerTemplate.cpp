@@ -16,6 +16,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	addPort("gains",portControllerGains).doc("Controller Gains");
 	addPort("gainsOut",portGainsOut).doc("Controller Gains");
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
+	addPort("reference",portReference).doc("Reference elevation");
 
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
 	memset(&driveCommand, 0, sizeof(driveCommand));
@@ -25,6 +26,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 
 bool ControllerTemplate::configureHook()
 {
+	
 	FlowStatus gainsStatus = portControllerGains.read(gains);
 	if(gainsStatus == NewData) 
 	{
@@ -36,6 +38,12 @@ bool ControllerTemplate::configureHook()
 
 bool  ControllerTemplate::startHook()
 {
+	portResampledMeasurements.read(resampledMeasurements);
+	portReference.read(reference);
+	el_ref = reference.elevation;
+	error = el_ref - resampledMeasurements.elevation;
+	last_error = error;
+	ierror = 0;
 	return true;
 }
 
@@ -53,8 +61,17 @@ void  ControllerTemplate::updateHook()
 	// Controller Implementation goes here!
 	//  gain matrix meaning:
 	//  [winchSpeedSetpoint carouselSpeedSetpoint]' = [k11 k12; k21 k22] * [azimuth elevation]'
-	driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
-	driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
+	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
+	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
+	portReference.read(reference);
+	el_ref = reference.elevation;
+	
+	error = el_ref - el;
+	ierror += error;
+	derror = ( error - last_error ) / getPeriod();
+	last_error = error;
+	
+	driveCommand.carouselSpeedSetpoint = andrewsCurveFit(el_ref) + g.Kp * error + g.Ki * ierror + g.Kd * derror
 
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
