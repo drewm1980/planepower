@@ -75,10 +75,10 @@ double lookup_steady_state_speed(double elevation)
 			2.40424018222, 2.41328629482, 2.42240807287, 2.43160602092};
     if ((elevation < elevationMin) || (elevation > elevationMax)) 
     {
-        cout << "WARNING!!! Value passed to table_lookup_8bit_speed was out of range!!!" << endl;
+        cout << "WARNING!!! Value passed to lookup_steady_state_speed was out of range!!!" << endl;
         return nan("");
     }
-    double elevationScaled = (elevation-elevationMin)*(1.0/elevationMax)*255.0;
+    double elevationScaled = (elevation-elevationMin)*(1.0/(elevationMax-elevationMin))*255.0;
     double speed1 = speedTable[(int)floor(elevationScaled)];
     double speed2 = speedTable[(int)ceil(elevationScaled)];
     double speed = speed1 + (speed2-speed1) * (elevationScaled - floor(elevationScaled));
@@ -157,10 +157,10 @@ double lookup_steady_state_elevation(double speed)
 			-0.344905106146, -0.344529300058, -0.344198734863, -0.343913684297};
     if ((speed < speedMin) || (speed > speedMax)) 
     {
-        cout << "WARNING!!! Value passed to table_lookup_8bit_elevation was out of range!!!" << endl;
+        cout << "WARNING!!! Value passed to lookup_steady_state_elevation was out of range!!!" << endl;
         return nan("");
     }
-    double speedScaled = (speed-speedMin)*(1.0/speedMax)*255.0;
+    double speedScaled = (speed-speedMin)*(1.0/(speedMax-speedMin))*255.0;
     double elevation1 = elevationTable[(int)floor(speedScaled)];
     double elevation2 = elevationTable[(int)ceil(speedScaled)];
     double elevation = elevation1 + (elevation2-elevation1) * (speedScaled - floor(speedScaled));

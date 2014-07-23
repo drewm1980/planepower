@@ -95,7 +95,7 @@ def extract_steady_states(speed_resampled,elevation_resampled):
     def table_lookup(x,xMin,xMax,yTable):
         if x < xMin or x > xMax:
             raise Exception("x is out of bounds!!")
-        xScaled = (x-xMin)*(1.0/xMax)*255.0 #  in [0,255.0]
+        xScaled = (x-xMin)*(1.0/(xMax-xMin))*255.0 #  in [0,255.0]
         y1 = yTable[floor(xScaled)]
         y2 = yTable[ceil(xScaled)]
         y = y1 + (y2-y1) * (xScaled - floor(xScaled))
@@ -112,10 +112,10 @@ double lookup_steady_state_${raange}(double ${domain})
     const static double ${raange}Table[256] = ${theTable};
     if ((${domain} < ${domain}Min) || (${domain} > ${domain}Max)) 
     {
-        cout << "WARNING!!! Value passed to table_lookup_8bit_${raange} was out of range!!!" << endl;
+        cout << "WARNING!!! Value passed to lookup_steady_state_${raange} was out of range!!!" << endl;
         return nan("");
     }
-    double ${domain}Scaled = (${domain}-${domain}Min)*(1.0/${domain}Max)*255.0;
+    double ${domain}Scaled = (${domain}-${domain}Min)*(1.0/(${domain}Max-${domain}Min))*255.0;
     double ${raange}1 = ${raange}Table[(int)floor(${domain}Scaled)];
     double ${raange}2 = ${raange}Table[(int)ceil(${domain}Scaled)];
     double ${raange} = ${raange}1 + (${raange}2-${raange}1) * (${domain}Scaled - floor(${domain}Scaled));
