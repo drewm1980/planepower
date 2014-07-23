@@ -5,6 +5,7 @@ takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
 takeoffAngle = -1.1344 -- Radians
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
 normalFlyingSpeed = 1.6 
+normalStepHeight = .12 -- Rad/s
 
 softlimit = PI -- Rad/s
 elevationJumpingSpeed = 1.84 -- Rad/s, speed at which (+-0.1) the elevation angle jumps ca 4 deg
@@ -200,7 +201,7 @@ end
 
 function run_offset_step_experiment()
 	lowtime = 16
-	stepheight = .12
+	stepheight = normalStepHeight
 	step_around_offset(normalFlyingSpeed, -- offset
 					stepheight, -- stepheight
 					lowtime) -- lowtime
@@ -248,3 +249,32 @@ function run_ramp_around_jump_experiment()
 	slow_ramp(elevationJumpingSpeed + dspeed)
 	fast_ramp(0)
 end	
+
+function run_pid_experiment()
+	print "Running PID experiment..."
+	--referenceSpeed = normalFlyingSpeed
+	referenceSpeed = 0.0
+	fast_ramp(referenceSpeed)
+	h1 = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
+	h2 = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
+	stepHeight = h1-h2 -- Radians
+
+	functionType = 1 -- for square wave
+	whichDrive = 1 -- for carousel, but also currently needed for controller reference
+	amplitude = stepheight/2.0
+	phase = 3.1416 -- a bit more than PI to make sure we start at 0
+	offset = lookup_steady_state_elevation(referenceSpeed) -- Radians
+	period = 2.0*lowtime
+	frequency = 1.0/period
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+
+	siemensActuators:start() -- make sure actuator are running
+	functionGenerator:stop()
+	print "Starting function generator"
+	functionGenerator:start() -- start!!
+	controller:start()
+
+	fast_ramp(0)
+end
+
+

@@ -57,7 +57,7 @@ deployer:connect("controller.data","siemensActuators.controls",cp)
 
 -- We need to load in at least one set of controller gains before the controller can transition to the runing state.
 
-theGainLoader = "gainLoader" -- This is HACKY... maybe when we have more controllers, keep instance name stable.
+--theGainLoader = "gainLoader" -- This is HACKY... maybe when we have more controllers, keep instance name stable.
 theGainLoader = "pidGainLoader"
 
 GAINSDIR = PLANEPOWER.."components/carousel2/".. theGainLoader .."/"
