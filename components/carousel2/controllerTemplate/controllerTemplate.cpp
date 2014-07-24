@@ -24,6 +24,8 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
 	addPort("reference",portReference).doc("Reference elevation");
 
+	addProperty("freezeFeedForwardTerm", freezeFeedForwardTerm).doc("Set to true to lock current value of the feedforward term.");
+
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
 	memset(&driveCommand, 0, sizeof(driveCommand));
 	memset(&gains, 0, sizeof(gains));
