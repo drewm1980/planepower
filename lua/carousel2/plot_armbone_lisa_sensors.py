@@ -11,8 +11,8 @@ fiile = netcdf.netcdf_file(rootName+'Data.nc', 'r')
 
 sensors = ['Gyro','Accel','Mag']
 Gyro_fields = ['gp','gq','gr']
-Accel_fields = ['ax_raw','ay_raw','az_raw']
-Mag_fields = ['mx_raw','my_raw','mz_raw']
+Accel_fields = ['ax','ay','az']
+Mag_fields = ['mx','my','angle']
 s_fields = {'Gyro':Gyro_fields,
             'Accel':Accel_fields,
             'Mag':Mag_fields}
@@ -35,7 +35,7 @@ for s in sensors:
     timebases[s] = timebases[s] - startTime
 
 # Time to plot!!!
-yaxes = ['Rotation Rate [Rad/s]', 'Linear Acceleration [m/s/s]', 'Magnetic Field Strength [Gauss?]']
+yaxes = ['Rotation Rate [Rad/s]', 'Linear Acceleration [m/s/s]', 'Magnetic Field Strength and Angle(z)  [micro Tesla and degree]']
 styles = ['r.-', 'g.-', 'b.-']
 titles = ['Arm Mounted Gyroscope Data', 
           'Arm Mounted Accelerometer Data',
