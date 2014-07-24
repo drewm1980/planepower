@@ -27,7 +27,11 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
 	memset(&driveCommand, 0, sizeof(driveCommand));
 	memset(&gains, 0, sizeof(gains));
-	
+
+	// We NEED to have feedforward on during any big steps
+	freezeFeedForwardTerm = false; 
+	feedForwardTermAsSpeed = 0.0;
+	feedForwardTermAsAngle = 0.0;
 }
 
 bool ControllerTemplate::configureHook()
@@ -60,6 +64,8 @@ bool ControllerTemplate::configureHook()
 
 bool  ControllerTemplate::startHook()
 {
+	freezeFeedForwardTerm = false;
+
 	portResampledMeasurements.read(resampledMeasurements);
 	FlowStatus refStatus = portReference.read(reference);
 	if (refStatus != NewData) 
@@ -99,13 +105,19 @@ void  ControllerTemplate::updateHook()
 	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
 	portReference.read(reference);
 	referenceElevation = reference.elevation;
-	
+
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
 	if (isnan(referenceSpeed))
 	{
 		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
 		return;
+	}
+
+	if(!freezeFeedForwardTerm)
+	{
+		feedForwardTermAsSpeed = referenceSpeed; // Rad/s
+		feedForwardTermAsAngle = referenceElevation; // Rad
 	}
 
 	error = referenceElevation - el; // Radians
@@ -126,7 +138,7 @@ void  ControllerTemplate::updateHook()
 
 #define USE_MORITZ_IDEA 1
 #if USE_MORITZ_IDEA	
-	double pidControlAsSpeed = lookup_steady_state_speed(referenceElevation+pidTerm);
+	double pidControlAsSpeed = lookup_steady_state_speed(feedForwardTermAsAngle+pidTerm);
 	if (isnan(pidControlAsSpeed))
 	{
 		log(Warning) << "controllerTemplate: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
@@ -134,7 +146,7 @@ void  ControllerTemplate::updateHook()
 	}
 	double control = pidControlAsSpeed; // Rad/s
 #else
-	double control = referenceSpeed + pidTerm; // Rad/s
+	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
 	clamp(control,referenceSpeed-speedBand,referenceSpeed+speedBand);

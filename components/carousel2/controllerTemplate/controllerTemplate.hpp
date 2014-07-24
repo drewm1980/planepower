@@ -32,6 +32,7 @@ protected:
 	RTT::InputPort< Reference > portReference;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
 	RTT::OutputPort< PIDControllerGains > portGainsOut;
+	bool freezeFeedForwardTerm;
 
 private:
 	ResampledMeasurements resampledMeasurements;
@@ -43,6 +44,8 @@ private:
 	//double derror;
 	//double last_error;
 	double referenceElevation;
+	double feedForwardTermAsAngle;
+	double feedForwardTermAsSpeed;
 
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;
 	RTT::OperationCaller< double(double) > lookup_steady_state_elevation;
