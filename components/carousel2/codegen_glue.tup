@@ -28,7 +28,7 @@ CXXFLAGS_OROCOS+=-Wunused-function
 LDFLAGS_OROCOS += -lprotobuf -lzmq
 
 SO_NAME=$(CODEGEN_SOURCE_STRUCT)
-: *.o |> !ld_orocos_custom |> 
+: $(CODEGEN_SOURCE_STRUCT)Telemetry.o $(CODEGEN_SOURCE_STRUCT)Telemetry.pb.o $(CODEGEN_SOURCE_STRUCT)Typekit.o |> !ld_orocos_custom |> 
 
 endif
 

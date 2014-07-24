@@ -12,6 +12,7 @@
 
 #define MAX_INPUT_STREAM_SIZE 255
 #define UDP_SOCKET_TIMEOUT 1000000000
+#define PI 3.1415
 
 class ArmboneLisaReceiver
 {
@@ -25,14 +26,14 @@ class ArmboneLisaReceiver
 		// 2 (if new mag value exists)
 		// 3 (if new accel value exists)
 		int read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_accel);	
-
+		double convertRawGyro(int raw_data);
 
 	protected:
 
 	private:
 		UDP udp_server;
 		int port_number;
-		uint8_t input_stream[21];
+		uint8_t input_stream[18];
 };
 
 #endif

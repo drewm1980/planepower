@@ -30,9 +30,10 @@ bool  SiemensSensorsSimulator::startHook()
 
 void  SiemensSensorsSimulator::updateHook()
 {
+	usleep(7000); // Simulate waiting for the udp packet
+
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
-	usleep(7000); // Simulate waiting for the udp packet
 	state.winchSpeedSetpoint = 1;
 	state.winchSpeedSmoothed = 2;
 	state.winchEncoderPosition = 3;

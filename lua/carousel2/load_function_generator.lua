@@ -25,7 +25,10 @@ else
 end
 
 cp = rtt.Variable("ConnPolicy")
-deployer:connect("functionGenerator.data","siemensActuators.controls",cp)
+
+if runningOpenLoop then
+	deployer:connect("functionGenerator.data","siemensActuators.controls",cp)
+end
 
 if not freeRunningFunctionGenerator then
 	deployer:connect("siemensSensors.triggerOut","functionGenerator.triggerIn",cp)

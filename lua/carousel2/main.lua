@@ -6,7 +6,8 @@ dofile("../shared/preamble.lua")
 
 require "deployment_helpers"
 
-PI = 3.1415 
+require "math"
+PI = math.pi
 
 for i,symbol in ipairs({"load_component",
 						"load_properties",
@@ -46,11 +47,13 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-measuringStepResponses=true
-if measuringStepResponses then
-	rtt.logl("Info", "Loading function generator component...")
-	dofile("load_function_generator.lua")
-else
+runningOpenLoop = false
+runningClosedLoop = not runningOpenLoop
+
+rtt.logl("Info", "Loading function generator component...")
+dofile("load_function_generator.lua")
+
+if runningClosedLoop then
 	controlFrequency = 50.0 -- Hz
 	rtt.logl("Info", "Loading HIGHWIND controller related components...")
 	dofile("load_controller.lua")
@@ -68,5 +71,27 @@ dofile("load_telemetry.lua")
 if useSimulators then
 	controller:start()
 end
+
+rtt.logl("Info", "Loading ramp generator components...")
+dofile("load_ramp_generator.lua")
+
 dofile("experiment_helpers.lua")
+
+if get_carousel_setpoint() == 0 then
+else
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Warning!")
+	print("Speed Setpoint not zero!")
+	fast_ramp(0)
+end
+
 dofile("../shared/postamble.lua")

@@ -27,6 +27,7 @@ protected:
 	RTT::InputPort< SiemensDriveState > portDriveState;
 //	RTT::InputPort< LineAngles > portLineAngles;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
+	RTT::OutputPort< std::string> portInfo;
 private:
 	SiemensDriveState driveState;
 	SiemensDriveCommand driveCommand;
@@ -35,6 +36,16 @@ private:
 	double acceleration;
 	double targetSpeed;
 	
+	double dt;
+	double softlimit;
+	double currentSetpoint;
+	double currentSpeed;
+	double nextSetpoint;
+	double threshold;
+	double stepheight;
+	int state;
+	int retrys;
+	std::string info;
 };
 
 #endif

@@ -39,7 +39,7 @@ SiemensSender::SiemensSender()
 }
 SiemensSender::~SiemensSender()
 {
-	stop_drives();
+	//stop_drives(); //may cause instant stop on Ctrl+C
 	closeUDPClientSocket(&udp_client);
 }
 

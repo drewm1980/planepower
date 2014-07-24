@@ -17,7 +17,7 @@ Resampler::Resampler(std::string name):TaskContext(name,PreOperational)
 	addPort("data",portData).doc("Resampled measurements from all sensors");
 
 	memset(&driveState, 0, sizeof( driveState ));
-	memset(&lineAngles, 0, sizeof( driveState ));
+	memset(&lineAngles, 0, sizeof( lineAngles ));
 	memset(&resampledMeasurements, 0, sizeof( resampledMeasurements ));
 }
 

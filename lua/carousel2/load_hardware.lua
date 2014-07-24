@@ -14,10 +14,12 @@ PROPERTIES=PLANEPOWER.."properties/"
 
 libraryNames={"siemensActuators",
 				"siemensSensors",
-				"lineAngleSensor2"}
+				"lineAngleSensor2",
+				"armboneLisaSensors"}
 classNames={"SiemensActuators",
 				"SiemensSensors",
-				"LineAngleSensor2"}
+				"LineAngleSensor2",
+				"ArmboneLisaSensors"}
 function deepcopy(liist)
 	newlist = {}
 	for i,symbol in ipairs(liist) do
@@ -43,11 +45,24 @@ for i=1,#libraryNames do
 	load_component(libraryNames[i],classNames[i],instanceNames[i])
 end
 
+-- Load up a carouselSimulator component regardless of we are doing simulations,
+-- since we also use it for the steady state lookup tables.
+load_component("carouselSimulator","CarouselSimulator","carouselSimulator")
+--function lookup_steady_state_speed(elevation)
+	--carouselSimulator:lookup_steady_state_speed(elevation)
+--end
+--function lookup_steady_state_elevation(speed)
+	--carouselSimulator:lookup_steady_state_elevation(speed)
+--end
+carouselSimulator:configure()
+lookup_steady_state_elevation = carouselSimulator:getOperation('lookup_steady_state_elevation')
+
 ----------------- Set Priorities and activities
 
 -- All of these components trigger themselves once started the first time.
 deployer:setActivityOnCPU("siemensSensors", 0.0, sensorPrio, scheduler,quietCore)
 deployer:setActivityOnCPU("lineAngleSensor2", 0.0, sensorPrio, scheduler,quietCore)
+deployer:setActivityOnCPU("armboneLisaSensors", 0.0, sensorPrio, scheduler,quietCore)
 deployer:setActivityOnCPU("siemensActuators", 0.0, sensorPrio, scheduler,quietCore)
 
 --------------- Configure and start the components
