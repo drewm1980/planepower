@@ -40,9 +40,12 @@ private:
 	PIDControllerGains gains;
 	Reference reference;
 	double error;
-	//double ierror;
-	//double derror;
-	//double last_error;
+	double ierror;
+	double derror;
+	double error_sum;
+	double last_error_sum;
+	int counter;
+	int powerOfSmoothing;
 	double referenceElevation;
 	double feedForwardTermAsAngle;
 	double feedForwardTermAsSpeed;
