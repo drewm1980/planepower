@@ -8,12 +8,16 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
-typedef uint64_t TIME_TYPE;
-
 void clamp(double & x, double lb, double ub)
 {
 	if (x < lb) x = lb;
 	if (x > ub) x = ub;
+}
+
+void simple_lowpass(double dt, double tau, double *state, double input)
+{
+	double emdt = exp(-dt/tau);
+	*state = (*state)*emdt + input*(1-emdt);
 }
 
 ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOperational) 
@@ -21,6 +25,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
 	addPort("gains",portPIDControllerGains).doc("Controller Gains");
 	addPort("gainsOut",portGainsOut).doc("Controller Gains");
+	addPort("debug",portDebug).doc("PID controller debug info");
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
 	addPort("reference",portReference).doc("Reference elevation");
 
@@ -35,6 +40,12 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	feedForwardTermAsSpeed = 0.0;
 	feedForwardTermAsAngle = 0.0;
 	feedForwardTermHasBeenSet = false;
+
+	derivativeLowpassFilterState = 0.0;
+	trigger = TimeService::Instance()->getTicks();
+	trigger_last = TimeService::Instance()->getTicks();
+	trigger_last_is_valid = false;
+	derivativeFilterReady = false;
 
 }
 
@@ -68,6 +79,8 @@ bool ControllerTemplate::configureHook()
 
 bool  ControllerTemplate::startHook()
 {
+	derivativeLowpassFilterState = 0.0;
+
 	freezeFeedForwardTerm = false;
 
 	portResampledMeasurements.read(resampledMeasurements);
@@ -80,9 +93,7 @@ bool  ControllerTemplate::startHook()
 	referenceElevation = reference.elevation;
 	//integral initialisation for i and d gains 
 	counter = 0;
-	powerOfSmoothing = 5;
 	error = referenceElevation - resampledMeasurements.elevation;
-	last_error_sum = error * powerOfSmoothing;
 	ierror = 0;
 
 	return true;
@@ -90,7 +101,8 @@ bool  ControllerTemplate::startHook()
 
 void  ControllerTemplate::updateHook()
 {
-	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+	trigger_last = trigger; 
+	trigger = TimeService::Instance()->getTicks();
 
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
@@ -101,15 +113,15 @@ void  ControllerTemplate::updateHook()
 
 	// C++ trick to make shorter names
 	//double & az = resampledMeasurements.azimuth;
-	double & el = resampledMeasurements.elevation;
+	double & elevation = resampledMeasurements.elevation;
 	//ControllerGains& g = gains;
 	PIDControllerGains& g = gains;
 	
 	// Controller Implementation goes here!
 	//  gain matrix meaning:
 	//  [winchSpeedSetpoint carouselSpeedSetpoint]' = [k11 k12; k21 k22] * [azimuth elevation]'
-	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
-	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
+	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*elevation;
+	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*elevation;
 	portReference.read(reference);
 	referenceElevation = reference.elevation;
 
@@ -135,19 +147,22 @@ void  ControllerTemplate::updateHook()
 		feedForwardTermHasBeenSet = true;
 	}
 
-	error = referenceElevation - el; // Radians
-	ierror += error;
-	
-	if (counter >= powerOfSmoothing) 
+	// Update our derivative and integral filters
+	if(trigger_last_is_valid)
 	{
-		derror = ( error_sum - last_error_sum ) / (powerOfSmoothing * getPeriod());
-		counter = 0;
-		last_error_sum = error_sum;
-		error_sum = 0;
+		double dt = trigger - trigger_last;
+		double tau = 0.1;
+		double d_elevation = (elevation - lastElevation)/dt;
+		simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
+	} else {
+		trigger_last_is_valid = true;
 	}
-	error_sum += error; 
-	counter++;
-	
+	error = referenceElevation - elevation; // Radians
+	derror = 0.0 - derivativeLowpassFilterState; // This is an error if d/dt of reference = 0
+
+	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
+
+	ierror += error;
 
 	// Bound the controller to referenceSpeed +/- 
 	const double speedBand = .2; // Rad/s
@@ -178,7 +193,8 @@ void  ControllerTemplate::updateHook()
 	driveCommand.carouselSpeedSetpoint = control;
 
 	driveCommand.ts_trigger = trigger;
-	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	double ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	driveCommand.ts_elapsed = ts_elapsed;
 	portDriveCommand.write(driveCommand);
 
 	// Write out the gains, for reporting.
@@ -187,10 +203,24 @@ void  ControllerTemplate::updateHook()
 	// convenient for plotting, and more reliable.
 	portGainsOut.write(gains);
 
+	// Write out all of our debug info
+	debug.Kp = gains.Kp;
+	debug.Ki = gains.Ki;
+	debug.Kd = gains.Kd;
+	debug.derivativeLowpassFilterState = derivativeLowpassFilterState;
+	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
+	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+	debug.ierror = ierror;
+	debug.derror = derror;
+	debug.ts_trigger = trigger;
+	debug.ts_elapsed = ts_elapsed;
+	portDebug.write(debug);
+
 	// Load in new gains if they are available
 	PIDControllerGains tempGains;
 	FlowStatus gainsStatus = portPIDControllerGains.read(tempGains);
 	if(gainsStatus == NewData) { gains = tempGains; }
+
 }
 
 

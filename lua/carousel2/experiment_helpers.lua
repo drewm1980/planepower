@@ -286,6 +286,8 @@ function run_pid_experiment()
 
 	if not sanityCheck then
 		sleep(periods*lowtime*2)
+		functionGenerator:stop()
+		controller:stop()
 		fast_ramp(0)
 	end
 end
