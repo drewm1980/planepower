@@ -1,13 +1,13 @@
 return rfsm.state {
-   ping = rfsm.state {
-      entry=function() print("in ping entry") end,
+   stopped = rfsm.state {
+      entry=function() print("Entered stopped state") end,
    },
  
-   pong = rfsm.state {
-      entry=function() print("in pong entry") end,
+   rotating = rfsm.state {
+      entry=function() print("Entered rotating state") end,
    },
  
-   rfsm.trans {src="initial", tgt="ping" },
-   rfsm.trans {src="ping", tgt="pong", events={"e_pong"}},
-   rfsm.trans {src="pong", tgt="ping", events={"e_ping"}},
+   rfsm.trans {src="initial", tgt="stopped" },
+   rfsm.trans {src="stopped", tgt="rotating", events={"e_start"}},
+   rfsm.trans {src="rotating", tgt="stopped", events={"e_stop"}},
 }
