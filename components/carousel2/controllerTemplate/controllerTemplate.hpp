@@ -42,7 +42,7 @@ private:
 	//double ierror;
 	//double derror;
 	//double last_error;
-	double el_ref;
+	double referenceElevation;
 
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;
 	RTT::OperationCaller< double(double) > lookup_steady_state_elevation;

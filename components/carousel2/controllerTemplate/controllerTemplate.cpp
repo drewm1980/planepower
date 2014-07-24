@@ -10,6 +10,12 @@ using namespace RTT::os;
 
 typedef uint64_t TIME_TYPE;
 
+void clamp(double & x, double lb, double ub)
+{
+	if (x < lb) x = lb;
+	if (x > ub) x = ub;
+}
+
 ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOperational) 
 {
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
@@ -61,8 +67,8 @@ bool  ControllerTemplate::startHook()
 		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
-	el_ref = reference.elevation;
-	//error = el_ref - resampledMeasurements.elevation;
+	referenceElevation = reference.elevation;
+	//error = referenceElevation - resampledMeasurements.elevation;
 	//last_error = error;
 	//ierror = 0;
 
@@ -92,20 +98,49 @@ void  ControllerTemplate::updateHook()
 	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*el;
 	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*el;
 	portReference.read(reference);
-	el_ref = reference.elevation;
+	referenceElevation = reference.elevation;
 	
-	error = el_ref - el;
+	// Look up the steady state speed for our reference elevation
+	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
+	if (isnan(referenceSpeed))
+	{
+		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
+		return;
+	}
+
+	error = referenceElevation - el; // Radians
 	//ierror += error;
 	//derror = ( error - last_error ) / getPeriod();
 	//last_error = error;
 	
-	//cout << "Looking up " << el_ref << endl;
-	double referenceSpeed = lookup_steady_state_speed(el_ref);
+
+	// Bound the controller to referenceSpeed +/- 
+	const double speedBand = .2; // Rad/s
+
 	//cout << "Looked up value is " << referenceSpeed << endl;
-	driveCommand.carouselSpeedSetpoint = referenceSpeed
-										+ g.Kp * error ;
-										//+ g.Ki * ierror 
-										//+ g.Kd * derror
+	double pTerm = g.Kp * error;
+	//double iTerm = g.Ki * ierror;
+	//double dTerm = g.Kd * derror;
+
+	double pidTerm  = pTerm; // + iTerm + dTerm;
+
+#define USE_MORITZ_IDEA 1
+#if USE_MORITZ_IDEA	
+	double pidControlAsSpeed = lookup_steady_state_speed(referenceElevation+pidTerm);
+	if (isnan(pidControlAsSpeed))
+	{
+		log(Warning) << "controllerTemplate: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
+		return;
+	}
+	double control = pidControlAsSpeed; // Rad/s
+#else
+	double control = referenceSpeed + pidTerm; // Rad/s
+#endif
+
+	clamp(control,referenceSpeed-speedBand,referenceSpeed+speedBand);
+
+
+	driveCommand.carouselSpeedSetpoint = control;
 
 	driveCommand.ts_trigger = trigger;
 	driveCommand.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
