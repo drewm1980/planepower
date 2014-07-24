@@ -70,11 +70,11 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		else if (input_stream[3] == IMU_MAG_RAW)
 		{
 			// Add 183 (Offset of the x component)
-			//imu_mag->mx = convertRawMagX(data->lisa_plane.imu_mag_raw.mx + 183);
-			imu_mag->mx = (double)(data->lisa_plane.imu_mag_raw.mx);
+			imu_mag->mx = convertRawMagX(data->lisa_plane.imu_mag_raw.mx + 153);
+			//imu_mag->mx = (double)(data->lisa_plane.imu_mag_raw.mx);
 			// Add 100 (Offset of the y component)
-			//imu_mag->my = convertRawMagY(data->lisa_plane.imu_mag_raw.my + 100);
-			imu_mag->my = (double)(data->lisa_plane.imu_mag_raw.my);
+			imu_mag->my = convertRawMagY(data->lisa_plane.imu_mag_raw.my + 82);
+			//imu_mag->my = (double)(data->lisa_plane.imu_mag_raw.my);
 			// Subtract 55 (Offset of the z component)
 			imu_mag->mz = convertRawMagZ(data->lisa_plane.imu_mag_raw.mz - 55);
 			// Function to get the current angle of the arm
@@ -155,8 +155,8 @@ double ArmboneLisaReceiver::convertRawMagZ(int raw_data)
 double ArmboneLisaReceiver::convertRawMagToAngle(int raw_X, int raw_Y) 
 {
 	// Eliminate offsets & normalize values
-	double mapped_X = ((double) raw_X + 182.5)/242.5;
-	double mapped_Y = ((double) raw_Y + 99.5)/210.5;
+	double mapped_X = ((double) raw_X + 152.5)/242.5;
+	double mapped_Y = ((double) raw_Y + 81.5)/210.5;
 	// To make sure that the acos function only gets values between -1 and 1
 	mapped_X = fmax(-0.99999, mapped_X);
 	mapped_X = fmin(0.99999, mapped_X);
