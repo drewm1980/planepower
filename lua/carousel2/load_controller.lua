@@ -73,6 +73,17 @@ function reload_gains()
 end
 reload_gains()
 
+function set_pid_gains(Kp, Ki, Kd)
+	if not (theGainLoader == "pidGainLoader") then
+		print "Cannot set pid gains on a non-pid gain loader!"
+		return
+	end
+	set_property("pidGainLoader","Kp",Kp)
+	set_property("pidGainLoader","Ki",Ki)
+	set_property("pidGainLoader","Kd",Kd)
+	pidGainLoader:trigger()
+end
+
 --------------- Configure and start the components
 for i=1,#instanceNames do
 	_G[instanceNames[i]]:configure()

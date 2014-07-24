@@ -270,7 +270,7 @@ function run_pid_experiment()
 	lowtime = 16
 	period = 2.0*lowtime
 	frequency = 1.0/period
-	periods = 4 -- number of periods to run for
+	periods = 3 -- number of periods to run for
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 
 	-- Start the Experiment
@@ -279,8 +279,10 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
+	set_pid_gains(.00001,0,0)
 	controller:start()
-	controller:setProperty("freezeFeedForwardTerm",true)
+	sleep(.1)
+	set_property("controller","freezeFeedForwardTerm",true)
 
 	if not sanityCheck then
 		sleep(periods*lowtime*2)
