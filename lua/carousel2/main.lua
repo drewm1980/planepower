@@ -66,6 +66,8 @@ rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
 telemetryFrequency = 50.0 --Hz
 dofile("load_telemetry.lua")
 
+--dofile("load_supervisor.lua")
+
 if useSimulators then
 	controller:start()
 end

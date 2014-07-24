@@ -35,6 +35,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	feedForwardTermAsSpeed = 0.0;
 	feedForwardTermAsAngle = 0.0;
 	feedForwardTermHasBeenSet = false;
+
 }
 
 bool ControllerTemplate::configureHook()
@@ -77,9 +78,12 @@ bool  ControllerTemplate::startHook()
 		return false;
 	}	
 	referenceElevation = reference.elevation;
-	//error = referenceElevation - resampledMeasurements.elevation;
-	//last_error = error;
-	//ierror = 0;
+	//integral initialisation for i and d gains 
+	counter = 0;
+	powerOfSmoothing = 5;
+	error = referenceElevation - resampledMeasurements.elevation;
+	last_error_sum = error * powerOfSmoothing;
+	ierror = 0;
 
 	return true;
 }
@@ -132,9 +136,17 @@ void  ControllerTemplate::updateHook()
 	}
 
 	error = referenceElevation - el; // Radians
-	//ierror += error;
-	//derror = ( error - last_error ) / getPeriod();
-	//last_error = error;
+	ierror += error;
+	
+	if (counter >= powerOfSmoothing) 
+	{
+		derror = ( error_sum - last_error_sum ) / (powerOfSmoothing * getPeriod());
+		counter = 0;
+		last_error_sum = error_sum;
+		error_sum = 0;
+	}
+	error_sum += error; 
+	counter++;
 	
 
 	// Bound the controller to referenceSpeed +/- 
