@@ -150,15 +150,15 @@ void  ControllerTemplate::updateHook()
 	// Update our derivative and integral filters
 	if(trigger_last_is_valid)
 	{
-		double dt = trigger - trigger_last;
-		double tau = 0.1;
+		double dt = (trigger - trigger_last)*1.0e-9; // seconds
+		double tau = 0.2;
 		double d_elevation = (elevation - lastElevation)/dt;
 		simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
 	} else {
 		trigger_last_is_valid = true;
 	}
 	error = referenceElevation - elevation; // Radians
-	derror = 0.0 - derivativeLowpassFilterState; // This is an error if d/dt of reference = 0
+	derror = 0.0 - derivativeLowpassFilterState; // Radians / s.  This is an error if d/dt of reference = 0
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
 
