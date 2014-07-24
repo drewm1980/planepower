@@ -74,7 +74,7 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 			imu_mag->mx = (double)(data->lisa_plane.imu_mag_raw.mx);
 			// Add 100 (Offset of the y component)
 			//imu_mag->my = convertRawMagY(data->lisa_plane.imu_mag_raw.my + 100);
-			imu_mag->my = i(double)(data->lisa_plane.imu_mag_raw.my);
+			imu_mag->my = (double)(data->lisa_plane.imu_mag_raw.my);
 			// Subtract 55 (Offset of the z component)
 			imu_mag->mz = convertRawMagZ(data->lisa_plane.imu_mag_raw.mz - 55);
 			// Function to get the current angle of the arm
