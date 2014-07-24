@@ -1,0 +1,11 @@
+ifdef CAROUSEL2
+
+include_rules
+
+CODEGEN_SOURCE_DIRECTORY=..
+CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/PIDControllerDebug.h
+CODEGEN_SOURCE_STRUCT=PIDControllerDebug
+
+include ../../codegen_glue.tup
+
+endif
