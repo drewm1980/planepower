@@ -155,15 +155,20 @@ double ArmboneLisaReceiver::convertRawMagToAngle(int raw_X, int raw_Y)
 	// Eliminate offsets & normalize values
 	double mapped_X = ((double) raw_X + 182.5)/242.5;
 	double mapped_Y = ((double) raw_Y + 99.5)/210.5;
+	// To make sure that the acos function only gets values between -1 and 1
+	mapped_X = fmax(-0.99999, mapped_X);
+	mapped_X = fmin(0.99999, mapped_X);
 	double angle;
 	// Compute angle
 	if (mapped_Y >= 0) 
 	{
-		angle = -(mapped_X-1.0) * 90.0;
+		//angle = -(mapped_X-1.0) * 90.0;
+		angle = acos(mapped_X) * 180/PI;
 	}
 	if (mapped_Y < 0) 
 	{
-		angle = ((mapped_X + 1.0) * 90.0) + 180;
+		//angle = ((mapped_X + 1.0) * 90.0) + 180;
+		angle = acos(-mapped_X) * 180/PI + 180;
 	}
 	return angle;
 }
