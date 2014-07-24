@@ -46,6 +46,7 @@ private:
 	double referenceElevation;
 	double feedForwardTermAsAngle;
 	double feedForwardTermAsSpeed;
+	bool feedForwardTermHasBeenSet;
 
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;
 	RTT::OperationCaller< double(double) > lookup_steady_state_elevation;

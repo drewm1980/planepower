@@ -34,6 +34,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	freezeFeedForwardTerm = false; 
 	feedForwardTermAsSpeed = 0.0;
 	feedForwardTermAsAngle = 0.0;
+	feedForwardTermHasBeenSet = false;
 }
 
 bool ControllerTemplate::configureHook()
@@ -116,10 +117,18 @@ void  ControllerTemplate::updateHook()
 		return;
 	}
 
-	if(!freezeFeedForwardTerm)
+	if(freezeFeedForwardTerm)
+	{
+		if (!feedForwardTermHasBeenSet)
+		{
+			log(Error) << "controllerTemplate: updateHook has been called before feedForwardTerm has had a chance to be set, while freezeFeedForwardTerm is set!" << endlog();
+		}
+	}
+	else 
 	{
 		feedForwardTermAsSpeed = referenceSpeed; // Rad/s
 		feedForwardTermAsAngle = referenceElevation; // Rad
+		feedForwardTermHasBeenSet = true;
 	}
 
 	error = referenceElevation - el; // Radians
