@@ -69,9 +69,14 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		} 
 		else if (input_stream[3] == IMU_MAG_RAW)
 		{
-			imu_mag->mx_raw = (double) data->lisa_plane.imu_mag_raw.mx;
-			imu_mag->my_raw = (double) data->lisa_plane.imu_mag_raw.my;
-			imu_mag->mz_raw = (double) data->lisa_plane.imu_mag_raw.mz;
+			// Add 183 (Offset of the x component)
+			imu_mag->mx = convertRawMagX(data->lisa_plane.imu_mag_raw.mx + 183);
+			// Add 100 (Offset of the y component)
+			imu_mag->my = convertRawMagY(data->lisa_plane.imu_mag_raw.my + 100);
+			// Subtract 55 (Offset of the z component)
+			imu_mag->mz = convertRawMagZ(data->lisa_plane.imu_mag_raw.mz - 55);
+			// Function to get the current angle of the arm
+			// Offsets are eliminated in the function
 			imu_mag->angle = convertRawMagToAngle(data->lisa_plane.imu_mag_raw.mx, data->lisa_plane.imu_mag_raw.my);
 			message_type = 2;
 #if DEBUG > 0	
@@ -82,9 +87,12 @@ int ArmboneLisaReceiver::read(ImuGyro *imu_gyro, ImuMag *imu_mag, ImuAccel *imu_
 		}
 		else if (input_stream[3] == IMU_ACCEL_RAW)
 		{
-			imu_accel->ax = convertRawAccel(data->lisa_plane.imu_accel_raw.ax);
-			imu_accel->ay = convertRawAccel(data->lisa_plane.imu_accel_raw.ay);
-			imu_accel->az = -1.0 * convertRawAccel(data->lisa_plane.imu_accel_raw.az);
+			// Add 45 (Offset of the x component)
+			imu_accel->ax = convertRawAccel(data->lisa_plane.imu_accel_raw.ax + 45);
+			// Subtract 25 (Offset of the y component)
+			imu_accel->ay = convertRawAccel(data->lisa_plane.imu_accel_raw.ay - 25);
+			// Add 364 (Offset of the z component)
+			imu_accel->az = -1.0 * convertRawAccel(data->lisa_plane.imu_accel_raw.az + 364);
 			message_type = 3;
 #if DEBUG > 0	
 			printf("IMU_ACCEL_RAW ax: %i\n",data->lisa_plane.imu_accel_raw.ax);
@@ -113,15 +121,42 @@ double ArmboneLisaReceiver::convertRawGyro(int raw_data)
 
 double ArmboneLisaReceiver::convertRawAccel(int raw_data) 
 {
-	double data = (((double)raw_data+50.0)/1010.0) * -4.795; //	m/s²
+	double data = (((double)raw_data)/1010.0) * -4.795; //	m/s²
+	return data;
+}
+
+
+// Different computingfunctions for the Magnetometer components because they have not the same range
+// Maybe because there are disturbing obstacles on or nearby the carousel??
+
+double ArmboneLisaReceiver::convertRawMagX(int raw_data) 
+{
+	double data = (((double)raw_data)/243.0) * 20.0; //	uT
+	return data;
+}
+
+double ArmboneLisaReceiver::convertRawMagY(int raw_data) 
+{
+	double data = (((double)raw_data)/211.0) * 20.0; //	uT
+	return data;
+}
+
+double ArmboneLisaReceiver::convertRawMagZ(int raw_data) 
+{
+	// Add 48 because thats the vertical component of the magnetic field
+	// Don't know the factor of raw_data (0.1 for now). 
+	// Could be measuered by climbing up the carousel and rotating the LISA around that axis
+	double data = ((double)raw_data) * 0.1 + 48.0; //	uT
 	return data;
 }
 
 double ArmboneLisaReceiver::convertRawMagToAngle(int raw_X, int raw_Y) 
 {
+	// Eliminate offsets & normalize values
 	double mapped_X = ((double) raw_X + 182.5)/242.5;
 	double mapped_Y = ((double) raw_Y + 99.5)/210.5;
 	double angle;
+	// Compute angle
 	if (mapped_Y >= 0) 
 	{
 		angle = -(mapped_X-1.0) * 90.0;
