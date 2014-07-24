@@ -47,11 +47,13 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-runningOpenLoop=true
-if runningOpenLoop then
-	rtt.logl("Info", "Loading function generator component...")
-	dofile("load_function_generator.lua")
-else
+runningOpenLoop = false
+runningClosedLoop = not runningOpenLoop
+
+rtt.logl("Info", "Loading function generator component...")
+dofile("load_function_generator.lua")
+
+if runningClosedLoop then
 	controlFrequency = 50.0 -- Hz
 	rtt.logl("Info", "Loading HIGHWIND controller related components...")
 	dofile("load_controller.lua")
@@ -64,10 +66,11 @@ rtt.logl("Info", "Loading HIGHWIND telemetry related components...")
 telemetryFrequency = 50.0 --Hz
 dofile("load_telemetry.lua")
 
+--dofile("load_supervisor.lua")
+
 if useSimulators then
 	controller:start()
 end
-
 
 rtt.logl("Info", "Loading ramp generator components...")
 dofile("load_ramp_generator.lua")

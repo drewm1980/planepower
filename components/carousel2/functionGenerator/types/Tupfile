@@ -1,0 +1,16 @@
+ifdef CAROUSEL2
+
+include_rules
+
+# This is a hacky, but we don't have functions in Tupfiles...
+CODEGEN_SOURCE_DIRECTORY=..
+CODEGEN_SOURCE_STRUCT=Reference
+CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/$(CODEGEN_SOURCE_STRUCT).h
+include ../../codegen_glue.tup
+
+#CODEGEN_SOURCE_DIRECTORY=..
+#CODEGEN_SOURCE_STRUCT=ImuMag
+#CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/$(CODEGEN_SOURCE_STRUCT).h
+#include ../../codegen_glue.tup
+
+endif

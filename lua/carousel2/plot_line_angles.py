@@ -4,6 +4,22 @@ from numpy import array, diff
 import pylab
 from pylab import figure,plot,xlabel,ylabel,show,legend,subplot
 
+def plot_function_generator_reference_angle(axis, startTime=-1):
+    startSample = 3
+    rootName = 'functionGenerator'
+    f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
+    data3 = f.variables[rootName+'.refData.'+'elevation'].data[startSample:]
+    ts_trigger3 = f.variables[rootName+'.refData.ts_trigger'].data[startSample:]*1.0e-9
+
+    if startTime == -1:
+        startTime = ts_trigger3[0]
+
+    times2 = ts_trigger3-startTime
+
+    plot(times2,data3, 'g.-', label='FunctionGenerator Elevation Setpoint')
+
+    return startTime
+
 def plot_line_angles(axis,startTime=-1):
     rootName = 'lineAngleSensor2'
 
@@ -19,11 +35,12 @@ def plot_line_angles(axis,startTime=-1):
     if startTime == -1:
         startTime = ts_trigger[0]
 
-    plot(ts_trigger-startTime, azimuth,'r.-',
-         ts_trigger-startTime, elevation,'b.-') 
+    pylab.hold(True)
+    plot(ts_trigger-startTime, azimuth,'r.-', label='Azimuth Measurement')
+    plot(ts_trigger-startTime, elevation,'b.-', label='Elevation Measurement') 
     xlabel('Time [s]')
     ylabel('Angle [Rad]')
-    legend(['Azimuth', 'Elevation'])
+    #legend(['Azimuth', 'Elevation'])
 
     return startTime
 
@@ -37,4 +54,5 @@ if __name__=='__main__':
     figure()
     axis = subplot(1,1,1)
     plot_line_angles(axis,startTime=0)
+    legend()
     show()

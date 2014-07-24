@@ -4,18 +4,30 @@ from numpy import array, diff, pi
 import pylab
 from pylab import figure,plot,xlabel,ylabel,show,legend,title,subplot
 
+startSample = 3
+
+def plot_function_generator_reference_speed(axis, startTime=-1):
+    rootName = 'functionGenerator'
+    f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
+    data3 = f.variables[rootName+'.data.'+'carouselSpeedSetpoint'].data[startSample:]
+    ts_trigger3 = f.variables[rootName+'.data.ts_trigger'].data[startSample:]*1.0e-9
+
+    if startTime == -1:
+        startTime = ts_trigger3[0]
+
+    times2 = ts_trigger3-startTime
+
+    plot(times2,data3, 'g.-', label='FunctionGenerator Speed Setpoint (Sent)')
+
+    return startTime
+
+
 def plot_arm_speed(axis, startTime=-1):
-    startSample = 3
     rootName = 'siemensSensors'
     f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
     data1 = f.variables[rootName+'.data.'+'carouselSpeedSetpoint'].data[startSample:]
     data2 = f.variables[rootName+'.data.'+'carouselSpeedSmoothed'].data[startSample:]
     ts_trigger = f.variables[rootName+'.data.ts_trigger'].data[startSample:]*1.0e-9
-
-    rootName = 'functionGenerator'
-    f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
-    data3 = f.variables[rootName+'.data.'+'carouselSpeedSetpoint'].data[startSample:]
-    ts_trigger3 = f.variables[rootName+'.data.ts_trigger'].data[startSample:]*1.0e-9
 
     # Load the actual arm speed from the arm gyro
     rootName = 'armboneLisaSensors'
@@ -31,15 +43,16 @@ def plot_arm_speed(axis, startTime=-1):
         startTime = ts_trigger[0]
 
     times = ts_trigger-startTime
-    times2 = ts_trigger3-startTime
     times4 = ts_trigger4-startTime
-    plot(times, data1, 'r.-',
-         times2,data3, 'g.-',
-         times, data2,'b.-',
-         times4, data4,'m.-') 
+
+    pylab.hold(True)
+
+    plot(times, data1, 'r.-', label='Setpoint (Echoed)')
+    plot(times, data2, 'b.-', label='On Motor Side of Belt')
+    plot(times4, data4,'m.-',  label='From Gyro on Arm')
     ylabel('Arm rotation speed [Rad/s]')
     xlabel('Time [s]')
-    legend(['Setpoint (Echoed)', 'Setpoint (Sent)', 'On Motor Side of Belt', 'From Gyro on Arm'])
+    #legend(['Setpoint (Echoed)', 'Setpoint (Sent)', 'On Motor Side of Belt', 'From Gyro on Arm'])
     title('Plot of Signals Related to Arm Speed')
     return startTime
 
@@ -47,5 +60,6 @@ if __name__=='__main__':
     fig = figure()
     axis = subplot(1,1,1)
     plot_arm_speed(axis)
+    legend()
     show()
     print('...done')

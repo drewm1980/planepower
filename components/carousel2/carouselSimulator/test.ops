@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("carouselSimulator")
+ 
+#Create components
+loadComponent("carouselSimulator","CarouselSimulator")
+ 
+carouselSimulator.configure()
+carouselSimulator.start()

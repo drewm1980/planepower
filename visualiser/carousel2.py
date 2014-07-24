@@ -72,13 +72,13 @@ carouselPlots = addPlotsToLayout(layout.addLayout(), carouselTitle, carouselName
 
 # Controller measurements
 controllerTitle = "Carousel Speed Reference [Radians/s] vs. Timestamp [s]"
-controllerNames = ["carouselSpeedReference"] # These are members in the struct, apparently
+controllerNames = ["carouselSpeedSetpoint"] # These are members in the struct, apparently
 controllerNamesExt = controllerNames + genNames
 controllerPlots = addPlotsToLayout(layout.addLayout(), controllerTitle, controllerNames)
 
 
 # lisa gyro sensor measurements
-armboneGyroTitle = "Armbone Lisa Gyro Sensor Data [Radians/s]?!"
+armboneGyroTitle = "Armbone Lisa Gyro Sensor Data [Radians/s]"
 armboneGyroNames = ["gp","gq","gr"] # These are members in the struct, apparently
 armboneGyroNamesExt = armboneGyroNames + genNames
 armboneGyroPlots = addPlotsToLayout(layout.addLayout(), armboneGyroTitle, armboneGyroNames)
