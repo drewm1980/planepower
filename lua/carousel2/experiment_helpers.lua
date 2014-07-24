@@ -253,7 +253,7 @@ end
 function run_pid_experiment()
 	print "Running PID experiment..."
 
-	sanityCheck=true -- For this the MACHINE SHOULD BE TURNED OFF!!!
+	sanityCheck=false -- For this the MACHINE SHOULD BE TURNED OFF!!!
 	if not sanityCheck then
 		fast_ramp(normalFlyingSpeed)
 	end
