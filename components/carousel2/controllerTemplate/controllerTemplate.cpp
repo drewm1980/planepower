@@ -170,9 +170,9 @@ void  ControllerTemplate::updateHook()
 	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
 	//double iTerm = g.Ki * ierror;
-	//double dTerm = g.Kd * derror;
+	double dTerm = g.Kd * derror;
 
-	double pidTerm  = pTerm; // + iTerm + dTerm;
+	double pidTerm  = pTerm + dTerm; // + iTerm;
 
 #define USE_MORITZ_IDEA 1
 #if USE_MORITZ_IDEA	
