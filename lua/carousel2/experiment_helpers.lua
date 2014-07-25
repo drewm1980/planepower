@@ -267,7 +267,7 @@ function run_pid_experiment()
 	amplitude = stepHeight/2.0
 	phase = 3.1416 -- a bit more than PI to make sure we start at 0
 	offset = lookup_steady_state_elevation(normalFlyingSpeed) -- Radians
-	lowtime = 16
+	lowtime = 16*1.5
 	period = 2.0*lowtime
 	frequency = 1.0/period
 	periods = 3 -- number of periods to run for
@@ -279,7 +279,7 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	set_pid_gains(0.2, 0.2, 0.2)
+	set_pid_gains(0.0, 0.0, 0.0)
 	controller:start()
 	sleep(.1)
 	set_property("controller","freezeFeedForwardTerm",false)
