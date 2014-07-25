@@ -279,7 +279,7 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	set_pid_gains(0,0,0.0001)
+	set_pid_gains(0.2, 0, 0.2)
 	controller:start()
 	sleep(.1)
 	set_property("controller","freezeFeedForwardTerm",false)
