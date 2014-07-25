@@ -279,7 +279,7 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	if changingGainsOnline = true then
+	if changingGainsOnline then
 		set_pid_gains(0,0,0)
 	else
 		set_pid_gains(.2,.2,.2)
