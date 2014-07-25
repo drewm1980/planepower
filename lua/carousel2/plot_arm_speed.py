@@ -4,7 +4,7 @@ from numpy import array, diff, pi
 import pylab
 from pylab import figure,plot,xlabel,ylabel,show,legend,title,subplot
 
-startSample = 3
+startSample = 5
 
 def plot_function_generator_reference_speed(axis, startTime=-1):
     rootName = 'functionGenerator'
