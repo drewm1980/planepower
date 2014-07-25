@@ -253,10 +253,10 @@ end
 function run_pid_experiment()
 	print "Running PID experiment..."
 
-	sanityCheck=false -- For this the MACHINE SHOULD BE TURNED OFF!!!
-	if not sanityCheck then
-		fast_ramp(normalFlyingSpeed)
-	end
+	changingGainsOnline = true
+
+	fast_ramp(normalFlyingSpeed)
+
 	h1 = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
 	h2 = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
 	stepHeight = h1-h2 -- Radians
@@ -279,15 +279,21 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	set_pid_gains(.1,0,0)
-	controller:start()
-	sleep(.1)
-	set_property("controller","freezeFeedForwardTerm",false)
+	if changingGainsOnline = true then
+		set_pid_gains(0,0,0)
+	else
+		set_pid_gains(.2,.2,.2)
+	end
 
-	if not sanityCheck then
-		sleep(periods*lowtime*2)
-		functionGenerator:stop()
-		controller:stop()
+	controller:start() -- This is where the integrator is reset
+	sleep(.1) -- Time for the controller state to settle
+	set_property("controller","freezeFeedForwardTerm",true)
+
+	sleep(periods*lowtime*2)
+	functionGenerator:stop()
+	controller:stop()
+
+	if not changingGainsOnline then
 		fast_ramp(0)
 	end
 end
