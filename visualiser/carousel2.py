@@ -32,7 +32,8 @@ telemetryInstanceNames=["siemensSensorsTelemetry",
                         "armboneAccelTelemetry",
                         "armboneMagTelemetry",
                         "resampledMeasurementsTelemetry", 
-                        "controllerTelemetry"]
+                        "controllerTelemetry",
+			"pidDebugTelemetry"]
 
 #host = "localhost" # DOES NOT WORK FOR SOME REASON!!!
 host = "10.42.0.21" # This should be the IP address of the groundstation
@@ -85,13 +86,13 @@ armboneGyroPlots = addPlotsToLayout(layout.addLayout(), armboneGyroTitle, armbon
 
 # lisa acceleration sensor measurements
 armboneAccelTitle = "Armbone Acceleration Sensor Data [Meters/s^2]"
-armboneAccelNames = ["ax_raw", "ay_raw","az_raw"] # These are members in the struct, apparently
+armboneAccelNames = ["ax", "ay","az"] # These are members in the struct, apparently
 armboneAccelNamesExt = armboneAccelNames + genNames
 armboneAccelPlots = addPlotsToLayout(layout.addLayout(), armboneAccelTitle, armboneAccelNames)
 
 # lisa mag sensor measurements
 armboneMagTitle = "Armbone Magnetic Sensor Data [Gauss? Tesla?]"
-armboneMagNames = ["mx_raw","my_raw","mz_raw"] # These are members in the struct, apparently
+armboneMagNames = ["mx","my","angle"] # These are members in the struct, apparently
 armboneMagNamesExt = armboneMagNames + genNames
 armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
 

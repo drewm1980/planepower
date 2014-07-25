@@ -12,6 +12,9 @@
 #include "SiemensDriveCommand.h"
 #include "Reference.h"
 #include "PIDControllerGains.h"
+#include "PIDControllerDebug.h"
+
+typedef uint64_t TIME_TYPE;
 
 class ControllerTemplate : public RTT::TaskContext
 {
@@ -32,6 +35,7 @@ protected:
 	RTT::InputPort< Reference > portReference;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
 	RTT::OutputPort< PIDControllerGains > portGainsOut;
+	RTT::OutputPort< PIDControllerDebug > portDebug;
 	bool freezeFeedForwardTerm;
 
 private:
@@ -40,16 +44,28 @@ private:
 	PIDControllerGains gains;
 	Reference reference;
 	double error;
-	//double ierror;
-	//double derror;
-	//double last_error;
+	double ierror;
+	double derror;
+	//double error_sum;
+	//double last_error_sum;
+	double lastElevation;
+
+	int counter;
 	double referenceElevation;
 	double feedForwardTermAsAngle;
 	double feedForwardTermAsSpeed;
 	bool feedForwardTermHasBeenSet;
 
+	TIME_TYPE trigger_last;	
+	TIME_TYPE trigger;
+	double derivativeLowpassFilterState;
+	bool trigger_last_is_valid;
+	bool derivativeFilterReady;
+
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;
 	RTT::OperationCaller< double(double) > lookup_steady_state_elevation;
+
+	PIDControllerDebug debug;
 
 };
 
