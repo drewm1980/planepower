@@ -47,9 +47,9 @@ def plot_arm_speed(axis, startTime=-1):
 
     pylab.hold(True)
 
-    plot(times, data1, 'r.-', label='Setpoint (Echoed)')
     plot(times, data2, 'b.-', label='On Motor Side of Belt')
     plot(times4, data4,'m.-',  label='From Gyro on Arm')
+    plot(times, data1, 'r.-', label='Setpoint (Echoed)')
     ylabel('Arm rotation speed [Rad/s]')
     xlabel('Time [s]')
     #legend(['Setpoint (Echoed)', 'Setpoint (Sent)', 'On Motor Side of Belt', 'From Gyro on Arm'])
