@@ -169,9 +169,9 @@ void  ControllerTemplate::updateHook()
 	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
 	double iTerm = g.Ki * ierror;
-	double dTerm = g.Kd * derror;
+	double dTerm = g.Kp * g.Kd * derror;
 
-	double iTermBound = 0.1; //Rad elevation
+	double iTermBound = 0.1; // Rad elevation
 	clamp(ierror, -iTermBound/g.Ki, iTermBound/g.Ki); 
 	double pidTerm  = pTerm + iTerm + dTerm;
 

@@ -289,10 +289,6 @@ function run_pid_experiment()
 	sleep(.1) -- Time for the controller state to settle
 	set_property("controller","freezeFeedForwardTerm",true)
 
-	sleep(periods*lowtime*2)
-	functionGenerator:stop()
-	controller:stop()
-
 	if not changingGainsOnline then
 		fast_ramp(0)
 	end
