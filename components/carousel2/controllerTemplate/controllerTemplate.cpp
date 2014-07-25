@@ -30,6 +30,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	addPort("reference",portReference).doc("Reference elevation");
 
 	addProperty("freezeFeedForwardTerm", freezeFeedForwardTerm).doc("Set to true to lock current value of the feedforward term.");
+	addProperty("ierror", ierror).doc("The integrator state.  Be careful with this!");
 
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
 	memset(&driveCommand, 0, sizeof(driveCommand));
@@ -184,7 +185,7 @@ void  ControllerTemplate::updateHook()
 	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
-	const double speedBand = .1; // Rad/s
+	const double speedBand = .2; // Rad/s
 	//clamp(control,feedForwardTermAsSpeed-speedBand,feedForwardTermAsSpeed+speedBand);
 	clamp(control,1.58-speedBand,1.58+speedBand);
 

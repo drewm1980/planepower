@@ -84,6 +84,11 @@ function set_pid_gains(Kp, Ki, Kd)
 	pidGainLoader:trigger()
 end
 
+-- Convenience function for resetting the controller integrator
+function reset_integrator()
+	set_property("controller","ierror",0.0)
+end
+
 --------------- Configure and start the components
 for i=1,#instanceNames do
 	_G[instanceNames[i]]:configure()
