@@ -158,13 +158,10 @@ void  ControllerTemplate::updateHook()
 	} else {
 		trigger_last_is_valid = true;
 	}
-	error = referenceElevation - elevation; // Radians
+	error = feedForwardTermAsAngle - elevation; // Radians
 	derror = 0.0 - derivativeLowpassFilterState; // Radians / s.  This is an error if d/dt of reference = 0
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
-
-	// Bound the controller to referenceSpeed +/- 
-	const double speedBand = .05; // Rad/s
 
 	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
@@ -188,8 +185,8 @@ void  ControllerTemplate::updateHook()
 	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
+	const double speedBand = .05; // Rad/s
 	clamp(control,referenceSpeed-speedBand,referenceSpeed+speedBand);
-
 
 	driveCommand.carouselSpeedSetpoint = control;
 
