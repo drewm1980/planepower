@@ -163,7 +163,6 @@ void  ControllerTemplate::updateHook()
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
 
-	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
 	double iTerm = g.Ki * ierror;
 	double dTerm = g.Kp * g.Kd * derror;
@@ -185,8 +184,9 @@ void  ControllerTemplate::updateHook()
 	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
-	const double speedBand = .05; // Rad/s
-	clamp(control,referenceSpeed-speedBand,referenceSpeed+speedBand);
+	const double speedBand = .1; // Rad/s
+	//clamp(control,feedForwardTermAsSpeed-speedBand,feedForwardTermAsSpeed+speedBand);
+	clamp(control,1.58-speedBand,1.58+speedBand);
 
 	driveCommand.carouselSpeedSetpoint = control;
 
