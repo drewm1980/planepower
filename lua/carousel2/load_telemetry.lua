@@ -9,7 +9,8 @@ telemetryInstanceNames={"siemensSensorsTelemetry",
 						"armboneMagTelemetry",
 						"resampledMeasurementsTelemetry", 
 						"controllerTelemetry",
-					    "referenceTelemetry"}
+					    "referenceTelemetry",
+						"pidDebugTelemetry"}
 telemetryClassNames={   "SiemensDriveStateTelemetry", 
 						"LineAnglesTelemetry", 
 						"ImuGyroTelemetry",
@@ -17,7 +18,8 @@ telemetryClassNames={   "SiemensDriveStateTelemetry",
 						"ImuMagTelemetry",
 						"ResampledMeasurementsTelemetry", 
 						"SiemensDriveCommandTelemetry",
-					    "ReferenceTelemetry"}
+					    "ReferenceTelemetry",
+						"PIDControllerDebugTelemetry"}
 telemetryInstances={}
 
 -- Our telemetry components are not in a path that orocos' ComponentLoader base class (which deployer is presumably a child of) can find, apparently, so we need to load the libraries explicitly.
@@ -31,6 +33,7 @@ deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuGyro.so"
 deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuAccel.so")
 deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuMag.so")
 deployer:import("../../components/carousel2/functionGenerator/types/Reference.so")
+deployer:import("../../components/carousel2/controllerTemplate/types/PIDControllerDebug.so")
 
 for i=1,#telemetryInstanceNames do
 	--deployer:import(telemetryClassNames[i])
@@ -74,6 +77,7 @@ else
 	deployer:connect("functionGenerator.refData","referenceTelemetry.msgData", cp)
 	deployer:connect("resampler.data","resampledMeasurementsTelemetry.msgData", cp)
 	deployer:connect("controller.data","controllerTelemetry.msgData", cp)
+	deployer:connect("controller.debug","pidDebugTelemetry.msgData", cp)
 end
 
 for i=1,#telemetryInstanceNames do

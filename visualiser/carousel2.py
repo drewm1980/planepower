@@ -33,7 +33,8 @@ telemetryInstanceNames=["siemensSensorsTelemetry",
                         "armboneMagTelemetry",
                         "resampledMeasurementsTelemetry", 
                         "controllerTelemetry",
-                        "referenceTelemetry"]
+                        "referenceTelemetry",
+                        "pidDebugTelemetry"]
 
 #host = "localhost" # DOES NOT WORK FOR SOME REASON!!!
 host = "10.42.0.21" # This should be the IP address of the groundstation

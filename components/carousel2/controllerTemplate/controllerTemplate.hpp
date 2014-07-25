@@ -46,11 +46,8 @@ private:
 	double error;
 	double ierror;
 	double derror;
-	//double error_sum;
-	//double last_error_sum;
 	double lastElevation;
 
-	int counter;
 	double referenceElevation;
 	double feedForwardTermAsAngle;
 	double feedForwardTermAsSpeed;

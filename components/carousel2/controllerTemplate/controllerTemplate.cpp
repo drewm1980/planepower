@@ -92,7 +92,6 @@ bool  ControllerTemplate::startHook()
 	}	
 	referenceElevation = reference.elevation;
 	//integral initialisation for i and d gains 
-	counter = 0;
 	error = referenceElevation - resampledMeasurements.elevation;
 	ierror = 0;
 
@@ -154,6 +153,8 @@ void  ControllerTemplate::updateHook()
 		double tau = 0.2;
 		double d_elevation = (elevation - lastElevation)/dt;
 		simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
+	
+		ierror += error*dt; //Rad*s Elevetion integration
 	} else {
 		trigger_last_is_valid = true;
 	}
@@ -162,17 +163,17 @@ void  ControllerTemplate::updateHook()
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
 
-	ierror += error;
-
 	// Bound the controller to referenceSpeed +/- 
-	const double speedBand = .2; // Rad/s
+	const double speedBand = .05; // Rad/s
 
 	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
-	//double iTerm = g.Ki * ierror;
-	//double dTerm = g.Kd * derror;
+	double iTerm = g.Ki * ierror;
+	double dTerm = g.Kd * derror;
 
-	double pidTerm  = pTerm; // + iTerm + dTerm;
+	double iTermBound = 0.1; //Rad elevation
+	clamp(ierror, -iTermBound/g.Ki, iTermBound/g.Ki); 
+	double pidTerm  = pTerm + iTerm + dTerm;
 
 #define USE_MORITZ_IDEA 1
 #if USE_MORITZ_IDEA	
