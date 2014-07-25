@@ -92,7 +92,6 @@ bool  ControllerTemplate::startHook()
 	}	
 	referenceElevation = reference.elevation;
 	//integral initialisation for i and d gains 
-	counter = 0;
 	error = referenceElevation - resampledMeasurements.elevation;
 	ierror = 0;
 
