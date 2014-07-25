@@ -10,14 +10,14 @@ from vis_helpers import *
 from zmq_protobuf_helpers import *
 
 ############### Import types #####################
-paths=['siemensSensors','armboneLisaSensors','siemensActuators','resampler','lineAngleSensor2']
+paths=['siemensSensors','armboneLisaSensors','siemensActuators','resampler','lineAngleSensor2','functionGenerator']
 for p in paths:
     paath = '../components/carousel2/' + p + '/types'
     print "Adding path " + paath + " to the python search path..."
     sys.path.append(paath)
 
 print "Importing protobufs..."
-protobufs = ["LineAngles", "ResampledMeasurements", "SiemensDriveState", "SiemensDriveCommand","ImuGyro","ImuAccel","ImuMag"]
+protobufs = ["LineAngles", "ResampledMeasurements", "SiemensDriveState", "SiemensDriveCommand","ImuGyro","ImuAccel","ImuMag","Reference"]
 for p in protobufs:
     exec "from %sTelemetry_pb2 import %sMsg" % (p, p)
 
@@ -32,7 +32,8 @@ telemetryInstanceNames=["siemensSensorsTelemetry",
                         "armboneAccelTelemetry",
                         "armboneMagTelemetry",
                         "resampledMeasurementsTelemetry", 
-                        "controllerTelemetry"]
+                        "controllerTelemetry",
+                        "referenceTelemetry"]
 
 #host = "localhost" # DOES NOT WORK FOR SOME REASON!!!
 host = "10.42.0.21" # This should be the IP address of the groundstation
@@ -51,7 +52,7 @@ view.show()
 view.setWindowTitle( "HIGHWIND Carousel2 Telemetry" )
 view.resize(5 * 1024, 756)
 
-plotNames = ["las", "carousel", "controller","armboneGyro","armboneAccel","armboneMag"]
+plotNames = ["las", "carousel", "controller","armboneGyro","armboneAccel","armboneMag","reference"]
 
 # Generic fields, that all protobufs _must_ have
 genNames = ["ts_trigger", "ts_elapsed"]
@@ -95,6 +96,12 @@ armboneMagNames = ["mx","my","angle"] # These are members in the struct, apparen
 armboneMagNamesExt = armboneMagNames + genNames
 armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
 
+# lisa mag sensor measurements
+referenceTitle = "Reference Angle [Rad]"
+referenceNames = ["elevation"] # These are members in the struct, apparently
+referenceNamesExt = referenceNames + genNames
+referencePlots = addPlotsToLayout(layout.addLayout(), referenceTitle, referenceNames)
+
 # Setup update of the plotter
 
 # Queue for data exchange between the worker and the main thread
@@ -105,6 +112,7 @@ q3 = Queue.Queue(maxsize = 10)
 q4 = Queue.Queue(maxsize = 10)
 q5 = Queue.Queue(maxsize = 10)
 q6 = Queue.Queue(maxsize = 10)
+q7 = Queue.Queue(maxsize = 10)
 
 def updatePlots():
     global q1
@@ -113,13 +121,15 @@ def updatePlots():
     global q4
     global q5
     global q6
+    global q7
 
     global lasPlots, lasNames \
             , carouselPlots, carouselNames \
             , controllerPlots, controllerNames \
             , armboneGyroPlots, armboneGyroNames \
             , armboneAccelPlots, armboneAccelNames\
-            , armboneMagPlots, armboneMagNames
+            , armboneMagPlots, armboneMagNames\
+            , referencePlots, referenceNames
 
     def updateGroup(q, plots, names):
         try:
@@ -137,6 +147,7 @@ def updatePlots():
     updateGroup(q4, armboneGyroPlots, armboneGyroNames)
     updateGroup(q5, armboneAccelPlots, armboneAccelNames)
     updateGroup(q6, armboneMagPlots, armboneMagNames)
+    updateGroup(q6, referencePlots, referenceNames)
 
 # Set up a timer to update the plots
 timer = QtCore.QTimer()
@@ -162,6 +173,7 @@ workers.append(ZmqSubProtobufWorker(host + ":" + ports['controllerTelemetry'], S
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneGyroTelemetry'], ImuGyroMsg, armboneGyroNamesExt, q4, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneAccelTelemetry'], ImuAccelMsg, armboneAccelNamesExt, q5, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneMagTelemetry'], ImuMagMsg, armboneMagNamesExt, q6, bufferSize = 20 * 100))
+workers.append(ZmqSubProtobufWorker(host + ":" + ports['referenceTelemetry'], ImuMagMsg, referenceNamesExt, q6, bufferSize = 20 * 100))
 
 # Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
