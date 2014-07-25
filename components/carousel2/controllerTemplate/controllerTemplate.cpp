@@ -8,10 +8,12 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
-void clamp(double & x, double lb, double ub)
+bool clamp(double & x, double lb, double ub)
 {
-	if (x < lb) x = lb;
-	if (x > ub) x = ub;
+	bool didClamp = false;
+	if (x < lb) { x = lb; didClamp = true;};
+	if (x > ub) { x = ub; didClamp = true;};
+	return didClamp;
 }
 
 void simple_lowpass(double dt, double tau, double *state, double input)
@@ -147,6 +149,8 @@ void  ControllerTemplate::updateHook()
 		feedForwardTermHasBeenSet = true;
 	}
 
+	error = feedForwardTermAsAngle - elevation; // Radians
+
 	// Update our derivative and integral filters
 	if(trigger_last_is_valid)
 	{
@@ -159,7 +163,6 @@ void  ControllerTemplate::updateHook()
 	} else {
 		trigger_last_is_valid = true;
 	}
-	error = feedForwardTermAsAngle - elevation; // Radians
 	derror = 0.0 - derivativeLowpassFilterState; // Radians / s.  This is an error if d/dt of reference = 0
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
@@ -169,7 +172,12 @@ void  ControllerTemplate::updateHook()
 	double dTerm = g.Kp * g.Kd * derror;
 
 	double iTermBound = 0.1; // Rad elevation
-	clamp(ierror, -iTermBound/g.Ki, iTermBound/g.Ki); 
+	if(clamp(ierror, -iTermBound/(g.Ki + 0.00001), iTermBound/(g.Ki+0.00001)))
+	{
+		ierror = 0;
+		log(Warning) << "Warning, reset ierror term automatically due to clamp!" << endlog(); 
+	}
+
 	double pidTerm  = pTerm + iTerm + dTerm;
 
 #define USE_MORITZ_IDEA 1
