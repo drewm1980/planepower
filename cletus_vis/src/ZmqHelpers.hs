@@ -103,7 +103,6 @@ withSubscriber context url channel f =
   ZMQ.withSocket context ZMQ.Sub $ \subscriber -> do
     ZMQ.connect subscriber url
     ZMQ.subscribe subscriber channel
-    putStrLn "wooo"
     let receive = do
           msg <- receiveMulti subscriber :: IO [BS.ByteString]
          -- channel':msg <- receiveMulti subscriber :: IO [BS.ByteString]
