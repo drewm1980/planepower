@@ -16,31 +16,7 @@ cabal-version:       >=1.10
 executable plotter
   hs-source-dirs:    src
   main-is:           Plotter.hs
-  other-modules:     Channels
-                     , Protos.ControllerGainsProto.ControllerGainsMsg
-                     , Protos.ControllerGainsProto
-                     , Protos.ImuAccelProto.ImuAccelMsg
-                     , Protos.ImuAccelProto
-                     , Protos.ImuGyroProto.ImuGyroMsg
-                     , Protos.ImuGyroProto
-                     , Protos.ImuMagProto.ImuMagMsg
-                     , Protos.ImuMagProto
-                     , Protos.LineAnglesProto.LineAnglesMsg
-                     , Protos.LineAnglesProto
-                     , Protos.PIDControllerDebugProto.PIDControllerDebugMsg
-                     , Protos.PIDControllerDebugProto
-                     , Protos.PIDControllerGainsProto.PIDControllerGainsMsg
-                     , Protos.PIDControllerGainsProto
-                     , Protos.ReferenceProto.ReferenceMsg
-                     , Protos.ReferenceProto
-                     , Protos.ResampledMeasurementsProto.ResampledMeasurementsMsg
-                     , Protos.ResampledMeasurementsProto
-                     , Protos.SiemensDriveCommandProto.SiemensDriveCommandMsg
-                     , Protos.SiemensDriveCommandProto
-                     , Protos.SiemensDriveStateProto.SiemensDriveStateMsg
-                     , Protos.SiemensDriveStateProto
-                     , ZmqHelpers
-
+  other-modules:     ZmqHelpers
 
   build-depends:       base >=4.5 && <4.8
                        , protocol-buffers
