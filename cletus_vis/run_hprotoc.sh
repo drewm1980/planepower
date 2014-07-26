@@ -1,11 +1,4 @@
-hprotoc --haskell_out=src -p Protos proto_defs/SiemensDriveCommandTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/LineAnglesTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/PIDControllerDebugTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ResampledMeasurementsTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ImuAccelTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/SiemensDriveStateTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ImuGyroTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/PIDControllerGainsTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ReferenceTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ImuMagTelemetry.proto
-hprotoc --haskell_out=src -p Protos proto_defs/ControllerGainsTelemetry.proto
+find ~/planepower -iname '*.proto' | xargs cp proto_defs/
+
+for file in proto_defs:
+    hprotoc --haskell_out=src -p Protos proto_defs/$(file)
