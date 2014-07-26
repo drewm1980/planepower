@@ -171,7 +171,7 @@ void  ControllerTemplate::updateHook()
 	double iTerm = g.Ki * ierror;
 	double dTerm = g.Kp * g.Kd * derror;
 
-	double iTermBound = 0.1; // Rad elevation
+	double iTermBound = 0.3; // Rad elevation
 	if(clamp(ierror, -iTermBound/(g.Ki + 0.00001), iTermBound/(g.Ki+0.00001)))
 	{
 		ierror = 0;
