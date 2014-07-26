@@ -1,8 +1,8 @@
 -- WARNING!! These values also get parsed out of this file by 
 -- plot_steady_states.py, so if you change the names of the variables,
 -- fix them there as well!
-takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
-takeoffAngle = -1.1344 -- Radians
+takeoffSpeed = 1.10-- Rad/s, a bit before takeoff.
+takeoffAngle = -1.2566-- Radians
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
 normalFlyingSpeed = 1.6 
 normalStepHeight = .12 -- Rad/s
@@ -267,7 +267,7 @@ function run_pid_experiment()
 	amplitude = stepHeight/2.0
 	phase = 3.1416 -- a bit more than PI to make sure we start at 0
 	offset = lookup_steady_state_elevation(normalFlyingSpeed) -- Radians
-	lowtime = 12
+	lowtime = 20 
 	period = 2.0*lowtime
 	frequency = 1.0/period
 	periods = 3 -- number of periods to run for
@@ -290,6 +290,7 @@ function run_pid_experiment()
 	set_property("controller","freezeFeedForwardTerm",true)
 
 	if not changingGainsOnline then
+		--sleep(rsetrsitnsnt)
 		fast_ramp(0)
 	end
 end
