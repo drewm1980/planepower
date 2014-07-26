@@ -149,7 +149,7 @@ void  ControllerTemplate::updateHook()
 		feedForwardTermHasBeenSet = true;
 	}
 
-	error = feedForwardTermAsAngle - elevation; // Radians
+	error = referenceElevation - elevation; // Radians
 
 	// Update our derivative and integral filters
 	if(trigger_last_is_valid)
