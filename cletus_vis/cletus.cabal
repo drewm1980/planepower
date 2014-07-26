@@ -1,0 +1,61 @@
+name:                cletus
+version:             0.1.0.0
+-- synopsis:            
+-- description:         
+license:             LGPL-3
+license-file:        LICENSE
+author:              Greg Horn
+maintainer:          gregmainland@gmail.com
+-- copyright:           
+-- category:            
+build-type:          Simple
+-- extra-source-files:  
+cabal-version:       >=1.10
+
+
+executable plotter
+  hs-source-dirs:    src
+  main-is:           Plotter.hs
+  other-modules:     Channels
+                     , Protos.ControllerGainsProto.ControllerGainsMsg
+                     , Protos.ControllerGainsProto
+                     , Protos.ImuAccelProto.ImuAccelMsg
+                     , Protos.ImuAccelProto
+                     , Protos.ImuGyroProto.ImuGyroMsg
+                     , Protos.ImuGyroProto
+                     , Protos.ImuMagProto.ImuMagMsg
+                     , Protos.ImuMagProto
+                     , Protos.LineAnglesProto.LineAnglesMsg
+                     , Protos.LineAnglesProto
+                     , Protos.PIDControllerDebugProto.PIDControllerDebugMsg
+                     , Protos.PIDControllerDebugProto
+                     , Protos.PIDControllerGainsProto.PIDControllerGainsMsg
+                     , Protos.PIDControllerGainsProto
+                     , Protos.ReferenceProto.ReferenceMsg
+                     , Protos.ReferenceProto
+                     , Protos.ResampledMeasurementsProto.ResampledMeasurementsMsg
+                     , Protos.ResampledMeasurementsProto
+                     , Protos.SiemensDriveCommandProto.SiemensDriveCommandMsg
+                     , Protos.SiemensDriveCommandProto
+                     , Protos.SiemensDriveStateProto.SiemensDriveStateMsg
+                     , Protos.SiemensDriveStateProto
+                     , ZmqHelpers
+
+
+  build-depends:       base >=4.5 && <4.8
+                       , protocol-buffers
+                       , protocol-buffers-descriptor
+                       , cereal
+--                       , dynobud
+                       , linear >=1.10
+                       , spatial-math
+                       , zeromq-haskell
+                       , bytestring
+                       , semigroups
+                       , ghc-prim
+                       , Plot-ho-matic >= 0.4.0.0
+
+  default-language: Haskell2010
+
+  ghc-options:        -O2 -threaded
+  default-language:    Haskell2010
