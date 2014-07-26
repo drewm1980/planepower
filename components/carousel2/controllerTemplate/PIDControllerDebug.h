@@ -6,6 +6,10 @@
 // plus a couple fields for timestamps
 struct PIDControllerDebug
 {
+	double referenceElevation;
+	double referenceSpeed;
+	double elevation;
+
 	double Kp;
 	double Ki;
 	double Kd;
@@ -24,6 +28,7 @@ struct PIDControllerDebug
 	double dTerm;
 
 	double pidTerm;
+	double controlAsSpeed;
 
 	double ts_trigger;
 	double ts_elapsed;

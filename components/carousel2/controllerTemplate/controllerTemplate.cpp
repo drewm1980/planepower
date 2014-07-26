@@ -188,16 +188,16 @@ void  ControllerTemplate::updateHook()
 		log(Warning) << "controllerTemplate: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
 		return;
 	}
-	double control = pidControlAsSpeed; // Rad/s
+	double controlAsSpeed = pidControlAsSpeed; // Rad/s
 #else
-	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
+	double controlAsSpeed = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
 	const double speedBand = .2; // Rad/s
-	//clamp(control,feedForwardTermAsSpeed-speedBand,feedForwardTermAsSpeed+speedBand);
-	clamp(control,1.58-speedBand,1.58+speedBand);
+	//clamp(controlAsSpeed,feedForwardTermAsSpeed-speedBand,feedForwardTermAsSpeed+speedBand);
+	clamp(controlAsSpeed,1.58-speedBand,1.58+speedBand);
 
-	driveCommand.carouselSpeedSetpoint = control;
+	driveCommand.carouselSpeedSetpoint = controlAsSpeed;
 
 	driveCommand.ts_trigger = trigger;
 	double ts_elapsed = TimeService::Instance()->secondsSince( trigger );
@@ -211,19 +211,31 @@ void  ControllerTemplate::updateHook()
 	portGainsOut.write(gains);
 
 	// Write out all of our debug info
+	debug.referenceElevation = referenceElevation;
+	debug.referenceSpeed = referenceSpeed;
+	debug.elevation = elevation;
+
 	debug.Kp = gains.Kp;
 	debug.Ki = gains.Ki;
 	debug.Kd = gains.Kd;
+
 	debug.derivativeLowpassFilterState = derivativeLowpassFilterState;
+
 	debug.error = error;
 	debug.ierror = ierror;
 	debug.derror = derror;
+
 	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
 	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+
 	debug.pTerm = pTerm;
 	debug.iTerm = iTerm;
 	debug.dTerm = dTerm;
+
 	debug.pidTerm = pidTerm;
+
+	debug.controlAsSpeed = controlAsSpeed;
+
 	debug.ts_trigger = trigger;
 	debug.ts_elapsed = ts_elapsed;
 	portDebug.write(debug);
