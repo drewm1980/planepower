@@ -27,7 +27,7 @@ def plot_pid_state(axis, startTime=-1):
     startSample = 3
     rootName = 'controller'
     f = netcdf.netcdf_file(rootName+'Data.nc', 'r')
-    data = f.variables[rootName+'.debug.'+'ierror'].data[startSample:]
+    data = f.variables[rootName+'.debug.'+'ierrorr'].data[startSample:]
     ts_trigger = f.variables[rootName+'.debug.ts_trigger'].data[startSample:]*1.0e-9
 
     if startTime == -1:

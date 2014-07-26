@@ -12,11 +12,18 @@ struct PIDControllerDebug
 
 	double derivativeLowpassFilterState;
 
+	double error;
+	double ierror;
+	double derror;
+
 	double feedForwardTermAsAngle;
 	double feedForwardTermAsSpeed;
 
-	double ierror;
-	double derror;
+	double pTerm;
+	double iTerm;
+	double dTerm;
+
+	double pidTerm;
 
 	double ts_trigger;
 	double ts_elapsed;

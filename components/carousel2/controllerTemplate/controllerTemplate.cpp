@@ -215,10 +215,15 @@ void  ControllerTemplate::updateHook()
 	debug.Ki = gains.Ki;
 	debug.Kd = gains.Kd;
 	debug.derivativeLowpassFilterState = derivativeLowpassFilterState;
-	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
-	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+	debug.error = error;
 	debug.ierror = ierror;
 	debug.derror = derror;
+	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
+	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+	debug.pTerm = pTerm;
+	debug.iTerm = iTerm;
+	debug.dTerm = dTerm;
+	debug.pidTerm = pidTerm;
 	debug.ts_trigger = trigger;
 	debug.ts_elapsed = ts_elapsed;
 	portDebug.write(debug);
