@@ -136,7 +136,7 @@ void  ControllerTemplate::updateHook()
 	}
 
 	const double unfilteredReferenceElevation = reference.elevation;
-	simple_lowpass(dt, 0.1, &referenceElevation, reference.elevation);
+	simple_lowpass(dt, 0.05, &referenceElevation, reference.elevation);
 	//referenceElevation = reference.elevation;
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
@@ -169,7 +169,7 @@ void  ControllerTemplate::updateHook()
 	error = referenceElevation - elevation; // Radians
 
 	// Update our derivative and integral filters
-	double tau = 0.1;
+	double tau = 0.05;
 	double d_elevation = (elevation - lastElevation)/dt;
 	simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
 
