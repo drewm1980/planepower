@@ -297,14 +297,14 @@ function run_pid_experiment()
 	if changingGainsOnline then
 		set_pid_gains(0,0,0)
 	else
-		set_pid_gains(0,0,0)
-		--set_pid_gains(.42,.65,.44)
+		--set_pid_gains(0,0,0)
+		set_pid_gains(.42,.65,.44)
 	end
 
 	controller:start() -- This is where the integrator is reset
 	sleep(.1) -- Time for the controller state to settle
-	--set_property("controller","freezeFeedForwardTerm",true)
-	set_property("controller","freezeFeedForwardTerm",false)
+	set_property("controller","freezeFeedForwardTerm",true) -- Needs to be after you start controller so the controller has a reasonable feedforward term to freeze.
+	--set_property("controller","freezeFeedForwardTerm",false)
 
 	if not changingGainsOnline then
 		sleep(periods*period)
