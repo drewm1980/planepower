@@ -270,7 +270,7 @@ function run_pid_experiment()
 	lowtime = 20 
 	period = 2.0*lowtime
 	frequency = 1.0/period
-	periods = 3 -- number of periods to run for
+	periods = 4 -- number of periods to run for
 	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
 
 	-- Start the Experiment
@@ -282,15 +282,15 @@ function run_pid_experiment()
 	if changingGainsOnline then
 		set_pid_gains(0,0,0)
 	else
-		set_pid_gains(.2,.2,.2)
+		set_pid_gains(.42,.65,.44)
 	end
 
-	controller:start() -- This is where the integrator is reset
 	sleep(.1) -- Time for the controller state to settle
+	controller:start() -- This is where the integrator is reset
 	set_property("controller","freezeFeedForwardTerm",true)
 
 	if not changingGainsOnline then
-		--sleep(rsetrsitnsnt)
+		sleep(periods*period)
 		fast_ramp(0)
 	end
 end
