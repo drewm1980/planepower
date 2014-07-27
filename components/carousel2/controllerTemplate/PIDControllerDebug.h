@@ -15,6 +15,8 @@ struct PIDControllerDebug
 	double Kd;
 
 	double derivativeLowpassFilterState;
+	double d_elevation;
+	double dt;
 
 	double error;
 	double ierror;

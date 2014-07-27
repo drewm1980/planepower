@@ -93,6 +93,7 @@ bool  ControllerTemplate::startHook()
 		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
+	referenceElevation = reference.elevation; // For initializing the reference filter (if there is one)
 
 	//integral initialisation for i and d gains 
 	error = referenceElevation - resampledMeasurements.elevation;
@@ -127,17 +128,15 @@ void  ControllerTemplate::updateHook()
 	//ControllerGains& g = gains;
 	PIDControllerGains& g = gains;
 	
-	portReference.read(reference);
-#define LOWPASS_REFERENCE 1
-#if LOWPASS_REFERENCE
-	if(!trigger_last_is_valid)
+	FlowStatus referenceStatus = portReference.read(reference);
+	if (referenceStatus != NewData) 
 	{
-		simple_lowpass(dt, 0.25, &referenceElevation, reference.elevation);
+		//log(Warning) << "controllerTemplate: No new reference data on the input port!" << endlog();
+		// Not a warning because reference is not synced with the measurements...
 	}
-#else
-	referenceElevation = reference.elevation;
-#endif
 
+	simple_lowpass(dt, 0.25, &referenceElevation, reference.elevation);
+	//referenceElevation = reference.elevation;
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
 	if (isnan(referenceSpeed))
@@ -225,6 +224,8 @@ void  ControllerTemplate::updateHook()
 	debug.Kd = gains.Kd;
 
 	debug.derivativeLowpassFilterState = derivativeLowpassFilterState;
+	debug.d_elevation = d_elevation;
+	debug.dt = dt;
 
 	debug.error = error;
 	debug.ierror = ierror;
