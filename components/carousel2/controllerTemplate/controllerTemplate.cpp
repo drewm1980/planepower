@@ -135,10 +135,17 @@ void  ControllerTemplate::updateHook()
 		// Not a warning because reference is not synced with the measurements...
 	}
 
+	const double unfilteredReferenceElevation = reference.elevation;
 	simple_lowpass(dt, 0.1, &referenceElevation, reference.elevation);
 	//referenceElevation = reference.elevation;
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
+	if (isnan(referenceSpeed))
+	{
+		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
+		return;
+	}
+	const double unfilteredReferenceSpeed = lookup_steady_state_speed(unfilteredReferenceElevation);
 	if (isnan(referenceSpeed))
 	{
 		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
@@ -154,8 +161,8 @@ void  ControllerTemplate::updateHook()
 	}
 	else 
 	{
-		feedForwardTermAsSpeed = referenceSpeed; // Rad/s
-		feedForwardTermAsAngle = referenceElevation; // Rad
+		feedForwardTermAsSpeed = unfilteredReferenceSpeed; // Rad/s
+		feedForwardTermAsAngle = unfilteredReferenceElevation; // Rad
 		feedForwardTermHasBeenSet = true;
 	}
 
@@ -217,6 +224,8 @@ void  ControllerTemplate::updateHook()
 	// Write out all of our debug info
 	debug.referenceElevation = referenceElevation;
 	debug.referenceSpeed = referenceSpeed;
+	debug.unfilteredReferenceElevation = unfilteredReferenceElevation;
+	debug.unfilteredReferenceSpeed = unfilteredReferenceSpeed;
 	debug.elevation = elevation;
 
 	debug.Kp = gains.Kp;

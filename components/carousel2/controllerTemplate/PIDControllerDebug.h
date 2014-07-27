@@ -8,6 +8,8 @@ struct PIDControllerDebug
 {
 	double referenceElevation;
 	double referenceSpeed;
+	double unfilteredReferenceElevation;
+	double unfilteredReferenceSpeed;
 	double elevation;
 
 	double Kp;
