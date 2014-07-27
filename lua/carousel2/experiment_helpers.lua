@@ -253,7 +253,7 @@ end
 function run_pid_experiment()
 	print "Running PID experiment..."
 
-	changingGainsOnline = true
+	changingGainsOnline = false
 
 	fast_ramp(normalFlyingSpeed)
 
@@ -282,12 +282,14 @@ function run_pid_experiment()
 	if changingGainsOnline then
 		set_pid_gains(0,0,0)
 	else
-		set_pid_gains(.42,.65,.44)
+		set_pid_gains(0,0,0)
+		--set_pid_gains(.42,.65,.44)
 	end
 
-	sleep(.1) -- Time for the controller state to settle
 	controller:start() -- This is where the integrator is reset
-	set_property("controller","freezeFeedForwardTerm",true)
+	sleep(.1) -- Time for the controller state to settle
+	--set_property("controller","freezeFeedForwardTerm",true)
+	set_property("controller","freezeFeedForwardTerm",false)
 
 	if not changingGainsOnline then
 		sleep(periods*period)
