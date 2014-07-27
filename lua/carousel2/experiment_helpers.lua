@@ -257,11 +257,19 @@ function run_pid_experiment()
 
 	--h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
 	--h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
-	h_high = -40.0*pi/180.0
-	h_low = -55.0*pi/180.0
+	h_high = -40.0*math.pi/180.0
+	h_low = -55.0*math.pi/180.0
 
-	speed_high = lookup_steady_state_elevation(h_high)
-	speed_low = lookup_steady_state_elevation(h_low)
+	speed_high = lookup_steady_state_speed(h_high)
+	if math.isnan(speed_high) then
+		print "experiment_helpers: lookup failed on h_high"
+		return
+	end
+	speed_low = lookup_steady_state_speed(h_low)
+	if math.isnan(speed_low) then
+		print "experiment_helpers: lookup failed on h_low"
+		return
+	end
 	fast_ramp(speed_low)
 
 	stepHeight = h_high-h_low -- Radians
