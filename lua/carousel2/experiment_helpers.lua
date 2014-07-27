@@ -255,18 +255,23 @@ function run_pid_experiment()
 
 	changingGainsOnline = false
 
-	fast_ramp(normalFlyingSpeed)
+	--h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
+	--h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
+	h_high = -40.0*pi/180.0
+	h_low = -55.0*pi/180.0
 
-	h1 = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
-	h2 = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
-	stepHeight = h1-h2 -- Radians
+	speed_high = lookup_steady_state_elevation(h_high)
+	speed_low = lookup_steady_state_elevation(h_low)
+	fast_ramp(speed_low)
+
+	stepHeight = h_high-h_low -- Radians
 
 	-- Set up Function Generator
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel, but also currently needed for controller reference
 	amplitude = stepHeight/2.0
-	phase = 3.1416 -- a bit more than PI to make sure we start at 0
-	offset = lookup_steady_state_elevation(normalFlyingSpeed) -- Radians
+	phase = 0.0001 
+	offset = h_low + stepHeight/2.0 -- Radians
 	lowtime = 20 
 	period = 2.0*lowtime
 	frequency = 1.0/period
