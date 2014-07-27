@@ -261,15 +261,17 @@ function run_pid_experiment()
 	h_low = -55.0*math.pi/180.0
 
 	speed_high = lookup_steady_state_speed(h_high)
-	if math.isnan(speed_high) then
-		print "experiment_helpers: lookup failed on h_high"
-		return
-	end
+	--if math.isnan(speed_high) then
+		--print "experiment_helpers: lookup failed on h_high"
+		--return
+	--end
 	speed_low = lookup_steady_state_speed(h_low)
-	if math.isnan(speed_low) then
-		print "experiment_helpers: lookup failed on h_low"
-		return
-	end
+	--if math.isnan(speed_low) then
+		--print "experiment_helpers: lookup failed on h_low"
+		--return
+	--end
+	print(tostring(speed_high))
+	print(tostring(speed_low))
 	fast_ramp(speed_low)
 
 	stepHeight = h_high-h_low -- Radians
