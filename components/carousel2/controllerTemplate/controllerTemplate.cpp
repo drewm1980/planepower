@@ -93,7 +93,7 @@ bool  ControllerTemplate::startHook()
 		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
-	referenceElevation = reference.elevation;
+
 	//integral initialisation for i and d gains 
 	error = referenceElevation - resampledMeasurements.elevation;
 	ierror = 0;
@@ -105,6 +105,14 @@ void  ControllerTemplate::updateHook()
 {
 	trigger_last = trigger; 
 	trigger = TimeService::Instance()->getTicks();
+	double dt = .0001;
+	if(!trigger_last_is_valid)
+	{
+		trigger_last_is_valid = true;
+		dt = (trigger - trigger_last)*1.0e-9; // seconds
+		log(Info) << "controllerTemplate: returning early because need to initialize dt" << endlog();
+		return;
+	}
 
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
@@ -119,13 +127,16 @@ void  ControllerTemplate::updateHook()
 	//ControllerGains& g = gains;
 	PIDControllerGains& g = gains;
 	
-	// Controller Implementation goes here!
-	//  gain matrix meaning:
-	//  [winchSpeedSetpoint carouselSpeedSetpoint]' = [k11 k12; k21 k22] * [azimuth elevation]'
-	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*elevation;
-	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*elevation;
 	portReference.read(reference);
+#define LOWPASS_REFERENCE 1
+#if LOWPASS_REFERENCE
+	if(!trigger_last_is_valid)
+	{
+		simple_lowpass(dt, 0.25, &referenceElevation, reference.elevation);
+	}
+#else
 	referenceElevation = reference.elevation;
+#endif
 
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
@@ -152,17 +163,11 @@ void  ControllerTemplate::updateHook()
 	error = referenceElevation - elevation; // Radians
 
 	// Update our derivative and integral filters
-	if(trigger_last_is_valid)
-	{
-		double dt = (trigger - trigger_last)*1.0e-9; // seconds
-		double tau = 0.2;
-		double d_elevation = (elevation - lastElevation)/dt;
-		simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
-	
-		ierror += error*dt; //Rad*s Elevetion integration
-	} else {
-		trigger_last_is_valid = true;
-	}
+	double tau = 0.2;
+	double d_elevation = (elevation - lastElevation)/dt;
+	simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
+
+	ierror += error*dt; //Rad*s Elevetion integration
 	derror = 0.0 - derivativeLowpassFilterState; // Radians / s.  This is an error if d/dt of reference = 0
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
@@ -246,7 +251,6 @@ void  ControllerTemplate::updateHook()
 	if(gainsStatus == NewData) { gains = tempGains; }
 
 }
-
 
 void  ControllerTemplate::stopHook()
 {}
