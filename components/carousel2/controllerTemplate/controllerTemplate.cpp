@@ -106,14 +106,14 @@ void  ControllerTemplate::updateHook()
 {
 	trigger_last = trigger; 
 	trigger = TimeService::Instance()->getTicks();
-	double dt = .0001;
 	if(!trigger_last_is_valid)
 	{
 		trigger_last_is_valid = true;
-		dt = (trigger - trigger_last)*1.0e-9; // seconds
 		log(Info) << "controllerTemplate: returning early because need to initialize dt" << endlog();
 		return;
 	}
+
+	const double dt = (trigger - trigger_last)*1.0e-9; // seconds
 
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
