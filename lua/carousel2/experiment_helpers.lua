@@ -253,12 +253,15 @@ end
 function run_pid_experiment()
 	print "Running PID experiment..."
 
-	changingGainsOnline = false
+	changingGainsOnline = true
 
-	--h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
-	--h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
-	h_high = -40.0*math.pi/180.0
-	h_low = -55.0*math.pi/180.0
+	-- A conservative choice of heights, working pretty well.
+	h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
+	h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
+
+	-- A more aggressive choice of hights, not working so well.
+	--h_high = -40.0*math.pi/180.0
+	--h_low = -55.0*math.pi/180.0
 
 	speed_high = lookup_steady_state_speed(h_high)
 	--if math.isnan(speed_high) then
