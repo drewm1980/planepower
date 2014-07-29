@@ -7,6 +7,7 @@
 using namespace std;
 using namespace RTT;
 using namespace RTT::os;
+const double PI = 3.141592653589793238463;
 
 FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOperational) 
 {
@@ -24,6 +25,7 @@ FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOpera
 	addProperty("offset", offset).doc("The offset of the generated function.");
 	addProperty("phase", phase).doc("The phase of the generated function.");
 	addProperty("frequency", frequency).doc("The frequency of the generated function.");
+	addProperty("numberOfSines", numberOfSines).doc("The number of sines in the multisine.");
 }
 
 bool FunctionGenerator::configureHook()
@@ -34,6 +36,7 @@ bool FunctionGenerator::configureHook()
 	offset = 0;
 	phase = 0;
 	frequency = 0;
+	numberOfSines = 0;
 	return true;
 }
 
@@ -48,7 +51,8 @@ void  FunctionGenerator::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	double t = (trigger - startTime) * 1e-9;
 	double value;
-	double sinvalue;
+	double sinvalue = 0;
+	double wLowest = frequency * 2 * PI;		
 	switch (type)
 	{
 		case 0:
@@ -58,8 +62,19 @@ void  FunctionGenerator::updateHook()
 			sinvalue = sin(t * frequency*(2.0*3.1415) + phase);
 			value = offset + amplitude * (2*(sinvalue > 0.0)-1.0);
 			break;
+		case 2:
+			for (int k = 1; k <= numberOfSines; k++) {
+				double w = k * wLowest;
+				double multiPhase = -k * (k-1) * PI / numberOfSines;
+				sinvalue += amplitude * sin(w*t + multiPhase);
+			}
+			value = offset + sinvalue;
+			//adding cycle clock find the periods easy
+			reference.cycle = (double)(sin(wLowest*t) > 0.0);	
+			break;
 		default:
 			log(Error) << "Unrecognized signal type!" << endl;
+			return;
 	}
 
 	switch (whichDrive)
@@ -75,6 +90,7 @@ void  FunctionGenerator::updateHook()
 			break;
 		default:
 			log(Error) << "functionGenerator: whichDrive selection invalid!" << endl;
+			return;
 	}
 
 	driveCommand.ts_trigger = trigger;

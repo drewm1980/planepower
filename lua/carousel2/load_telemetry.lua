@@ -9,7 +9,7 @@ telemetryInstanceNames={"siemensSensorsTelemetry",
 						"armboneMagTelemetry",
 						"resampledMeasurementsTelemetry", 
 						"controllerTelemetry",
-					    "referenceTelemetry",
+						"referenceTelemetry",
 						"pidDebugTelemetry"}
 telemetryClassNames={   "SiemensDriveStateTelemetry", 
 						"LineAnglesTelemetry", 
@@ -18,7 +18,7 @@ telemetryClassNames={   "SiemensDriveStateTelemetry",
 						"ImuMagTelemetry",
 						"ResampledMeasurementsTelemetry", 
 						"SiemensDriveCommandTelemetry",
-					    "ReferenceTelemetry",
+						"ReferenceTelemetry",
 						"PIDControllerDebugTelemetry"}
 telemetryInstances={}
 

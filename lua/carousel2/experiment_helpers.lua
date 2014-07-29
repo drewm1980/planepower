@@ -85,7 +85,7 @@ end
 
 -- functionGenerator related functions
 
-function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
 	
 	set_property("functionGenerator","type",functionType)
 	set_property("functionGenerator","amplitude",amplitude)
@@ -93,6 +93,7 @@ function set_functionGenerator_properties(functionType,whichDrive,amplitude,offs
 	set_property("functionGenerator","offset",offset)
 	set_property("functionGenerator","frequency",frequency)
 	set_property("functionGenerator","whichDrive",whichDrive)
+	set_property("functionGenerator","numberOfSines", numberOfSines)
 end
 
 -- Stepping from zero to some value
@@ -109,7 +110,7 @@ function start_stepping()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start()
 	functionGenerator:start()
 end
@@ -131,7 +132,7 @@ function step_around_current_setpoint(stepHeight,lowtime)
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start() -- make sure actuator are running
 	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
 	print "Starting function generator"
@@ -145,7 +146,7 @@ function sin_around_current_setpoint(amplitude,frequency)
 	phase = 0 
 	offset = get_carousel_setpoint()
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start()
 	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
 	print "Starting function generator"
@@ -165,7 +166,7 @@ end
 function stop_functionGenerator()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
-	set_functionGenerator_properties(0,0,0,0,0,0)
+	set_functionGenerator_properties(0,0,0,0,0,0,0)
 end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
@@ -286,7 +287,7 @@ function run_pid_experiment()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 	periods = 4 -- number of periods to run for
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 
 	-- Start the Experiment
 	siemensActuators:start()
@@ -312,4 +313,25 @@ function run_pid_experiment()
 	end
 end
 
+function run_multisine_experiment()
 
+	print "Running multisine experiment..."
+	-- Set up Function Generator
+	functionType = 2 -- for multisine
+	whichDrive = 1 -- for carousel, but also currently needed for controller reference
+	amplitude = 0.03 -- rad/s !!Multiplies with numberOfSines/2!!
+	phase = 0.0 
+	offset = normalFlyingSpeed -- Radians
+	frequency = 0.05 -- Hz. The lowest frequency in the multisine
+	numberOfSines = 8 
+	periods = 4 -- number of periods to run for
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
+	
+	-- Start the experiment
+	siemensActuators:start()
+	fast_ramp(offset)
+	functionGenerator:stop()
+	functionGenerator:start()
+	sleep(periods/frequency)
+	fast_ramp(0)
+end

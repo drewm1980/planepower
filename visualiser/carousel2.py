@@ -67,7 +67,7 @@ lasNamesExt = lasNames + genNames
 lasPlots = addPlotsToLayout(layout.addLayout(), lasTitle, lasNames)
 
 # Carousel drive status
-carouselTitle = "Carousel Drive Speed [(Arm)Radians/s] vs Timestamp [s]"
+carouselTitle = "Carousel Drive Speed [(Arm)Radians/s] and Torque on the Arm [Nm]"
 carouselNames = ["carouselSpeedSmoothed","carouselTorque"] # These are members in the struct, apparently
 carouselNamesExt = carouselNames + genNames
 carouselPlots = addPlotsToLayout(layout.addLayout(), carouselTitle, carouselNames)
@@ -98,8 +98,8 @@ armboneMagNamesExt = armboneMagNames + genNames
 armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
 
 # reference angle data
-referenceTitle = "Reference Angle [Rad]"
-referenceNames = ["elevation"] # These are members in the struct, apparently
+referenceTitle = "Reference Angle [Rad] and Cycle Clock [bool]"
+referenceNames = ["elevation","cycle"] # These are members in the struct, apparently
 referenceNamesExt = referenceNames + genNames
 referencePlots = addPlotsToLayout(layout.addLayout(), referenceTitle, referenceNames)
 
