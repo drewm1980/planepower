@@ -182,7 +182,7 @@ void  ControllerTemplate::updateHook()
 	double iTerm = g.Ki * ierror;
 	double dTerm = g.Kp * g.Kd * derror;
 
-	double iTermBound = 0.3; // Rad elevation
+	double iTermBound = 1.0; // Rad elevation
 	if(clamp(ierror, -iTermBound/(g.Ki + 0.00001), iTermBound/(g.Ki+0.00001)))
 	{
 		ierror = 0;
@@ -204,9 +204,7 @@ void  ControllerTemplate::updateHook()
 	double controlAsSpeed = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
-	const double speedBand = .2; // Rad/s
-	//clamp(controlAsSpeed,feedForwardTermAsSpeed-speedBand,feedForwardTermAsSpeed+speedBand);
-	clamp(controlAsSpeed,1.58-speedBand,1.58+speedBand);
+	clamp(controlAsSpeed,1.1,1.9); // Pretty much the full range of flying speed
 
 	driveCommand.carouselSpeedSetpoint = controlAsSpeed;
 

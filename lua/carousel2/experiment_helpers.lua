@@ -256,10 +256,13 @@ function run_pid_experiment()
 
 	changingGainsOnline = false
 
-	--h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
-	--h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
-	h_high = -40.0*math.pi/180.0
-	h_low = -55.0*math.pi/180.0
+	-- A conservative choice of heights, working pretty well.
+	h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
+	h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
+
+	-- A more aggressive choice of hights, not working so well.
+	--h_high = -40.0*math.pi/180.0
+	--h_low = -55.0*math.pi/180.0
 
 	speed_high = lookup_steady_state_speed(h_high)
 	--if math.isnan(speed_high) then
@@ -295,19 +298,17 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	if changingGainsOnline then
-		set_pid_gains(0,0,0)
-	else
-		--set_pid_gains(0,0,0)
-		set_pid_gains(.42,.65,.44)
-	end
+	set_pid_gains(0,0,0)
 
 	controller:start() -- This is where the integrator is reset
 	sleep(.1) -- Time for the controller state to settle
+
 	set_property("controller","freezeFeedForwardTerm",true) -- Needs to be after you start controller so the controller has a reasonable feedforward term to freeze.
 	--set_property("controller","freezeFeedForwardTerm",false)
 
 	if not changingGainsOnline then
+		sleep(0.5*period) -- Get past any transient from the ramp
+		set_pid_gains(.42,.65,.44)
 		sleep(periods*period)
 		fast_ramp(0)
 	end
