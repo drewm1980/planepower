@@ -47,7 +47,7 @@ end
 rtt.logl("Info", "Loading HIGHWIND hardware related components...")
 dofile("load_hardware.lua")
 
-runningOpenLoop = false
+runningOpenLoop = true
 runningClosedLoop = not runningOpenLoop
 
 rtt.logl("Info", "Loading function generator component...")
