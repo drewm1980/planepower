@@ -67,7 +67,7 @@ lasNamesExt = lasNames + genNames
 lasPlots = addPlotsToLayout(layout.addLayout(), lasTitle, lasNames)
 
 # Carousel drive status
-carouselTitle = "Carousel Drive Speed [(Arm)Radians/s] vs Timestamp [s]"
+carouselTitle = "Carousel Drive Speed [(Arm)Radians/s] and Torque on the Arm [Nm]"
 carouselNames = ["carouselSpeedSmoothed","carouselTorque"] # These are members in the struct, apparently
 carouselNamesExt = carouselNames + genNames
 carouselPlots = addPlotsToLayout(layout.addLayout(), carouselTitle, carouselNames)
@@ -97,9 +97,9 @@ armboneMagNames = ["mx","my","angle"] # These are members in the struct, apparen
 armboneMagNamesExt = armboneMagNames + genNames
 armboneMagPlots = addPlotsToLayout(layout.addLayout(), armboneMagTitle, armboneMagNames)
 
-# lisa mag sensor measurements
-referenceTitle = "Reference Angle [Rad]"
-referenceNames = ["elevation"] # These are members in the struct, apparently
+# reference angle data
+referenceTitle = "Reference Angle [Rad] and Cycle Clock [bool]"
+referenceNames = ["elevation","cycle"] # These are members in the struct, apparently
 referenceNamesExt = referenceNames + genNames
 referencePlots = addPlotsToLayout(layout.addLayout(), referenceTitle, referenceNames)
 
@@ -148,7 +148,7 @@ def updatePlots():
     updateGroup(q4, armboneGyroPlots, armboneGyroNames)
     updateGroup(q5, armboneAccelPlots, armboneAccelNames)
     updateGroup(q6, armboneMagPlots, armboneMagNames)
-    updateGroup(q6, referencePlots, referenceNames)
+    updateGroup(q7, referencePlots, referenceNames)
 
 # Set up a timer to update the plots
 timer = QtCore.QTimer()
@@ -174,7 +174,7 @@ workers.append(ZmqSubProtobufWorker(host + ":" + ports['controllerTelemetry'], S
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneGyroTelemetry'], ImuGyroMsg, armboneGyroNamesExt, q4, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneAccelTelemetry'], ImuAccelMsg, armboneAccelNamesExt, q5, bufferSize = 20 * 100))
 workers.append(ZmqSubProtobufWorker(host + ":" + ports['armboneMagTelemetry'], ImuMagMsg, armboneMagNamesExt, q6, bufferSize = 20 * 100))
-workers.append(ZmqSubProtobufWorker(host + ":" + ports['referenceTelemetry'], ImuMagMsg, referenceNamesExt, q6, bufferSize = 20 * 100))
+workers.append(ZmqSubProtobufWorker(host + ":" + ports['referenceTelemetry'], ReferenceMsg, referenceNamesExt, q7, bufferSize = 20 * 100))
 
 # Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':

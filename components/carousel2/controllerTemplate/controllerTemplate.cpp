@@ -8,10 +8,12 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::os;
 
-void clamp(double & x, double lb, double ub)
+bool clamp(double & x, double lb, double ub)
 {
-	if (x < lb) x = lb;
-	if (x > ub) x = ub;
+	bool didClamp = false;
+	if (x < lb) { x = lb; didClamp = true;};
+	if (x > ub) { x = ub; didClamp = true;};
+	return didClamp;
 }
 
 void simple_lowpass(double dt, double tau, double *state, double input)
@@ -30,6 +32,7 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 	addPort("reference",portReference).doc("Reference elevation");
 
 	addProperty("freezeFeedForwardTerm", freezeFeedForwardTerm).doc("Set to true to lock current value of the feedforward term.");
+	addProperty("ierror", ierror).doc("The integrator state.  Be careful with this!");
 
 	memset(&resampledMeasurements, 0, sizeof(resampledMeasurements));
 	memset(&driveCommand, 0, sizeof(driveCommand));
@@ -90,7 +93,8 @@ bool  ControllerTemplate::startHook()
 		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
-	referenceElevation = reference.elevation;
+	referenceElevation = reference.elevation; // For initializing the reference filter (if there is one)
+
 	//integral initialisation for i and d gains 
 	error = referenceElevation - resampledMeasurements.elevation;
 	ierror = 0;
@@ -102,6 +106,14 @@ void  ControllerTemplate::updateHook()
 {
 	trigger_last = trigger; 
 	trigger = TimeService::Instance()->getTicks();
+	if(!trigger_last_is_valid)
+	{
+		trigger_last_is_valid = true;
+		log(Info) << "controllerTemplate: returning early because need to initialize dt" << endlog();
+		return;
+	}
+
+	const double dt = (trigger - trigger_last)*1.0e-9; // seconds
 
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
@@ -116,16 +128,24 @@ void  ControllerTemplate::updateHook()
 	//ControllerGains& g = gains;
 	PIDControllerGains& g = gains;
 	
-	// Controller Implementation goes here!
-	//  gain matrix meaning:
-	//  [winchSpeedSetpoint carouselSpeedSetpoint]' = [k11 k12; k21 k22] * [azimuth elevation]'
-	//driveCommand.winchSpeedSetpoint =     g.k11*az + g.k12*elevation;
-	//driveCommand.carouselSpeedSetpoint =  g.k21*az + g.k22*elevation;
-	portReference.read(reference);
-	referenceElevation = reference.elevation;
+	FlowStatus referenceStatus = portReference.read(reference);
+	if (referenceStatus != NewData) 
+	{
+		//log(Warning) << "controllerTemplate: No new reference data on the input port!" << endlog();
+		// Not a warning because reference is not synced with the measurements...
+	}
 
+	const double unfilteredReferenceElevation = reference.elevation;
+	simple_lowpass(dt, 0.05, &referenceElevation, reference.elevation);
+	//referenceElevation = reference.elevation;
 	// Look up the steady state speed for our reference elevation
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
+	if (isnan(referenceSpeed))
+	{
+		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
+		return;
+	}
+	const double unfilteredReferenceSpeed = lookup_steady_state_speed(unfilteredReferenceElevation);
 	if (isnan(referenceSpeed))
 	{
 		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
@@ -141,38 +161,34 @@ void  ControllerTemplate::updateHook()
 	}
 	else 
 	{
-		feedForwardTermAsSpeed = referenceSpeed; // Rad/s
-		feedForwardTermAsAngle = referenceElevation; // Rad
+		feedForwardTermAsSpeed = unfilteredReferenceSpeed; // Rad/s
+		feedForwardTermAsAngle = unfilteredReferenceElevation; // Rad
 		feedForwardTermHasBeenSet = true;
 	}
 
-	// Update our derivative and integral filters
-	if(trigger_last_is_valid)
-	{
-		double dt = (trigger - trigger_last)*1.0e-9; // seconds
-		double tau = 0.2;
-		double d_elevation = (elevation - lastElevation)/dt;
-		simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
-	
-		ierror += error*dt; //Rad*s Elevetion integration
-	} else {
-		trigger_last_is_valid = true;
-	}
 	error = referenceElevation - elevation; // Radians
+
+	// Update our derivative and integral filters
+	double tau = 0.05;
+	double d_elevation = (elevation - lastElevation)/dt;
+	simple_lowpass(dt, tau, &derivativeLowpassFilterState, d_elevation);
+
+	ierror += error*dt; //Rad*s Elevetion integration
 	derror = 0.0 - derivativeLowpassFilterState; // Radians / s.  This is an error if d/dt of reference = 0
 
 	lastElevation = elevation; // Now that we're done using elevation, save it for next time.
 
-	// Bound the controller to referenceSpeed +/- 
-	const double speedBand = .05; // Rad/s
-
-	//cout << "Looked up value is " << referenceSpeed << endl;
 	double pTerm = g.Kp * error;
 	double iTerm = g.Ki * ierror;
-	double dTerm = g.Kd * derror;
+	double dTerm = g.Kp * g.Kd * derror;
 
-	double iTermBound = 0.1; //Rad elevation
-	clamp(ierror, -iTermBound/g.Ki, iTermBound/g.Ki); 
+	double iTermBound = 1.0; // Rad elevation
+	if(clamp(ierror, -iTermBound/(g.Ki + 0.00001), iTermBound/(g.Ki+0.00001)))
+	{
+		ierror = 0;
+		log(Warning) << "Warning, reset ierror term automatically due to clamp!" << endlog(); 
+	}
+
 	double pidTerm  = pTerm + iTerm + dTerm;
 
 #define USE_MORITZ_IDEA 1
@@ -183,15 +199,14 @@ void  ControllerTemplate::updateHook()
 		log(Warning) << "controllerTemplate: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
 		return;
 	}
-	double control = pidControlAsSpeed; // Rad/s
+	double controlAsSpeed = pidControlAsSpeed; // Rad/s
 #else
-	double control = feedForwardTermAsSpeed + pidTerm; // Rad/s
+	double controlAsSpeed = feedForwardTermAsSpeed + pidTerm; // Rad/s
 #endif
 
-	clamp(control,referenceSpeed-speedBand,referenceSpeed+speedBand);
+	clamp(controlAsSpeed,1.1,1.9); // Pretty much the full range of flying speed
 
-
-	driveCommand.carouselSpeedSetpoint = control;
+	driveCommand.carouselSpeedSetpoint = controlAsSpeed;
 
 	driveCommand.ts_trigger = trigger;
 	double ts_elapsed = TimeService::Instance()->secondsSince( trigger );
@@ -205,14 +220,35 @@ void  ControllerTemplate::updateHook()
 	portGainsOut.write(gains);
 
 	// Write out all of our debug info
+	debug.referenceElevation = referenceElevation;
+	debug.referenceSpeed = referenceSpeed;
+	debug.unfilteredReferenceElevation = unfilteredReferenceElevation;
+	debug.unfilteredReferenceSpeed = unfilteredReferenceSpeed;
+	debug.elevation = elevation;
+
 	debug.Kp = gains.Kp;
 	debug.Ki = gains.Ki;
 	debug.Kd = gains.Kd;
+
 	debug.derivativeLowpassFilterState = derivativeLowpassFilterState;
-	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
-	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+	debug.d_elevation = d_elevation;
+	debug.dt = dt;
+
+	debug.error = error;
 	debug.ierror = ierror;
 	debug.derror = derror;
+
+	debug.feedForwardTermAsAngle = feedForwardTermAsAngle;
+	debug.feedForwardTermAsSpeed = feedForwardTermAsSpeed;
+
+	debug.pTerm = pTerm;
+	debug.iTerm = iTerm;
+	debug.dTerm = dTerm;
+
+	debug.pidTerm = pidTerm;
+
+	debug.controlAsSpeed = controlAsSpeed;
+
 	debug.ts_trigger = trigger;
 	debug.ts_elapsed = ts_elapsed;
 	portDebug.write(debug);
@@ -223,7 +259,6 @@ void  ControllerTemplate::updateHook()
 	if(gainsStatus == NewData) { gains = tempGains; }
 
 }
-
 
 void  ControllerTemplate::stopHook()
 {}

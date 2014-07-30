@@ -48,14 +48,9 @@ end
 -- Load up a carouselSimulator component regardless of we are doing simulations,
 -- since we also use it for the steady state lookup tables.
 load_component("carouselSimulator","CarouselSimulator","carouselSimulator")
---function lookup_steady_state_speed(elevation)
-	--carouselSimulator:lookup_steady_state_speed(elevation)
---end
---function lookup_steady_state_elevation(speed)
-	--carouselSimulator:lookup_steady_state_elevation(speed)
---end
 carouselSimulator:configure()
 lookup_steady_state_elevation = carouselSimulator:getOperation('lookup_steady_state_elevation')
+lookup_steady_state_speed = carouselSimulator:getOperation('lookup_steady_state_speed')
 
 ----------------- Set Priorities and activities
 

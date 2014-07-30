@@ -73,6 +73,11 @@ function reload_gains()
 end
 reload_gains()
 
+-- Convenience function for resetting the controller integrator
+function reset_integrator()
+	set_property("controller","ierror",0.0)
+end
+
 function set_pid_gains(Kp, Ki, Kd)
 	if not (theGainLoader == "pidGainLoader") then
 		print "Cannot set pid gains on a non-pid gain loader!"
@@ -81,6 +86,8 @@ function set_pid_gains(Kp, Ki, Kd)
 	set_property("pidGainLoader","Kp",Kp)
 	set_property("pidGainLoader","Ki",Ki)
 	set_property("pidGainLoader","Kd",Kd)
+
+	reset_integrator()
 	pidGainLoader:trigger()
 end
 

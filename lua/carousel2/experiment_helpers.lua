@@ -1,8 +1,8 @@
 -- WARNING!! These values also get parsed out of this file by 
 -- plot_steady_states.py, so if you change the names of the variables,
 -- fix them there as well!
-takeoffSpeed = 1.0 -- Rad/s, a bit before takeoff.
-takeoffAngle = -1.1344 -- Radians
+takeoffSpeed = 1.10-- Rad/s, a bit before takeoff.
+takeoffAngle = -1.2566-- Radians
 turbulentSpeed = 2.4 -- Rad/s . speed above which the ball starts moving eratically
 normalFlyingSpeed = 1.6 
 normalStepHeight = .12 -- Rad/s
@@ -85,7 +85,7 @@ end
 
 -- functionGenerator related functions
 
-function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+function set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
 	
 	set_property("functionGenerator","type",functionType)
 	set_property("functionGenerator","amplitude",amplitude)
@@ -93,6 +93,7 @@ function set_functionGenerator_properties(functionType,whichDrive,amplitude,offs
 	set_property("functionGenerator","offset",offset)
 	set_property("functionGenerator","frequency",frequency)
 	set_property("functionGenerator","whichDrive",whichDrive)
+	set_property("functionGenerator","numberOfSines", numberOfSines)
 end
 
 -- Stepping from zero to some value
@@ -109,7 +110,7 @@ function start_stepping()
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start()
 	functionGenerator:start()
 end
@@ -131,7 +132,7 @@ function step_around_current_setpoint(stepHeight,lowtime)
 	period = 2.0*lowtime
 	frequency = 1.0/period
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start() -- make sure actuator are running
 	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
 	print "Starting function generator"
@@ -145,7 +146,7 @@ function sin_around_current_setpoint(amplitude,frequency)
 	phase = 0 
 	offset = get_carousel_setpoint()
 
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 	siemensActuators:start()
 	functionGenerator:stop() -- make sure the sin will start at currentspeed to avoid jumps 
 	print "Starting function generator"
@@ -165,7 +166,7 @@ end
 function stop_functionGenerator()
 	--safe stop of the functionGenerator
 	functionGenerator:stop()
-	set_functionGenerator_properties(0,0,0,0,0,0)
+	set_functionGenerator_properties(0,0,0,0,0,0,0)
 end
 ----------------- THE EXPERIMENTS!!!!!!! -------------
 function run()
@@ -253,25 +254,43 @@ end
 function run_pid_experiment()
 	print "Running PID experiment..."
 
-	changingGainsOnline = true
+	changingGainsOnline = false
 
-	fast_ramp(normalFlyingSpeed)
+	-- A conservative choice of heights, working pretty well.
+	h_high = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
+	h_low = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
 
-	h1 = lookup_steady_state_elevation(normalFlyingSpeed+normalStepHeight/2.0)
-	h2 = lookup_steady_state_elevation(normalFlyingSpeed-normalStepHeight/2.0)
-	stepHeight = h1-h2 -- Radians
+	-- A more aggressive choice of hights, not working so well.
+	--h_high = -40.0*math.pi/180.0
+	--h_low = -55.0*math.pi/180.0
+
+	speed_high = lookup_steady_state_speed(h_high)
+	--if math.isnan(speed_high) then
+		--print "experiment_helpers: lookup failed on h_high"
+		--return
+	--end
+	speed_low = lookup_steady_state_speed(h_low)
+	--if math.isnan(speed_low) then
+		--print "experiment_helpers: lookup failed on h_low"
+		--return
+	--end
+	print(tostring(speed_high))
+	print(tostring(speed_low))
+	fast_ramp(speed_low)
+
+	stepHeight = h_high-h_low -- Radians
 
 	-- Set up Function Generator
 	functionType = 1 -- for square wave
 	whichDrive = 1 -- for carousel, but also currently needed for controller reference
 	amplitude = stepHeight/2.0
-	phase = 3.1416 -- a bit more than PI to make sure we start at 0
-	offset = lookup_steady_state_elevation(normalFlyingSpeed) -- Radians
-	lowtime = 16*1.5
+	phase = 0.0001 
+	offset = h_low + stepHeight/2.0 -- Radians
+	lowtime = 20 
 	period = 2.0*lowtime
 	frequency = 1.0/period
-	periods = 3 -- number of periods to run for
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase)
+	periods = 4 -- number of periods to run for
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,0)
 
 	-- Start the Experiment
 	siemensActuators:start()
@@ -279,23 +298,41 @@ function run_pid_experiment()
 	functionGenerator:start() -- has to be before controller is started!
 	sleep(1) -- TODO: Figure out why it takes a long time to get measurement data!
 
-	if changingGainsOnline then
-		set_pid_gains(0,0,0)
-	else
-		set_pid_gains(.2,.2,.2)
-	end
+	set_pid_gains(0,0,0)
 
 	controller:start() -- This is where the integrator is reset
 	sleep(.1) -- Time for the controller state to settle
-	set_property("controller","freezeFeedForwardTerm",true)
 
-	sleep(periods*lowtime*2)
-	functionGenerator:stop()
-	controller:stop()
+	set_property("controller","freezeFeedForwardTerm",true) -- Needs to be after you start controller so the controller has a reasonable feedforward term to freeze.
+	--set_property("controller","freezeFeedForwardTerm",false)
 
 	if not changingGainsOnline then
+		sleep(0.5*period) -- Get past any transient from the ramp
+		set_pid_gains(.42,.65,.44)
+		sleep(periods*period)
 		fast_ramp(0)
 	end
 end
 
+function run_multisine_experiment()
 
+	print "Running multisine experiment..."
+	-- Set up Function Generator
+	functionType = 2 -- for multisine
+	whichDrive = 1 -- for carousel, but also currently needed for controller reference
+	amplitude = 0.03 -- rad/s !!Multiplies with numberOfSines/2!!
+	phase = 0.0 
+	offset = normalFlyingSpeed -- Radians
+	frequency = 0.05 -- Hz. The lowest frequency in the multisine
+	numberOfSines = 8 
+	periods = 4 -- number of periods to run for
+	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
+	
+	-- Start the experiment
+	siemensActuators:start()
+	fast_ramp(offset)
+	functionGenerator:stop()
+	functionGenerator:start()
+	sleep(periods/frequency)
+	fast_ramp(0)
+end

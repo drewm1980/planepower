@@ -39,6 +39,7 @@ private:
 	double offset;  // Rad/s   (inherrited from SiemensDriveCommand)
 	double phase; // Radians
 	double frequency; // Hz
+	int numberOfSines; // number of sines for multisine
 	TIME_TYPE startTime; // nsec.  Time is relative to this.
 };
 
