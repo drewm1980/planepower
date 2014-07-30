@@ -35,35 +35,39 @@ PE = PE +1/2*k*(delta_motor-delta_arm)^2;
 %lagrangian
 L = KE - PE;
 
-%substitute in uniform names for our generalized coordinates
+% Lists of symbols to be used for substitutions
 syms q1(t) q2(t) q3(t) q4(t);
 syms q1dot(t) q2dot(t) q3dot(t) q4dot(t);
 syms q1ddot(t) q2ddot(t) q3ddot(t) q4ddot(t);
-vars = [delta_arm, delta_motor, alpha, beta];
-diffvars = [diff(delta_arm,t),diff(delta_motor,t),diff(alpha,t),diff(beta,t)];
-diffqs = [diff(q1,t),diff(q2,t), diff(q3,t), diff(q4,t)];
-diffqdots = [diff(q1dot,t), diff(q2dot,t), diff(q3dot,t), diff(q4dot,t)];
+vars = [delta_arm; delta_motor; alpha; beta];
+diffvars = [diff(delta_arm,t);diff(delta_motor,t);diff(alpha,t);diff(beta,t)];
+diffqs = [diff(q1,t);diff(q2,t); diff(q3,t); diff(q4,t)];
+diffqdots = [diff(q1dot,t); diff(q2dot,t); diff(q3dot,t); diff(q4dot,t)];
 qs = [q1; q2; q3;q4];
 qdots = [q1dot; q2dot; q3dot; q4dot];
 qddots= [q1ddot; q2ddot; q3ddot; q4ddot];
-L = subs(L, vars, qs);
-L = subs(L, diffvars, qdots);
-L = subs(L, diffqs, qdots);
+
+% Substitute in uniform names for our generalized coordinates
+L_q = subs(L, vars, qs);
+L_q = subs(L_q, diffvars, diffqs);
+
+% Substitute in symbols for the derivatives
+L_q = subs(L_q, diffqs, qdots);
 
 % Compute residual of the Euler-Lagrange equation:
 % 0 = d/dt dL/dqdot - dL/dq
 % Note, the diffDepVar makes it possible to differentiate f(g(t)) with 
 % respect to g, without applying chain rule on g.
-eq1 = diff(diffDepVar(L,q1dot), t) - diffDepVar(L,q1);
-eq2 = diff(diffDepVar(L,q2dot), t) - diffDepVar(L,q2);
-eq3 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q3);
-eq4 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q4);
+eq1 = diff(diffDepVar(L_q,q1dot), t) - diffDepVar(L_q,q1);
+eq2 = diff(diffDepVar(L_q,q2dot), t) - diffDepVar(L_q,q2);
+eq3 = diff(diffDepVar(L_q,q3dot), t) - diffDepVar(L_q,q3);
+eq4 = diff(diffDepVar(L_q,q4dot), t) - diffDepVar(L_q,q4);
 
 % The above manipulation introduced new and old derivative terms,
 % notably acceleration terms.
 % Rename them for uniformity.
 
-eqs = vertcat(eq1, eq2, eq3, eq4);
+eqs = [eq1; eq2; eq3; eq4];
 eqs = subs(eqs,diffqs,qdots);
 eqs = subs(eqs,diffqdots,qddots);
 
@@ -78,7 +82,9 @@ eqs = subs(eqs,qddots,Qddots);
 
 % Expanding terms will reduce the number of parantheses, making
 % it easier to see what is going on...
-eqs = expand(eqs);
+%eqs = expand(eqs);
+eqs = simplify(eqs);
+%pretty(eqs)
 
 % put all second derivatives and equations into vectors
 % since second derivatives enter multiplicatively, M corresponds to their
@@ -86,7 +92,10 @@ eqs = expand(eqs);
 % eqs = M*Qddots + c
 
 M = jacobian(eqs,Qddots);
+M = simplify(M)
+%pretty(M)
 c = simplify(eqs - M*Qddots);
+%pretty(c)
 
 % Define our full state vector for our ODE
 state = [Qs; Qdots];
