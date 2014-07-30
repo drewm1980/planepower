@@ -71,10 +71,10 @@ deployer:connect("lineAngleSensor2.data","lineAngleSensor2Telemetry.msgData", cp
 deployer:connect("armboneLisaSensors.GyroState","armboneGyroTelemetry.msgData", cp)
 deployer:connect("armboneLisaSensors.AccelState","armboneAccelTelemetry.msgData", cp)
 deployer:connect("armboneLisaSensors.MagState","armboneMagTelemetry.msgData", cp)
+deployer:connect("functionGenerator.refData","referenceTelemetry.msgData", cp)
 if runningOpenLoop then
 	deployer:connect("functionGenerator.data","controllerTelemetry.msgData", cp)
 else
-	deployer:connect("functionGenerator.refData","referenceTelemetry.msgData", cp)
 	deployer:connect("resampler.data","resampledMeasurementsTelemetry.msgData", cp)
 	deployer:connect("controller.data","controllerTelemetry.msgData", cp)
 	deployer:connect("controller.debug","pidDebugTelemetry.msgData", cp)

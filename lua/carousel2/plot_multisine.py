@@ -31,7 +31,7 @@ if __name__=='__main__':
     legend()
 
     ax2 = subplot(2,1,2,sharex=ax1)
-    plot_function_generator_reference_angle(ax2,startTime)
+    plot_function_generator_reference_speed(ax2,startTime)
     plot_function_generator_cycle_clock(ax2,startTime)
     legend()
     show()

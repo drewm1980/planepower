@@ -317,22 +317,29 @@ end
 function run_multisine_experiment()
 
 	print "Running multisine experiment..."
-	-- Set up Function Generator
-	functionType = 2 -- for multisine
-	whichDrive = 1 -- for carousel, but also currently needed for controller reference
-	amplitude = 0.03 -- rad/s !!Multiplies with numberOfSines/2!!
-	phase = 0.0 
-	offset = normalFlyingSpeed -- Radians
-	frequency = 0.05 -- Hz. The lowest frequency in the multisine
-	numberOfSines = 8 
-	periods = 4 -- number of periods to run for
-	set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
-	
-	-- Start the experiment
-	siemensActuators:start()
-	fast_ramp(offset)
-	functionGenerator:stop()
-	functionGenerator:start()
-	sleep(periods/frequency)
-	fast_ramp(0)
+	if runningOpenLoop then
+		
+		-- set up function generator
+		functionType = 2 -- for multisine
+		whichDrive = 1 -- for carousel
+		amplitude = 0.03 -- rad/s !!multiplies with numberofsines/2!!
+		phase = 0.0 
+		offset = normalFlyingSpeed -- radians
+		frequency = 0.05 -- hz. the lowest frequency in the multisine
+		numberOfSines = 8 
+		periods = 10 -- number of periods to run for
+		
+		--always ramp before setting the functiongenerator properties
+		fast_ramp(offset)
+		set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
+
+		-- start the experiment
+		siemensActuators:start()
+		functionGenerator:stop()
+		functionGenerator:start()
+		sleep(periods/frequency)
+		fast_ramp(0)
+	else
+		print "Running open loop not activated! Visit main.lua to change it."
+	end
 end
