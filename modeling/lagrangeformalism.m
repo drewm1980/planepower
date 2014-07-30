@@ -26,26 +26,26 @@ v_ball = diff(p_ball,t);
 KE = 0;
 KE = KE + 1/2*m_ball*(v_ball.'*v_ball);
 KE = KE + 1/2*I_arm*diff(delta_arm,t)^2;
-KE = KE + 1/2*I_motor*diff(delta_motor,t)^2
+KE = KE + 1/2*I_motor*diff(delta_motor,t)^2;
 
 %potential energy
 PE = m_ball*g*(-l_tether*sin(alpha));
-PE = PE +1/2*k*(delta_motor-delta_arm)^2
+PE = PE +1/2*k*(delta_motor-delta_arm)^2;
 
 %lagrangian
-L = KE - PE
+L = KE - PE;
 
 %substitute in uniform names for our generalized coordinates
-syms q1(t) q2(t) q3(t) q4(t)
-syms q1dot(t) q2dot(t) q3dot(t) q4dot(t)
-syms q1ddot(t) q2ddot(t) q3ddot(t) q4ddot(t)
+syms q1(t) q2(t) q3(t) q4(t);
+syms q1dot(t) q2dot(t) q3dot(t) q4dot(t);
+syms q1ddot(t) q2ddot(t) q3ddot(t) q4ddot(t);
 vars = [delta_arm, delta_motor, alpha, beta];
 diffvars = [diff(delta_arm,t),diff(delta_motor,t),diff(alpha,t),diff(beta,t)];
 diffqs = [diff(q1,t),diff(q2,t), diff(q3,t), diff(q4,t)];
 diffqdots = [diff(q1dot,t), diff(q2dot,t), diff(q3dot,t), diff(q4dot,t)];
-qs = [q1, q2, q3,q4];
-qdots = [q1dot, q2dot, q3dot, q4dot];
-qddots= [q1ddot, q2ddot, q3ddot, q4ddot];
+qs = [q1; q2; q3;q4];
+qdots = [q1dot; q2dot; q3dot; q4dot];
+qddots= [q1ddot; q2ddot; q3ddot; q4ddot];
 L = subs(L, vars, qs);
 L = subs(L, diffvars, qdots);
 L = subs(L, diffqs, qdots);
@@ -54,53 +54,44 @@ L = subs(L, diffqs, qdots);
 % 0 = d/dt dL/dqdot - dL/dq
 % Note, the diffDepVar makes it possible to differentiate f(g(t)) with 
 % respect to g, without applying chain rule on g.
-eq1 = diff(diffDepVar(L,q1dot), t) - diffDepVar(L,q1)
-eq2 = diff(diffDepVar(L,q2dot), t) - diffDepVar(L,q2)
-eq3 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q3)
-eq4 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q4)
+eq1 = diff(diffDepVar(L,q1dot), t) - diffDepVar(L,q1);
+eq2 = diff(diffDepVar(L,q2dot), t) - diffDepVar(L,q2);
+eq3 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q3);
+eq4 = diff(diffDepVar(L,q3dot), t) - diffDepVar(L,q4);
 
 % The above manipulation introduced new and old derivative terms,
 % notably acceleration terms.
 % Rename them for uniformity.
 
 eqs = vertcat(eq1, eq2, eq3, eq4);
-eqs = subs(eqs,diffqs,qdots)
-eqs = subs(eqs,diffqdots,qddots)
+eqs = subs(eqs,diffqs,qdots);
+eqs = subs(eqs,diffqdots,qddots);
 
 % The time dependence isn't relevant to solving the above equations for q*ddot
 syms         Q1 Q2 Q3 Q4 Q1dot Q2dot Q3dot Q4dot Q1ddot Q2ddot Q3ddot Q4ddot;
-Qs = [Q1,Q2,Q3,Q4];
-Qdots = [Q1dot,Q2dot,Q3dot,Q4dot];
-Qddots = [Q1ddot,Q2ddot,Q3ddot,Q4ddot];
-eqs = subs(eqs
-eq1 = subs(eq1,subslist3,subslist4)
-eq2 = subs(eq2,subslist3,subslist4)
-eq3 = subs(eq3,subslist3,subslist4)
-eq4 = subs(eq4,subslist3,subslist4)
+Qs = [Q1;Q2;Q3;Q4];
+Qdots = [Q1dot;Q2dot;Q3dot;Q4dot];
+Qddots = [Q1ddot;Q2ddot;Q3ddot;Q4ddot];
+eqs = subs(eqs,qs,Qs);
+eqs = subs(eqs,qdots,Qdots);
+eqs = subs(eqs,qddots,Qddots);
 
 % Expanding terms will reduce the number of parantheses, making
 % it easier to see what is going on...
-eq1 = expand(eq1)
-eq2 = expand(eq2)
-eq3 = expand(eq3)
-eq4 = expand(eq4)
+eqs = expand(eqs);
 
 % put all second derivatives and equations into vectors
 % since second derivatives enter multiplicatively, M corresponds to their
 % coefficients
-% eqs = M*Qddot + c
+% eqs = M*Qddots + c
 
-
-Qddot = vertcat(Q1ddot, Q2ddot, Q3ddot, Q4ddot);
-
-M = jacobian(eqs,Qddot);
-c = simplify(eqs - M*Qddot);
+M = jacobian(eqs,Qddots);
+c = simplify(eqs - M*Qddots);
 
 % Define our full state vector for our ODE
-state = [Q1; Q2; Q3; Q4; Q1dot; Q2dot; Q3dot; Q4dot];
+state = [Qs; Qdots];
 % first part of f(x,u)
-subs(M,state,zeros(size(state)))
-f1 = [Q1dot; Q2dot; Q3dot; Q4dot];
+%subs(M,state,zeros(size(state))) 
+f1 = Qdots;
 f2 = M\(-c);
-
-f = [f1; f2]
+f = [f1; f2];

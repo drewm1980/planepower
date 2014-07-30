@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
 	cout << "Measuring how fast we are receiving packets from the Armbone..." << endl;
 	timespec t1, t2;
-	const float trials = 1000.0;
+	const float trials = 100.0;
 	clock_gettime(CLOCK_REALTIME, &t1); 
 	for(int i=0; i<trials; i++) { s.read(&ig, &im, &ia); }
 	clock_gettime(CLOCK_REALTIME, &t2); 
