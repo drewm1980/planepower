@@ -75,12 +75,14 @@ void  FunctionGenerator::updateHook()
 			break;
 		case 3: // log multisin
 			for (int k = 1; k <= numberOfSines; k++) {
+				double logk;
+				double multiPhase = 0.0; 
 				if(numberOfSines < 2) {
-					double logk = 1;
+					logk = 1;
 				} else { 
 					double d = (k-1) * numberOfDecades / (numberOfSines-1); // linear spaces from 0 to numberOfDecades
-					double logk = round(pow(10,d)); // log space from 1 to 10^numberOfDecades
-					double multiPhase = -k * (k-1) * PI / numberOfSines;
+					logk = round(pow(10,d)); // log space from 1 to 10^numberOfDecades
+					multiPhase = -k * (k-1) * PI / numberOfSines;
 				}
 				double w = logk * wLowest;
 				sinvalue += amplitude * sin(w*t + multiPhase);

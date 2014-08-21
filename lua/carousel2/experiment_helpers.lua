@@ -343,3 +343,33 @@ function run_multisine_experiment()
 		print "Running open loop not activated! Visit main.lua to change it."
 	end
 end
+
+function run_log_multisine_experiment()
+
+	print "Running log  multisine experiment..."
+	if runningOpenLoop then
+		
+		-- set up function generator
+		functionType = 3 -- for log multisine
+		whichDrive = 1 -- for carousel
+		amplitude = 0.01 -- rad/s !!always test without activated drives first!!
+		numberOfDecades = 2 -- 10^0 to 10^3 
+		offset = normalFlyingSpeed -- radians
+		frequency = 0.05 -- hz. the lowest frequency in the multisine
+		numberOfSines = 20
+		periods = 2 -- number of periods to run for
+		
+		--always ramp before setting the functiongenerator properties
+		fast_ramp(offset)
+		set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,numberOfDecades,numberOfSines)
+
+		-- start the experiment
+		siemensActuators:start()
+		functionGenerator:stop()
+		functionGenerator:start()
+		sleep(periods/frequency)
+		fast_ramp(0)
+	else
+		print "Running open loop not activated! Visit main.lua to change it."
+	end
+end
