@@ -51,21 +51,38 @@ void  FunctionGenerator::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	double t = (trigger - startTime) * 1e-9;
 	double value;
+	double numberOfDecades = phase; //hack for changing the numberOfDecades
 	double sinvalue = 0;
 	double wLowest = frequency * 2 * PI;		
 	switch (type)
 	{
-		case 0:
+		case 0: // sin wave
 			value = offset + amplitude * sin(t * frequency*(2.0*3.1415) + phase);
 			break;
-		case 1:
+		case 1: // square wave
 			sinvalue = sin(t * frequency*(2.0*3.1415) + phase);
 			value = offset + amplitude * (2*(sinvalue > 0.0)-1.0);
 			break;
-		case 2:
+		case 2: // linear multisin
 			for (int k = 1; k <= numberOfSines; k++) {
 				double w = k * wLowest;
 				double multiPhase = -k * (k-1) * PI / numberOfSines;
+				sinvalue += amplitude * sin(w*t + multiPhase);
+			}
+			value = offset + sinvalue;
+			//adding cycle clock find the periods easy
+			reference.cycle = (double)(sin(wLowest*t) > 0.0);	
+			break;
+		case 3: // log multisin
+			for (int k = 1; k <= numberOfSines; k++) {
+				if(numberOfSines < 2) {
+					double logk = 1;
+				} else { 
+					double d = (k-1) * numberOfDecades / (numberOfSines-1); // linear spaces from 0 to numberOfDecades
+					double logk = round(pow(10,d)); // log space from 1 to 10^numberOfDecades
+					double multiPhase = -k * (k-1) * PI / numberOfSines;
+				}
+				double w = logk * wLowest;
 				sinvalue += amplitude * sin(w*t + multiPhase);
 			}
 			value = offset + sinvalue;
