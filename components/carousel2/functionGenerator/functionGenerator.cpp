@@ -78,18 +78,11 @@ void  FunctionGenerator::updateHook()
 			//adding cycle clock find the periods easy
 			reference.cycle = (double)(sin(wLowest*t) > 0.0);	
 			break;
-		case 3: // log multisin NOT WORKING
+		case 3: // log multisin
 			for (int k = 1; k <= numberOfSines; k++) {
-				double logk;
-				double multiPhase = 0.0; 
-				if(numberOfSines < 2) {
-					logk = 1;
-				} else { 
-					double d = (k-1) * rangeOfSines / (numberOfSines-1); // linear spaces from 0 to numberOfDecades
-					logk = round(pow(10,d)); // log space from 1 to 10^numberOfDecades
-					multiPhase = -k * (k-1) * PI / numberOfSines;
-				}
-				double w = logk * wLowest;
+				double logk = round(pow(10,log10(wStart) + k * log10(wEnd/wStart) / numberOfSines) / wLowest);
+				double w = wLowest * logk;
+				double multiPhase = -k * (k-1) * PI / numberOfSines;
 				sinvalue += amplitude * sin(w*t + multiPhase);
 			}
 			value = offset + sinvalue;
