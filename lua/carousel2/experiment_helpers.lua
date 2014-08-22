@@ -96,6 +96,19 @@ function set_functionGenerator_properties(functionType,whichDrive,amplitude,offs
 	set_property("functionGenerator","numberOfSines", numberOfSines)
 end
 
+
+function set_functionGenerator_for_multisine(amplitude,offset,frequency,numberOfSines,wStar,wEnd)
+	
+	set_property("functionGenerator","type",2)
+	set_property("functionGenerator","amplitude",amplitude)
+	set_property("functionGenerator","phase",0)
+	set_property("functionGenerator","offset",offset)
+	set_property("functionGenerator","frequency",frequency)
+	set_property("functionGenerator","whichDrive",1)
+	set_property("functionGenerator","numberOfSines", numberOfSines)
+	set_property("functionGenerator","wStart", wStart)
+	set_property("functionGenerator","wEnd", wEnd)
+end
 -- Stepping from zero to some value
 function start_stepping()
 	--Set the parameterf of our function generator for a step response
@@ -329,13 +342,12 @@ function run_multisine_experiment()
 		numberOfSines = 8 
 		periods = 10 -- number of periods to run for
 		
+		-- start the experiment
+		siemensActuators:start()
 		--always ramp before setting the functiongenerator properties
 		fast_ramp(offset)
 		set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,phase,numberOfSines)
 
-		-- start the experiment
-		siemensActuators:start()
-		functionGenerator:stop()
 		functionGenerator:start()
 		sleep(periods/frequency)
 		fast_ramp(0)
@@ -353,19 +365,46 @@ function run_log_multisine_experiment()
 		functionType = 3 -- for log multisine
 		whichDrive = 1 -- for carousel
 		amplitude = 0.01 -- rad/s !!always test without activated drives first!!
-		numberOfDecades = 2 -- 10^0 to 10^3 
+		numberOfDecades = 2 -- 10^0 to 100 
 		offset = normalFlyingSpeed -- radians
 		frequency = 0.05 -- hz. the lowest frequency in the multisine
 		numberOfSines = 20
 		periods = 2 -- number of periods to run for
 		
+		-- start the experiment
+		siemensActuators:start()
 		--always ramp before setting the functiongenerator properties
 		fast_ramp(offset)
 		set_functionGenerator_properties(functionType,whichDrive,amplitude,offset,frequency,numberOfDecades,numberOfSines)
 
+		functionGenerator:start()
+		sleep(periods/frequency)
+		fast_ramp(0)
+	else
+		print "Running open loop not activated! Visit main.lua to change it."
+	end
+end
+
+function run_multisine_experiment2()
+
+	print "Running multisine experiment..."
+	if runningOpenLoop then
+		
+		-- set up function generator
+		amplitude = 0.01 -- rad/s !!multiplies with numberofsines/2!!
+		offset = normalFlyingSpeed -- radians
+		frequency = 0.1/(2*PI) -- hz. the lowest frequency in the multisine
+		numberOfSines = 20 
+		wStart = 1
+		wEnd = 3
+		periods = 10 -- number of periods to run for
+		
 		-- start the experiment
 		siemensActuators:start()
-		functionGenerator:stop()
+		--always ramp before setting the functiongenerator properties
+		fast_ramp(offset)
+		set_functionGenerator_for_multisine(amplitude,offset,frequency,numberOfSines,wStart,wEnd)
+
 		functionGenerator:start()
 		sleep(periods/frequency)
 		fast_ramp(0)
