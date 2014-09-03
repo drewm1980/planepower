@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("lqrController")
+ 
+#Create components
+loadComponent("lqrController","LqrController")
+ 
+lqrController.configure()
+lqrController.start()
