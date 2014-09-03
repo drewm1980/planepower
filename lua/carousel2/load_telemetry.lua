@@ -33,7 +33,7 @@ deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuGyro.so"
 deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuAccel.so")
 deployer:import("../../components/carousel2/armboneLisaSensors/types/ImuMag.so")
 deployer:import("../../components/carousel2/functionGenerator/types/Reference.so")
-deployer:import("../../components/carousel2/controllerTemplate/types/PIDControllerDebug.so")
+deployer:import("../../components/carousel2/pidController/types/PIDControllerDebug.so")
 
 for i=1,#telemetryInstanceNames do
 	--deployer:import(telemetryClassNames[i])

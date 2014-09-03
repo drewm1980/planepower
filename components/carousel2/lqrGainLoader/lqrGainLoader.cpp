@@ -1,4 +1,4 @@
-#include "pidGainLoader.hpp"
+#include "lqrGainLoader.hpp"
 
 #include <rtt/Logger.hpp>
 #include <rtt/os/TimeService.hpp>
@@ -10,9 +10,9 @@ using namespace RTT::os;
 
 typedef uint64_t TIME_TYPE;
 
-PidGainLoader::PidGainLoader(std::string name):TaskContext(name,PreOperational) 
+LqrGainLoader::LqrGainLoader(std::string name):TaskContext(name,PreOperational) 
 {
-	addPort("gains",portPIDGains).doc("Controller Gains");
+	addPort("gains",portLQRGains).doc("Controller Gains");
 
 	// The property loader/marshaller should load the values directly into our
 	// gains structure.
@@ -23,34 +23,34 @@ PidGainLoader::PidGainLoader(std::string name):TaskContext(name,PreOperational)
 	memset(&gains, 0, sizeof( gains ));
 }
 
-bool PidGainLoader::configureHook()
+bool LqrGainLoader::configureHook()
 {
 	return true;
 }
 
-bool  PidGainLoader::startHook()
+bool  LqrGainLoader::startHook()
 {
 	return true;
 }
 
-void  PidGainLoader::updateHook()
+void  LqrGainLoader::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 
 	gains.ts_trigger = trigger;
 	gains.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
 
-	portPIDGains.write(gains);
+	portLQRGains.write(gains);
 
 }
 
-void  PidGainLoader::stopHook()
+void  LqrGainLoader::stopHook()
 {}
 
-void  PidGainLoader::cleanupHook()
+void  LqrGainLoader::cleanupHook()
 {}
 
-void  PidGainLoader::errorHook()
+void  LqrGainLoader::errorHook()
 {}
 
-ORO_CREATE_COMPONENT( PidGainLoader )
+ORO_CREATE_COMPONENT( LqrGainLoader )

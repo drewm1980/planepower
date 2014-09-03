@@ -8,13 +8,13 @@
 
 #include <stdint.h>
 
-#include "PIDControllerGains.h"
+#include "LQRControllerGains.h"
 
-class PidGainLoader : public RTT::TaskContext
+class LqrGainLoader : public RTT::TaskContext
 {
 public:
-	PidGainLoader(std::string name);
-	virtual ~PidGainLoader(){};
+	LqrGainLoader(std::string name);
+	virtual ~LqrGainLoader(){};
 
 	virtual bool configureHook();
 	virtual bool startHook();
@@ -24,10 +24,10 @@ public:
 	virtual void errorHook();
 
 protected:
-	RTT::OutputPort< PIDControllerGains > portPIDGains;
+	RTT::OutputPort< LQRControllerGains > portLQRGains;
 private:
 
-	PIDControllerGains gains;
+	LQRControllerGains gains;
 };
 
 #endif

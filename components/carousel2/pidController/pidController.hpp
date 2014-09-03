@@ -16,11 +16,11 @@
 
 typedef uint64_t TIME_TYPE;
 
-class ControllerTemplate : public RTT::TaskContext
+class PidController : public RTT::TaskContext
 {
 public:
-	ControllerTemplate(std::string name);
-	virtual ~ControllerTemplate(){};
+	PidController(std::string name);
+	virtual ~PidController(){};
 
 	virtual bool configureHook();
 	virtual bool startHook();

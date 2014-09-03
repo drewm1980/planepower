@@ -33,7 +33,7 @@ end
 
 -- This would be a convenient place to switch between controllers:
 -- It is probably best to keep the instance named "controller"
-load_component("controllerTemplate","ControllerTemplate","controller")
+load_component("pidController","PidController","controller")
 
 
 ----------------- Set Priorities and activities

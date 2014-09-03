@@ -1,4 +1,4 @@
-#include "controllerTemplate.hpp"
+#include "pidController.hpp"
 
 #include <rtt/Logger.hpp>
 #include <rtt/os/TimeService.hpp>
@@ -22,7 +22,7 @@ void simple_lowpass(double dt, double tau, double *state, double input)
 	*state = (*state)*emdt + input*(1-emdt);
 }
 
-ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOperational) 
+PidController::PidController(std::string name):TaskContext(name,PreOperational) 
 {
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
 	addPort("gains",portPIDControllerGains).doc("Controller Gains");
@@ -52,19 +52,19 @@ ControllerTemplate::ControllerTemplate(std::string name):TaskContext(name,PreOpe
 
 }
 
-bool ControllerTemplate::configureHook()
+bool PidController::configureHook()
 {
 	
 	FlowStatus gainsStatus = portPIDControllerGains.read(gains);
 	if(gainsStatus != NewData) 
 	{
-		log(Error) << "controllerTemplate: Cannot configure; gains are needed!" << endlog();
+		log(Error) << "pidController: Cannot configure; gains are needed!" << endlog();
 		return false;
 	}
 
 	if(! hasPeer("carouselSimulator"))
 	{
-		log(Error) << "controllerTemplate: Cannot configure; carouselSimulator needs to be a peer!" << endlog();
+		log(Error) << "pidController: Cannot configure; carouselSimulator needs to be a peer!" << endlog();
 		return false;
 	}
 	lookup_steady_state_speed = getPeer("carouselSimulator")->provides()->getOperation("lookup_steady_state_speed");
@@ -74,13 +74,13 @@ bool ControllerTemplate::configureHook()
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
 	{
-		log(Info) << "controllerTemplate: First read to measurements port was indeed not newData!" << endlog();
+		log(Info) << "pidController: First read to measurements port was indeed not newData!" << endlog();
 	}	
 
 	return true;
 }
 
-bool  ControllerTemplate::startHook()
+bool  PidController::startHook()
 {
 	derivativeLowpassFilterState = 0.0;
 
@@ -90,7 +90,7 @@ bool  ControllerTemplate::startHook()
 	FlowStatus refStatus = portReference.read(reference);
 	if (refStatus != NewData) 
 	{
-		log(Error) << "controllerTemplate: Cannot start without reference elevation!" << endlog();
+		log(Error) << "pidController: Cannot start without reference elevation!" << endlog();
 		return false;
 	}	
 	referenceElevation = reference.elevation; // For initializing the reference filter (if there is one)
@@ -102,14 +102,14 @@ bool  ControllerTemplate::startHook()
 	return true;
 }
 
-void  ControllerTemplate::updateHook()
+void  PidController::updateHook()
 {
 	trigger_last = trigger; 
 	trigger = TimeService::Instance()->getTicks();
 	if(!trigger_last_is_valid)
 	{
 		trigger_last_is_valid = true;
-		log(Info) << "controllerTemplate: returning early because need to initialize dt" << endlog();
+		log(Info) << "pidController: returning early because need to initialize dt" << endlog();
 		return;
 	}
 
@@ -118,7 +118,7 @@ void  ControllerTemplate::updateHook()
 	FlowStatus measurementStatus = portResampledMeasurements.read(resampledMeasurements);
 	if (measurementStatus != NewData) 
 	{
-		log(Warning) << "controllerTemplate: No new measurment data!! " << endlog();
+		log(Warning) << "pidController: No new measurment data!! " << endlog();
 		return;
 	}	
 
@@ -131,7 +131,7 @@ void  ControllerTemplate::updateHook()
 	FlowStatus referenceStatus = portReference.read(reference);
 	if (referenceStatus != NewData) 
 	{
-		//log(Warning) << "controllerTemplate: No new reference data on the input port!" << endlog();
+		//log(Warning) << "pidController: No new reference data on the input port!" << endlog();
 		// Not a warning because reference is not synced with the measurements...
 	}
 
@@ -142,13 +142,13 @@ void  ControllerTemplate::updateHook()
 	double referenceSpeed = lookup_steady_state_speed(referenceElevation);
 	if (isnan(referenceSpeed))
 	{
-		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
+		log(Warning) << "pidController: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
 		return;
 	}
 	const double unfilteredReferenceSpeed = lookup_steady_state_speed(unfilteredReferenceElevation);
 	if (isnan(referenceSpeed))
 	{
-		log(Warning) << "controllerTemplate: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
+		log(Warning) << "pidController: Line angle sensor is out of range of the lookup table so cannot look up a reference speed!" << endlog();
 		return;
 	}
 
@@ -156,7 +156,7 @@ void  ControllerTemplate::updateHook()
 	{
 		if (!feedForwardTermHasBeenSet)
 		{
-			log(Error) << "controllerTemplate: updateHook has been called before feedForwardTerm has had a chance to be set, while freezeFeedForwardTerm is set!" << endlog();
+			log(Error) << "pidController: updateHook has been called before feedForwardTerm has had a chance to be set, while freezeFeedForwardTerm is set!" << endlog();
 		}
 	}
 	else 
@@ -196,7 +196,7 @@ void  ControllerTemplate::updateHook()
 	double pidControlAsSpeed = lookup_steady_state_speed(feedForwardTermAsAngle+pidTerm);
 	if (isnan(pidControlAsSpeed))
 	{
-		log(Warning) << "controllerTemplate: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
+		log(Warning) << "pidController: Control (as elevation) is out of range of the lookup table so cannot look up the Control (as a speed)!" << endlog();
 		return;
 	}
 	double controlAsSpeed = pidControlAsSpeed; // Rad/s
@@ -260,13 +260,13 @@ void  ControllerTemplate::updateHook()
 
 }
 
-void  ControllerTemplate::stopHook()
+void  PidController::stopHook()
 {}
 
-void  ControllerTemplate::cleanupHook()
+void  PidController::cleanupHook()
 {}
 
-void  ControllerTemplate::errorHook()
+void  PidController::errorHook()
 {}
 
-ORO_CREATE_COMPONENT( ControllerTemplate )
+ORO_CREATE_COMPONENT( PidController )

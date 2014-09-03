@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("pidController")
+ 
+#Create components
+loadComponent("pidController","PidController")
+ 
+pidController.configure()
+pidController.start()
