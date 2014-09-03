@@ -1,4 +1,3 @@
-
 # By default, hide all symbols in shared libraries.
 CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
 
@@ -11,7 +10,7 @@ CPPFLAGS_OROCOS+=-I$(TUP_CWD)/siemensDrives
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lineAngleSensor2
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/armboneLisaSensors
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
-CPPFLAGS_OROCOS+=-I$(TUP_CWD)/gainLoader
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/functionGenerator
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/pidGainLoader
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lqrGainLoader
 

@@ -11,8 +11,8 @@
 #include "ResampledMeasurements.h"
 #include "SiemensDriveCommand.h"
 #include "Reference.h"
-#include "PIDControllerGains.h"
-#include "PIDControllerDebug.h"
+#include "LQRControllerGains.h"
+#include "LQRControllerDebug.h"
 
 typedef uint64_t TIME_TYPE;
 
@@ -31,17 +31,17 @@ public:
 
 protected:
 	RTT::InputPort< ResampledMeasurements > portResampledMeasurements;
-	RTT::InputPort< PIDControllerGains > portPIDControllerGains;
+	RTT::InputPort< LQRControllerGains > portLQRControllerGains;
 	RTT::InputPort< Reference > portReference;
 	RTT::OutputPort< SiemensDriveCommand > portDriveCommand;
-	RTT::OutputPort< PIDControllerGains > portGainsOut;
-	RTT::OutputPort< PIDControllerDebug > portDebug;
+	RTT::OutputPort< LQRControllerGains > portGainsOut;
+	RTT::OutputPort< LQRControllerDebug > portDebug;
 	bool freezeFeedForwardTerm;
 
 private:
 	ResampledMeasurements resampledMeasurements;
 	SiemensDriveCommand driveCommand;
-	PIDControllerGains gains;
+	LQRControllerGains gains;
 	Reference reference;
 	double error;
 	double ierror;
@@ -62,7 +62,7 @@ private:
 	RTT::OperationCaller< double(double) > lookup_steady_state_speed;
 	RTT::OperationCaller< double(double) > lookup_steady_state_elevation;
 
-	PIDControllerDebug debug;
+	LQRControllerDebug debug;
 
 };
 

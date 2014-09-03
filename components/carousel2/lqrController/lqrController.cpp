@@ -25,9 +25,9 @@ void simple_lowpass(double dt, double tau, double *state, double input)
 LqrController::LqrController(std::string name):TaskContext(name,PreOperational) 
 {
 	addEventPort("resampledMeasurements",portResampledMeasurements).doc("Resampled measurements from all sensors");
-	addPort("gains",portPIDControllerGains).doc("Controller Gains");
+	addPort("gains",portLQRControllerGains).doc("Controller Gains");
 	addPort("gainsOut",portGainsOut).doc("Controller Gains");
-	addPort("debug",portDebug).doc("PID controller debug info");
+	addPort("debug",portDebug).doc("LQR controller debug info");
 	addPort("data",portDriveCommand).doc("Command to the Siemens Drives");
 	addPort("reference",portReference).doc("Reference elevation");
 
@@ -55,7 +55,7 @@ LqrController::LqrController(std::string name):TaskContext(name,PreOperational)
 bool LqrController::configureHook()
 {
 	
-	FlowStatus gainsStatus = portPIDControllerGains.read(gains);
+	FlowStatus gainsStatus = portLQRControllerGains.read(gains);
 	if(gainsStatus != NewData) 
 	{
 		log(Error) << "lqrController: Cannot configure; gains are needed!" << endlog();
@@ -126,7 +126,7 @@ void  LqrController::updateHook()
 	//double & az = resampledMeasurements.azimuth;
 	double & elevation = resampledMeasurements.elevation;
 	//ControllerGains& g = gains;
-	PIDControllerGains& g = gains;
+	LQRControllerGains& g = gains;
 	
 	FlowStatus referenceStatus = portReference.read(reference);
 	if (referenceStatus != NewData) 
@@ -254,8 +254,8 @@ void  LqrController::updateHook()
 	portDebug.write(debug);
 
 	// Load in new gains if they are available
-	PIDControllerGains tempGains;
-	FlowStatus gainsStatus = portPIDControllerGains.read(tempGains);
+	LQRControllerGains tempGains;
+	FlowStatus gainsStatus = portLQRControllerGains.read(tempGains);
 	if(gainsStatus == NewData) { gains = tempGains; }
 
 }

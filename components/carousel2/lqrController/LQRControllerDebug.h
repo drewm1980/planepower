@@ -1,10 +1,10 @@
-#ifndef PID_CONTROLLER_DEBUG_H
-#define PID_CONTROLLER_DEBUG_H
+#ifndef LQR_CONTROLLER_DEBUG_H
+#define LQR_CONTROLLER_DEBUG_H
 
-// The gains for the PID
+// The gains for the LQR
 // of our controller,
 // plus a couple fields for timestamps
-struct PIDControllerDebug
+struct LQRControllerDebug
 {
 	double referenceElevation;
 	double referenceSpeed;
