@@ -5,13 +5,15 @@ if(nargin==0)
 	Q_alpha = 8^2;
 	Q_dalpha = 5^2;
 elseif(nargin==3)
-	a = argv;
-	R_control = argv{1}
-	Q_alpha = argv{2}
-	Q_dalpha = argv{3}
+	a = argv();
+	R_control = a{1};
+	Q_alpha = a{2};
+	Q_dalpha = a{3};
 else
 	error('Wrong number of arguments!!! should be 0 or 3!')
 end
+
+stateVectorFieldNames={'delta_motor','delta_arm','alpha','beta', 'ddelta_motor','ddelta_arm','dalpha','dbeta', 'ddelta_motor_setpoint'};
 
 gainspath = '~/thilo/lin_data.mat';
 disp('Loading linearised system data...');
@@ -48,17 +50,32 @@ function writevector(f,nameroot,values)
 	end
 end
 
-f = fopen('gains_online.cpf','w');
+function writeStateVector(f,names,values)
+	for i=1:9
+		writeval(f,names{i},values(i))
+	end
+end
+
+f = fopen('lqr_gains.cpf','w');
 fprintf(f,'%s\n%s\n%s\n',h1,h2,h3);
 
 writeval(f,'R_control',R_control);
 writeval(f,'Q_alpha',Q_alpha);
 writeval(f,'Q_dalpha',Q_dalpha);
-
-writevector(f,'K',G)
-writevector(f,'Xss0_',G)
-writevector(f,'Xss1_',G)
-
+writevector(f,'G_',G)
 fprintf(f,'%s\n',footer);
 fclose(f);
+
+disp('Writing out the steady states to .cpf files');
+stateVectorNames = {'xss','xss0','xss1'};
+stateVectors = {xss,xss0,xss1};
+for i=1:3
+	stateVectorName = stateVectorNames{i};
+	stateVector = stateVectors{i};
+	f = fopen([stateVectorName '.cpf'],'w');
+	fprintf(f,'%s\n%s\n%s\n',h1,h2,h3);
+	writeStateVector(f,stateVectorFieldNames,stateVector);
+	fprintf(f,'%s\n',footer);
+end
+
 

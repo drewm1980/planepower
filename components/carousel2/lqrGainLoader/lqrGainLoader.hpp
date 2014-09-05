@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include "LQRControllerGains.h"
+#include "LQRGains.h"
 
 class LqrGainLoader : public RTT::TaskContext
 {
@@ -24,10 +24,14 @@ public:
 	virtual void errorHook();
 
 protected:
-	RTT::OutputPort< LQRControllerGains > portLQRGains;
+	RTT::OutputPort< LQRGains > portLQRGains;
+	RTT::OutputPort< State > portxss0;
+	RTT::OutputPort< State > portxss1;
 private:
 
-	LQRControllerGains gains;
+	LQRGains gains;
+	State stateHolder; // A temporary struct for loading properties
+	State xss, xss0, xss1;
 };
 
 #endif
