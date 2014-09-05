@@ -40,6 +40,8 @@ private:
 	double phase; // Radians
 	double frequency; // Hz
 	int numberOfSines; // number of sines for multisine
+	double wStart;
+	double wEnd;
 	TIME_TYPE startTime; // nsec.  Time is relative to this.
 };
 

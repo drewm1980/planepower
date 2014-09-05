@@ -26,6 +26,8 @@ FunctionGenerator::FunctionGenerator(std::string name):TaskContext(name,PreOpera
 	addProperty("phase", phase).doc("The phase of the generated function.");
 	addProperty("frequency", frequency).doc("The frequency of the generated function.");
 	addProperty("numberOfSines", numberOfSines).doc("The number of sines in the multisine.");
+	addProperty("wStart", wStart).doc("The omega to start with.");
+	addProperty("wEnd", wEnd).doc("The omega to end with.");
 }
 
 bool FunctionGenerator::configureHook()
@@ -37,6 +39,8 @@ bool FunctionGenerator::configureHook()
 	phase = 0;
 	frequency = 0;
 	numberOfSines = 0;
+	wStart = 0;
+	wEnd = 0;
 	return true;
 }
 
@@ -51,20 +55,33 @@ void  FunctionGenerator::updateHook()
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
 	double t = (trigger - startTime) * 1e-9;
 	double value;
+	double rangeOfSines = wEnd-wStart; 
 	double sinvalue = 0;
-	double wLowest = frequency * 2 * PI;		
+	double wLowest = frequency * 2 * PI;
+	wStart = wLowest*round(wStart/wLowest);		
 	switch (type)
 	{
-		case 0:
+		case 0: // sin wave
 			value = offset + amplitude * sin(t * frequency*(2.0*3.1415) + phase);
 			break;
-		case 1:
+		case 1: // square wave
 			sinvalue = sin(t * frequency*(2.0*3.1415) + phase);
 			value = offset + amplitude * (2*(sinvalue > 0.0)-1.0);
 			break;
-		case 2:
+		case 2: // linear multisin
+			for (int k = 0; k < numberOfSines; k++) {
+				double w = wStart + wLowest * k * round(rangeOfSines / (numberOfSines*wLowest));
+				double multiPhase = -k * (k-1) * PI / numberOfSines;
+				sinvalue += amplitude * sin(w*t + multiPhase);
+			}
+			value = offset + sinvalue;
+			//adding cycle clock find the periods easy
+			reference.cycle = (double)(sin(wLowest*t) > 0.0);	
+			break;
+		case 3: // log multisin
 			for (int k = 1; k <= numberOfSines; k++) {
-				double w = k * wLowest;
+				double logk = round(pow(10,log10(wStart) + k * log10(wEnd/wStart) / numberOfSines) / wLowest);
+				double w = wLowest * logk;
 				double multiPhase = -k * (k-1) * PI / numberOfSines;
 				sinvalue += amplitude * sin(w*t + multiPhase);
 			}
