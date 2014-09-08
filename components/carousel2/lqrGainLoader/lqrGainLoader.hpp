@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "LQRGains.h"
+#include "State.h"
 
 class LqrGainLoader : public RTT::TaskContext
 {

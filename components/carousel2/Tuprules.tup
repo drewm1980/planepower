@@ -13,4 +13,5 @@ CPPFLAGS_OROCOS+=-I$(TUP_CWD)/resampler
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/functionGenerator
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/pidGainLoader
 CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lqrGainLoader
+CPPFLAGS_OROCOS+=-I$(TUP_CWD)/lqrController
 

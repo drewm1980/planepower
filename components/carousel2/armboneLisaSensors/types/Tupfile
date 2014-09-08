@@ -2,7 +2,8 @@ ifdef CAROUSEL2
 
 include_rules
 
-# This is a hacky, but we don't have functions in Tupfiles...
+# This is a slightly hacky way to build multiple output message types
+# (with telemetry) for a single component.
 CODEGEN_SOURCE_DIRECTORY=..
 CODEGEN_SOURCE_STRUCT=ImuGyro
 CODEGEN_SOURCE_HEADER=$(CODEGEN_SOURCE_DIRECTORY)/$(CODEGEN_SOURCE_STRUCT).h

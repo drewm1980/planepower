@@ -1,0 +1,10 @@
+#!/usr/bin/env deployer
+
+#Import libraries
+import("kalmanFilter")
+ 
+#Create components
+loadComponent("kalmanFilter","KalmanFilter")
+ 
+kalmanFilter.configure()
+kalmanFilter.start()
