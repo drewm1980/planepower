@@ -26,4 +26,6 @@ struct LQRGains
 	double ts_elapsed;
 };
 
+#define STATECOUNT 9
+
 #endif

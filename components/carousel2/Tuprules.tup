@@ -1,6 +1,8 @@
 # By default, hide all symbols in shared libraries.
 CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
 
+CPPFLAGS_OROCOS += -I/usr/include/eigen3
+
 # These object dependencies are shared by a few targets...
 SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/components/carousel2/siemensDrives/siemens_communication.o 
 SIEMENS_OBJECTS+=$(PLANEPOWER_ROOT)/shared/udp_communication.o

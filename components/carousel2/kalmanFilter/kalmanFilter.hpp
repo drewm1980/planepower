@@ -8,6 +8,14 @@
 
 #include <stdint.h>
 
+#include "ResampledMeasurements.h"
+#include "SiemensDriveCommand.h"
+
+#include "Reference.h"
+#include "LQRGains.h"
+
+typedef uint64_t TIME_TYPE;
+
 class KalmanFilter : public RTT::TaskContext
 {
 public:
@@ -20,15 +28,31 @@ public:
 	virtual void stopHook();
 	virtual void cleanupHook();
 	virtual void errorHook();
-protected:
-//	RTT::InputPort< SiemensDriveState > portDriveState;
-//	RTT::InputPort< LineAngles > portLineAngles;
-//	RTT::OutputPort< ResampledMeasurements > portData;
-private:
-//	SiemensDriveState driveState;
-//	LineAngles lineAngles;
-//	ResampledMeasurements resampledMeasurements;
 
+protected:
+	// This Kalman Filter operates purely from line angle measurements.
+	RTT::InputPort< LineAngles > portLineAngles;
+	RTT::InputPort< State > portReference;
+
+	RTT::InputPort< LQRGains > portGainsIn;
+	RTT::OutputPort< LQRGains > portGainsOut;
+
+	RTT::OutputPort< State > portStateEstimate;
+
+private:
+	LineAngles lineAngles;
+	LQRGains gains;
+	Reference reference;
+
+	State highReference;
+	State lowReference;
+	
+	State stateEstimate;
+
+	TIME_TYPE trigger_last;	
+	TIME_TYPE trigger;
+
+	LQRControllerDebug debug;
 };
 
 #endif
