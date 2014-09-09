@@ -1,5 +1,9 @@
 #include "lqrGainLoader.hpp"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <rtt/Logger.hpp>
 #include <rtt/os/TimeService.hpp>
 #include <rtt/Time.hpp>
@@ -12,44 +16,40 @@ typedef uint64_t TIME_TYPE;
 
 LqrGainLoader::LqrGainLoader(std::string name):TaskContext(name,PreOperational) 
 {
-	addPort("gains",portLQRGains).doc("Controller Gains");
-
-	// The property loader/marshaller should load the values directly into our
-	// gains structure.
+	addPort("stateParameterization",portControllerParameterization);
+	addPort("xss",portxss);
+	addPort("xss0",portxss0);
+	addPort("xss1",portxss1);
+	addPort("G",portG);
 	
-	addProperty("R_control", gains.R_control).doc("Control Penalty");
-	addProperty("Q_alpha", gains.Q_alpha).doc("Alpha Penalty");
-	addProperty("Q_dalpha", gains.Q_dalpha).doc("Dalpha Penalty");
-	addProperty("K0", gains.K0);
-	addProperty("K1", gains.K1);
-	addProperty("K2", gains.K2);
-	addProperty("K3", gains.K3);
-	addProperty("K4", gains.K4);
-	addProperty("K5", gains.K5);
-	addProperty("K6", gains.K6);
-	addProperty("K7", gains.K7);
-	addProperty("K8", gains.K8);
-	memset(&gains, 0, sizeof( gains ));
+	addProperty("R_control", pd.cp.R_control).doc("Control Penalty");
+	addProperty("Q_alpha", pd.cp.Q_alpha).doc("Alpha Penalty");
+	addProperty("Q_dalpha", pd.cp.Q_dalpha).doc("Dalpha Penalty");
 
-	addProperty("delta_motor", stateHolder.delta_motor);
-	addProperty("delta_arm", stateHolder.delta_arm);
-	addProperty("alpha", stateHolder.alpha);
-	addProperty("beta", stateHolder.beta);
-	addProperty("ddelta_motor", stateHolder.ddelta_motor);
-	addProperty("ddelta_arm", stateHolder.ddelta_arm);
-	addProperty("dalpha", stateHolder.dalpha);
-	addProperty("dbeta", stateHolder.dbeta);
-	addProperty("ddelta_motor_setpoint", stateHolder.ddelta_motor_setpoint);
-	memset(&stateHolder, 0, sizeof( gains ));
+	memset(&pd, 0, sizeof( pd ));
 
-	memset(&xss, 0, sizeof( State ));
-	memset(&xss0, 0, sizeof( State ));
-	memset(&xss1, 0, sizeof( State ));
+}
 
+// Load in all of the precomputed data.
+void LqrGainLoader::reload_gains()
+{
+	memset(&pd,0,sizeof(pd));
+	int fd = open("precomputedData.dat",O_RDONLY);
+	if(fd==-1) 
+	{
+		log(Error) << "Unable to load precomputedData.dat!" << endlog();
+	}
+	ssize_t bytes = read(fd, &pd, sizeof(pd));
+	if (bytes != sizeof(pd))
+	{
+		log(Error) << "Wrong number of bytes read from precomputedData.dat!" << endlog();
+	}
+	close(fd);
 }
 
 bool LqrGainLoader::configureHook()
 {
+	reload_gains();
 	return true;
 }
 
@@ -61,11 +61,25 @@ bool  LqrGainLoader::startHook()
 void  LqrGainLoader::updateHook()
 {
 	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+	reload_gains();
+	double elapsed = TimeService::Instance()->secondsSince( trigger );
 
-	gains.ts_trigger = trigger;
-	gains.ts_elapsed = TimeService::Instance()->secondsSince( trigger );
+	pd.cp.ts_trigger = trigger;
+	pd.cp.ts_elapsed = elapsed;
+	pd.xss.ts_trigger = trigger;
+	pd.xss.ts_elapsed = elapsed;
+	pd.xss0.ts_trigger = trigger;
+	pd.xss0.ts_elapsed = elapsed;
+	pd.xss1.ts_trigger = trigger;
+	pd.xss1.ts_elapsed = elapsed;
+	pd.G.ts_trigger = trigger;
+	pd.G.ts_elapsed = elapsed;
 
-	portLQRGains.write(gains);
+	portControllerParameterization.write(pd.cp);
+	portxss.write(pd.xss);
+	portxss0.write(pd.xss0);
+	portxss1.write(pd.xss1);
+	portG.write(pd.G);
 
 }
 

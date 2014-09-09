@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "kalmanFilter.hpp"
 
 #include <rtt/Logger.hpp>
@@ -51,9 +52,6 @@ bool KalmanFilter::configureHook()
 		log(Error) << "kalmanFilter: Cannot configure; reference state is needed!" << endlog();
 		return false;
 	}
-
-	// Load in the highReference and lowReference
-
 
 	return true;
 }

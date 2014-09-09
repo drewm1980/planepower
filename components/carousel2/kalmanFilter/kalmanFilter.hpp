@@ -44,10 +44,10 @@ private:
 	LQRGains gains;
 	Reference reference;
 
+	State stateEstimate;
+
 	State highReference;
 	State lowReference;
-	
-	State stateEstimate;
 
 	TIME_TYPE trigger_last;	
 	TIME_TYPE trigger;

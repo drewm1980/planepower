@@ -8,8 +8,7 @@
 
 #include <stdint.h>
 
-#include "LQRGains.h"
-#include "State.h"
+#include "PrecomputedData.h"
 
 class LqrGainLoader : public RTT::TaskContext
 {
@@ -25,14 +24,16 @@ public:
 	virtual void errorHook();
 
 protected:
-	RTT::OutputPort< LQRGains > portLQRGains;
+	RTT::OutputPort< ControllerParameterization > portControllerParameterization;
+	RTT::OutputPort< State > portxss;
 	RTT::OutputPort< State > portxss0;
 	RTT::OutputPort< State > portxss1;
+	RTT::OutputPort< FeedbackMatrix > portG;
 private:
 
-	LQRGains gains;
-	State stateHolder; // A temporary struct for loading properties
-	State xss, xss0, xss1;
+	void reload_gains();
+	PrecomputedData pd;
+	
 };
 
 #endif
