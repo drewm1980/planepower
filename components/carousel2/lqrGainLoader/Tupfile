@@ -2,6 +2,9 @@ ifdef CAROUSEL2
 ifdef PC
 
 include_rules
+# Compile the path of the component into the component as a preprocesser variable.
+CPPFLAGS_OROCOS+=-DCOMPONENT_DIR=\"$PLANEPOWER_ROOT/components/carousel2/lqrGainLoader\"
+
 : foreach *.cpp |> !cxx_orocos |>
 : *.o |> !ld_orocos |> 
 

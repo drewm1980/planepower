@@ -33,6 +33,20 @@ LqrGainLoader::LqrGainLoader(std::string name):TaskContext(name,PreOperational)
 // Load in all of the precomputed data.
 void LqrGainLoader::reload_gains()
 {
+	TIME_TYPE trigger = TimeService::Instance()->getTicks();
+
+	int oldpwd = open(".",O_RDONLY | O_DIRECTORY); // pwd as a file descriptor
+	int err = chdir(COMPONENT_DIR);
+	if (err==-1)
+	{
+		log(Error) << "lqrGainLoader: Trouble cd'ing to " << COMPONENT_DIR << endlog();
+	}
+
+	// Trigger octave to recompute the gains
+	// TODO pass in the parameters!
+	err = system("compute_gains.m");
+
+	// Read in the .dat file that compute_gains wrote...
 	memset(&pd,0,sizeof(pd));
 	int fd = open("precomputedData.dat",O_RDONLY);
 	if(fd==-1) 
@@ -45,23 +59,9 @@ void LqrGainLoader::reload_gains()
 		log(Error) << "Wrong number of bytes read from precomputedData.dat!" << endlog();
 	}
 	close(fd);
-}
 
-bool LqrGainLoader::configureHook()
-{
-	reload_gains();
-	return true;
-}
+	fchdir(oldpwd); // cd back where we were before
 
-bool  LqrGainLoader::startHook()
-{
-	return true;
-}
-
-void  LqrGainLoader::updateHook()
-{
-	TIME_TYPE trigger = TimeService::Instance()->getTicks();
-	reload_gains();
 	double elapsed = TimeService::Instance()->secondsSince( trigger );
 
 	pd.cp.ts_trigger = trigger;
@@ -81,6 +81,22 @@ void  LqrGainLoader::updateHook()
 	portxss1.write(pd.xss1);
 	portG.write(pd.G);
 
+}
+
+bool LqrGainLoader::configureHook()
+{
+	reload_gains();
+	return true;
+}
+
+bool  LqrGainLoader::startHook()
+{
+	return true;
+}
+
+void  LqrGainLoader::updateHook()
+{
+	reload_gains();
 }
 
 void  LqrGainLoader::stopHook()

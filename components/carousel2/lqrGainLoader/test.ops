@@ -1,10 +1,10 @@
 #!/usr/bin/env deployer
 
 #Import libraries
-import("gainLoader")
+import("lqrGainLoader")
  
 #Create components
-loadComponent("gainLoader","GainLoader")
+loadComponent("lqrGainLoader","LqrGainLoader")
  
-gainLoader.configure()
-gainLoader.start()
+lqrGainLoader.configure()
+lqrGainLoader.start()
