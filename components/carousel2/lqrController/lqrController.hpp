@@ -12,7 +12,6 @@
 #include "SiemensDriveCommand.h"
 
 #include "Reference.h"
-#include "LQRGains.h"
 #include "LQRControllerDebug.h"
 
 typedef uint64_t TIME_TYPE;
