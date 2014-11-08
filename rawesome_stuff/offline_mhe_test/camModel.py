@@ -8,12 +8,12 @@ Created on Mon Jun 11 11:57:28 2012
 import numpy as np
 import casadi as C
 
-def singleCamModel(p,R,RP,P,pos_marker_body):
+def singleCamModel(p,R_c2b,RP,P,pos_marker_body):
     '''
-    p = [x,y,z] position of the markers
-    R = rotation matrix of the plane
-    RP = calibration matrix?
-    P = calibration?
+    p = [x,y,z] position of the airplane
+    R _c2b= rotation matrix of the plane
+    RP = calibration matrix, giving the orientation and position of the camera
+    P = calibration matrix, the projection matrix, which is intrinsic to the camera
     '''
     trans = C.SXMatrix(4,4)
     R_NED = np.eye(4)
@@ -26,10 +26,10 @@ def singleCamModel(p,R,RP,P,pos_marker_body):
     # Translate over the position of the BODY: You now have the position of the marker in the REFERENCE frame
     # Transform (rotate & translate) over the pose of the REFERENCE frame w.r.t. the CAMERA frame: You now have the position of the marker in the camera frame
     # Multiply with the camera projection matrix to get the pixel values
-    R_4x4 = C.SXMatrix(4,4)
-    R_4x4[0:3,0:3] = R.T
-    R_4x4[3,3] = 1
-    uvs = C.mul([P,RP,R_NED,trans,R_4x4,C.vertcat([pos_marker_body,1.0])])
+    R_b2c_4x4 = C.SXMatrix(4,4)
+    R_b2c_4x4[0:3,0:3] = R_c2b.T
+    R_b2c_4x4[3,3] = 1
+    uvs = C.mul([P,RP,R_NED,trans,R_b2c_4x4,C.vertcat([pos_marker_body,1.0])])
     # Devide by s, which is the homogeneous scaling factor
     uv = uvs[:2]/uvs[2]
     return uv
