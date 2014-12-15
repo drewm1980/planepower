@@ -4,7 +4,9 @@ CXX = clang++
 CXXFLAGS += -Wall -O3 -march=native -mtune=native
 CXXFLAGS += -fPIC
 LDFLAGS += -Wl,-z,defs
-CFLAGS = $(CXXFLAGS)
+
+CFLAGS = -Wall -O3
+
 PATH=$PATH:$(TUP_CWD)/tools
 export PATH
 export PKG_CONFIG_PATH
@@ -27,6 +29,9 @@ TOOLS = $(TUP_CWD)/tools/
 !rename_casadi = |> $(TOOLS)/rename_casadi_function %f %B.cpp |> %B.cpp %B.h
 
 CPPFLAGS += -I$(TUP_CWD)/pythonCodegen
+
+# Rule for compiling a .proto file to C++ and Python
+!protoc = |> protoc --cpp_out=. --python_out=. %f |> %B.pb.cc %B.pb.h %B_pb2.py
 
 # Orocos specific flags and rules
 export OROCOS_TARGET

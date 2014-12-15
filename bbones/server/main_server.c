@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "time_highwind.h"
 
 #include "udp_communication.h"
-#include "uart_communication.h"
+#include "uart_communication2.h" // has declaration of an error handler function pointer
 #include "data_decoding.h"
-#include "log.h"
+#include "log.h" // also has some error handling stuff
 #include "analyze.h"
 
 #define MAX_INPUT_STREAM_SIZE 255
@@ -488,7 +489,6 @@ int main(int argc, char *argv[]){
 				
 				if(input_stream[3]==NMEA_IIMWV_ID){
 					
-					int i;
 					printf("NMEA_IIMWV_ID content:");
 					print_mem((void *)&data->bone_wind.nmea_iimmwv,sizeof(NMEA_IIMWV));
 
@@ -498,7 +498,7 @@ int main(int argc, char *argv[]){
 					printf("wind speed unit %c\n",data->bone_wind.nmea_iimmwv.wind_speed_unit);
 					printf("status %c\n",data->bone_wind.nmea_iimmwv.status);
 					char temp[64];
-					timestamp_to_timeString(data->bone_wind.nmea_iimmwv.tv,temp);
+					timestamp_to_timeString16(data->bone_wind.nmea_iimmwv.tv,temp);
 					printf("send time: %s\n",temp);
 					printf("\n");
 
@@ -506,14 +506,13 @@ int main(int argc, char *argv[]){
 				
 				if(input_stream[3]==NMEA_WIXDR_ID){
 					
-					int i;
 					printf("NMEA_WIXDR_ID content:");
 					print_mem((void *)&data->bone_wind.nmea_wixdr,sizeof(NMEA_WIXDR));
 					
 					printf("Temperature %lf\n",data->bone_wind.nmea_wixdr.temperature);
 					printf("unit %c\n",data->bone_wind.nmea_wixdr.unit);
 					char temp[64];
-					timestamp_to_timeString(data->bone_wind.nmea_wixdr.tv,temp);
+					timestamp_to_timeString16(data->bone_wind.nmea_wixdr.tv,temp);
 					printf("send time: %s\n",temp);
 					printf("\n");
 				}
@@ -524,7 +523,23 @@ int main(int argc, char *argv[]){
 			}
 		}
 		#if ANALYZE
-			if(an_imu_accel_freq_done==1 && an_imu_accel_lat_done==1 && an_imu_gyro_freq_done==1 && an_imu_gyro_lat_done==1 && an_imu_mag_freq_done==1 && an_imu_mag_lat_done==1 && an_baro_raw_lat_done==1 && an_baro_raw_freq_done==1 && an_airspeed_ets_lat_done==1 && an_airspeed_ets_freq_done==1 && an_actuators_lat_done==1 && an_actuators_freq_done==1 && an_UART_errors_lat_done==1 && an_UART_errors_freq_done==1 && an_sys_mon_lat_done==1 && an_sys_mon_freq_done==1){
+			if(an_imu_accel_freq_done==1 && 
+					an_imu_accel_lat_done==1 && 
+					an_imu_gyro_freq_done==1 && 
+					an_imu_gyro_lat_done==1 && 
+					an_imu_mag_freq_done==1 && 
+					an_imu_mag_lat_done==1 && 
+					an_baro_raw_lat_done==1 && 
+					an_baro_raw_freq_done==1 && 
+					an_airspeed_ets_lat_done==1 && 
+					an_airspeed_ets_freq_done==1 && 
+					an_actuators_lat_done==1 && 
+					an_actuators_freq_done==1 && 
+					an_UART_errors_lat_done==1 && 
+					an_UART_errors_freq_done==1 && 
+					an_sys_mon_lat_done==1 && 
+					an_sys_mon_freq_done==1)
+			{
 				printf("ANALYZE RESULTS - IMU_ACCEL_RAW:\n");
 				printf("avg period:\t %0.4f ms\n",(get_avg(&an_imu_accel_raw_freq)));
 				printf("avg freq:\t %0.4f hz\n",1/(get_avg(&an_imu_accel_raw_freq))*1e3);

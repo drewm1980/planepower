@@ -1,6 +1,12 @@
 include_rules
 
+ifdef CAROUSEL1
+ifdef PC
+
 : markers_from_pose.py |> python -B %f |> %B.h
 : pose_from_markers.py |> python -B %f |> %B.h
 
 : simple_codegen.py |> python -B %f |> drew_style.c joel_style.c drew_style.o
+
+endif
+endif

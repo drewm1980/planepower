@@ -35,9 +35,9 @@ void McuHandlerTelemetry::fill()
   msg.set_accl_y( data.accl_y );
   msg.set_accl_z( data.accl_z );
 
-  msg.set_ua1( data.ua1 );
-  msg.set_ua2( data.ua2 );
-  msg.set_ue( data.ue );
+  msg.set_ua1( data.ctrl.ua1 );
+  msg.set_ua2( data.ctrl.ua2 );
+  msg.set_ue( data.ctrl.ue );
 
   msg.set_ts_trigger( (double)((uint64_t)data.ts_trigger - startTime) * 1e-9);
   msg.set_ts_elapsed( data.ts_elapsed );

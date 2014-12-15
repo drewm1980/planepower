@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 LDFLAGS_OROCOS += -lprotobuf -lzmq
@@ -10,3 +13,6 @@ LDFLAGS_OROCOS += -lprotobuf -lzmq
 : LineAngleSensorTelemetry.pb.cc | LineAngleSensorTelemetry.pb.h  |> !cxx_orocos |>
 : foreach *.cpp | LineAngleSensorTelemetry.pb.h |> !cxx_orocos |>
 : *.o |> !ld_orocos |> 
+
+endif
+endif

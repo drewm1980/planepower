@@ -151,11 +151,11 @@ lasPlots = addPlotsToLayout(layout.addLayout(), lasTitle, lasNames)
 #
 # LED Tracker data
 #
-ledNames =  []
-for frame in ["left", "right"]:
-	for clr in ["r", "g", "b"]:
-		for coord in ["u", "v"]:
-			ledNames.append(frame + "_" + clr + "_" + coord)
+ledNames = [frame + "_" + clr + "_" + coord
+            for frame in ["left", "right"]
+            for coord in ["u", "v"]
+            for clr in ["r", "g", "b"]]
+
 
 def setupLedTrackerPlots( layout ):
 	"""
@@ -200,9 +200,9 @@ def setupLedTrackerPlots( layout ):
 					item.setPen( colors[ k ] )
 					item.setSize( 10 )
 				else:
-					# the past points are in grey
-					item.setBrush( 0.5 )
-					item.setPen( 0.5 )
+					# the past points are a bit transparent
+					item.setBrush( colors[ k ] + "20" )
+					item.setPen( colors[ k ] + "20" )
 
 				plt.addItem( item )
 				d[ vName ] = item

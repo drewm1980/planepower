@@ -31,24 +31,23 @@ typedef uint64_t TIME_TYPE;
 #define LEFT_AILERON_OFFSET 0.0
 #define ELEVATOR_OFFSET 0.0
 
-//extern void convert_controls_radians_to_unitless(double * controls);
-
 // Convert units from radians to (-1,1)
 // angle_radians = (angle_unitless - OFFSET) * SCALE
 // angle_radians/SCALE + OFFSET = angle_unitless
-void convert_controls_radians_to_unitless(double * controls)
+void convertControlsRadiansUnitless(float& ua1, float& ua2, float& ue)
 {
-	controls[0] = controls[0]/RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
-	controls[1] = controls[1]/LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
-	controls[2] = controls[2]/ELEVATOR_SCALE + ELEVATOR_OFFSET;
+	ua1 = ua1 / RIGHT_AILERON_SCALE + RIGHT_AILERON_OFFSET;
+	ua2 = ua2 / LEFT_AILERON_SCALE + LEFT_AILERON_OFFSET;
+	ue  = ue / ELEVATOR_SCALE + ELEVATOR_OFFSET;
 }
+
 // Convert units from (-1,1) to radians
 // angle_radians = (angle_unitless - OFFSET) * SCALE
-void convert_controls_unitless_to_radians(double * controls)
+void convertControlsUnitlessRadians(float& ua1, float& ua2, float& ue)
 {
-	controls[0] = (controls[0] - RIGHT_AILERON_OFFSET) * RIGHT_AILERON_SCALE;
-	controls[1] = (controls[1] - LEFT_AILERON_OFFSET) * LEFT_AILERON_SCALE;
-	controls[2] = (controls[2] - ELEVATOR_OFFSET) * ELEVATOR_SCALE;
+	ua1 = (ua1 - RIGHT_AILERON_OFFSET) * RIGHT_AILERON_SCALE;
+	ua2 = (ua2 - LEFT_AILERON_OFFSET) * LEFT_AILERON_SCALE;
+	ue  = (ue - ELEVATOR_OFFSET) * ELEVATOR_SCALE;
 }
 
 /// McuHandler class
@@ -80,8 +79,8 @@ public:
 	// Commands for setting the references.
 	// Note:  These are intended to be used manually for debugging purposes!
 	// For actual control, you should use the provided input port!
-	void setControlsRadians(double right_aileron, double left_aileron, double elevator);
-	void setControlsUnitless(double right_aileron, double left_aileron, double elevator);
+	void setControlsRadians(float right_aileron, float left_aileron, float elevator);
+	void setControlsUnitless(float right_aileron, float left_aileron, float elevator);
 #endif
 
 protected:
@@ -95,10 +94,10 @@ protected:
 	McuHandlerDataType data;
 	/// The data from the IMU.
 	RTT::OutputPort< McuHandlerDataType > portMcuData;
-	/// Port with control signals [ua1, ua2, ue]. Units are in radians
-	RTT::InputPort< std::vector< double > > portControls;	
+	/// Port with control signals [ua1, ua2, ue, d_ua1, d_ua2, d_ue].
+	RTT::InputPort< ControlSurfacesValues > portControls;	
 	/// Holder for the control action to be send
-	std::vector< double > controls;
+	ControlSurfacesValues controls;
 	/// Internal buffer for control values
 	
 	/// Name to listen for incoming connections on, either FQDN or IPv4 address.
@@ -119,6 +118,7 @@ private:
 	void sendMotorReferences( void );
 	void ethernetTransmitReceive( void );
 	void receiveSensorData( void );
+	void updateControls();
 	
 	long numOfBytesToBeReceived;
 	long numOfBytesToBeTransmitted;
@@ -132,7 +132,9 @@ private:
 
 	unsigned upTimeCnt;
 
-	std::vector< double > execControls;
+	ControlSurfacesValues execControls;
+
+	RTT::FlowStatus controlStatus;
 };
 
 #endif // __MCUHANDLER__

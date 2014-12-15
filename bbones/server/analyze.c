@@ -1,10 +1,8 @@
-/*
- * AUTHOR: Jonas Van Pelt
- */
- 
 #include <stdlib.h>
 #include <stdio.h>
 #include "analyze.h"
+#include "data_decoding.h"
+#include "time_highwind.h"
 
 #ifndef DEBUG 
 #define DEBUG 0
@@ -18,7 +16,8 @@ static int timeval_subtract(timeval *result,timeval *t2,timeval *t1);
 /********************************
  * FUNCTIONS
  * ******************************/
- void init_analyze(Analyze *an,int buffsize){	 
+void init_analyze(Analyze *an,int buffsize)
+{	 
 	#if DEBUG  > 1
 		printf("Entering init_analyze\n");
 	#endif
@@ -35,7 +34,8 @@ static int timeval_subtract(timeval *result,timeval *t2,timeval *t1);
 	}
 }
  
-int calculate_frequency(Analyze *an,timeval tvSent){
+int calculate_frequency(Analyze *an,timeval tvSent)
+{
 	#if DEBUG  > 1
 		printf("Entering calculate_frequency\n");
 	#endif
@@ -47,7 +47,7 @@ int calculate_frequency(Analyze *an,timeval tvSent){
 		}else{
 			timeval tvResult;
 			double diff;
-			double freq;
+			//double freq;
 			timeval_subtract(&tvResult,&tvSent,&an->previous_timestamp);
 			diff = ((double)tvResult.tv_sec * 1e6 + tvResult.tv_usec) * 1e-3;
 			//freq=1/diff*1e3;
@@ -65,7 +65,8 @@ int calculate_frequency(Analyze *an,timeval tvSent){
 	
 }
 
-int calculate_latency(Analyze *an,timeval tvSent,timeval tvNow){
+int calculate_latency(Analyze *an,timeval tvSent,timeval tvNow)
+{
 	#if DEBUG  > 1
 		printf("Entering calculate_latency\n");
 	#endif
@@ -92,14 +93,31 @@ int calculate_latency(Analyze *an,timeval tvSent,timeval tvNow){
 	
 }
 
-double get_avg(Analyze *an){
+double get_avg(Analyze *an)
+{
 	#if DEBUG  > 1
 		printf("Entering get_avg\n");
 	#endif	
 	return an->avg;
 }
 
-void timestamp_to_timeString(timeval tv,char time_string[]){
+void timestamp_to_timeString16(Timeval16 tv,char time_string[])
+{
+	#if DEBUG  > 1
+		printf("Entering timestamp_to_timeString\n");
+	#endif
+		
+	time_t nowtime;
+	struct tm *nowtm;
+	char tmbuf[64];
+	nowtime = tv.tv_sec;
+	nowtm = localtime(&nowtime);
+	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
+	snprintf(time_string, 64, "%s.%06d", tmbuf, (int)tv.tv_usec);
+}
+
+void timestamp_to_timeString(timeval tv,char time_string[])
+{
 	#if DEBUG  > 1
 		printf("Entering timestamp_to_timeString\n");
 	#endif
@@ -114,7 +132,8 @@ void timestamp_to_timeString(timeval tv,char time_string[]){
 }
 
 
-void dump_buffer_to_file(Analyze *an,const char *file_name){
+void dump_buffer_to_file(Analyze *an,const char *file_name)
+{
 	#if DEBUG  > 1
 		printf("Entering dump_buffer_to_file\n");
 	#endif
@@ -128,7 +147,8 @@ void dump_buffer_to_file(Analyze *an,const char *file_name){
 	fclose(file);
 }
 
-void destroy_analyze(Analyze *an){
+void destroy_analyze(Analyze *an)
+{
 	#if DEBUG  > 1
 		printf("Entering destroy_analyze\n");
 	#endif	
@@ -138,7 +158,8 @@ void destroy_analyze(Analyze *an){
 	free(an->buffer);
 }
 
-static int timeval_subtract(timeval *result,timeval *t2,timeval *t1){
+static int timeval_subtract(timeval *result,timeval *t2,timeval *t1)
+{
 	#if DEBUG  > 1
 		printf("Entering timeval_subtract\n");
 	#endif

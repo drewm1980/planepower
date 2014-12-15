@@ -1,3 +1,8 @@
+/planepower.config
+/planepower.creator
+/planepower.creator.user
+/planepower.files
+/planepower.includes
 *~
 *#
 .tup
@@ -35,3 +40,18 @@ dataset
 # Images
 *.png
 
+# Vim spits these
+*.swp
+*.swo
+
+# Prevent people from committing their config
+tup.config
+
+# Latex stuff
+*.pdf
+*.aux
+*.log
+*.synctex.gz
+
+# No zip files
+*.zip

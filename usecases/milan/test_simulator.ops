@@ -1,0 +1,319 @@
+// Description: OROCOS simulator test file
+//
+// Author:      Milan Vukov, milan.vukov@esat.kuleuven.be
+// Date:        March, 2014.
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import our own plugins
+//
+////////////////////////////////////////////////////////////////////////////////
+import( "HighwindStuff" )
+require( "HighwindServices" )
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Import and load components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// The simulator
+import("IndoorsCarouselSimulator")
+loadComponent("simulator", "IndoorsCarouselSimulator")
+
+// MCU Handler & telemetry
+import("mcuHandler")
+loadComponent("mcuHandlerTelemetry", "McuHandlerTelemetry")
+
+// Encoder & telemetry
+import("encoder")
+loadComponent("encoderTelemetry", "EncoderTelemetry")
+
+// Line Angle Sensor & telemetry
+import("lineAngleSensor")
+loadComponent("lineAngleSensorTelemetry", "LineAngleSensorTelemetry")
+
+// LEDTracker & telemetry
+import("LEDTracker")
+loadComponent("ledTrackerTelemetry", "LEDTrackerTelemetry")
+
+// Winch & telemetry
+import("winchControl")
+loadComponent("winchTelemetry", "WinchControlTelemetry")
+
+// Dynamic MHE component
+import("DynamicMhe")
+loadComponent("mhe", "DynamicMhe")
+loadComponent("mheTelemetry", "DynamicMheTelemetry")
+
+// Dynamic NMPC component
+import("DynamicMpc")
+loadComponent("mpc", "DynamicMpc")
+loadComponent("mpcTelemetry", "DynamicMpcTelemetry")
+
+// Input signal generator
+import("inputSignalGenerator")
+loadComponent("inputSignalGenerator", "InputSignalGenerator")
+
+// OCL NETcdf reporter
+loadComponent("imuReporter", "OCL::NetcdfReporting")
+loadComponent("cameraReporter", "OCL::NetcdfReporting")
+loadComponent("encoderReporter", "OCL::NetcdfReporting")
+loadComponent("lineAngleReporter", "OCL::NetcdfReporting")
+loadComponent("winchReporter", "OCL::NetcdfReporting")
+
+loadComponent("mheReporter", "OCL::NetcdfReporting")
+loadComponent("mpcReporter", "OCL::NetcdfReporting")
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure components' properties
+//
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// NMPC
+//
+mpc.refPrescaler = 10
+
+//
+// Telemetry
+//
+
+mcuHandlerTelemetry.port = "tcp://*:5563"
+encoderTelemetry.port = "tcp://*:5564"
+ledTrackerTelemetry.port = "tcp://*:5565"
+lineAngleSensorTelemetry.port = "tcp://*:5566"
+winchTelemetry.port = "tcp://*:5567"
+mheTelemetry.port = "tcp://*:5570"
+mpcTelemetry.port = "tcp://*:5571"
+
+// OK, so here we take the current timestamp and set
+// it to all telemetry components so that time on the
+// live plots begins from approx the start of the
+// experiments...
+var uint64_t startTime = HighwindServices.getTimestamp()
+
+mcuHandlerTelemetry.startTime = startTime
+encoderTelemetry.startTime = startTime
+ledTrackerTelemetry.startTime = startTime
+lineAngleSensorTelemetry.startTime = startTime
+winchTelemetry.startTime = startTime
+mheTelemetry.startTime = startTime
+mpcTelemetry.startTime = startTime
+
+//
+// Reporters
+//
+
+// Set reporter policy: we use circular buffer connection with quite a long 
+// buffer
+var ConnPolicy rp
+// rp.type = DATA
+rp.type = CIRCULAR_BUFFER
+rp.size = 100
+rp.lock_policy = LOCKED
+// rp.lock_policy = LOCK_FREE
+
+var ConnPolicy rp_sensors
+rp_sensors.type = CIRCULAR_BUFFER
+rp_sensors.size = 4000
+
+imuReporter.ReportFile = "imuData.nc"
+imuReporter.ReportPolicy = rp_sensors
+imuReporter.ReportOnlyNewData = false
+
+cameraReporter.ReportFile = "cameraData.nc"
+cameraReporter.ReportPolicy = rp_sensors
+cameraReporter.ReportOnlyNewData = false
+
+encoderReporter.ReportFile = "encoderData.nc"
+encoderReporter.ReportPolicy = rp_sensors
+encoderReporter.ReportOnlyNewData = false
+
+lineAngleReporter.ReportFile = "angleData.nc"
+lineAngleReporter.ReportPolicy = rp_sensors
+lineAngleReporter.ReportOnlyNewData = false
+
+winchReporter.ReportFile = "winchData.nc"
+winchReporter.ReportPolicy = rp_sensors
+winchReporter.ReportOnlyNewData = false
+
+mheReporter.ReportFile = "dynamicMheData.nc"
+mheReporter.ReportPolicy = rp
+mheReporter.ReportOnlyNewData = false
+
+mpcReporter.ReportFile = "dynamicMpcData.nc"
+mpcReporter.ReportPolicy = rp
+mpcReporter.ReportOnlyNewData = false
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Set activities and priorities
+//
+////////////////////////////////////////////////////////////////////////////////
+
+var int masterTimerPrio = 98
+var int sensorPrio = 97
+var int ocpPrio = 99
+var int LEDTrackerPrio = 70
+var int winchPrio = 65
+var int sineGenPrio = 60
+var int telemetryPrio = 50
+
+setActivityOnCPU("simulator", 0.001, masterTimerPrio, ORO_SCHED_RT, 1)
+setActivityOnCPU("inputSignalGenerator", 0.01, sineGenPrio, ORO_SCHED_RT,1)
+
+setActivityOnCPU("mhe", 0.0, ocpPrio, ORO_SCHED_RT, 2)
+setActivityOnCPU("mpc", 0.0, ocpPrio, ORO_SCHED_RT, 3)
+
+setActivityOnCPU("mcuHandlerTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("encoderTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("ledTrackerTelemetry", 1.0 / 25.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("lineAngleSensorTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("winchTelemetry", 1.0 / 100.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("mheTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+setActivityOnCPU("mpcTelemetry", 1.0 / 50.0, telemetryPrio, ORO_SCHED_OTHER, 4)
+
+setActivityOnCPU("imuReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("cameraReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("encoderReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("lineAngleReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+setActivityOnCPU("winchReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 0)
+
+setActivityOnCPU("mheReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 5)
+setActivityOnCPU("mpcReporter", 0.0, LowestPriority, ORO_SCHED_OTHER, 4)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Connect components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+var ConnPolicy cp
+
+var ConnPolicy cpImuMhe
+cpImuMhe.type = 1
+cpImuMhe.size = 100
+
+// Simulator -> MHE
+connect("simulator.trigger", "mhe.trigger", cp)
+connect("simulator.mcuData", "mhe.mcuData", cpImuMhe)
+connect("simulator.encoderData", "mhe.encoderData", cp)
+connect("simulator.ledTrackerData", "mhe.ledTrackerData", cp)
+connect("simulator.lasData", "mhe.lasData", cpImuMhe)
+connect("simulator.winchData", "mhe.winchData", cp)
+// Simulator -> sensors and actuators telemetry
+connect("simulator.mcuData", "mcuHandlerTelemetry.msgData", cp)
+connect("simulator.encoderData", "encoderTelemetry.msgData", cp)
+connect("simulator.lasData", "lineAngleSensorTelemetry.msgData", cp)
+connect("simulator.ledTrackerData", "ledTrackerTelemetry.msgData", cp)
+connect("simulator.winchData", "winchTelemetry.msgData", cp)
+// MHE -> NMPC
+connect("mhe.stateEstimate", "mpc.feedback", cp)
+// NMPC -> Simulator
+// connect("mpc.controls", "simulator.controls", cp)
+// MHE & NMPC -> telemetry
+connect("mhe.debugData", "mheTelemetry.msgData", cp)
+connect("mpc.debugData", "mpcTelemetry.msgData", cp)
+
+// OR, we can use signal generator
+connect("inputSignalGenerator.data", "simulator.controls", cp)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Reporter configuration
+//
+////////////////////////////////////////////////////////////////////////////////
+
+connectPeers("imuReporter", "simulator")
+imuReporter.reportPort("simulator", "mcuData")
+
+connectPeers("cameraReporter", "simulator")
+cameraReporter.reportPort("simulator", "ledTrackerData")
+
+connectPeers("encoderReporter", "simulator")
+encoderReporter.reportPort("simulator", "encoderData")
+
+connectPeers("lineAngleReporter", "simulator")
+lineAngleReporter.reportPort("simulator", "lasData")
+
+connectPeers("winchReporter", "simulator")
+winchReporter.reportPort("simulator", "winchData")
+
+connectPeers("mheReporter", "mhe")
+mheReporter.reportPort("mhe", "debugData")
+
+connectPeers("mpcReporter", "mpc")
+mpcReporter.reportPort("mpc", "debugData")
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Define some functions
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// NONE
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Configure and start components
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// Just configure the simulator
+simulator.configure()
+
+mcuHandlerTelemetry.configure()
+mcuHandlerTelemetry.start()
+
+encoderTelemetry.configure()
+encoderTelemetry.start()
+
+lineAngleSensorTelemetry.configure()
+lineAngleSensorTelemetry.start()
+
+ledTrackerTelemetry.configure()
+ledTrackerTelemetry.start()
+
+winchTelemetry.configure()
+winchTelemetry.start()
+
+mhe.configure()
+// mhe.start()
+
+mpc.configure()
+// mpc.start()
+
+inputSignalGenerator.configure()
+inputSignalGenerator.start()
+
+mheTelemetry.configure()
+mheTelemetry.start()
+
+mpcTelemetry.configure()
+mpcTelemetry.start()
+
+imuReporter.configure()
+imuReporter.start()
+
+cameraReporter.configure()
+cameraReporter.start()
+
+encoderReporter.configure()
+encoderReporter.start()
+
+lineAngleReporter.configure()
+lineAngleReporter.start()
+
+winchReporter.configure()
+winchReporter.start()
+
+mheReporter.configure()
+mheReporter.start()
+
+mpcReporter.configure()
+mpcReporter.start()
+
+// Now, when all other components are started, start the simulator
+simulator.start()

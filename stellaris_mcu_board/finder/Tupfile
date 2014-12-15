@@ -1,3 +1,9 @@
+ifdef CAROUSEL1
+ifdef PC
+
 :finder.c |> make finder |> finder.o finder finder.d
 
 .gitignore
+
+endif
+endif

@@ -65,7 +65,8 @@ private:
 	double elapsedTime;
 	int32_t posOld, posNew, posDelta;
 	double posDeltaReal, posAcc, posRaw;
-	double omegaNew, omegaFiltNew, omegaFiltOld;
+	double omegaNew, omegaFiltNew, omegaFiltOld, omegaPosAcc;
+	unsigned omegaCnt, omegaPeriod;
 	bool analogConn;
 };
 

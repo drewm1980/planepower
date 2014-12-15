@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 CC = gcc
 CXX = g++
@@ -5,3 +8,6 @@ CPPFLAGS_OROCOS+=-I../../soem_core
 CPPFLAGS_OROCOS+=-I../include
 : soem_driver_factory.cpp |> !cxx_orocos_plugin |>
 : *.o |> !ld_orocos |> libsoem_driver_factory.so
+
+endif
+endif

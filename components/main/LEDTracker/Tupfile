@@ -1,3 +1,6 @@
+ifdef CAROUSEL1
+ifdef PC
+
 include_rules
 
 CXXFLAGS_OROCOS += -O3
@@ -35,3 +38,6 @@ OBJS2=BlobExtractor_renderable.o MultiViewer_renderable.o CameraArray.o MedianFi
 : test_camera_array_and_blob_extractor.cpp |> $(CXX) $(CXXFLAGS_OROCOS) -DENABLE_RENDERING $(CPPFLAGS_OROCOS) -c %f -o %o |> %B.o
 : test_camera_array_and_blob_extractor.o | $(OBJS2) |> $(CXX) $(OBJS2) -o %o %f $(LDFLAGS) |> %B
 
+
+endif
+endif

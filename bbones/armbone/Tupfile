@@ -1,0 +1,34 @@
+include_rules
+.gitignore
+
+# If you want to buld the bbone code from tup, add CONFIG_BBONE= to your tup.config
+ifdef CAROUSEL2
+ifdef ARMBONE
+
+CC=clang
+CPPFLAGS += -Iinclude -Wall -Werror -Wextra
+CPPFLAGS += -I..
+CPPFLAGS += -I../shared
+CFLAGS += -ggdb -pthread -DDEBUG=1 -D _BSD_SOURCE 
+CFLAGS += -std=gnu99
+
+: BB-Bitbanging-00A0.dts |> !dtc |> 
+
+: test_spi.c |> !cc |>
+: bitbang_spi.c |> !cc |>
+: SimpleGPIO.c |> !cc |>
+
+: test_spi.o bitbang_spi.o SimpleGPIO.o |> !ld |> test_spi
+
+# Test code that generates a fast software clock
+: bitbang_clock.c |> !cc |>
+: bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock
+
+# For loading into python make a bitbang so
+: bitbang_spi.c SimpleGPIO.c |> $(CC) -shared -Wl,-soname,%O -o %o -fPIC %f |> bitbang_spi.so
+
+# TODO: Make spi_communication.c and .h call bitbang_spi
+#: main_arm.o SimpleGPIO.o udp_communication.o spi_communication.o log.o data_decoding.o circular_buffer.o |> !ld |> main_arm
+
+endif
+endif

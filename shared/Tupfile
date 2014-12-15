@@ -1,0 +1,18 @@
+include_rules
+.gitignore
+
+CFLAGS += -ggdb -pthread -DDEBUG=1 -D _BSD_SOURCE 
+CFLAGS += -std=gnu99
+
+# C functions for enabling realtime permissions and clock (by shelling out)
+: realtime.c |> !cc |>
+
+# Generate a busy sleep macro
+: usleep_codegen.c |> !cc |>
+: usleep_codegen.o |> !ld |> usleep_codegen
+
+ifdef BBONE
+: usleep_codegen |> ./usleep_codegen > usleep_busy.h |> usleep_busy.h
+endif
+
+

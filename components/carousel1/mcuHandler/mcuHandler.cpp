@@ -65,8 +65,8 @@ McuHandler::McuHandler(std::string name)
 	portMcuData.setDataSample( data );
 	portMcuData.write( data );
 	
-	controls.resize(3, 0.0);
-	execControls.resize(3, 0.0);
+	controls.reset();
+	execControls.reset();
 
 	//
 	// Add properties
@@ -104,6 +104,16 @@ McuHandler::McuHandler(std::string name)
 bool McuHandler::configureHook()
 {
 	pthread_setname_np(pthread_self(), "depl:McuHandler");
+
+	// One of those two has to be positive, depending on the way
+	// the component is triggered
+	assert(getPeriod() > 0.0 or Ts > 0.0);
+
+	// If the component is indeed configured to be periodic,
+	// override whatever was the configuration for Ts.
+	if (getPeriod() > 0.0)
+		Ts = getPeriod();
+
 	return true;
 }
 
@@ -131,8 +141,10 @@ bool McuHandler::startHook()
 		log( Error ) << "Failed to connect with the MCU." << endlog();
 		return false;
 	}
-
-	execControls[ 0 ] = execControls[ 1 ] = execControls[ 2 ] = 0.;
+	
+	controls.reset();
+	execControls.reset();
+	
 	sendMotorReferences();
 
 	upTimeCnt = 0;
@@ -155,34 +167,15 @@ void McuHandler::updateHook()
 	tcpStatus = OK;
 	receiveSensorData();
 
-	//
-	// If _NEW_ controls arrived, send them to the MCU
-	//
-	if (portControls.read( controls ) == NewData)
-	{
-		// In case we received new commands and we are in the real-time mode
-		// we can send new commands to the plane if some checks are satisfied
-		if (controls.size() != 3)
-		{
-			tcpStatus = ERR_BAD_DATA_SIZE;
-			exception();
-		}
-		copy(controls.begin(), controls.end(), execControls.begin());
+	// Read and update controls
+	controlStatus = portControls.read( controls );
+	updateControls();
 
-		// Controls that we received are in radians, scale them
-		convert_controls_radians_to_unitless( &execControls[ 0 ] );
+	// Before calling the MCU operation, reset the tcpStatus flag.
+	tcpStatus = OK;
+	sendMotorReferences();
 
-		// Before calling the MCU operation, reset the tcpStatus flag.
-		tcpStatus = OK;
-		sendMotorReferences();
-
-		// Now, scale the (trimmed) controls back to radians
-		convert_controls_unitless_to_radians( &execControls[ 0 ] );
-	}
-
-	data.ua1 = (float) execControls[ 0 ];
-	data.ua2 = (float) execControls[ 1 ];
-	data.ue  = (float) execControls[ 2 ];
+	data.ctrl = execControls;
 
 	data.ts_elapsed = TimeService::Instance()->secondsSince( triggerTimeStamp );
 	portMcuData.write( data );
@@ -203,9 +196,9 @@ void McuHandler::stopHook()
 	Logger::In in( getName() );
 
 	/// Try to send neutral references to all motors
-//	if (tcpStatus == OK && this->isRunning() == true)
-	for (unsigned i = 0; i < execControls.size(); execControls[ i ] = 0.0, ++i);
+	execControls.reset();
 	sendMotorReferences();
+	
 	/// Close the socket
 	close( tcpSocket );
 	/// Now print the error
@@ -253,40 +246,96 @@ void McuHandler::cleanupHook()
 void McuHandler::errorHook()
 {}
 
-void McuHandler::setControlsRadians(double right_aileron, double left_aileron, double elevator)
+void McuHandler::updateControls()
 {
-	controls[0] = right_aileron;
-	controls[1] = left_aileron;
-	controls[2] = elevator;
-	copy(controls.begin(), controls.end(), execControls.begin());
-	convert_controls_radians_to_unitless(&execControls[0]);
+	// NOTE: A bit of the logic behind this function... If we are in the derivative
+	//       mode, first calculate new controls which are going to be applied. If
+	//       new derivatives arrive, they are going to be applied during the next
+	//       sampling instance.
+
+
+//	if (execControls.der_ctrl == true)
+//	{
+		// Calculate current controls;
+		execControls.ua1 += execControls.d_ua1 * Ts;
+		execControls.ua2 += execControls.d_ua2 * Ts;
+		execControls.ue  += execControls.d_ue  * Ts;
+//	}
+
+	if (controlStatus == NewData)
+	{
+		if (controls.der_ctrl == true)
+		{
+			execControls.d_ua1 = controls.d_ua1;
+			execControls.d_ua2 = controls.d_ua2;
+			execControls.d_ue  = controls.d_ue;
+			
+			execControls.der_ctrl = true;
+		}
+		else
+		{
+			execControls.ua1 = controls.ua1;
+			execControls.ua2 = controls.ua2;
+			execControls.ue  = controls.ue;
+
+			execControls.d_ua1 = execControls.d_ua2 = execControls.d_ue = 0.0;
+			
+			execControls.der_ctrl = false;
+		}
+	}
+}
+
+void McuHandler::setControlsRadians(float right_aileron, float left_aileron, float elevator)
+{
+	execControls.ua1 = right_aileron;
+	execControls.ua2 = left_aileron;
+	execControls.ue  = elevator;
+
+	execControls.der_ctrl = false;
+	
 	sendMotorReferences();
 }
-void McuHandler::setControlsUnitless(double right_aileron, double left_aileron, double elevator)
+void McuHandler::setControlsUnitless(float right_aileron, float left_aileron, float elevator)
 {
-	controls[0] = right_aileron;
-	controls[1] = left_aileron;
-	controls[2] = elevator;
-	copy(controls.begin(), controls.end(), execControls.begin());
+	convertControlsUnitlessRadians(right_aileron, left_aileron, elevator);
+	execControls.ua1 = right_aileron;
+	execControls.ua2 = left_aileron;
+	execControls.ue  = elevator;
+
+	execControls.der_ctrl = false;
+	
 	sendMotorReferences();
 }
 
 /// Method for sending the references. All input must be scaled to -1.. +1.
 void McuHandler::sendMotorReferences( void )
 {
+	float ua1 = execControls.ua1;
+	float ua2 = execControls.ua2;
+	float ue  = execControls.ue;
+
+	// Convert temps to (-1, 1)
+	convertControlsRadiansUnitless(ua1, ua2, ue);
+
 	//
 	// Clip the control values
 	//
-	if (execControls[ 0 ] > 1.0) execControls[ 0 ] = 1.0; else if (execControls[ 0 ] < -1.0) execControls[ 0 ] = -1.0;
-	if (execControls[ 1 ] > 1.0) execControls[ 1 ] = 1.0; else if (execControls[ 1 ] < -1.0) execControls[ 1 ] = -1.0;
-	if (execControls[ 2 ] > 1.0) execControls[ 2 ] = 1.0; else if (execControls[ 2 ] < -1.0) execControls[ 2 ] = -1.0;
-	
+	if (ua1 > 1.0) ua1 = 1.0; else if (ua1 < -1.0) ua1 = -1.0;
+	if (ua2 > 1.0) ua2 = 1.0; else if (ua2 < -1.0) ua2 = -1.0;
+	if (ue  > 1.0) ue  = 1.0; else if (ue  < -1.0) ue  = -1.0;
+
 	//
 	// Scale controls
 	//
-	short execRef1 = (short)(execControls[ 0 ] * MAX_VALUE_MOTOR_REF);
-	short execRef2 = (short)(execControls[ 1 ] * MAX_VALUE_MOTOR_REF);
-	short execRef3 = (short)(execControls[ 2 ] * MAX_VALUE_MOTOR_REF);
+	short execRef1 = (short)(ua1 * MAX_VALUE_MOTOR_REF);
+	short execRef2 = (short)(ua2 * MAX_VALUE_MOTOR_REF);
+	short execRef3 = (short)(ue  * MAX_VALUE_MOTOR_REF);
+
+	// Return back the trimmed controls to exec variable
+	convertControlsUnitlessRadians(ua1, ua2, ue);
+	execControls.ua1 = ua1;
+	execControls.ua2 = ua2;
+	execControls.ue  = ue;
 
 	//
 	// Prepare the request message

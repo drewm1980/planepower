@@ -1,0 +1,3 @@
+# A tup macro for compiling ARM device overlay trees,
+# i.e. for configuring the pin assignments on beaglebones
+!dtc = |> dtc -O dtb -o %o -b o -@ %f; cp %o /lib/firmware/ |> %B.dtbo

@@ -16,6 +16,8 @@ protoc --python_out=. -I$C1/winchControl $C1/winchControl/WinchControlTelemetry.
 
 protoc --python_out=. -I$MAIN/LEDTracker $MAIN/LEDTracker/LEDTrackerTelemetry.proto
 
-# For the MHE, this is done in a very ugly way at the moment
-python -B ../rawesome_stuff/generateMhe.py ../properties
+python -B ../rawesome_stuff/generateMhe.py ../properties proto_only
 protoc --python_out=. DynamicMheTelemetry.proto
+
+python -B ../rawesome_stuff/generateNmpc.py ../properties proto_only
+protoc --python_out=. DynamicMpcTelemetry.proto

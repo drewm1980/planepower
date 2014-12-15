@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
+
 #include "bitbang_spi.h"
+
+// Program to run on the armbone (probably over ssh)
+// to see if the beaglebone can read data from the line angle sensors.
 
 int main()
 {

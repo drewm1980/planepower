@@ -17,7 +17,9 @@ done
 tmp=`dirname $PRG`
 export PLANEPOWER_ROOT=`readlink -f $tmp`
 
-. /opt/ros/hydro/setup.bash
+if [ -d /opt/ros/hydro ]; then
+	. /opt/ros/hydro/setup.bash
+fi
 
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rttlua_completion/?.lua"
 export LUA_PATH="$LUA_PATH;$PLANEPOWER_ROOT/extern/rFSM/?.lua"
@@ -36,7 +38,13 @@ else
 	echo            Please manually set RAWESOME_ROOT environment if you
 	echo			installed rawesome repo in a non-standard place
 fi
+
 export PYTHONPATH=$PYTHONPATH:$RAWESOME_ROOT
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/rawesome_stuff
+
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/shared
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/bbones/shared
+export PYTHONPATH=$PYTHONPATH:$PLANEPOWER_ROOT/components/carousel2/lineAngleSensor2
 
 # TODO ACADO related (next two lines) stuff should be optional, same as for rawesome. 
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PLANEPOWER_ROOT/extern/acado/build
