@@ -7,6 +7,9 @@ CFLAGS += -std=gnu99
 # C functions for enabling realtime permissions and clock (by shelling out)
 : realtime.c |> !cc |>
 
+# Wrapper around the UNIX udp calls
+: udp_communication.c |> !cc |>
+
 # Generate a busy sleep macro
 : usleep_codegen.c |> !cc |>
 : usleep_codegen.o |> !ld |> usleep_codegen

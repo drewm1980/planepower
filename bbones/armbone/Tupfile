@@ -24,11 +24,13 @@ CFLAGS += -std=gnu99
 : bitbang_clock.c |> !cc |>
 : bitbang_clock.o SimpleGPIO.o |> !ld |> bitbang_clock
 
-# For loading into python make a bitbang so
+# For loading into python, also make a bitbang so
 : bitbang_spi.c SimpleGPIO.c |> $(CC) -shared -Wl,-soname,%O -o %o -fPIC %f |> bitbang_spi.so
 
 # TODO: Make spi_communication.c and .h call bitbang_spi
-#: main_arm.o SimpleGPIO.o udp_communication.o spi_communication.o log.o data_decoding.o circular_buffer.o |> !ld |> main_arm
+: spi_communication.c |> !cc |>
+: main_arm.c |> !cc |>
+: main_arm.o SimpleGPIO.o $(PLANEPOWER_ROOT)/shared/udp_communication.o spi_communication.o bitbang_spi.o ../shared/log.o ../shared/data_decoding.o ../shared/circular_buffer.o |> !ld |> main_arm
 
 endif
 endif

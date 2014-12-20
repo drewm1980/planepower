@@ -18,6 +18,8 @@ export PLANEPOWER_ROOT
 PLANEPOWER_ROOT=$(TUP_CWD)
 RAWESOME_ROOT=$(PLANEPOWER_ROOT)/extern/rawesome
 
+CPPFLAGS += -I$(PLANEPOWER_ROOT)/shared
+
 !cxx = |> $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !cc = |> $(CC) $(CFLAGS) $(CPPFLAGS) -c %f -o %o |> %B.o
 !ar = |> ar crs %o %f |>
